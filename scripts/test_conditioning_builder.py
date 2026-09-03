@@ -136,7 +136,9 @@ def run_conditioning_builder_tests():
         page_compile_plan=page_plan,
         panel_strength=0.9,
         character_strength=0.85,
-        set_cond_area="default"
+        set_cond_area="default",
+        local_region_strength=1.0,
+        mask_feather=0
     )
 
     debug_data = json.loads(debug_json)

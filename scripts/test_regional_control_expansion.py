@@ -192,9 +192,9 @@ def run_regional_control_expansion_tests():
         clip=mock_clip,
         page_compile_plan=page_plan,
         panel_strength=0.9,
-        local_region_strength=0.8,
         character_strength=0.85,
         set_cond_area="default",
+        local_region_strength=0.8,
         mask_feather=2
     )
     # Expected Positive branches:

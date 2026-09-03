@@ -148,3 +148,12 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
   - **`09` との関係**: `09` は 3 階層（Global / Panel / Character）による基礎 POC。`10` は第 4 の階層として **`LOCAL_REGION`（コマ内局所領域）** を追加導入し、特定のキャラクターに属さない背景小道具（窓際机、壁面掲示板ポスター等）をコマ内の特定位置へ局所制御可能にした拡張ハーネス。
 - **出力**: 3コマ漫画完成画像 (`ComfyUI/output/Tegaki/RegionalControl/...`)、マルチレイヤーMask Preview画像、Region Preview画像、監査サマリー。
 - **想定用途**: 背景小道具・スポット演出・キャラクター配置が高度に複合した漫画ページの制作および制御強度の視覚的検証。
+
+---
+
+## 5. 互換性保証について (Phase 3B.1.1 ホットフィックス)
+- **Zero-Touch Smoke Test 検証済み**:
+  `09_MANGA_REGIONAL_GENERATION_POC.json` および `10_MANGA_REGIONAL_CONTROL_EXPANSION_TEST.json` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して画像生成が正常完了することが実機検証されています。
+- **Canonical Widget Order**:
+  `TegakiMangaConditioningBuilder` の Widget 順序は `[panel_strength, character_strength, set_cond_area, local_region_strength, mask_feather]` に統一され、フロントエンド自動マイグレーション拡張（`manga_workflow_migration.js`）により過去のワークフローも透過的に自動変換・NaN修復されます。
+

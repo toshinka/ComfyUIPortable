@@ -293,9 +293,17 @@
           "type": "STRING",
           "links": null,
           "slot_index": 3
+        },
+        {
+          "name": "local_region_masks",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 4
         }
       ],
-      "widgets_values": []
+      "widgets_values": [
+        0
+      ]
     },
     {
       "id": 7,
@@ -380,12 +388,20 @@
           "type": "STRING",
           "links": null,
           "slot_index": 4
+        },
+        {
+          "name": "local_region_masks",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 5
         }
       ],
       "widgets_values": [
         1.0,
         1.0,
-        "default"
+        "default",
+        1.0,
+        0
       ]
     },
     {
