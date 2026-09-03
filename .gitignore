@@ -1,0 +1,57 @@
+# ComfyUIPortable .gitignore
+# 巨大な実行環境・モデル・生成物・キャッシュを除外し、設定やWorkflow、ドキュメントのみをGit管理する
+
+# Python embedded & execution environment
+python_embeded/
+update/
+advanced/
+ComfyUI/
+
+# Archives & Temporary files
+*.7z
+*.zip
+*.tar.gz
+*.rar
+*.log
+*.tmp
+
+# Models & Large assets (if placed locally)
+models/
+models_custom/
+*.safetensors
+*.ckpt
+*.pt
+*.bin
+*.pth
+*.onnx
+
+# Input / Output / Cache
+input/
+output/
+temp/
+cache/
+.cache/
+**/__pycache__/
+*.pyc
+README_VERY_IMPORTANT.txt
+
+# Local runtime logs
+comfyui.log
+comfyui_*.log
+
+# Allow specific configuration files, workflows, scripts, docs, and custom code
+!workflows/
+!workflows/**
+!configs/
+!configs/**
+!scripts/
+!scripts/**
+!custom_nodes_custom/
+!custom_nodes_custom/**
+custom_nodes_custom/**/__pycache__/
+custom_nodes_custom/**/*.pyc
+!GPTからの指示書/
+!GPTからの指示書/**
+!*.md
+!*.bat
+!GITHUB.TXT

@@ -1,0 +1,496 @@
+{
+  "last_node_id": 12,
+  "last_link_id": 14,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "CheckpointLoaderSimple",
+      "pos": [
+        40,
+        80
+      ],
+      "size": [
+        320,
+        100
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            1
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            2
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            3,
+            4
+          ],
+          "slot_index": 2
+        }
+      ],
+      "widgets_values": [
+        "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "LoadImage",
+      "pos": [
+        40,
+        240
+      ],
+      "size": [
+        320,
+        320
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            5
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 1
+        }
+      ],
+      "widgets_values": [
+        "example.png",
+        "image"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "VAEEncode",
+      "pos": [
+        400,
+        360
+      ],
+      "size": [
+        210,
+        50
+      ],
+      "inputs": [
+        {
+          "name": "pixels",
+          "type": "IMAGE",
+          "link": 5
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            6
+          ],
+          "slot_index": 0
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "TegakiLoraPromptLoader",
+      "pos": [
+        400,
+        80
+      ],
+      "size": [
+        400,
+        220
+      ],
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 1
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            7
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            8,
+            9
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "clean_text",
+          "type": "STRING",
+          "links": [
+            10
+          ],
+          "slot_index": 2
+        }
+      ],
+      "widgets_values": [
+        "masterpiece, best quality, refined linework, detailed manga art, highres"
+      ]
+    },
+    {
+      "id": 5,
+      "type": "CLIPTextEncode",
+      "pos": [
+        840,
+        80
+      ],
+      "size": [
+        400,
+        140
+      ],
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 8
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 10,
+          "widget": {
+            "name": "text"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            11
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 6,
+      "type": "CLIPTextEncode",
+      "pos": [
+        840,
+        260
+      ],
+      "size": [
+        400,
+        140
+      ],
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 9
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            12
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": [
+        "worst quality, low quality, blurry, deformed"
+      ]
+    },
+    {
+      "id": 7,
+      "type": "KSampler",
+      "pos": [
+        1280,
+        80
+      ],
+      "size": [
+        320,
+        470
+      ],
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 7
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 11
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 12
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 6
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            13
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": [
+        42,
+        "randomize",
+        28,
+        6.0,
+        "euler_ancestral",
+        "normal",
+        0.6
+      ]
+    },
+    {
+      "id": 8,
+      "type": "VAEDecode",
+      "pos": [
+        1640,
+        80
+      ],
+      "size": [
+        210,
+        50
+      ],
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 13
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 4
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            14
+          ],
+          "slot_index": 0
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "SaveImage",
+      "pos": [
+        1880,
+        80
+      ],
+      "size": [
+        450,
+        500
+      ],
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 14
+        }
+      ],
+      "widgets_values": [
+        "Tegaki/I2I/Illustrious"
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      4,
+      0,
+      "MODEL"
+    ],
+    [
+      2,
+      1,
+      1,
+      4,
+      1,
+      "CLIP"
+    ],
+    [
+      3,
+      1,
+      2,
+      3,
+      1,
+      "VAE"
+    ],
+    [
+      4,
+      1,
+      2,
+      8,
+      1,
+      "VAE"
+    ],
+    [
+      5,
+      2,
+      0,
+      3,
+      0,
+      "IMAGE"
+    ],
+    [
+      6,
+      3,
+      0,
+      7,
+      3,
+      "LATENT"
+    ],
+    [
+      7,
+      4,
+      0,
+      7,
+      0,
+      "MODEL"
+    ],
+    [
+      8,
+      4,
+      1,
+      5,
+      0,
+      "CLIP"
+    ],
+    [
+      9,
+      4,
+      1,
+      6,
+      0,
+      "CLIP"
+    ],
+    [
+      10,
+      4,
+      2,
+      5,
+      1,
+      "STRING"
+    ],
+    [
+      11,
+      5,
+      0,
+      7,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      12,
+      6,
+      0,
+      7,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      13,
+      7,
+      0,
+      8,
+      0,
+      "LATENT"
+    ],
+    [
+      14,
+      8,
+      0,
+      9,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "groups": [
+    {
+      "title": "1. Source Image & VAE Encode",
+      "bounding": [
+        20,
+        20,
+        360,
+        560
+      ],
+      "color": "#7a5c3e"
+    },
+    {
+      "title": "2. LoRA / Prompt / Denoise",
+      "bounding": [
+        380,
+        20,
+        880,
+        560
+      ],
+      "color": "#3f789e"
+    },
+    {
+      "title": "3. Sampling & I2I Result",
+      "bounding": [
+        1260,
+        20,
+        1100,
+        600
+      ],
+      "color": "#3f8e5b"
+    }
+  ],
+  "version": 0.4
+}

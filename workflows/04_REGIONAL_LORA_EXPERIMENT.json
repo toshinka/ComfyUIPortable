@@ -1,0 +1,600 @@
+{
+  "last_node_id": 14,
+  "last_link_id": 18,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "CheckpointLoaderSimple",
+      "pos": [
+        40,
+        80
+      ],
+      "size": [
+        320,
+        100
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            1,
+            2
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            3,
+            4
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            5
+          ],
+          "slot_index": 2
+        }
+      ],
+      "widgets_values": [
+        "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "TegakiLoraPromptLoader",
+      "pos": [
+        400,
+        80
+      ],
+      "size": [
+        360,
+        200
+      ],
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 1
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            6
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            7
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "clean_text",
+          "type": "STRING",
+          "links": [
+            8
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "lora_stack",
+          "type": "LORA_STACK",
+          "links": [
+            9
+          ],
+          "slot_index": 3
+        }
+      ],
+      "widgets_values": [
+        "1girl, warrior armor, dynamic sword action,\n<lora:2000s_Moe_Anime__Style__Illustrious_SDXL-000033:0.8>"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "TegakiLoraPromptLoader",
+      "pos": [
+        400,
+        320
+      ],
+      "size": [
+        360,
+        200
+      ],
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 2
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 4
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            10
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            11
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "clean_text",
+          "type": "STRING",
+          "links": [
+            12
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "lora_stack",
+          "type": "LORA_STACK",
+          "links": [
+            13
+          ],
+          "slot_index": 3
+        }
+      ],
+      "widgets_values": [
+        "1girl, wizard robe, spell casting magic circle,\n<lora:2000s_Moe_Anime__Style__Illustrious_SDXL-000033:0.4>"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "CLIPTextEncode",
+      "pos": [
+        800,
+        80
+      ],
+      "size": [
+        320,
+        100
+      ],
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 7
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 8,
+          "widget": {
+            "name": "text"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            14
+          ],
+          "slot_index": 0
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "CLIPTextEncode",
+      "pos": [
+        800,
+        320
+      ],
+      "size": [
+        320,
+        100
+      ],
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 11
+        },
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": 12,
+          "widget": {
+            "name": "text"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            15
+          ],
+          "slot_index": 0
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "CLIPTextEncode",
+      "pos": [
+        800,
+        460
+      ],
+      "size": [
+        320,
+        100
+      ],
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            16
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": [
+        "worst quality, low quality, bad anatomy"
+      ]
+    },
+    {
+      "id": 7,
+      "type": "EmptyLatentImage",
+      "pos": [
+        800,
+        580
+      ],
+      "size": [
+        280,
+        100
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            17
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": [
+        832,
+        1216,
+        1
+      ]
+    },
+    {
+      "id": 8,
+      "type": "KSampler",
+      "pos": [
+        1200,
+        80
+      ],
+      "size": [
+        320,
+        470
+      ],
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 6
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 14
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 16
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 17
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            18
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": [
+        42,
+        "randomize",
+        28,
+        6.0,
+        "euler_ancestral",
+        "normal",
+        1.0
+      ]
+    },
+    {
+      "id": 9,
+      "type": "VAEDecode",
+      "pos": [
+        1560,
+        80
+      ],
+      "size": [
+        210,
+        50
+      ],
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 18
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            19
+          ],
+          "slot_index": 0
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "SaveImage",
+      "pos": [
+        1800,
+        80
+      ],
+      "size": [
+        450,
+        500
+      ],
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 19
+        }
+      ],
+      "widgets_values": [
+        "Tegaki/RegionalLoRA/Illustrious"
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "MODEL"
+    ],
+    [
+      2,
+      1,
+      0,
+      3,
+      0,
+      "MODEL"
+    ],
+    [
+      3,
+      1,
+      1,
+      2,
+      1,
+      "CLIP"
+    ],
+    [
+      4,
+      1,
+      1,
+      3,
+      1,
+      "CLIP"
+    ],
+    [
+      5,
+      1,
+      2,
+      9,
+      1,
+      "VAE"
+    ],
+    [
+      6,
+      2,
+      0,
+      8,
+      0,
+      "MODEL"
+    ],
+    [
+      7,
+      2,
+      1,
+      4,
+      0,
+      "CLIP"
+    ],
+    [
+      8,
+      2,
+      2,
+      4,
+      1,
+      "STRING"
+    ],
+    [
+      9,
+      2,
+      3,
+      null,
+      0,
+      "LORA_STACK"
+    ],
+    [
+      10,
+      3,
+      0,
+      null,
+      0,
+      "MODEL"
+    ],
+    [
+      11,
+      3,
+      1,
+      5,
+      0,
+      "CLIP"
+    ],
+    [
+      12,
+      3,
+      2,
+      5,
+      1,
+      "STRING"
+    ],
+    [
+      13,
+      3,
+      3,
+      null,
+      0,
+      "LORA_STACK"
+    ],
+    [
+      14,
+      4,
+      0,
+      8,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      15,
+      5,
+      0,
+      null,
+      0,
+      "CONDITIONING"
+    ],
+    [
+      16,
+      6,
+      0,
+      8,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      17,
+      7,
+      0,
+      8,
+      3,
+      "LATENT"
+    ],
+    [
+      18,
+      8,
+      0,
+      9,
+      0,
+      "LATENT"
+    ],
+    [
+      19,
+      9,
+      0,
+      10,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "groups": [
+    {
+      "title": "1. Base Checkpoint",
+      "bounding": [
+        20,
+        20,
+        360,
+        480
+      ],
+      "color": "#3f789e"
+    },
+    {
+      "title": "2. Region-Specific LoRA Stacks (RLL Lab)",
+      "bounding": [
+        380,
+        20,
+        390,
+        600
+      ],
+      "color": "#7a3e9e"
+    },
+    {
+      "title": "3. Regional Conditioning & Sampling",
+      "bounding": [
+        780,
+        20,
+        1500,
+        700
+      ],
+      "color": "#3f8e5b"
+    }
+  ],
+  "version": 0.4
+}

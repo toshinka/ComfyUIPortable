@@ -1,0 +1,115 @@
+================================================================================
+ComfyUI Portable 漫画制作環境 (Tegaki Manga Edition) - External AI Review Entry
+================================================================================
+
+Project Name: Tegaki ComfyUI Portable Manga Edition
+Purpose: Windowsローカル環境にIllustrious/SDXLモデルとEasyReforge資産を統合した漫画制作研究環境の構築
+Updated: 2026-09-03 10:28 (JST)
+Repository URL: https://github.com/toshinka/tegaki
+Branch: main
+Current Commit SHA: 17d9f8a85a2192c1411720cf4eae7e922de91085
+Current Status: 構築完了・実機推論テスト（txt2img, I2I, Wildcards, LoRA記法）合格済み
+
+--------------------------------------------------------------------------------
+1. Required First Reads (最初に読むべき資料)
+--------------------------------------------------------------------------------
+1. README.md
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/README.md
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/README.md
+
+2. BUILD_REPORT.md
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/BUILD_REPORT.md
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/BUILD_REPORT.md
+
+3. WORKFLOW_INDEX.md
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/WORKFLOW_INDEX.md
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/WORKFLOW_INDEX.md
+
+--------------------------------------------------------------------------------
+2. Specification & System Docs (仕様書・環境定義)
+--------------------------------------------------------------------------------
+1. 指示書 (ComfyUI Portable 漫画制作環境 構築依頼書.md)
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/GPT%E3%81%8B%E3%82%89%E3%81%AE%E6%8C%87%E7%A4%BA%E6%9B%B8/ComfyUI%20Portable%20%E6%BC%AB%E7%94%BB%E5%88%B6%E4%BD%9C%E7%92%B0%E5%A2%83%20%E6%A7%8B%E7%AF%89%E4%BE%9D%E9%A0%BC%E6%9B%B8.md
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GPT%E3%81%8B%E3%82%89%E3%81%AE%E6%8C%87%E7%A4%BA%E6%9B%B8/ComfyUI%20Portable%20%E6%BC%AB%E7%94%BB%E5%88%B6%E4%BD%9C%E7%92%B0%E5%A2%83%20%E6%A7%8B%E7%AF%89%E4%BE%9D%E9%A0%BC%E6%9B%B8.md
+
+2. DEPENDENCIES.md
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/DEPENDENCIES.md
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/DEPENDENCIES.md
+
+3. KNOWN_ISSUES.md
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/KNOWN_ISSUES.md
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/KNOWN_ISSUES.md
+
+4. RESEARCH_REFERENCES.md
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/RESEARCH_REFERENCES.md
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/RESEARCH_REFERENCES.md
+
+5. Git除外設定 (.gitignore)
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/.gitignore
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/.gitignore
+
+--------------------------------------------------------------------------------
+3. Configuration & Custom Nodes (設定・独自ノード実装)
+--------------------------------------------------------------------------------
+1. 外部モデル共有設定 (configs/extra_model_paths.yaml)
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/configs/extra_model_paths.yaml
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/configs/extra_model_paths.yaml
+
+2. 独自LoRAパーサーノード (custom_nodes_custom/tegaki_manga_nodes/lora_loader.py)
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/lora_loader.py
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/lora_loader.py
+
+3. 独自ノード初期化 (custom_nodes_custom/tegaki_manga_nodes/__init__.py)
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/__init__.py
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/__init__.py
+
+--------------------------------------------------------------------------------
+4. Manga Workflows (漫画制作ワークフローJSON)
+--------------------------------------------------------------------------------
+1. 01_BASIC_ILLUSTRIOUS_TXT2IMG.json
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/01_BASIC_ILLUSTRIOUS_TXT2IMG.json
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/workflows/01_BASIC_ILLUSTRIOUS_TXT2IMG.json
+
+2. 02_ILLUSTRIOUS_I2I.json
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/02_ILLUSTRIOUS_I2I.json
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/workflows/02_ILLUSTRIOUS_I2I.json
+
+3. 03_MANGA_REGIONAL_PROMPT.json
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/03_MANGA_REGIONAL_PROMPT.json
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/workflows/03_MANGA_REGIONAL_PROMPT.json
+
+4. 04_REGIONAL_LORA_EXPERIMENT.json
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/04_REGIONAL_LORA_EXPERIMENT.json
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/workflows/04_REGIONAL_LORA_EXPERIMENT.json
+
+5. 05_CONTROLNET_COMPOSITION.json
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/05_CONTROLNET_COMPOSITION.json
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/workflows/05_CONTROLNET_COMPOSITION.json
+
+6. 06_LORA_MIX_EXPERIMENT.json
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/06_LORA_MIX_EXPERIMENT.json
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/workflows/06_LORA_MIX_EXPERIMENT.json
+
+--------------------------------------------------------------------------------
+5. Automation & Testing Scripts (自動生成・検証スクリプト)
+--------------------------------------------------------------------------------
+1. scripts/generate_workflows.py
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/scripts/generate_workflows.py
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/scripts/generate_workflows.py
+
+2. scripts/test_nodes.py
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/scripts/test_nodes.py
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/scripts/test_nodes.py
+
+3. scripts/test_generation.py
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/scripts/test_generation.py
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/scripts/test_generation.py
+
+4. scripts/test_i2i.py
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/scripts/test_i2i.py
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/scripts/test_i2i.py
+
+5. scripts/test_wildcards.py
+   GitHub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/scripts/test_wildcards.py
+   Raw:    https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/scripts/test_wildcards.py
+================================================================================

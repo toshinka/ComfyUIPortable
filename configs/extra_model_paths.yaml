@@ -1,0 +1,21 @@
+# ComfyUI External Model Paths Configuration
+# EasyReforgeおよび外部モデル資産との共有設定（二重保存防止・読み取り専用参照）
+
+easy_reforge_models:
+    checkpoints: |
+        E:/Data/Models/StableDiffusion
+        E:/EasyReforge/Model/Stable-diffusion
+    loras: |
+        D:/Models/Lora
+        E:/EasyReforge/Model/Lora
+    vae: |
+        E:/Data/Models/VAE
+        E:/EasyReforge/Model/VAE
+    controlnet: |
+        E:/Data/Models/ControlNet
+        E:/EasyReforge/Model/ControlNet
+    embeddings: |
+        E:/Data/Models/Embeddings
+    upscale_models: |
+        E:/Data/Models/ESRGAN
+        E:/EasyReforge/Model/ESRGAN
