@@ -3,7 +3,7 @@
 ## 1. 04_REGIONAL_LORA_EXPERIMENT.json の接続状態 (EXPERIMENTAL / NOT YET REGIONAL)
 - **現状**: `04_REGIONAL_LORA_EXPERIMENT.json` は2本のLoRAブランチを持つ構造として配置されていますが、コードレベル監査の結果、最終KSamplerには第1ブランチのMODELのみが接続されており、第2ブランチのMODEL/Conditioningが合流していません。
 - **影響**: 現状は領域別LoRA（Regional LoRA）として完全には成立しておらず、実質的に単一LoRA生成となります。
-- **対応方針**: Phase 2/2.1では安定基盤の維持を最優先とし、Phase 5の「疑似RLL（Impact RegionalSampler等を用いた領域別LoRA実験）」にて本格改修を行います。
+- **対応方針**: Phase 2/2.1/2.1.1では安定基盤の維持を最優先とし、Phase 5の「疑似RLL（Impact RegionalSampler等を用いた領域別LoRA実験）」にて本格改修を行います。
 
 ---
 
@@ -28,6 +28,16 @@
 ## 5. Windows Tritonの非対応
 - **現象**: 一部のTriton依存拡張はWindowsネイティブではスキップされます。
 - **影響**: 標準のPyTorch Attention / VAEデコードが使用されるため、画像の生成結果や品質には一切影響ありません。
+
+---
+
+## [RESOLVED IN PHASE 2.1.1] 解決済みの課題履歴
+- **Split処理のPanel Count / Undo不整合**: 未使用コマ探索順序を「panel_count枠内の無効コマ → panel_count<6時の自動拡張」とし、変更前の事前pushHistoryによりUndoで完全復元されるよう修正・テスト完了。
+- **新規Region作成時のUndo不整合**: 空白ドラッグ開始の判定成立直後にpushHistoryを呼び、Undoで作成前の非表示・元状態へ完全復元されるよう修正・テスト完了。
+- **Layout Resetによるenabled / promptリセット問題**: 矩形座標 (`x, y, w, h`) のみを初期化し、enabled, prompt, panel_count, Canvas Size, Global Prompt, 未知フィールドを100%保持するよう修正・テスト完了。
+- **Swapの固定フィールド限定問題**: KOMA identity (id, name, color) のみを固定し、将来の未知メタデータを含む全payloadを汎用交換するよう修正・テスト完了。
+- **Syntax Error と Schema Error の同一混同**: 構文エラー（JSONDecodeError）はwarningフォールバック、スキーマ違反（version != 1等）は制作データ保護のため明示的にValueError（Node execution error）を送出するよう分離・テスト完了。
+- **enabled型の曖昧性 ('false'文字列の誤判定)**: `bool("false") == True` を防ぐため、厳格な `bool` 型のみを許可し、文字列 `"false"` や `1` は `ValueError` を送出するよう修正・テスト完了。
 
 ---
 

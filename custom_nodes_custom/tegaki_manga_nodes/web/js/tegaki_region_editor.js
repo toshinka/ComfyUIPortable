@@ -481,6 +481,7 @@ app.registerExtension({
             }
 
             // スライス処理 (Split H / V)
+            // 仕様: panel_count枠内の無効コマを優先再利用。なければpanel_count<6のとき1増加して新規枠を確保。
             function splitSelectedRegion(dir) {
                 if (selectedRegionIds.size === 0) {
                     showStatus("分割するコマを選択してください");
@@ -490,19 +491,28 @@ app.registerExtension({
                 const target = spec.regions.find(r => r.id === targetId);
                 if (!target || !target.enabled) return;
 
-                // 未使用コマを探す (無効コマ、または現在panel_count外のコマ)
-                let unused = spec.regions.find(r => !r.enabled && r.id !== targetId);
+                // 1. 現在の panel_count 範囲内の無効コマを優先探索
+                let unused = spec.regions.find(r => r.id <= spec.panel_count && !r.enabled && r.id !== targetId);
+                let needIncrease = false;
+
+                // 2. 範囲内にない場合、panel_count < 6 であれば panel_count を拡張して次コマを利用
                 if (!unused && spec.panel_count < 6) {
-                    spec.panel_count += 1;
-                    unused = spec.regions.find(r => r.id === spec.panel_count);
+                    unused = spec.regions.find(r => r.id === spec.panel_count + 1);
+                    needIncrease = true;
                 }
 
+                // 3. 6コマすべて使用済みの場合は分割不可
                 if (!unused) {
                     showStatus("最大6コマに達しているため分割できません");
                     return;
                 }
 
+                // 変更直前に元状態のsnapshotを保存 (Undo時にpanel_count/geometry/enabledを完全復元)
                 pushHistory();
+
+                if (needIncrease) {
+                    spec.panel_count += 1;
+                }
                 unused.enabled = true;
 
                 if (dir === "H") {
@@ -524,11 +534,11 @@ app.registerExtension({
                 selectedRegionIds = new Set([targetId, unused.id]);
                 syncToWidgets();
                 renderAll();
-                showStatus(`KOMA ${targetId} を分割しました (KOMA ${unused.id} 割り当て)`);
+                showStatus(`KOMA ${targetId} を分割しました (KOMA ${unused.id} 割り当て, コマ数: ${spec.panel_count})`);
             }
 
             // コマ入れ替え処理 (Swap)
-            // 仕様: KOMA identity (id, name, color) は固定。Region payload (座標, prompt, enabled) を交換。
+            // 仕様: KOMA identity (id, name, color) は固定。それ以外の全フィールド(geometry, prompt, enabled, 未知フィールド等)をGeneric Payloadとして交換
             function swapSelectedRegions() {
                 const ids = Array.from(selectedRegionIds);
                 if (ids.length !== 2) {
@@ -540,9 +550,25 @@ app.registerExtension({
                 if (!r1 || !r2) return;
 
                 pushHistory();
-                const temp = { x: r1.x, y: r1.y, w: r1.w, h: r1.h, prompt: r1.prompt, enabled: r1.enabled };
-                r1.x = r2.x; r1.y = r2.y; r1.w = r2.w; r1.h = r2.h; r1.prompt = r2.prompt; r1.enabled = r2.enabled;
-                r2.x = temp.x; r2.y = temp.y; r2.w = temp.w; r2.h = temp.h; r2.prompt = temp.prompt; r2.enabled = temp.enabled;
+
+                const identityKeys = new Set(["id", "name", "color"]);
+                const allKeys = new Set([...Object.keys(r1), ...Object.keys(r2)]);
+
+                allKeys.forEach(key => {
+                    if (identityKeys.has(key)) return;
+                    const val1 = r1[key];
+                    const val2 = r2[key];
+                    if (val2 !== undefined) {
+                        r1[key] = val2;
+                    } else {
+                        delete r1[key];
+                    }
+                    if (val1 !== undefined) {
+                        r2[key] = val1;
+                    } else {
+                        delete r2[key];
+                    }
+                });
 
                 syncToWidgets();
                 renderAll();
@@ -565,9 +591,9 @@ app.registerExtension({
             }
 
             // レイアウトリセット
-            // 仕様: Canvas Size や Global Prompt は保持し、矩形配置のみ初期化
+            // 仕様: x, y, w, h のみを初期値に戻す。enabled, prompt, panel_count, Canvas Size, Global Prompt, 未知フィールドは100%保持
             function resetLayout() {
-                if (confirm("コマの矩形レイアウトを初期状態にリセットしますか？\n(※CanvasサイズやGlobal Promptは維持されます)")) {
+                if (confirm("コマの矩形レイアウト (座標・サイズ) のみを初期状態にリセットしますか？\n(※コマの有効状態、Prompt、Canvasサイズは維持されます)")) {
                     pushHistory();
                     for (let i = 0; i < 6; i++) {
                         const layout = DEFAULT_LAYOUTS[i];
@@ -576,11 +602,11 @@ app.registerExtension({
                         r.y = layout.y;
                         r.w = layout.w;
                         r.h = layout.h;
-                        r.enabled = (i < spec.panel_count);
+                        // enabled, prompt 等は変更しない
                     }
                     syncToWidgets();
                     renderAll();
-                    showStatus("レイアウトをリセットしました");
+                    showStatus("レイアウト座標をリセットしました");
                 }
             }
 
@@ -686,12 +712,19 @@ app.registerExtension({
 
                         // 空きコマを探す (無効コマ、またはpanel_count枠内の未有効化コマ)
                         let targetKoma = spec.regions.find(r => r.id <= spec.panel_count && !r.enabled);
+                        let needIncrease = false;
                         if (!targetKoma && spec.panel_count < 6) {
-                            spec.panel_count += 1;
-                            targetKoma = spec.regions.find(r => r.id === spec.panel_count);
+                            targetKoma = spec.regions.find(r => r.id === spec.panel_count + 1);
+                            needIncrease = true;
                         }
 
                         if (targetKoma) {
+                            // 新規Region作成が成立すると判断した時点で、変更前に元状態のsnapshotを保存
+                            pushHistory();
+
+                            if (needIncrease) {
+                                spec.panel_count += 1;
+                            }
                             dragMode = "create";
                             activeRegion = targetKoma;
                             activeRegion.enabled = true;
@@ -703,11 +736,16 @@ app.registerExtension({
                         } else {
                             dragMode = "none";
                             showStatus("最大6コマに達しているため新規作成できません");
+                            return; // 履歴を追加せず終了
                         }
                     }
                 }
 
-                pushHistory();
+                // 移動またはリサイズの場合も変更前にsnapshotを保存
+                if (dragMode === "move" || dragMode === "resize") {
+                    pushHistory();
+                }
+
                 isDragging = true;
                 selectedRegionIds.forEach(rid => {
                     const r = spec.regions.find(x => x.id === rid);

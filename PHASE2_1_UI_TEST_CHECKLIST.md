@@ -1,6 +1,6 @@
 # PHASE2_1_UI_TEST_CHECKLIST.md — Frontend & UI 手動・実機検証チェックリスト
 
-本ドキュメントは、Phase 2.1で改修された `Tegaki Manga Region Editor` の操作性、状態管理、イベント処理、およびWorkflow保存・復元に関する検証項目一覧です。
+本ドキュメントは、Phase 2.1 / 2.1.1 で改修された `Tegaki Manga Region Editor` の操作性、状態管理、イベント処理、およびWorkflow保存・復元に関する検証項目一覧です。
 
 ---
 
@@ -20,6 +20,13 @@
 | **State シリアライズ & リロード再現性** | `scripts/test_region_spec.py` | **PASS** |
 | **未知フィールド保持 (前方互換性)** | `scripts/test_region_spec.py` | **PASS** |
 | **Wildcard Organizer Windowsパッチ適用状態** | `scripts/verify_wildcard_patch.py` | **PASS** |
+| **[Phase 2.1.1] Split 3→4 panel & Active Region 遷移** | `scripts/test_region_state_transitions.py` | **PASS** |
+| **[Phase 2.1.1] Split Undo (4→3) & Redo (3→4)** | `scripts/test_region_state_transitions.py` | **PASS** |
+| **[Phase 2.1.1] Create 3→4 panel & Create Undo (4→3)** | `scripts/test_region_state_transitions.py` | **PASS** |
+| **[Phase 2.1.1] Delete → Layout Reset での enabled & prompt 保持** | `scripts/test_region_state_transitions.py` | **PASS** |
+| **[Phase 2.1.1] Generic Swap での未知メタデータ保持・交換** | `scripts/test_region_state_transitions.py` | **PASS** |
+| **[Phase 2.1.1] execute_editor スキーマエラー (version 999) 伝播** | `scripts/test_region_state_transitions.py` | **PASS** |
+| **[Phase 2.1.1] enabled 厳格 boolean 型検査 ('false' / 1 の拒否)** | `scripts/test_region_state_transitions.py` | **PASS** |
 
 ---
 
@@ -40,6 +47,7 @@
 | **Panel Count 1〜6 変更** | `wPanel.callback`, `spec.panel_count` | **PASS (実装済・動作確認)** | スライダー変更でCanvas表示コマ数が即時連動 |
 | **6→3→6 変更でのデータ保持** | `createDefaultSpec`, `syncToWidgets` | **PASS (実装済・動作確認)** | コマ数を減らしても4〜6のPrompt・座標は保持 |
 | **Canvas 矩形ドラッグ新規作成** | `dragMode = "create"`, 空きKOMA探索 | **PASS (実装済・動作確認)** | 空白ドラッグで空きKOMAまたは次KOMAを割り当て |
+| **[2.1.1] 新規作成 → Undo / Redo** | `canvas.onmousedown` 事前pushHistory | **PASS (実装済・動作確認)** | 作成直後にUndoで完全元通り（非表示・直前座標） |
 | **Canvas 矩形移動** | `dragMode = "move"` | **PASS (実装済・動作確認)** | 矩形内ドラッグで0〜1範囲内を滑らかに移動 |
 | **複数コマ選択 (Shift+Click)** | `selectedRegionIds.add(...)` | **PASS (実装済・動作確認)** | 複数KOMAを選択して同時ハイライト |
 | **複数コマ一括ドラッグ移動** | `initialRects`, `selectedRegionIds.forEach` | **PASS (実装済・動作確認)** | 選択した複数コマを同時に平行移動 |
@@ -47,13 +55,15 @@
 | **コマ同士の重なり (Overlap)** | 制約なし | **PASS (実装済・動作確認)** | コマ同士が重なっても問題なく編集・描画可能 |
 | **水平50:50スライス (Split H)** | `splitSelectedRegion("H")` | **PASS (実装済・動作確認)** | 選択コマを左右に均等分割し空きコマへ割り当て |
 | **垂直50:50スライス (Split V)** | `splitSelectedRegion("V")` | **PASS (実装済・動作確認)** | 選択コマを上下に均等分割し空きコマへ割り当て |
-| **コマ内容入れ替え (Swap)** | `swapSelectedRegions()` | **PASS (実装済・動作確認)** | 2コマ選択で座標・Prompt・enabledを相互交換 |
+| **[2.1.1] Split時のPanel Count自動増加** | 探索順序 A→B→C, `panel_count += 1` | **PASS (実装済・動作確認)** | 空き枠がない場合、コマ数を自動で増やしてActive化 |
+| **[2.1.1] Split → Undo / Redo** | `splitSelectedRegion` 事前pushHistory | **PASS (実装済・動作確認)** | Undoでpanel_count・enabled・元geometryが完全復元 |
+| **[2.1.1] Generic Swap** | `swapSelectedRegions()` | **PASS (実装済・動作確認)** | id/name/color固定、geometry/prompt/未知メタデータを交換 |
 | **コマ削除・無効化 (Delete)** | `deleteSelectedRegions()` | **PASS (実装済・動作確認)** | Deleteボタンで選択コマを `enabled = false` 化 |
 | **キーボード Delete / Backspace** | `onWindowKeyDown` (タグガード付) | **PASS (実装済・動作確認)** | テキスト入力中を除き選択コマを無効化 |
 | **Undo / Redo ボタン** | `doUndo()`, `doRedo()` | **PASS (実装済・動作確認)** | 移動、リサイズ、スライス、スワップを巻き戻し |
 | **Ctrl+Z / Ctrl+Y ショートカット** | `onWindowKeyDown` (タグガード付) | **PASS (実装済・動作確認)** | テキスト入力中を除きキーボードでUndo/Redo |
 | **Prompt テキストエリア Undo** | `focus` 時スナップショット, `blur` コミット | **PASS (実装済・動作確認)** | 1文字ごとに履歴を汚さず一括Undo |
-| **Layout Reset** | `resetLayout()` | **PASS (実装済・動作確認)** | CanvasサイズやGlobal Promptを保持したまま矩形初期化 |
+| **[2.1.1] Layout Reset の純粋化** | `resetLayout()` | **PASS (実装済・動作確認)** | 矩形座標のみ初期化。enabled, prompt, canvas size等は100%保持 |
 | **Canvas Size / Global Prompt 連動** | `hookWidgetCallbacks` | **PASS (実装済・動作確認)** | 外側Widgetの変更がREGION_SPECへ即時同期 |
 | **Workflow Save / Reload 状態完全復元** | `onConfigure`, `_tegakiRestoreFromWidgets` | **PASS (実装済・動作確認)** | 保存したワークフローを開き直すと100%復元 |
 | **Event Listener Cleanup** | `node.onRemoved` | **PASS (実装済・動作確認)** | ノード削除時にwindowイベントを完全解除 |

@@ -22,18 +22,24 @@ def is_active_region(region: dict, panel_count: int) -> bool:
     """
     KOMAが現在アクティブ（有効かつ現在のコマ数範囲内）であるかを判定する共通ルール。
     Frontend, Backend, 将来のCompilerで同一の定義を使用します。
+    厳格な boolean (enabled is True) を要求します。
     """
     if not isinstance(region, dict):
         return False
-    enabled = bool(region.get("enabled", True))
-    rid = int(region.get("id", 1))
-    return enabled and (1 <= rid <= panel_count)
+    enabled = region.get("enabled", True)
+    if enabled is not True:
+        return False
+    try:
+        rid = int(region.get("id", 1))
+    except (ValueError, TypeError):
+        return False
+    return 1 <= rid <= panel_count
 
 
 def validate_region_spec(spec: dict) -> dict:
     """
     REGION_SPEC の構造を厳格に検査・バリデーションする。
-    軽微な座標逸脱はクランプし、壊れた構造や未サポートバージョンは例外または明確な警告を出す。
+    軽微な座標逸脱はクランプし、壊れた構造や未サポートバージョンは明確な ValueError を送出する。
     将来の拡張フィールド（control, lora, metadata等）は保持します。
     """
     if not isinstance(spec, dict):
@@ -80,6 +86,15 @@ def validate_region_spec(spec: dict) -> dict:
             raise ValueError(f"[TegakiRegionEditor] Duplicate region id detected: {rid}")
         seen_ids.add(rid)
 
+        # enabled の厳格な型検査 (指示書第14〜15項)
+        enabled_val = r.get("enabled", True)
+        if not isinstance(enabled_val, bool):
+            raise ValueError(
+                f"[TegakiRegionEditor] Region id {rid}: 'enabled' must be a strict boolean (True/False), "
+                f"got {type(enabled_val).__name__} ({enabled_val!r}). String values like 'false' or '1' are not allowed."
+            )
+        r["enabled"] = enabled_val
+
         # 座標の検証とクランプ
         x = float(r.get("x", 0.0))
         y = float(r.get("y", 0.0))
@@ -101,7 +116,6 @@ def validate_region_spec(spec: dict) -> dict:
         r["y"] = round(y, 4)
         r["w"] = round(w, 4)
         r["h"] = round(h, 4)
-        r["enabled"] = bool(r.get("enabled", True))
         r["prompt"] = str(r.get("prompt", "") or "")
 
         # カラーは固定パレットと同期
@@ -121,12 +135,13 @@ def validate_region_spec(spec: dict) -> dict:
 
 def normalize_region_spec(spec: dict, default_w: int = 832, default_h: int = 1216, default_panel_count: int = 3, default_global_prompt: str = "") -> dict:
     """
-    不完全なREGION_SPECを完全な6コマ構成に正規化する
+    不完全なREGION_SPECを完全な6コマ構成に正規化する。
+    スキーマ違反がある場合は ValueError を送出する。
     """
     if not isinstance(spec, dict) or "regions" not in spec:
-        return default_region_spec(default_w, default_h, default_panel_count, default_global_prompt)
+        raise ValueError("[TegakiRegionEditor] Cannot normalize invalid spec: missing 'regions' list.")
 
-    # バリデーション実行
+    # バリデーション実行 (異常時は ValueError 送出)
     spec = validate_region_spec(spec)
 
     # 1〜6の全KOMAが存在するか確認し、不足分を補完
@@ -279,7 +294,7 @@ def render_mask_batch(spec: dict, width: int, height: int):
 
 class TegakiMangaRegionEditor:
     """
-    Tegaki Manga Region Editor (Phase 2.1 安定化版)
+    Tegaki Manga Region Editor (Phase 2.1.1 安定化・回帰防止版)
     最大6コマの漫画レイアウトを視覚的に編集し、REGION_SPEC およびプレビュー画像を出力するノード。
     REGION_SPEC (v1) を完全な Single Source of Truth とし、UIと生成Backendを疎結合に保ちます。
     """
@@ -313,28 +328,36 @@ class TegakiMangaRegionEditor:
 
         # 1. 保存されたJSONデータのパースと検証 (Single Source of Truth)
         if region_spec_data and region_spec_data.strip() not in ("{}", ""):
+            # A. 構文エラー (Syntax Error) のハンドリング
             try:
                 parsed = json.loads(region_spec_data)
-                if isinstance(parsed, dict) and "regions" in parsed:
-                    spec = normalize_region_spec(
-                        parsed,
-                        default_w=canvas_width,
-                        default_h=canvas_height,
-                        default_panel_count=panel_count,
-                        default_global_prompt=global_prompt
+            except (json.JSONDecodeError, Exception) as e:
+                logging.warning(
+                    f"[TegakiRegionEditor] Syntax error in region_spec_data JSON: {e}. "
+                    "Falling back to default spec."
+                )
+                parsed = None
+
+            # B. スキーマエラー (Schema Error) のハンドリング
+            # JSONとしてパースできた場合、normalize/validate での例外(ValueError等)は
+            # 握りつぶさずにそのまま送出し、Node execution error として停止させる (制作データ保護)
+            if parsed is not None:
+                if not isinstance(parsed, dict) or "regions" not in parsed:
+                    raise ValueError(
+                        "[TegakiRegionEditor] Invalid REGION_SPEC: Root must be a dict containing 'regions' list."
                     )
-                    has_valid_json = True
-            except Exception as e:
-                logging.warning(f"[TegakiRegionEditor] Failed to parse/validate region_spec_data: {e}. Falling back to default spec.")
+                spec = normalize_region_spec(
+                    parsed,
+                    default_w=canvas_width,
+                    default_h=canvas_height,
+                    default_panel_count=panel_count,
+                    default_global_prompt=global_prompt
+                )
+                has_valid_json = True
 
         # 2. JSONデータが存在しない場合のみ、外側引数から初期REGION_SPECを生成
         if not has_valid_json:
             spec = default_region_spec(canvas_width, canvas_height, panel_count, global_prompt)
-        else:
-            # 有効なREGION_SPECが存在する場合、外側引数で無条件上書きせず、
-            # REGION_SPEC内の設定を優先（引数とSPECが矛盾する場合はSPECが正本）
-            # ただし、外側Widgetが明示的に変更された場合の同期はフロントエンド側で保証される
-            pass
 
         # 3. 実際のキャンバスサイズとGlobal Promptの確定
         actual_width = spec["canvas"]["width"]
