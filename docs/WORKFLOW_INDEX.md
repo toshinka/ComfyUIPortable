@@ -200,9 +200,22 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 
 ---
 
-## 5. 互換性保証について (Phase 3B.1.1 & Phase 3C / 3C.1)
+### 15_MANGA_PANEL_LAYOUT_CONTROLNET_FUSION_ORACLE.json
+- **区分**: 構図統合オラクル (EXPERIMENTAL / COMPOSITION FUSION ORACLE)
+- **目的**: 厳格な平面分割（Planar Subdivision）に基づく `TegakiMangaPanelLayoutEditor` の ControlNet 白黒枠線ガイド画像と、上段コマ内に配置された `TegakiTwoRegionCoupleEditor`（Semantic Overlap 2人物）の Core Masked Conditioning を完全融合し、コマ割り構図と人物演技が矛盾なく共存することを実証するオラクル。
+- **必要Custom Node**:
+  - `TegakiTwoRegionCoupleEditor` (独自 / 2領域 Semantic Overlap エディター)
+  - `TegakiTwoRegionCoreConditioner` (独自 / Core Masked Conditioning)
+  - `TegakiMangaPanelLayoutEditor` (独自 / コマ割り幾何エディター, Unique-Edge レンダラー)
+  - ComfyUI標準: ControlNetLoader, ControlNetApplyAdvanced, CheckpointLoaderSimple, EmptyLatentImage, KSampler, VAEDecode, SaveImage, PreviewImage
+- **出力**: 融合生成画像 (`ComfyUI/output/Tegaki/PanelLayoutFusion/...`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+## 5. 互換性保証について (Phase 3B.1.1 & Phase 3C / 3C.1 / 3C.1.1)
 - **Zero-Touch Smoke Test 検証済み**:
-  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10_MANGA_REGIONAL_CONTROL_EXPANSION_TEST.json`、および `11`, `12`, `13`, `14` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが検証されています。
+  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10_MANGA_REGIONAL_CONTROL_EXPANSION_TEST.json`、および `11`, `12`, `13`, `14`, `15` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
 - **Canonical Widget Order**:
   `TegakiMangaConditioningBuilder` の Widget 順序は `[panel_strength, character_strength, set_cond_area, local_region_strength, mask_feather]` に統一され、フロントエンド自動マイグレーション拡張（`manga_workflow_migration.js`）により過去のワークフローも透過的に自動変換・NaN修復されます。
 

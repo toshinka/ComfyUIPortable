@@ -128,6 +128,7 @@ def run_widget_compatibility_tests():
         ("12_TWO_REGION_IMPACT_COUPLE_ORACLE.json", "TegakiTwoRegionImpactAdapter", 3),
         ("13_TWO_REGION_CONTROLNET_LAYOUT_AUX.json", "TegakiTwoRegionLayoutGuide", 2),
         ("14_MANGA_PANEL_LAYOUT_GUIDE_EDITOR_TEST.json", "TegakiMangaPanelLayoutEditor", 4),
+        ("15_MANGA_PANEL_LAYOUT_CONTROLNET_FUSION_ORACLE.json", "TegakiMangaPanelLayoutEditor", 4),
     ]
 
     for wf_name, target_node_type, expected_wv_len in workflows_to_check:

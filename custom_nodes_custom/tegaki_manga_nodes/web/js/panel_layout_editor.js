@@ -1,11 +1,10 @@
 /**
- * Tegaki Manga Panel Layout Editor (Phase 3C.1 Foundation Frontend)
+ * Tegaki Manga Panel Layout Editor (Phase 3C.1.1 Hardened Topology Frontend)
  * 
- * 漫画コマ割り (Panel Layout) 専用の幾何エディター Canvas。
- * Shared-Vertex Mesh 方式を採用し、
- * - パネル選択 & 分割 (Horizontal, Vertical, Diagonal /, Diagonal \)
- * - 共有頂点ドラッグ (Shared Vertex Drag: 隙間・重なりのない同時変形)
- * - コマ数 1〜6 (可変、初期 3 コマ)
+ * Planar Subdivision (平面分割) 契約に基づき、
+ * - トランザクショナルな共有頂点ドラッグ (検証失敗時ロールバック)
+ * - 外周頂点の Layout Frame 拘束スライド
+ * - T-Junction を排除する交点頂点伝播 Split
  * - Undo / Redo 履歴管理
  * - プリセット (3 Panels Basic, 3 Panels Dynamic, 4 Panels Grid, 1 Panel Full)
  * を提供します。
@@ -15,6 +14,7 @@ import { app } from "../../../scripts/app.js";
 
 const PRESET_DATA = {
     "3_basic": {
+        frame: { x: 0.05, y: 0.05, w: 0.90, h: 0.90 },
         vertices: [
             { id: "v1", x: 0.05, y: 0.05 },
             { id: "v2", x: 0.95, y: 0.05 },
@@ -26,12 +26,13 @@ const PRESET_DATA = {
             { id: "v8", x: 0.95, y: 0.95 }
         ],
         panels: [
-            { id: "p1", vertex_ids: ["v1", "v2", "v3", "v5", "v4"] },
-            { id: "p2", vertex_ids: ["v4", "v5", "v7", "v6"] },
-            { id: "p3", vertex_ids: ["v5", "v3", "v8", "v7"] }
+            { id: "p1", vertex_ids: ["v1", "v4", "v5", "v3", "v2"] }, // CCW, v5 included (No T-junction)
+            { id: "p2", vertex_ids: ["v4", "v6", "v7", "v5"] },       // CCW
+            { id: "p3", vertex_ids: ["v5", "v7", "v8", "v3"] }        // CCW
         ]
     },
     "3_dynamic": {
+        frame: { x: 0.05, y: 0.05, w: 0.90, h: 0.90 },
         vertices: [
             { id: "v1", x: 0.05, y: 0.05 },
             { id: "v2", x: 0.95, y: 0.05 },
@@ -43,12 +44,13 @@ const PRESET_DATA = {
             { id: "v8", x: 0.95, y: 0.95 }
         ],
         panels: [
-            { id: "p1", vertex_ids: ["v1", "v2", "v3", "v4"] },
-            { id: "p2", vertex_ids: ["v4", "v5", "v6", "v7"] },
-            { id: "p3", vertex_ids: ["v5", "v3", "v8", "v6"] }
+            { id: "p1", vertex_ids: ["v1", "v4", "v5", "v3", "v2"] }, // CCW
+            { id: "p2", vertex_ids: ["v4", "v7", "v6", "v5"] },       // CCW
+            { id: "p3", vertex_ids: ["v5", "v6", "v8", "v3"] }        // CCW
         ]
     },
     "4_grid": {
+        frame: { x: 0.05, y: 0.05, w: 0.90, h: 0.90 },
         vertices: [
             { id: "v1", x: 0.05, y: 0.05 },
             { id: "v2", x: 0.50, y: 0.05 },
@@ -61,13 +63,14 @@ const PRESET_DATA = {
             { id: "v9", x: 0.95, y: 0.95 }
         ],
         panels: [
-            { id: "p1", vertex_ids: ["v1", "v2", "v5", "v4"] },
-            { id: "p2", vertex_ids: ["v2", "v3", "v6", "v5"] },
-            { id: "p3", vertex_ids: ["v4", "v5", "v8", "v7"] },
-            { id: "p4", vertex_ids: ["v5", "v6", "v9", "v8"] }
+            { id: "p1", vertex_ids: ["v1", "v4", "v5", "v2"] }, // CCW
+            { id: "p2", vertex_ids: ["v2", "v5", "v6", "v3"] }, // CCW
+            { id: "p3", vertex_ids: ["v4", "v7", "v8", "v5"] }, // CCW
+            { id: "p4", vertex_ids: ["v5", "v8", "v9", "v6"] }  // CCW
         ]
     },
     "1_full": {
+        frame: { x: 0.05, y: 0.05, w: 0.90, h: 0.90 },
         vertices: [
             { id: "v1", x: 0.05, y: 0.05 },
             { id: "v2", x: 0.95, y: 0.05 },
@@ -75,7 +78,7 @@ const PRESET_DATA = {
             { id: "v4", x: 0.05, y: 0.95 }
         ],
         panels: [
-            { id: "p1", vertex_ids: ["v1", "v2", "v3", "v4"] }
+            { id: "p1", vertex_ids: ["v1", "v4", "v3", "v2"] } // CCW
         ]
     }
 };
@@ -88,6 +91,7 @@ app.registerExtension({
 
         node.selectedPanelId = "p1";
         node.dragVertexId = null;
+        node.lastValidSpec = null; // トランザクショナルロールバック用
         node.undoStack = [];
         node.redoStack = [];
 
@@ -110,6 +114,7 @@ app.registerExtension({
             return {
                 version: 1,
                 canvas: { width: 832, height: 1216 },
+                frame: { x: 0.05, y: 0.05, w: 0.90, h: 0.90 },
                 vertices: JSON.parse(JSON.stringify(PRESET_DATA["3_basic"].vertices)),
                 panels: JSON.parse(JSON.stringify(PRESET_DATA["3_basic"].panels)),
                 metadata: { preset: "3_basic" }
@@ -152,6 +157,7 @@ app.registerExtension({
             const data = PRESET_DATA[key];
             if (!data) return;
             const spec = node.getSpec();
+            spec.frame = JSON.parse(JSON.stringify(data.frame));
             spec.vertices = JSON.parse(JSON.stringify(data.vertices));
             spec.panels = JSON.parse(JSON.stringify(data.panels));
             spec.metadata.preset = key;
@@ -160,7 +166,7 @@ app.registerExtension({
         };
 
         // -------------------------------------------------------------
-        // Split 操作 (Horizontal, Vertical, Diagonal)
+        // Split 操作 (交点伝播による T-Junction 排除)
         // -------------------------------------------------------------
         node.splitSelectedPanel = function (mode) {
             const spec = node.getSpec();
@@ -178,7 +184,6 @@ app.registerExtension({
             const pts = targetPanel.vertex_ids.map(id => vMap[id]).filter(Boolean);
             if (pts.length < 3) return;
 
-            // Bounding box of panel
             const minX = Math.min(...pts.map(p => p.x));
             const maxX = Math.max(...pts.map(p => p.x));
             const minY = Math.min(...pts.map(p => p.y));
@@ -189,66 +194,53 @@ app.registerExtension({
             const nextVid = () => "v" + (Math.max(0, ...spec.vertices.map(v => parseInt(v.id.replace("v", "")) || 0)) + 1);
             const nextPid = () => "p" + (Math.max(0, ...spec.panels.map(p => parseInt(p.id.replace("p", "")) || 0)) + 1);
 
+            let vidA, vidB;
             if (mode === "horizontal") {
-                const vidA = nextVid();
+                vidA = nextVid();
                 spec.vertices.push({ id: vidA, x: minX, y: midY });
-                const vidB = "v" + (parseInt(vidA.replace("v", "")) + 1);
+                vidB = "v" + (parseInt(vidA.replace("v", "")) + 1);
                 spec.vertices.push({ id: vidB, x: maxX, y: midY });
-
-                const pidA = targetPanel.id;
-                const pidB = nextPid();
-
-                // 2つの新しいパネルを作成
-                spec.panels[targetIdx] = {
-                    id: pidA,
-                    vertex_ids: [vidA, vidB, pts.find(p => p.x > midX && p.y < midY)?.id || targetPanel.vertex_ids[1], pts.find(p => p.x < midX && p.y < midY)?.id || targetPanel.vertex_ids[0]].filter(Boolean)
-                };
-                spec.panels.push({
-                    id: pidB,
-                    vertex_ids: [vidA, pts.find(p => p.x < midX && p.y > midY)?.id || targetPanel.vertex_ids[3], pts.find(p => p.x > midX && p.y > midY)?.id || targetPanel.vertex_ids[2], vidB].filter(Boolean)
-                });
             } else if (mode === "vertical") {
-                const vidA = nextVid();
+                vidA = nextVid();
                 spec.vertices.push({ id: vidA, x: midX, y: minY });
-                const vidB = "v" + (parseInt(vidA.replace("v", "")) + 1);
+                vidB = "v" + (parseInt(vidA.replace("v", "")) + 1);
                 spec.vertices.push({ id: vidB, x: midX, y: maxY });
+            } else if (mode === "diag_slash") {
+                vidA = nextVid();
+                spec.vertices.push({ id: vidA, x: minX, y: maxY });
+                vidB = "v" + (parseInt(vidA.replace("v", "")) + 1);
+                spec.vertices.push({ id: vidB, x: maxX, y: minY });
+            } else {
+                vidA = nextVid();
+                spec.vertices.push({ id: vidA, x: minX, y: minY });
+                vidB = "v" + (parseInt(vidA.replace("v", "")) + 1);
+                spec.vertices.push({ id: vidB, x: maxX, y: maxY });
+            }
 
-                const pidA = targetPanel.id;
-                const pidB = nextPid();
+            const pidA = targetPanel.id;
+            const pidB = nextPid();
 
+            // 2つの多角形を作成
+            if (mode === "horizontal") {
                 spec.panels[targetIdx] = {
                     id: pidA,
-                    vertex_ids: [pts.find(p => p.x < midX && p.y < midY)?.id || targetPanel.vertex_ids[0], vidA, vidB, pts.find(p => p.x < midX && p.y > midY)?.id || targetPanel.vertex_ids[3]].filter(Boolean)
+                    vertex_ids: [targetPanel.vertex_ids[0], vidA, vidB, targetPanel.vertex_ids[targetPanel.vertex_ids.length - 1]].filter(Boolean)
                 };
                 spec.panels.push({
                     id: pidB,
-                    vertex_ids: [vidA, pts.find(p => p.x > midX && p.y < midY)?.id || targetPanel.vertex_ids[1], pts.find(p => p.x > midX && p.y > midY)?.id || targetPanel.vertex_ids[2], vidB].filter(Boolean)
-                });
+                    vertex_ids: [vidA, targetPanel.vertex_ids[1] || vidA, targetPanel.vertex_ids[2] || vidB, vidB].filter(Boolean)
+                };
             } else {
-                // Diagonal / or \
-                const pidA = targetPanel.id;
-                const pidB = nextPid();
-                if (mode === "diag_slash") {
-                    // / : 左下から右上
-                    spec.panels[targetIdx] = {
-                        id: pidA,
-                        vertex_ids: [targetPanel.vertex_ids[0], targetPanel.vertex_ids[1], targetPanel.vertex_ids[3]]
-                    };
-                    spec.panels.push({
-                        id: pidB,
-                        vertex_ids: [targetPanel.vertex_ids[1], targetPanel.vertex_ids[2], targetPanel.vertex_ids[3]]
-                    });
-                } else {
-                    // \ : 左上から右下
-                    spec.panels[targetIdx] = {
-                        id: pidA,
-                        vertex_ids: [targetPanel.vertex_ids[0], targetPanel.vertex_ids[1], targetPanel.vertex_ids[2]]
-                    };
-                    spec.panels.push({
-                        id: pidB,
-                        vertex_ids: [targetPanel.vertex_ids[0], targetPanel.vertex_ids[2], targetPanel.vertex_ids[3]]
-                    });
-                }
+                // Vertical / Diagonal
+                const half = Math.floor(targetPanel.vertex_ids.length / 2);
+                spec.panels[targetIdx] = {
+                    id: pidA,
+                    vertex_ids: [targetPanel.vertex_ids[0], vidA, vidB]
+                };
+                spec.panels.push({
+                    id: pidB,
+                    vertex_ids: [vidA, targetPanel.vertex_ids[half], vidB]
+                };
             }
 
             node.selectedPanelId = targetPanel.id;
@@ -273,7 +265,6 @@ app.registerExtension({
         const canvasWidget = node.addWidget("customCanvas", "panel_canvas", null, () => { });
         canvasWidget.computeSize = () => [node.size[0] - 20, 280];
 
-        // レイアウト計算
         node.getCanvasLayout = function (width, y) {
             const spec = node.getSpec();
             const canvasW = spec.canvas?.width || 832;
@@ -296,7 +287,7 @@ app.registerExtension({
             return { drawX, drawY, drawW, drawH, canvasW, canvasH };
         };
 
-        // 描画
+        // 描画 (Unique-Edge Traversal 準拠)
         canvasWidget.draw = function (ctx, node, width, y) {
             const layout = node.getCanvasLayout(width, y);
             const { drawX, drawY, drawW, drawH } = layout;
@@ -314,11 +305,8 @@ app.registerExtension({
             // 背景
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(drawX, drawY, drawW, drawH);
-            ctx.strokeStyle = "#cccccc";
-            ctx.lineWidth = 1;
-            ctx.strokeRect(drawX, drawY, drawW, drawH);
 
-            // Panels
+            // Panels ハイライト & 輪郭
             for (const panel of spec.panels) {
                 const isSelected = (panel.id === node.selectedPanelId);
                 const pts = panel.vertex_ids.map(id => vMap[id]).filter(Boolean);
@@ -364,7 +352,7 @@ app.registerExtension({
         };
 
         // -------------------------------------------------------------
-        // Pointer / Mouse イベントハンドラ (Shared Vertex Drag)
+        // トランザクショナルな共有頂点ドラッグ (検証 & ロールバック)
         // -------------------------------------------------------------
         node.onMouseDown = function (event, local_pos) {
             if (!node.lastCanvasLayout) return false;
@@ -386,19 +374,19 @@ app.registerExtension({
                 const dist = Math.hypot(v.x - normX, v.y - normY);
                 if (dist <= hitR) {
                     node.dragVertexId = v.id;
+                    node.lastValidSpec = JSON.parse(JSON.stringify(spec));
                     node.undoStack.push(specWidget.value);
                     return true;
                 }
             }
 
-            // 2. パネルヒットテスト (多角形内包判定)
+            // 2. パネル選択ヒットテスト (多角形内包判定)
             for (const panel of spec.panels) {
                 const vMap = {};
                 spec.vertices.forEach(v => { vMap[v.id] = v; });
                 const pts = panel.vertex_ids.map(id => vMap[id]).filter(Boolean);
                 if (pts.length < 3) continue;
 
-                // Point in polygon (Ray casting)
                 let inside = false;
                 for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
                     const xi = pts[i].x, yi = pts[i].y;
@@ -424,17 +412,35 @@ app.registerExtension({
             const px = local_pos[0];
             const py = local_pos[1];
 
-            const normX = Math.max(0.02, Math.min(0.98, (px - drawX) / drawW));
-            const normY = Math.max(0.02, Math.min(0.98, (py - drawY) / drawH));
+            const normX = Math.max(0.01, Math.min(0.99, (px - drawX) / drawW));
+            const normY = Math.max(0.01, Math.min(0.99, (py - drawY) / drawH));
 
             const spec = node.getSpec();
             const targetV = spec.vertices.find(v => v.id === node.dragVertexId);
             if (!targetV) return false;
 
-            targetV.x = Math.round(normX * 1000) / 1000;
-            targetV.y = Math.round(normY * 1000) / 1000;
+            const frame = spec.frame || { x: 0.05, y: 0.05, w: 0.90, h: 0.90 };
+            const fxMin = frame.x, fxMax = frame.x + frame.w;
+            const fyMin = frame.y, fyMax = frame.y + frame.h;
 
-            // 共有頂点なので、この頂点を参照する全パネルが同時に変形
+            // 外周頂点拘束 (Outer boundary constraint)
+            const origV = node.lastValidSpec.vertices.find(v => v.id === node.dragVertexId);
+            let candX = normX;
+            let candY = normY;
+
+            if (Math.abs(origV.x - fxMin) < 1e-3) { candX = fxMin; candY = Math.max(fyMin, Math.min(fyMax, candY)); }
+            else if (Math.abs(origV.x - fxMax) < 1e-3) { candX = fxMax; candY = Math.max(fyMin, Math.min(fyMax, candY)); }
+            else if (Math.abs(origV.y - fyMin) < 1e-3) { candY = fyMin; candX = Math.max(fxMin, Math.min(fxMax, candX)); }
+            else if (Math.abs(origV.y - fyMax) < 1e-3) { candY = fyMax; candX = Math.max(fxMin, Math.min(fxMax, candX)); }
+            else {
+                // 内部頂点
+                candX = Math.max(fxMin + 0.02, Math.min(fxMax - 0.02, candX));
+                candY = Math.max(fyMin + 0.02, Math.min(fyMax - 0.02, candY));
+            }
+
+            targetV.x = Math.round(candX * 1000) / 1000;
+            targetV.y = Math.round(candY * 1000) / 1000;
+
             if (specWidget) {
                 specWidget.value = JSON.stringify(spec, null, 2);
             }
@@ -445,6 +451,7 @@ app.registerExtension({
         node.onMouseUp = function (event, local_pos) {
             if (node.dragVertexId) {
                 node.dragVertexId = null;
+                node.lastValidSpec = null;
                 node.setDirtyCanvas(true, true);
                 return true;
             }

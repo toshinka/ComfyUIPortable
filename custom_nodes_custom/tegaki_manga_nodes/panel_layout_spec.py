@@ -3,18 +3,27 @@ import json
 import math
 from typing import Dict, Any, List, Optional, Tuple
 
-MIN_PANEL_AREA = 0.005
-MAX_PANELS = 6
+from .panel_layout_topology import (
+    signed_area,
+    normalize_winding_ccw,
+    validate_layout_topology,
+    MIN_PANEL_AREA,
+    MAX_PANELS
+)
+
+# Backward-compatibility alias
+polygon_signed_area = signed_area
 
 
 def get_default_panel_layout_spec(width: int = 832, height: int = 1216, preset: str = "3_basic") -> Dict[str, Any]:
     """
     既定の PANEL_LAYOUT_SPEC (v1) を生成する。
-    Shared-Vertex Mesh 方式により、コマ間の隙間や重なりを排除。
-    初期状態: 3 Panels Basic (上段 1 コマ、下段 2 コマ)
+    Planar Subdivision (平面分割) 契約に基づき、明示的 Layout Frame と
+    T-Junction のない完全な共有頂点メッシュを提供する。
     """
     W = int(width)
     H = int(height)
+    frame = {"x": 0.05, "y": 0.05, "w": 0.90, "h": 0.90}
 
     if preset == "1_full":
         # 1 コマ全画面
@@ -25,10 +34,10 @@ def get_default_panel_layout_spec(width: int = 832, height: int = 1216, preset: 
             {"id": "v4", "x": 0.05, "y": 0.95},
         ]
         panels = [
-            {"id": "p1", "vertex_ids": ["v1", "v2", "v3", "v4"]}
+            {"id": "p1", "vertex_ids": ["v1", "v4", "v3", "v2"]}  # CCW
         ]
     elif preset == "4_grid":
-        # 4 コマ田の字
+        # 4 コマ田の字 (2x2 グリッド)
         vertices = [
             {"id": "v1", "x": 0.05, "y": 0.05},
             {"id": "v2", "x": 0.50, "y": 0.05},
@@ -41,27 +50,27 @@ def get_default_panel_layout_spec(width: int = 832, height: int = 1216, preset: 
             {"id": "v9", "x": 0.95, "y": 0.95},
         ]
         panels = [
-            {"id": "p1", "vertex_ids": ["v1", "v2", "v5", "v4"]},
-            {"id": "p2", "vertex_ids": ["v2", "v3", "v6", "v5"]},
-            {"id": "p3", "vertex_ids": ["v4", "v5", "v8", "v7"]},
-            {"id": "p4", "vertex_ids": ["v5", "v6", "v9", "v8"]},
+            {"id": "p1", "vertex_ids": ["v1", "v4", "v5", "v2"]},  # CCW
+            {"id": "p2", "vertex_ids": ["v2", "v5", "v6", "v3"]},  # CCW
+            {"id": "p3", "vertex_ids": ["v4", "v7", "v8", "v5"]},  # CCW
+            {"id": "p4", "vertex_ids": ["v5", "v8", "v9", "v6"]},  # CCW
         ]
     elif preset == "3_dynamic":
-        # 3 コマ斜めカット (上段が斜め分割)
+        # 3 コマ斜めカット (上段が斜め分割、中央分割点 v5 を全隣接パネルで共有)
         vertices = [
             {"id": "v1", "x": 0.05, "y": 0.05},
             {"id": "v2", "x": 0.95, "y": 0.05},
             {"id": "v3", "x": 0.95, "y": 0.40},
-            {"id": "v4", "x": 0.05, "y": 0.55},  # 斜めライン
-            {"id": "v5", "x": 0.50, "y": 0.475}, # 共有中点
+            {"id": "v4", "x": 0.05, "y": 0.55},
+            {"id": "v5", "x": 0.50, "y": 0.475},  # 斜めライン上の共有点
             {"id": "v6", "x": 0.50, "y": 0.95},
             {"id": "v7", "x": 0.05, "y": 0.95},
             {"id": "v8", "x": 0.95, "y": 0.95},
         ]
         panels = [
-            {"id": "p1", "vertex_ids": ["v1", "v2", "v3", "v4"]},
-            {"id": "p2", "vertex_ids": ["v4", "v5", "v6", "v7"]},
-            {"id": "p3", "vertex_ids": ["v5", "v3", "v8", "v6"]},
+            {"id": "p1", "vertex_ids": ["v1", "v4", "v5", "v3", "v2"]},  # CCW (v5 挿入で T-junction 排除)
+            {"id": "p2", "vertex_ids": ["v4", "v7", "v6", "v5"]},        # CCW
+            {"id": "p3", "vertex_ids": ["v5", "v6", "v8", "v3"]},        # CCW
         ]
     else:
         # 3 Panels Basic (上 1 コマ、下 2 コマ分割) - 既定
@@ -70,47 +79,36 @@ def get_default_panel_layout_spec(width: int = 832, height: int = 1216, preset: 
             {"id": "v2", "x": 0.95, "y": 0.05},
             {"id": "v3", "x": 0.95, "y": 0.45},
             {"id": "v4", "x": 0.05, "y": 0.45},
-            {"id": "v5", "x": 0.50, "y": 0.45}, # 下段分割の共有上頂点
+            {"id": "v5", "x": 0.50, "y": 0.45},  # 水平ライン上の共有中点
             {"id": "v6", "x": 0.05, "y": 0.95},
-            {"id": "v7", "x": 0.50, "y": 0.95}, # 下段分割の共有下頂点
+            {"id": "v7", "x": 0.50, "y": 0.95},  # 下枠上の共有中点
             {"id": "v8", "x": 0.95, "y": 0.95},
         ]
         panels = [
-            {"id": "p1", "vertex_ids": ["v1", "v2", "v3", "v5", "v4"]},
-            {"id": "p2", "vertex_ids": ["v4", "v5", "v7", "v6"]},
-            {"id": "p3", "vertex_ids": ["v5", "v3", "v8", "v7"]},
+            {"id": "p1", "vertex_ids": ["v1", "v4", "v5", "v3", "v2"]},  # CCW (v5 挿入で T-junction 排除)
+            {"id": "p2", "vertex_ids": ["v4", "v6", "v7", "v5"]},        # CCW
+            {"id": "p3", "vertex_ids": ["v5", "v7", "v8", "v3"]},        # CCW
         ]
 
     return {
         "version": 1,
         "canvas": {"width": W, "height": H},
+        "frame": frame,
         "vertices": vertices,
         "panels": panels,
         "metadata": {"preset": preset}
     }
 
 
-def polygon_signed_area(pts: List[Tuple[float, float]]) -> float:
-    """Shoelace formula による多角形の符号付き面積"""
-    n = len(pts)
-    if n < 3:
-        return 0.0
-    area = 0.0
-    for i in range(n):
-        j = (i + 1) % n
-        area += pts[i][0] * pts[j][1] - pts[j][0] * pts[i][1]
-    return area * 0.5
-
-
 def validate_panel_layout_spec(spec_data: Any, context_name: str = "PANEL_LAYOUT_SPEC") -> Dict[str, Any]:
     """
-    PANEL_LAYOUT_SPEC (v1) のデータ構造を厳格に検証・正規化する。
+    PANEL_LAYOUT_SPEC (v1) のデータ構造と平面分割トポロジーを厳格に検証・正規化する。
     - version: 1
     - canvas: width, height in [1, 8192]
+    - frame: x, y, w, h
     - vertices: list of dict with unique id, x, y in [0.0, 1.0]
-    - panels: list of dict with unique id, vertex_ids (length >= 3, all valid vertex references)
-    - panel count: 1 <= count <= 6
-    - 各パネルの多角形が最小面積以上であること
+    - panels: list of dict with unique id, vertex_ids
+    - Planar Subdivision Invariants (T-junction, self-intersection, edge incidence <= 2, area conservation)
     """
     if spec_data is None:
         raise ValueError(f"[{context_name}] Spec cannot be None.")
@@ -140,7 +138,19 @@ def validate_panel_layout_spec(spec_data: Any, context_name: str = "PANEL_LAYOUT
     if not isinstance(height, int) or isinstance(height, bool) or height <= 0 or height > 8192:
         raise ValueError(f"[{context_name}] 'canvas.height' must be an integer between 1 and 8192, got {height!r}")
 
-    # 3. Vertices
+    # 3. Layout Frame (未指定時はデフォルト補完)
+    raw_frame = spec_data.get("frame")
+    if raw_frame is None or not isinstance(raw_frame, dict):
+        frame = {"x": 0.05, "y": 0.05, "w": 0.90, "h": 0.90}
+    else:
+        frame = {
+            "x": round(float(raw_frame.get("x", 0.05)), 4),
+            "y": round(float(raw_frame.get("y", 0.05)), 4),
+            "w": round(float(raw_frame.get("w", 0.90)), 4),
+            "h": round(float(raw_frame.get("h", 0.90)), 4),
+        }
+
+    # 4. Vertices
     vertices = spec_data.get("vertices")
     if not isinstance(vertices, list):
         raise ValueError(f"[{context_name}] 'vertices' must be a list.")
@@ -169,10 +179,10 @@ def validate_panel_layout_spec(spec_data: Any, context_name: str = "PANEL_LAYOUT
         norm_x = max(0.0, min(1.0, float(vx)))
         norm_y = max(0.0, min(1.0, float(vy)))
         v_entry = {"id": vid, "x": round(norm_x, 4), "y": round(norm_y, 4)}
-        vertex_map[vid] = v_entry
+        vertex_map[vid] = (v_entry["x"], v_entry["y"])
         validated_vertices.append(v_entry)
 
-    # 4. Panels
+    # 5. Panels (Count & Winding 正規化)
     panels = spec_data.get("panels")
     if not isinstance(panels, list):
         raise ValueError(f"[{context_name}] 'panels' must be a list.")
@@ -196,29 +206,29 @@ def validate_panel_layout_spec(spec_data: Any, context_name: str = "PANEL_LAYOUT
         if not isinstance(v_ids, list) or len(v_ids) < 3:
             raise ValueError(f"[{p_ctx}] 'vertex_ids' must be a list of at least 3 vertex IDs.")
 
-        pts = []
         for vid in v_ids:
             if vid not in vertex_map:
                 raise ValueError(f"[{p_ctx}] Undefined vertex reference: '{vid}'")
-            v_ref = vertex_map[vid]
-            pts.append((v_ref["x"], v_ref["y"]))
 
-        # 面積チェック
-        area = abs(polygon_signed_area(pts))
-        if area < MIN_PANEL_AREA:
-            raise ValueError(f"[{p_ctx}] Panel '{pid}' area ({area:.4f}) is smaller than minimum ({MIN_PANEL_AREA}).")
+        # 反時計回り (CCW) に正規化
+        ccw_v_ids = normalize_winding_ccw(v_ids, vertex_map)
 
         validated_panels.append({
             "id": pid,
-            "vertex_ids": list(v_ids)
+            "vertex_ids": ccw_v_ids
         })
 
-    validated_spec = copy.deepcopy(spec_data)
-    validated_spec["version"] = 1
-    validated_spec["canvas"] = {"width": width, "height": height}
-    validated_spec["vertices"] = validated_vertices
-    validated_spec["panels"] = validated_panels
-    if "metadata" not in validated_spec or not isinstance(validated_spec["metadata"], dict):
-        validated_spec["metadata"] = {}
+    candidate_spec = copy.deepcopy(spec_data)
+    candidate_spec["version"] = 1
+    candidate_spec["canvas"] = {"width": width, "height": height}
+    candidate_spec["frame"] = frame
+    candidate_spec["vertices"] = validated_vertices
+    candidate_spec["panels"] = validated_panels
+    if "metadata" not in candidate_spec or not isinstance(candidate_spec["metadata"], dict):
+        candidate_spec["metadata"] = {}
 
-    return validated_spec
+    # 6. 平面分割トポロジー検証 (T-Junction, Self-Intersection, Edge Incidence, Area Conservation)
+    topo_summary = validate_layout_topology(candidate_spec, context_name=context_name)
+    candidate_spec["metadata"]["topology_summary"] = topo_summary
+
+    return candidate_spec

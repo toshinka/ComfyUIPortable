@@ -1,0 +1,72 @@
+[
+  {
+    "test": "Strength Sweep",
+    "label": "CN_OFF",
+    "strength": 0.0,
+    "layout": "3_basic",
+    "elapsed": 28.0,
+    "image_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\ComfyUI\\output\\Tegaki\\PanelLayoutFusion\\Sweep_CN_OFF_00001_.png",
+    "guide_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\ComfyUI\\input\\guide_1788474096666.png",
+    "edge_response": 0.0341
+  },
+  {
+    "test": "Strength Sweep",
+    "label": "CN_35",
+    "strength": 0.35,
+    "layout": "3_basic",
+    "elapsed": 26.0,
+    "image_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\ComfyUI\\output\\Tegaki\\PanelLayoutFusion\\Sweep_CN_35_00001_.png",
+    "guide_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\ComfyUI\\input\\guide_1788474124768.png",
+    "edge_response": 0.082
+  },
+  {
+    "test": "Strength Sweep",
+    "label": "CN_60",
+    "strength": 0.6,
+    "layout": "3_basic",
+    "elapsed": 16.0,
+    "image_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\ComfyUI\\output\\Tegaki\\PanelLayoutFusion\\Sweep_CN_60_00001_.png",
+    "guide_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\ComfyUI\\input\\guide_1788474150872.png",
+    "edge_response": 0.1099
+  },
+  {
+    "test": "Strength Sweep",
+    "label": "CN_85",
+    "strength": 0.85,
+    "layout": "3_basic",
+    "elapsed": 16.0,
+    "image_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\ComfyUI\\output\\Tegaki\\PanelLayoutFusion\\Sweep_CN_85_00001_.png",
+    "guide_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\ComfyUI\\input\\guide_1788474166951.png",
+    "edge_response": 0.1892
+  },
+  {
+    "test": "Layout Variant",
+    "label": "3_dynamic",
+    "strength": 0.6,
+    "layout": "3_dynamic",
+    "elapsed": 16.0,
+    "image_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\ComfyUI\\output\\Tegaki\\PanelLayoutFusion\\Variant_3_dynamic_00001_.png",
+    "guide_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\ComfyUI\\input\\guide_1788474183036.png",
+    "edge_response": 0.1162
+  },
+  {
+    "test": "Layout Variant",
+    "label": "4_grid",
+    "strength": 0.6,
+    "layout": "4_grid",
+    "elapsed": 16.0,
+    "image_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\ComfyUI\\output\\Tegaki\\PanelLayoutFusion\\Variant_4_grid_00001_.png",
+    "guide_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\ComfyUI\\input\\guide_1788474199110.png",
+    "edge_response": 0.1175
+  },
+  {
+    "test": "Layout Variant",
+    "label": "diagonal",
+    "strength": 0.6,
+    "layout": "diagonal",
+    "elapsed": 16.0,
+    "image_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\ComfyUI\\output\\Tegaki\\PanelLayoutFusion\\Variant_diagonal_00001_.png",
+    "guide_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\ComfyUI\\input\\guide_1788474215183.png",
+    "edge_response": 0.1298
+  }
+]

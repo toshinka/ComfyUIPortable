@@ -40,31 +40,20 @@ def test_shared_vertex_drag():
 
 
 def test_panel_split_simulation():
-    print("\n--- 2. Testing Panel Split Simulation (1 to 2 to 3 to 4) ---")
+    print("\n--- 2. Testing Panel Split Simulation via Production Generic Split ---")
+    from custom_nodes.tegaki_manga_nodes.panel_layout_split import generic_split_panel
+
     spec = get_default_panel_layout_spec(832, 1216, preset="1_full")
     assert len(spec["panels"]) == 1
 
-    # Horizontal Split: p1 を上下に分割
-    # v1(0.05, 0.05), v2(0.95, 0.05), v3(0.95, 0.95), v4(0.05, 0.95)
-    v_mid_left = {"id": "v5", "x": 0.05, "y": 0.50}
-    v_mid_right = {"id": "v6", "x": 0.95, "y": 0.50}
-    spec["vertices"].extend([v_mid_left, v_mid_right])
-
-    spec["panels"] = [
-        {"id": "p1", "vertex_ids": ["v1", "v2", "v6", "v5"]},
-        {"id": "p2", "vertex_ids": ["v5", "v6", "v3", "v4"]}
-    ]
+    # Split 1 -> 2 panels (Horizontal)
+    spec = generic_split_panel(spec, "p1", split_mode="horizontal", split_ratio=0.5)
     validated = validate_panel_layout_spec(spec)
     assert len(validated["panels"]) == 2
     print("  Split 1 -> 2 panels (Horizontal): PASSED")
 
-    # Vertical Split: p2 を左右に分割
-    v_bot_mid = {"id": "v7", "x": 0.50, "y": 0.95}
-    v_mid_center = {"id": "v8", "x": 0.50, "y": 0.50}
-    spec["vertices"].extend([v_bot_mid, v_mid_center])
-    # v6 と v5 の間に v8 を挿入
-    spec["panels"][1] = {"id": "p2", "vertex_ids": ["v5", "v8", "v7", "v4"]}
-    spec["panels"].append({"id": "p3", "vertex_ids": ["v8", "v6", "v3", "v7"]})
+    # Split 2 -> 3 panels (Vertical on p2)
+    spec = generic_split_panel(spec, "p2", split_mode="vertical", split_ratio=0.5)
     validated2 = validate_panel_layout_spec(spec)
     assert len(validated2["panels"]) == 3
     print("  Split 2 -> 3 panels (Vertical): PASSED")

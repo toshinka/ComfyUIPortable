@@ -1,7 +1,7 @@
 import copy
 import json
 import logging
-from typing import Dict, Any, Tuple, Optional, List
+from typing import Dict, Any, Tuple, Optional, List, Set
 
 import torch
 import numpy as np
@@ -12,6 +12,7 @@ from .panel_layout_spec import (
     validate_panel_layout_spec,
     MAX_PANELS
 )
+from .panel_layout_topology import build_edge_incidence
 
 
 def render_panel_layout_image(
@@ -20,9 +21,10 @@ def render_panel_layout_image(
 ) -> Image.Image:
     """
     ControlNet Layout 用の純粋な漫画コマ割り画像を生成する。
-    仕様:
-    - 背景: 白 (255, 255, 255)
-    - コマ線: 黒 (0, 0, 0)
+    トポロジー正本仕様 (Unique Edge Traversal):
+    - Canonical Unique Edge Table から各辺を厳密に 1 回だけ描画
+    - 背景: 純白 (255, 255, 255)
+    - コマ線: 純黒 (0, 0, 0)
     - 文字・コマ番号・色は一切描画しない
     """
     W = spec["canvas"]["width"]
@@ -33,22 +35,24 @@ def render_panel_layout_image(
 
     v_map = {v["id"]: (int(round(v["x"] * W)), int(round(v["y"] * H))) for v in spec["vertices"]}
 
-    for panel in spec["panels"]:
-        v_ids = panel["vertex_ids"]
-        pts = [v_map[vid] for vid in v_ids if vid in v_map]
-        if len(pts) >= 3:
-            # 多角形の外周線を黒線で描画
-            pts_closed = pts + [pts[0]]
-            draw.line(pts_closed, fill=(0, 0, 0), width=line_thickness, joint="miter")
+    # Canonical Unique Edge Table の構築
+    incidence = build_edge_incidence(spec["panels"])
+
+    for (v1_id, v2_id) in incidence.keys():
+        if v1_id in v_map and v2_id in v_map:
+            p1 = v_map[v1_id]
+            p2 = v_map[v2_id]
+            draw.line([p1, p2], fill=(0, 0, 0), width=int(line_thickness), joint="miter")
 
     return img
 
 
 class TegakiMangaPanelLayoutEditor:
     """
-    Tegaki Manga Panel Layout Editor (Phase 3C.1)
+    Tegaki Manga Panel Layout Editor (Phase 3C.1.1 Hardened)
     漫画コマ割り（Panel Layout）専用の幾何エディターノード。
-    Shared-Vertex Mesh 方式を採用し、ControlNet 向けに純粋な白地・黒線の枠線画像を出力する。
+    Planar Subdivision (平面分割) 契約に基づき、
+    Canonical Unique-Edge レンダリングで ControlNet 向け白黒枠線画像を出力する。
     """
     @classmethod
     def INPUT_TYPES(cls):
@@ -83,7 +87,7 @@ class TegakiMangaPanelLayoutEditor:
                 raw_spec = None
 
             if raw_spec is not None:
-                # Valid JSON だがスキーマ不正の場合は fail-closed
+                # Valid JSON だがスキーマ/トポロジー不正の場合は fail-closed
                 spec = validate_panel_layout_spec(raw_spec, context_name="TegakiMangaPanelLayoutEditor")
 
         if spec is None:
@@ -94,7 +98,7 @@ class TegakiMangaPanelLayoutEditor:
         spec["canvas"]["height"] = int(canvas_height)
         spec = validate_panel_layout_spec(spec, context_name="TegakiMangaPanelLayoutEditor")
 
-        # 1. 白地・黒線の純粋な ControlNet ガイド画像のレンダリング
+        # 1. Unique-Edge 走査による白地・黒線の純粋な ControlNet ガイド画像
         pil_img = render_panel_layout_image(spec, line_thickness=int(line_thickness))
         np_img = np.array(pil_img).astype(np.float32) / 255.0
         tensor_img = torch.from_numpy(np_img).unsqueeze(0)  # [1, H, W, 3]

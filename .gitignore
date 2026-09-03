@@ -47,6 +47,8 @@ comfyui_*.log
 !configs/**
 !scripts/
 !scripts/**
+scripts/**/__pycache__/
+scripts/**/*.pyc
 !custom_nodes_custom/
 !custom_nodes_custom/**
 custom_nodes_custom/**/__pycache__/

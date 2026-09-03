@@ -125,13 +125,16 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
 - `12_TWO_REGION_IMPACT_COUPLE_ORACLE.json`: Impact Pack RegionalSampler連携によるサンプラー分離方式検証オラクル (Zero-Touch Verified / EXPERIMENTAL BACKEND ORACLE)
 - `13_TWO_REGION_CONTROLNET_LAYOUT_AUX.json`: 矩形外枠線（Panel Outline）によるControlNet構図・境界誘導補助オラクル (Zero-Touch Verified / EXPERIMENTAL AUX)
 - `14_MANGA_PANEL_LAYOUT_GUIDE_EDITOR_TEST.json`: 漫画コマ割り専用の独立幾何エディター（Shared-Vertex Mesh）によるコマ分割・共有頂点ドラッグ変形・ControlNetガイド画像検証 (Zero-Touch Verified / DEVELOPMENT TOOL)
+- `15_MANGA_PANEL_LAYOUT_CONTROLNET_FUSION_ORACLE.json`: 平面分割（Planar Subdivision）コマ割りControlNetと上段コマ内Semantic Overlap（2人物）の構図統合オラクル (Zero-Touch Verified / EXPERIMENTAL FUSION)
 
 ### Tag Complete (Phase 3B.1.1 導入)
 - 全テキスト入力欄（Region Editor Prompt、CLIPTextEncode 等）で、Danbooru 14万タグ、LoRA名、Embeddingのリアルタイム自動補完（Tag Complete）が完全動作します（`ComfyUI-Custom-Scripts` 統合）。
 
-### Semantic Region Hardening & Panel Layout Guide Foundation (Phase 3C / 3C.1 成果)
-- **意味領域（Semantic Region）とコマ割り（Panel Layout）の完全分離**:
-  - **Semantic Region**: 2領域（Region A / Region B）に特化した最小データ契約 `TWO_REGION_SPEC` (v1) とインタラクティブな `TegakiTwoRegionCoupleEditor`（ドラッグ移動・リサイズ・選択・作成完備）。演技・対話構図のため **「Semantic Overlap（重なり前提）」** を基本思想とし、局所性比率 4.52x の高い空間分離性を実証。
-  - **Panel Layout Guide**: 漫画コマ割り専用の独立エディター `TegakiMangaPanelLayoutEditor` と契約 `PANEL_LAYOUT_SPEC` (v1)。**Shared-Vertex Mesh（共有頂点メッシュ）** 方式により隙間・重なりのないコマ変形、水平/垂直/斜め分割（Split）、Undo/Redo、ControlNet 向け純白背景・黒枠線画像の出力を確立。
+### Semantic Region Hardening & Panel Topology ControlNet Fusion (Phase 3C / 3C.1 / 3C.1.1 成果)
+- **意味領域（Semantic Region）とコマ割り幾何（Panel Layout）の完全分離と融合**:
+  - **Semantic Region**: 2領域（Region A / Region B）に特化した最小データ契約 `TWO_REGION_SPEC` (v1) と `TegakiTwoRegionCoupleEditor`（ドラッグ移動・リサイズ・選択・作成完備）。演技・対話構図のため **「Semantic Overlap（重なり前提）」** を基本思想とし、局所性比率 4.52x の高い空間分離性を実証。
+  - **Panel Layout Topology**: 漫画コマ割り専用契約 `PANEL_LAYOUT_SPEC` (v1) を **Planar Subdivision（平面分割）** として硬化。自己交差（bow-tie 検出）、Winding CCW 正規化、Edge Incidence（外枠1/内枠2）、T-Junction 検出・排除、面積保存則、Gap/Overlap 診断（0.0%）を完全実装。
+  - **Generic Split by Line & Transactional Drag**: Sutherland-Hodgman 半平面クリッピングによる H/V/Diagonal 4方向分割、交点頂点の全メッシュ伝播（T-Junction 根本防止）、および candidate 検証失敗時の自動ロールバックを完備。
+  - **ControlNet Fusion 実機実証 (Workflow 15)**: RTX 4070 実機において、ControlNet 強度 0.60 で明瞭なコマ枠線形成（Edge Response: 0.1099, +222%）と上段コマ内での自然な 2 人物演技（Semantic Overlap）の完全共存を実証。
 
 
