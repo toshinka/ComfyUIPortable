@@ -155,7 +155,7 @@ def run_page_compile_plan_tests():
 
     # 4. Mask Builder & Page 座標投影テスト
     print("\n--- 4. Testing Mask Builder and Page Coordinate Projection ---")
-    p_masks, c_masks, preview, debug_json = mask_builder.build_masks(page_plan)
+    p_masks, c_masks, preview, debug_json, lr_masks = mask_builder.build_masks(page_plan)
     assert p_masks.shape == (3, 1216, 832)
     assert c_masks.shape == (3, 1216, 832)  # Alice (K1), Bob (K1), Alice (K2) = 合計3体
     assert preview.shape == (1, 1216, 832, 3)
@@ -196,7 +196,7 @@ def run_page_compile_plan_tests():
         r["characters"] = []
     page_plan_no_cast, _, _, count_no_cast = page_compiler.compile_page(no_char_spec, cast_spec="{}")
     assert count_no_cast == 3
-    p_masks_nc, c_masks_nc, _, _ = mask_builder.build_masks(page_plan_no_cast)
+    p_masks_nc, c_masks_nc, _, _, _ = mask_builder.build_masks(page_plan_no_cast)
     assert p_masks_nc.shape == (3, 1216, 832)
     assert c_masks_nc.shape == (1, 1216, 832)  # キャラ0人時は全ゼロのダミーマスク (1, H, W)
     assert torch.sum(c_masks_nc) == 0.0

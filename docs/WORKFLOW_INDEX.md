@@ -129,3 +129,22 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
   - **`04` との関係**: `04` は領域別LoRA接続の先行実験（NOT YET REGIONAL）。`09` では Global LoRA のみをモデル実適用し、Character LoRA は Plan 保持にとどまります（Character LoRA の領域適用は Phase 5 で改修予定）。
 - **出力**: 3コマ漫画完成画像 (`ComfyUI/output/Tegaki/RegionalPOC/...`)、Mask Preview画像、Region Preview画像。
 - **想定用途**: コマごとの演出およびキャラクター局所プロンプト（MRP）が反映された漫画原稿の実画像生成。
+
+---
+
+### 10_MANGA_REGIONAL_CONTROL_EXPANSION_TEST.json
+- **区分**: 実験版 / 制御拡張検証ハーネス (EXPERIMENTAL / CONTROL EXPANSION HARNESS)
+- **目的**: `Global / Panel / Local Region / Character` の 4 階層モデルによる高度な漫画構図制御と実画像生成の観察・評価。
+- **必要Custom Node**:
+  - `TegakiLoraPromptLoader` (独自 / Global LoRA実適用)
+  - `TegakiMangaRegionEditor` (独自 / コマ割り幾何・Local Region定義)
+  - `TegakiMangaPageCompiler` (独自 / 4階層集約実行計画)
+  - `TegakiMangaMaskBuilder` (独自 / 4階層Page座標投影・フェザー対応・色分けPreview)
+  - `TegakiMangaConditioningBuilder` (独自 / Core API準拠 4階層Conditioning結合)
+  - `TegakiMangaSceneCompiler` (独自 / 監査用1コマコンパイル)
+  - `TegakiCompilePlanInspector` (独自 / 実行計画監査表示)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, KSampler, VAEDecode, SaveImage, PreviewImage
+- **他ワークフローとの関係**:
+  - **`09` との関係**: `09` は 3 階層（Global / Panel / Character）による基礎 POC。`10` は第 4 の階層として **`LOCAL_REGION`（コマ内局所領域）** を追加導入し、特定のキャラクターに属さない背景小道具（窓際机、壁面掲示板ポスター等）をコマ内の特定位置へ局所制御可能にした拡張ハーネス。
+- **出力**: 3コマ漫画完成画像 (`ComfyUI/output/Tegaki/RegionalControl/...`)、マルチレイヤーMask Preview画像、Region Preview画像、監査サマリー。
+- **想定用途**: 背景小道具・スポット演出・キャラクター配置が高度に複合した漫画ページの制作および制御強度の視覚的検証。

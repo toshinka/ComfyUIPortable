@@ -69,6 +69,7 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ RESEARCH_REFERENCES.md              # 参照リポジトリ・ライセンス
  │   ├─ CUSTOM_NODE_MANIFEST.md             # 外部Custom Nodeコミット追跡
  │   └─ reports/                            # 開発フェーズ完了報告書・検証記録集
+ │       ├─ PHASE3B_1_REGIONAL_CONTROL_EXPANSION_REPORT.md
  │       ├─ PHASE3B_END_TO_END_REGIONAL_GENERATION_REPORT.md
  │       ├─ PHASE3A_1_SCENE_CONTRACT_HARDENING_REPORT.md
  │       ├─ PHASE3A_SCENE_DATA_CONTRACT_REPORT.md
@@ -80,6 +81,9 @@ D:\GitHub\tegaki\ComfyUIPortable\
  ├─ custom_nodes_custom/
  │   └─ tegaki_manga_nodes/                 # 独自LoRA記法・Region Editor・Scene/Page Compiler・Mask/Conditioningノード
  ├─ scripts/
+ │   ├─ test_regional_control_expansion_generation.py # Phase 3B.1 実機A/B生成検証スクリプト
+ │   ├─ test_regional_control_expansion.py  # Phase 3B.1 4階層統合・Mask投影・Conditioningテスト
+ │   ├─ test_local_region_spec.py           # Phase 3B.1 LOCAL_REGIONデータ契約単体テスト
  │   ├─ test_regional_poc_generation.py     # Phase 3B 実機A/B生成検証スクリプト
  │   ├─ test_page_compile_plan.py           # PAGE_COMPILE_PLAN & Mask投影単体テスト
  │   ├─ test_conditioning_builder.py        # Manga Conditioning Builder単体テスト
@@ -96,7 +100,7 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ test_i2i.py                         # 実機I2Iパイプライン検証スクリプト
  │   └─ test_wildcards.py                   # Wildcard/Dynamic Prompts検証
  ├─ patches/                                # 外部Custom Node向けローカルパッチ集
- ├─ workflows/                              # 漫画制作向けワークフローJSON (8種)
+ ├─ workflows/                              # 漫画制作向けワークフローJSON (9種)
  ├─ python_embeded/                         # [Git除外] Python 3.13 組み込み環境
  └─ ComfyUI/                                # [Git除外] ComfyUI本体 & 外部Custom Nodes
 ```
@@ -116,3 +120,4 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
 - `07_MANGA_REGION_EDITOR_UI_TEST.json`: 最大6コマ視覚的Region Editor UI操作・プレビュー検証ハーネス (DEV / TEST)
 - `08_MANGA_SCENE_CONTRACT_TEST.json`: Manga Scene Contract（PAGE/CAST/Binding）検査・可視化ハーネス (DEV / TEST)
 - `09_MANGA_REGIONAL_GENERATION_POC.json`: REGION_SPEC/CAST_SPEC動的駆動による漫画コマ・キャラクター実画像生成 (EXPERIMENTAL / POC)
+- `10_MANGA_REGIONAL_CONTROL_EXPANSION_TEST.json`: 4階層モデル（Global/Panel/Local Region/Character）による高度構図制御ハーネス (EXPERIMENTAL / HARNESS)

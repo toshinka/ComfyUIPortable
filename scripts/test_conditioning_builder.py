@@ -131,7 +131,7 @@ def run_conditioning_builder_tests():
 
     # 2. Conditioning Builder の実行
     print("\n--- 1. Testing build_conditioning execution ---")
-    pos_cond, neg_cond, p_masks, c_masks, debug_json = cond_builder.build_conditioning(
+    pos_cond, neg_cond, p_masks, c_masks, debug_json, lr_masks = cond_builder.build_conditioning(
         clip=mock_clip,
         page_compile_plan=page_plan,
         panel_strength=0.9,

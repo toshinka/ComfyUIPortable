@@ -153,6 +153,11 @@ def validate_region_spec(spec: dict) -> dict:
             if not isinstance(r["characters"], list):
                 raise ValueError(f"[TegakiRegionEditor] Region id {rid}: 'characters' must be a list, got {type(r['characters']).__name__}")
 
+        # local_regions フィールドが存在する場合は list 必須 (Phase 3B.1)
+        if "local_regions" in r:
+            if not isinstance(r["local_regions"], list):
+                raise ValueError(f"[TegakiRegionEditor] Region id {rid}: 'local_regions' must be a list, got {type(r['local_regions']).__name__}")
+
         # カラーは固定パレットと同期
         color_info = KOMA_COLORS[(rid - 1) % len(KOMA_COLORS)]
         r["color"] = color_info["hex"]

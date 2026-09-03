@@ -1,0 +1,853 @@
+{
+  "last_node_id": 14,
+  "last_link_id": 15,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "CheckpointLoaderSimple",
+      "pos": [
+        40,
+        80
+      ],
+      "size": [
+        320,
+        100
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            1
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            2
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            11
+          ],
+          "slot_index": 2
+        }
+      ],
+      "widgets_values": [
+        "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "TegakiLoraPromptLoader",
+      "pos": [
+        380,
+        80
+      ],
+      "size": [
+        380,
+        180
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 1
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 2
+        },
+        {
+          "name": "optional_lora_stack",
+          "type": "LORA_STACK",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            8
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            7
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "clean_text",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 2
+        },
+        {
+          "name": "lora_stack",
+          "type": "LORA_STACK",
+          "links": null,
+          "slot_index": 3
+        }
+      ],
+      "widgets_values": [
+        "<lora:2000s_Moe_Anime__Style__Illustrious_SDXL-000033:0.4>"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "TegakiMangaRegionEditor",
+      "pos": [
+        40,
+        340
+      ],
+      "size": [
+        540,
+        780
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "region_spec",
+          "type": "REGION_SPEC",
+          "links": [
+            3,
+            16
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "region_spec_json",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 1
+        },
+        {
+          "name": "global_prompt",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 2
+        },
+        {
+          "name": "preview_image",
+          "type": "IMAGE",
+          "links": [
+            4
+          ],
+          "slot_index": 3
+        },
+        {
+          "name": "mask_batch",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 4
+        }
+      ],
+      "widgets_values": [
+        3,
+        832,
+        1216,
+        "manga page, monochrome, expressive linework, high contrast, screentone shading",
+        "{\n  \"version\": 1,\n  \"canvas\": {\"width\": 832, \"height\": 1216},\n  \"panel_count\": 3,\n  \"global_prompt\": \"manga page, monochrome, expressive linework, high contrast, screentone shading\",\n  \"global_negative_prompt\": \"bad anatomy, color, photo, realistic, 3d\",\n  \"regions\": [\n    {\n      \"id\": 1,\n      \"name\": \"KOMA 1\",\n      \"enabled\": true,\n      \"x\": 0.06, \"y\": 0.05, \"w\": 0.88, \"h\": 0.28,\n      \"prompt\": \"classroom, two people talking, medium shot\",\n      \"negative_prompt\": \"empty room, solo\",\n      \"local_regions\": [\n        {\n          \"id\": \"lr_window_desks\",\n          \"name\": \"Window Desks\",\n          \"enabled\": true,\n          \"prompt\": \"school desks near the window, sunlight streaming, notebooks on desk\",\n          \"negative_prompt\": \"dark, shadow\",\n          \"area\": {\"x\": 0.10, \"y\": 0.15, \"w\": 0.38, \"h\": 0.70}\n        }\n      ],\n      \"characters\": [\n        {\n          \"character_id\": \"char_alice\",\n          \"enabled\": true,\n          \"prompt_override\": \"annoyed expression, looking right\",\n          \"negative_prompt_override\": \"happy, smiling\",\n          \"area\": {\"x\": 0.05, \"y\": 0.10, \"w\": 0.42, \"h\": 0.80}\n        },\n        {\n          \"character_id\": \"char_bob\",\n          \"enabled\": true,\n          \"prompt_override\": \"laughing expression, looking left\",\n          \"negative_prompt_override\": \"crying, sad\",\n          \"area\": {\"x\": 0.53, \"y\": 0.10, \"w\": 0.42, \"h\": 0.80}\n        }\n      ]\n    },\n    {\n      \"id\": 2,\n      \"name\": \"KOMA 2\",\n      \"enabled\": true,\n      \"x\": 0.06, \"y\": 0.36, \"w\": 0.42, \"h\": 0.38,\n      \"prompt\": \"school corridor, walking scene\",\n      \"negative_prompt\": \"\",\n      \"local_regions\": [\n        {\n          \"id\": \"lr_wall_posters\",\n          \"name\": \"Wall Posters\",\n          \"enabled\": true,\n          \"prompt\": \"posters on school wall, bulletin board with flyers\",\n          \"negative_prompt\": \"\",\n          \"area\": {\"x\": 0.55, \"y\": 0.10, \"w\": 0.40, \"h\": 0.45}\n        }\n      ],\n      \"characters\": [\n        {\n          \"character_id\": \"char_alice\",\n          \"enabled\": true,\n          \"prompt_override\": \"walking away, back view\",\n          \"area\": null\n        }\n      ]\n    },\n    {\n      \"id\": 3,\n      \"name\": \"KOMA 3\",\n      \"enabled\": true,\n      \"x\": 0.52, \"y\": 0.36, \"w\": 0.42, \"h\": 0.38,\n      \"prompt\": \"sunset rooftop, sky and clouds, dramatic lighting, empty scenic\",\n      \"negative_prompt\": \"people, person, character\",\n      \"local_regions\": [],\n      \"characters\": []\n    }\n  ]\n}"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "PreviewImage",
+      "pos": [
+        600,
+        340
+      ],
+      "size": [
+        360,
+        520
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 4
+        }
+      ],
+      "widgets_values": []
+    },
+    {
+      "id": 5,
+      "type": "TegakiMangaPageCompiler",
+      "pos": [
+        980,
+        340
+      ],
+      "size": [
+        500,
+        520
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "region_spec",
+          "type": "REGION_SPEC",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "page_compile_plan",
+          "type": "PAGE_COMPILE_PLAN",
+          "links": [
+            5
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "page_compile_plan_json",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 1
+        },
+        {
+          "name": "global_loras_text",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 2
+        },
+        {
+          "name": "active_panels_count",
+          "type": "INT",
+          "links": null,
+          "slot_index": 3
+        }
+      ],
+      "widgets_values": [
+        "{\n  \"version\": 1,\n  \"characters\": [\n    {\n      \"id\": \"char_alice\",\n      \"name\": \"Alice\",\n      \"enabled\": true,\n      \"prompt\": \"1girl, blonde twin tails, blue eyes, school uniform\",\n      \"negative_prompt\": \"blurry, low quality\",\n      \"loras\": []\n    },\n    {\n      \"id\": \"char_bob\",\n      \"name\": \"Bob\",\n      \"enabled\": true,\n      \"prompt\": \"1boy, short brown hair, school uniform\",\n      \"negative_prompt\": \"bad anatomy\",\n      \"loras\": []\n    }\n  ]\n}",
+        "<lora:2000s_Moe_Anime__Style__Illustrious_SDXL-000033:0.4>"
+      ]
+    },
+    {
+      "id": 6,
+      "type": "TegakiMangaMaskBuilder",
+      "pos": [
+        1500,
+        340
+      ],
+      "size": [
+        380,
+        220
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "page_compile_plan",
+          "type": "PAGE_COMPILE_PLAN",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "panel_masks",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 0
+        },
+        {
+          "name": "character_masks",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 1
+        },
+        {
+          "name": "mask_preview",
+          "type": "IMAGE",
+          "links": [
+            6
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "debug_json",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 3
+        },
+        {
+          "name": "local_region_masks",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 4
+        }
+      ],
+      "widgets_values": [
+        0
+      ]
+    },
+    {
+      "id": 7,
+      "type": "PreviewImage",
+      "pos": [
+        1900,
+        340
+      ],
+      "size": [
+        360,
+        520
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 6
+        }
+      ],
+      "widgets_values": []
+    },
+    {
+      "id": 8,
+      "type": "TegakiMangaConditioningBuilder",
+      "pos": [
+        1500,
+        620
+      ],
+      "size": [
+        380,
+        280
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 7
+        },
+        {
+          "name": "page_compile_plan",
+          "type": "PAGE_COMPILE_PLAN",
+          "link": 5
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": [
+            9
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": [
+            10
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "panel_masks",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 2
+        },
+        {
+          "name": "character_masks",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 3
+        },
+        {
+          "name": "debug_json",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 4
+        },
+        {
+          "name": "local_region_masks",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 5
+        }
+      ],
+      "widgets_values": [
+        1.0,
+        1.0,
+        1.0,
+        "default",
+        0
+      ]
+    },
+    {
+      "id": 9,
+      "type": "EmptyLatentImage",
+      "pos": [
+        1900,
+        880
+      ],
+      "size": [
+        300,
+        110
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            12
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": [
+        832,
+        1216,
+        1
+      ]
+    },
+    {
+      "id": 10,
+      "type": "KSampler",
+      "pos": [
+        2280,
+        620
+      ],
+      "size": [
+        300,
+        360
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 8
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 9
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 10
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 12
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            13
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": [
+        42,
+        "fixed",
+        20,
+        7.0,
+        "euler",
+        "normal",
+        1.0
+      ]
+    },
+    {
+      "id": 11,
+      "type": "VAEDecode",
+      "pos": [
+        2620,
+        620
+      ],
+      "size": [
+        220,
+        100
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 13
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 11
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            14
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": []
+    },
+    {
+      "id": 12,
+      "type": "SaveImage",
+      "pos": [
+        2880,
+        620
+      ],
+      "size": [
+        460,
+        600
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 14
+        }
+      ],
+      "widgets_values": [
+        "Tegaki/RegionalControl/Control_Page"
+      ]
+    },
+    {
+      "id": 13,
+      "type": "TegakiMangaSceneCompiler",
+      "pos": [
+        980,
+        880
+      ],
+      "size": [
+        500,
+        480
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "region_spec",
+          "type": "REGION_SPEC",
+          "link": 16
+        }
+      ],
+      "outputs": [
+        {
+          "name": "compile_plan",
+          "type": "COMPILE_PLAN",
+          "links": [
+            15
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "compile_plan_json",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 1
+        },
+        {
+          "name": "compiled_prompt",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 2
+        },
+        {
+          "name": "character_count",
+          "type": "INT",
+          "links": null,
+          "slot_index": 3
+        }
+      ],
+      "widgets_values": [
+        1,
+        "{\n  \"version\": 1,\n  \"characters\": [\n    {\n      \"id\": \"char_alice\",\n      \"name\": \"Alice\",\n      \"enabled\": true,\n      \"prompt\": \"1girl, blonde twin tails, blue eyes, school uniform\",\n      \"negative_prompt\": \"blurry, low quality\",\n      \"loras\": []\n    },\n    {\n      \"id\": \"char_bob\",\n      \"name\": \"Bob\",\n      \"enabled\": true,\n      \"prompt\": \"1boy, short brown hair, school uniform\",\n      \"negative_prompt\": \"bad anatomy\",\n      \"loras\": []\n    }\n  ]\n}",
+        "<lora:2000s_Moe_Anime__Style__Illustrious_SDXL-000033:0.4>"
+      ]
+    },
+    {
+      "id": 14,
+      "type": "TegakiCompilePlanInspector",
+      "pos": [
+        1500,
+        920
+      ],
+      "size": [
+        480,
+        440
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "compile_plan",
+          "type": "COMPILE_PLAN",
+          "link": 15
+        }
+      ],
+      "outputs": [
+        {
+          "name": "inspection_summary",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 0
+        },
+        {
+          "name": "plan_json_pretty",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 1
+        }
+      ],
+      "widgets_values": []
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      2,
+      0,
+      "MODEL"
+    ],
+    [
+      2,
+      1,
+      1,
+      2,
+      1,
+      "CLIP"
+    ],
+    [
+      3,
+      3,
+      0,
+      5,
+      0,
+      "REGION_SPEC"
+    ],
+    [
+      4,
+      3,
+      3,
+      4,
+      0,
+      "IMAGE"
+    ],
+    [
+      5,
+      5,
+      0,
+      6,
+      0,
+      "PAGE_COMPILE_PLAN"
+    ],
+    [
+      6,
+      6,
+      2,
+      7,
+      0,
+      "IMAGE"
+    ],
+    [
+      7,
+      2,
+      1,
+      8,
+      0,
+      "CLIP"
+    ],
+    [
+      8,
+      2,
+      0,
+      10,
+      0,
+      "MODEL"
+    ],
+    [
+      9,
+      8,
+      0,
+      10,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      10,
+      8,
+      1,
+      10,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      11,
+      1,
+      2,
+      11,
+      1,
+      "VAE"
+    ],
+    [
+      12,
+      9,
+      0,
+      10,
+      3,
+      "LATENT"
+    ],
+    [
+      13,
+      10,
+      0,
+      11,
+      0,
+      "LATENT"
+    ],
+    [
+      14,
+      11,
+      0,
+      12,
+      0,
+      "IMAGE"
+    ],
+    [
+      15,
+      13,
+      0,
+      14,
+      0,
+      "COMPILE_PLAN"
+    ],
+    [
+      16,
+      3,
+      0,
+      13,
+      0,
+      "REGION_SPEC"
+    ]
+  ],
+  "groups": [
+    {
+      "title": "[1 MODEL & GLOBAL LORA]",
+      "bounding": [
+        20,
+        20,
+        760,
+        280
+      ],
+      "color": "#3f789e"
+    },
+    {
+      "title": "[2 PAGE / REGION (with Local Regions)]",
+      "bounding": [
+        20,
+        300,
+        960,
+        840
+      ],
+      "color": "#8c564b"
+    },
+    {
+      "title": "[3 CAST & PAGE COMPILER]",
+      "bounding": [
+        960,
+        300,
+        520,
+        580
+      ],
+      "color": "#e377c2"
+    },
+    {
+      "title": "[4 MASK BUILDER & PREVIEW]",
+      "bounding": [
+        1480,
+        300,
+        800,
+        300
+      ],
+      "color": "#7f7f7f"
+    },
+    {
+      "title": "[5 CONDITIONING BUILDER]",
+      "bounding": [
+        1480,
+        600,
+        420,
+        310
+      ],
+      "color": "#bcbd22"
+    },
+    {
+      "title": "[6 SAMPLING & DECODE]",
+      "bounding": [
+        1880,
+        600,
+        980,
+        400
+      ],
+      "color": "#17becf"
+    },
+    {
+      "title": "[7 OUTPUT & INSPECTOR]",
+      "bounding": [
+        960,
+        860,
+        1040,
+        520
+      ],
+      "color": "#2ca02c"
+    }
+  ],
+  "version": 0.4
+}

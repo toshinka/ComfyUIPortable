@@ -6,6 +6,7 @@ from .region_editor import is_active_region, validate_region_spec
 from .scene_spec import (
     validate_cast_spec,
     validate_character_binding,
+    validate_local_region,
     default_cast_spec,
     SUPPORTED_COMPILE_PLAN_VERSION,
     SUPPORTED_PAGE_COMPILE_PLAN_VERSION,
@@ -24,8 +25,8 @@ def compile_panel_data(
     global_loras: str = ""
 ) -> Tuple[Dict[str, Any], str, str, int]:
     """
-    1コマ (KOMA) の実行計画 (COMPILE_PLAN v1) をコンパイルする純粋関数 (Phase 3B)。
-    TegakiMangaSceneCompiler と TegakiMangaPageCompiler の双方から共通利用されます。
+    1コマ (KOMA) の実行計画 (COMPILE_PLAN v1) をコンパイルする純粋関数 (Phase 3B / 3B.1)。
+    PAGE ├ KOMA ├ LOCAL_REGION └ CHARACTER の4階層を統合・正規化します。
     """
     # 1. REGION_SPEC の検証
     spec = validate_region_spec(region_spec)
@@ -133,6 +134,41 @@ def compile_panel_data(
                 koma_loras_plan.append(v_le)
     koma_loras_plan.extend(koma_prompt_loras)
 
+    # 5.5. KOMA内 Local Region のコンパイル (Phase 3B.1 新設)
+    raw_local_regions = target_koma.get("local_regions", [])
+    compiled_local_regions = []
+    local_region_prompts = []
+    local_region_negative_prompts = []
+
+    if raw_local_regions:
+        if not isinstance(raw_local_regions, list):
+            raise ValueError(f"[TegakiSceneCompiler] KOMA {target_panel_id} 'local_regions' must be a list.")
+        seen_lr_ids = set()
+        for lr_idx, lr in enumerate(raw_local_regions):
+            v_lr = validate_local_region(lr, f"KOMA {target_panel_id} local_region[{lr_idx}]")
+            if v_lr["id"] in seen_lr_ids:
+                raise ValueError(f"[TegakiSceneCompiler] KOMA {target_panel_id} duplicate local_region id: '{v_lr['id']}'")
+            seen_lr_ids.add(v_lr["id"])
+
+            if not v_lr.get("enabled", True):
+                continue
+
+            clean_lr_p, lr_p_loras = parse_lora_tags(v_lr["prompt"], f"koma_{target_panel_id}_local_{v_lr['id']}")
+            clean_lr_neg, _ = parse_lora_tags(v_lr["negative_prompt"], f"koma_{target_panel_id}_local_neg_{v_lr['id']}")
+
+            if clean_lr_p:
+                local_region_prompts.append(clean_lr_p)
+            if clean_lr_neg:
+                local_region_negative_prompts.append(clean_lr_neg)
+
+            # タグから抽出されたLoRAはコマLoRAプランに合流
+            koma_loras_plan.extend(lr_p_loras)
+
+            compiled_lr = dict(v_lr)
+            compiled_lr["prompt"] = clean_lr_p
+            compiled_lr["negative_prompt"] = clean_lr_neg
+            compiled_local_regions.append(compiled_lr)
+
     # 6. KOMA内 Character Binding のコンパイル
     compiled_characters = []
     character_prompts = []
@@ -219,11 +255,14 @@ def compile_panel_data(
             compiled_characters.append(compiled_c)
 
     # 7. 自然結合プレビュー用 Positive / Negative Prompt の生成
+    # 優先順位 (指示書第20項): Global -> Panel -> Local Region -> Character
     prompt_parts = []
     if clean_global_prompt:
         prompt_parts.append(clean_global_prompt)
     if clean_koma_prompt:
         prompt_parts.append(clean_koma_prompt)
+    if local_region_prompts:
+        prompt_parts.extend(local_region_prompts)
     if character_prompts:
         prompt_parts.extend(character_prompts)
     compiled_prompt = ", ".join(prompt_parts)
@@ -233,6 +272,8 @@ def compile_panel_data(
         neg_parts.append(global_negative_prompt.strip())
     if panel_negative_prompt:
         neg_parts.append(panel_negative_prompt.strip())
+    if local_region_negative_prompts:
+        neg_parts.extend(local_region_negative_prompts)
     if character_negative_prompts:
         neg_parts.extend(character_negative_prompts)
     compiled_negative_prompt = ", ".join(neg_parts)
@@ -253,7 +294,8 @@ def compile_panel_data(
                 "h": target_koma["h"]
             },
             "prompt": clean_koma_prompt,
-            "negative_prompt": panel_negative_prompt
+            "negative_prompt": panel_negative_prompt,
+            "local_regions": compiled_local_regions
         },
         "global_prompt": clean_global_prompt,
         "global_negative_prompt": global_negative_prompt,
@@ -317,7 +359,7 @@ class TegakiMangaSceneCompiler:
 
 class TegakiMangaPageCompiler:
     """
-    Tegaki Manga Page Compiler (Phase 3B 新設)
+    Tegaki Manga Page Compiler (Phase 3B / 3B.1)
     REGION_SPEC と CAST_SPEC から、ページ全体の全Active KOMAに関する統合実行計画 (PAGE_COMPILE_PLAN v1) をコンパイルする。
     """
     @classmethod
@@ -396,8 +438,9 @@ class TegakiMangaPageCompiler:
 
 class TegakiCompilePlanInspector:
     """
-    Tegaki Compile Plan Inspector (Phase 3B-0 新設)
-    COMPILE_PLAN を視覚的に監査・検査し、Workflow 08 で Scene Compiler の実行を強制する。
+    Tegaki Compile Plan Inspector (Phase 3B / 3B.1 監査ノード)
+    COMPILE_PLAN または PAGE_COMPILE_PLAN を視覚的に監査・検査し、
+    Active Panel IDs, Characters, Local Regions, LoRA Plan, Prompt 階層を綺麗に可視化する。
     """
     @classmethod
     def INPUT_TYPES(cls):
@@ -407,8 +450,8 @@ class TegakiCompilePlanInspector:
             }
         }
 
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("inspection_summary",)
+    RETURN_TYPES = ("STRING", "STRING")
+    RETURN_NAMES = ("inspection_summary", "plan_json_pretty")
     FUNCTION = "inspect_plan"
     CATEGORY = "tegaki/manga"
     OUTPUT_NODE = True
@@ -420,6 +463,7 @@ class TegakiCompilePlanInspector:
         canvas = plan.get("canvas", {})
         characters = plan.get("characters", [])
         lora_plan = plan.get("lora_plan", {})
+        local_regions = plan.get("panel", {}).get("local_regions", []) if plan.get("panel") else []
 
         g_loras = [f"{l['name']}(m={l.get('model_weight')},c={l.get('clip_weight')})" for l in lora_plan.get("global_loras", [])]
         k_loras = [f"{l['name']}(m={l.get('model_weight')},c={l.get('clip_weight')})" for l in lora_plan.get("koma_loras", [])]
@@ -434,6 +478,15 @@ class TegakiCompilePlanInspector:
                 char_areas.append(f"{cname}: [x={area['x']}, y={area['y']}, w={area['w']}, h={area['h']}]")
             else:
                 char_areas.append(f"{cname}: Unconstrained (None)")
+
+        lr_summaries = []
+        for lr in local_regions:
+            l_area = lr.get("area", {})
+            lr_summaries.append(
+                f"  • [{lr.get('id')}] {lr.get('name')}: "
+                f"Pos='{lr.get('prompt')}' | Neg='{lr.get('negative_prompt')}' | "
+                f"Area=[x={l_area.get('x')}, y={l_area.get('y')}, w={l_area.get('w')}, h={l_area.get('h')}]"
+            )
 
         lines = [
             f"=== Tegaki Compile Plan Inspection (KOMA {pid}) ===",
@@ -455,6 +508,9 @@ class TegakiCompilePlanInspector:
             "--- Character Areas (KOMA-local) ---",
             "  " + ("\n  ".join(char_areas) if char_areas else "None"),
             "",
+            f"--- Local Regions ({len(local_regions)}) ---",
+            ("  " + "\n  ".join(lr_summaries)) if lr_summaries else "  None",
+            "",
             "--- LoRA Plan ---",
             f"  Global LoRAs ({len(g_loras)}): {', '.join(g_loras) if g_loras else 'None'}",
             f"  KOMA LoRAs ({len(k_loras)}): {', '.join(k_loras) if k_loras else 'None'}",
@@ -463,4 +519,5 @@ class TegakiCompilePlanInspector:
         ])
 
         summary_text = "\n".join(lines)
-        return {"ui": {"text": [summary_text]}, "result": (summary_text,)}
+        pretty_json = json.dumps(plan, indent=2, ensure_ascii=False)
+        return {"ui": {"text": [summary_text]}, "result": (summary_text, pretty_json)}

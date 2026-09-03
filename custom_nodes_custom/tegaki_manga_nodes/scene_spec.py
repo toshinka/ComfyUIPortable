@@ -375,6 +375,63 @@ def validate_character_binding(binding: Any, available_character_ids: Optional[S
     return validated
 
 
+def validate_local_region(local_region: Any, context_name: str = "Local Region") -> Dict[str, Any]:
+    """
+    KOMA内に保持される Local Region（コマ内局所領域）を検証する (Phase 3B.1 新設)。
+    - id: strict string (英数字・アンダースコア等、一意識別用、空文字不可)
+    - name: strict string (省略時は id)
+    - enabled: strict boolean
+    - prompt: strict string
+    - negative_prompt: strict string
+    - area: KOMA-local 正規化矩形 (x, y, w, h in 0.0..1.0, 有限値, MIN_RECT_SIZE 以上)
+    - metadata: dict
+    """
+    if not isinstance(local_region, dict):
+        raise ValueError(f"[{context_name}] Local region must be a dictionary, got {type(local_region).__name__}")
+
+    lid = _validate_strict_string(local_region.get("id"), "id", context_name, allow_empty=False)
+
+    raw_name = local_region.get("name")
+    name = _validate_strict_string(raw_name, "name", f"Local region '{lid}'", allow_empty=True, default_if_missing=lid)
+    if not name:
+        name = lid
+
+    enabled = local_region.get("enabled", True)
+    if not isinstance(enabled, bool):
+        raise ValueError(
+            f"[{context_name}] Local region '{lid}': 'enabled' must be a strict boolean (True/False), "
+            f"got {type(enabled).__name__} ({enabled!r})"
+        )
+
+    prompt = _validate_strict_string(local_region.get("prompt"), "prompt", f"Local region '{lid}'")
+    negative_prompt = _validate_strict_string(local_region.get("negative_prompt"), "negative_prompt", f"Local region '{lid}'")
+
+    area = local_region.get("area")
+    if area is None or not isinstance(area, dict):
+        raise ValueError(f"[{context_name}] Local region '{lid}': 'area' must be a dictionary with x, y, w, h.")
+
+    try:
+        norm_area = normalize_rect(area.get("x", 0.0), area.get("y", 0.0), area.get("w", 0.3), area.get("h", 0.3))
+    except (ValueError, TypeError) as e:
+        raise ValueError(f"[{context_name}] Local region '{lid}': Invalid 'area' coordinates: {e}")
+
+    raw_meta = local_region.get("metadata", {})
+    if raw_meta is not None and not isinstance(raw_meta, dict):
+        raise ValueError(f"[{context_name}] Local region '{lid}': 'metadata' must be a dictionary, got {type(raw_meta).__name__}")
+    metadata = dict(raw_meta) if isinstance(raw_meta, dict) else {}
+
+    validated = dict(local_region)
+    validated["id"] = lid
+    validated["name"] = name
+    validated["enabled"] = enabled
+    validated["prompt"] = prompt
+    validated["negative_prompt"] = negative_prompt
+    validated["area"] = norm_area
+    validated["metadata"] = metadata
+    return validated
+
+
+
 def get_active_panel_ids(region_spec: dict) -> List[int]:
     """
     REGION_SPEC から現在アクティブなコマ番号のリストを返す。
@@ -451,6 +508,23 @@ def validate_compile_plan(plan: Any) -> Dict[str, Any]:
 
         _validate_strict_string(panel.get("prompt"), "prompt", f"Panel {pid}")
         _validate_strict_string(panel.get("negative_prompt"), "negative_prompt", f"Panel {pid}")
+
+        # Phase 3B.1: local_regions (オプショナル)
+        local_regs = panel.get("local_regions", [])
+        if local_regs is not None:
+            if not isinstance(local_regs, list):
+                raise ValueError(f"[CompilePlanValidator] Panel {pid} 'local_regions' must be a list, got {type(local_regs).__name__}")
+            validated_lrs = []
+            seen_lr_ids = set()
+            for lr_idx, lr in enumerate(local_regs):
+                v_lr = validate_local_region(lr, f"Panel {pid} local_region[{lr_idx}]")
+                if v_lr["id"] in seen_lr_ids:
+                    raise ValueError(f"[CompilePlanValidator] Panel {pid} duplicate local_region id: '{v_lr['id']}'")
+                seen_lr_ids.add(v_lr["id"])
+                validated_lrs.append(v_lr)
+            panel["local_regions"] = validated_lrs
+        else:
+            panel["local_regions"] = []
     else:
         if panel is not None:
             raise ValueError("[CompilePlanValidator] 'panel' must be null when status is 'inactive'.")
