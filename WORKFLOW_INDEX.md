@@ -37,6 +37,7 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 ### 03_MANGA_REGIONAL_PROMPT.json
 - **区分**: 安定版 (STABLE)
 - **目的**: コマ割りや画面左右でのキャラクター描き分け（属性汚染・混色の防止）。
+- **注意**: 本ワークフローは `SolidMask` と `ConditioningSetMask` による固定2分割ノード配線です（視覚的Editorではありません）。視覚的レイアウトは `07` を参照してください。
 - **必要Custom Node**: `TegakiLoraPromptLoader` (独自), ComfyUI標準ConditioningSetMask
 - **入力**:
   - Global Prompt（背景・全体トーン）
@@ -48,14 +49,14 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 ---
 
 ### 04_REGIONAL_LORA_EXPERIMENT.json
-- **区分**: 実験版 (EXPERIMENTAL)
+- **区分**: 実験版 (EXPERIMENTAL / NOT YET REGIONAL)
 - **目的**: 領域ごとに異なるLoRA（キャラA用LoRA、キャラB用LoRA）を独立適用するRLL先行実験。
+- **注意**: Phase 2コード監査の結果、2本目のLoRAブランチが最終KSamplerに未接続のため、実質的に単一LoRA生成状態となっています。Phase 5にて本格改修予定です。
 - **必要Custom Node**: `TegakiLoraPromptLoader` (独自), `ComfyUI-Impact-Pack`
 - **入力**:
   - Region A: LoRA A + Prompt A
   - Region B: LoRA B + Prompt B
 - **出力**: 領域別LoRA合成画像 (`ComfyUI/output/Tegaki/RegionalLoRA/...`)
-- **想定用途**: 異なるキャラクターLoRAを同一画面の別領域にだけ効かせる高度な漫画制作。
 
 ---
 
@@ -82,3 +83,17 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
   - 生成画像 (`ComfyUI/output/Tegaki/LoraMix/...`)
   - 適用中LoRAスタックのテキスト一覧
 - **想定用途**: オリジナルの漫画タッチを作るための複数スタイルLoRAの黄金比率探索。
+
+---
+
+### 07_MANGA_REGION_EDITOR_UI_TEST.json
+- **区分**: 安定UI版 (STABLE UI / TEST)
+- **目的**: 最大6コマ対応の視覚的Region Editorノード (`TegakiMangaRegionEditor`) の単体操作・レイアウトプレビュー・状態保存検証。
+- **必要Custom Node**: `TegakiMangaRegionEditor` (独自)
+- **特徴**:
+  - Canvas上でのドラッグ矩形作成・移動・リサイズ・重なり・Shift一括移動。
+  - 水平・垂直スライス (Split H / Split V)、コマ入れ替え (Swap)、Undo/Redo。
+  - `REGION_SPEC` (v1) JSON文字列およびプレビュー画像の出力。
+  - 生成Backendから完全に分離されており、将来の外部GUI連携にも対応。
+- **出力**: コマレイアウトプレビュー画像 (`ComfyUI/output/Tegaki/RegionEditor_Test_...`)
+- **想定用途**: ネーム・コマ割りレイアウトの視覚的設計とPromptの整理。

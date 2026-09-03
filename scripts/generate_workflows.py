@@ -996,6 +996,58 @@ def create_lora_mix_workflow():
         json.dump(wf, f, indent=2, ensure_ascii=False)
     print("Created 06_LORA_MIX_EXPERIMENT.json")
 
+def create_region_editor_ui_test_workflow():
+    wf = {
+        "last_node_id": 5,
+        "last_link_id": 4,
+        "nodes": [
+            {
+                "id": 1,
+                "type": "TegakiMangaRegionEditor",
+                "pos": [60, 80],
+                "size": [540, 780],
+                "flags": {},
+                "order": 0,
+                "mode": 0,
+                "outputs": [
+                    {"name": "region_spec", "type": "REGION_SPEC", "links": None, "slot_index": 0},
+                    {"name": "region_spec_json", "type": "STRING", "links": None, "slot_index": 1},
+                    {"name": "global_prompt", "type": "STRING", "links": None, "slot_index": 2},
+                    {"name": "preview_image", "type": "IMAGE", "links": [1], "slot_index": 3},
+                    {"name": "mask_batch", "type": "MASK", "links": None, "slot_index": 4}
+                ],
+                "widgets_values": [
+                    3, 832, 1216,
+                    "manga page, monochrome, expressive linework, high contrast, screentone shading",
+                    "{}"
+                ]
+            },
+            {
+                "id": 2,
+                "type": "PreviewImage",
+                "pos": [640, 80],
+                "size": [440, 650],
+                "flags": {},
+                "order": 1,
+                "mode": 0,
+                "inputs": [
+                    {"name": "images", "type": "IMAGE", "link": 1}
+                ],
+                "widgets_values": []
+            }
+        ],
+        "links": [
+            [1, 1, 3, 2, 0, "IMAGE"]
+        ],
+        "groups": [
+            {"title": "Manga Region Editor UI & Preview", "bounding": [30, 20, 1080, 880], "color": "#3f789e"}
+        ],
+        "version": 0.4
+    }
+    with open(os.path.join(workflows_dir, "07_MANGA_REGION_EDITOR_UI_TEST.json"), "w", encoding="utf-8") as f:
+        json.dump(wf, f, indent=2, ensure_ascii=False)
+    print("Created 07_MANGA_REGION_EDITOR_UI_TEST.json")
+
 if __name__ == "__main__":
     create_txt2img_workflow()
     create_i2i_workflow()
@@ -1003,4 +1055,5 @@ if __name__ == "__main__":
     create_regional_lora_workflow()
     create_controlnet_workflow()
     create_lora_mix_workflow()
-    print("All 6 workflows generated successfully!")
+    create_region_editor_ui_test_workflow()
+    print("All 7 workflows generated successfully!")

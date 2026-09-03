@@ -18,6 +18,7 @@ ComfyUI/
 # Models & Large assets (if placed locally)
 models/
 models_custom/
+wildcards/
 *.safetensors
 *.ckpt
 *.pt
