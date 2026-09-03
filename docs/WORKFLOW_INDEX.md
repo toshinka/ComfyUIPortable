@@ -110,3 +110,22 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
   - `COMPILE_PLAN` (v1) のデータ構造、Clean Prompt、および出演キャラクター数を即座に確認可能。
 - **出力**: Regionプレビュー画像、および `COMPILE_PLAN` 実行計画。
 - **想定用途**: Scene Contract（PAGE ├ KOMA └ CAST）の構造整合性とコンパイル結果の可視化・監査。
+
+---
+
+### 09_MANGA_REGIONAL_GENERATION_POC.json
+- **区分**: 実験版 / エンドツーエンド検証 (EXPERIMENTAL / END-TO-END POC)
+- **目的**: `REGION_SPEC` + `CAST_SPEC` ──▶ `PAGE_COMPILE_PLAN` ──▶ `Mask Projection` ──▶ `Conditioning Builder` ──▶ `KSampler` による動的漫画コマ・キャラクター実画像生成。
+- **必要Custom Node**:
+  - `TegakiLoraPromptLoader` (独自 / Global LoRA実適用)
+  - `TegakiMangaRegionEditor` (独自 / コマ割り幾何・演出)
+  - `TegakiMangaPageCompiler` (独自 / ページ集約実行計画)
+  - `TegakiMangaMaskBuilder` (独自 / Page座標投影・マスク生成)
+  - `TegakiMangaConditioningBuilder` (独自 / Core API準拠階層Conditioning結合)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, KSampler, VAEDecode, SaveImage, PreviewImage
+- **他ワークフローとの関係**:
+  - **`03` との関係**: `03` は固定2領域の手動配線による Oracle / Reference。`09` は `REGION_SPEC` と `CAST_SPEC` に駆動される完全動的・多領域生成への一般化。
+  - **`08` との関係**: `08` はデータ契約の整合性と Inspector による静的監査。`09` は Sampler まで直結した実際の実画像生成（Actual Generation）。
+  - **`04` との関係**: `04` は領域別LoRA接続の先行実験（NOT YET REGIONAL）。`09` では Global LoRA のみをモデル実適用し、Character LoRA は Plan 保持にとどまります（Character LoRA の領域適用は Phase 5 で改修予定）。
+- **出力**: 3コマ漫画完成画像 (`ComfyUI/output/Tegaki/RegionalPOC/...`)、Mask Preview画像、Region Preview画像。
+- **想定用途**: コマごとの演出およびキャラクター局所プロンプト（MRP）が反映された漫画原稿の実画像生成。

@@ -69,6 +69,7 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ RESEARCH_REFERENCES.md              # 参照リポジトリ・ライセンス
  │   ├─ CUSTOM_NODE_MANIFEST.md             # 外部Custom Nodeコミット追跡
  │   └─ reports/                            # 開発フェーズ完了報告書・検証記録集
+ │       ├─ PHASE3B_END_TO_END_REGIONAL_GENERATION_REPORT.md
  │       ├─ PHASE3A_1_SCENE_CONTRACT_HARDENING_REPORT.md
  │       ├─ PHASE3A_SCENE_DATA_CONTRACT_REPORT.md
  │       ├─ PHASE2_1_1_REGRESSION_FIX_REPORT.md
@@ -77,16 +78,19 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │       ├─ BUILD_REPORT.md
  │       └─ PHASE2_1_UI_TEST_CHECKLIST.md
  ├─ custom_nodes_custom/
- │   └─ tegaki_manga_nodes/                 # 独自LoRA記法・Region Editor・Scene Compilerノード
+ │   └─ tegaki_manga_nodes/                 # 独自LoRA記法・Region Editor・Scene/Page Compiler・Mask/Conditioningノード
  ├─ scripts/
- │   ├─ generate_workflows.py               # ワークフロー自動生成スクリプト
- │   ├─ test_runtime_source_identity.py     # Git正本・実行時コード同一性検証
+ │   ├─ test_regional_poc_generation.py     # Phase 3B 実機A/B生成検証スクリプト
+ │   ├─ test_page_compile_plan.py           # PAGE_COMPILE_PLAN & Mask投影単体テスト
+ │   ├─ test_conditioning_builder.py        # Manga Conditioning Builder単体テスト
+ │   ├─ test_scene_compiler.py              # Manga Scene Compiler統合実行計画検証
+ │   ├─ test_cast_spec.py                   # CAST_SPEC & Bindingバリデーション検証
  │   ├─ test_region_spec.py                 # Region Editor単体ロジック・バリデーション検証
  │   ├─ test_region_state_transitions.py    # Region Editor状態遷移・回帰テストスイート
- │   ├─ test_cast_spec.py                   # CAST_SPEC & Bindingバリデーション検証
- │   ├─ test_scene_compiler.py              # Manga Scene Compiler統合実行計画検証
  │   ├─ test_region_editor_backend_api.py   # Region Editor バックエンド実行API検証
+ │   ├─ test_runtime_source_identity.py     # Git正本・実行時コード同一性検証
  │   ├─ verify_wildcard_patch.py            # Wildcardパッチ適用診断
+ │   ├─ generate_workflows.py               # ワークフロー自動生成スクリプト
  │   ├─ test_nodes.py                       # ノード・モデルインポート検証
  │   ├─ test_generation.py                  # 実機txt2img生成検証スクリプト
  │   ├─ test_i2i.py                         # 実機I2Iパイプライン検証スクリプト
@@ -111,3 +115,4 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
 - `06_LORA_MIX_EXPERIMENT.json`: 複数LoRAの配合比率探索 (STABLE)
 - `07_MANGA_REGION_EDITOR_UI_TEST.json`: 最大6コマ視覚的Region Editor UI操作・プレビュー検証ハーネス (DEV / TEST)
 - `08_MANGA_SCENE_CONTRACT_TEST.json`: Manga Scene Contract（PAGE/CAST/Binding）検査・可視化ハーネス (DEV / TEST)
+- `09_MANGA_REGIONAL_GENERATION_POC.json`: REGION_SPEC/CAST_SPEC動的駆動による漫画コマ・キャラクター実画像生成 (EXPERIMENTAL / POC)

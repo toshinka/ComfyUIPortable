@@ -57,7 +57,9 @@ def run_cast_spec_tests():
     v_cast = validate_cast_spec(valid_cast)
     assert len(v_cast["characters"]) == 2
     assert v_cast["characters"][0]["id"] == "char_001"
-    assert v_cast["characters"][0]["loras"][0]["weight"] == 0.85
+    assert v_cast["characters"][0]["loras"][0]["model_weight"] == 0.85
+    assert v_cast["characters"][0]["loras"][0]["clip_weight"] == 0.85
+    assert "weight" not in v_cast["characters"][0]["loras"][0], "legacy 'weight' must be removed from canonical output"
     assert v_cast["characters"][0]["metadata"]["role"] == "protagonist"
     print("Valid multi-character CAST_SPEC: PASSED")
 
@@ -264,8 +266,44 @@ def run_cast_spec_tests():
     assert vb_neg["negative_prompt_override"] == "crying, frown"
     print("Binding negative_prompt_override: PASSED")
 
+    # 16. Phase 3B-0: NaN / +Inf / -Inf LoRA weight rejection (指示書第3.3項)
+    print("\n--- 16. Testing NaN / Infinity LoRA weight rejection ---")
+    import math
+    for bad_val, desc in [(float("nan"), "NaN"), (float("inf"), "+Infinity"), (float("-inf"), "-Infinity")]:
+        nan_spec = {
+            "version": 1,
+            "characters": [{
+                "id": "char_001",
+                "name": "Alice",
+                "enabled": True,
+                "prompt": "1girl",
+                "loras": [{"name": "nan_lora", "model_weight": bad_val, "enabled": True}]
+            }]
+        }
+        try:
+            validate_cast_spec(nan_spec)
+            assert False, f"Should reject {desc} in LoRA weight"
+        except ValueError as e:
+            assert "finite" in str(e).lower()
+            print(f"{desc} weight rejected successfully: {e}")
+    print("NaN / Infinity LoRA weight rejection: PASSED")
+
+    # 17. Phase 3B-0: Legacy 'weight' key completely removed from Canonical output (指示書第3.2項)
+    print("\n--- 17. Testing legacy 'weight' removal from Canonical LoRA Entry ---")
+    legacy_input = {
+        "name": "test_legacy",
+        "weight": 0.9,
+        "enabled": True
+    }
+    from custom_nodes.tegaki_manga_nodes.scene_spec import validate_lora_entry
+    canonical_entry = validate_lora_entry(legacy_input)
+    assert "weight" not in canonical_entry, "Legacy 'weight' key must be purged from Canonical output"
+    assert canonical_entry["model_weight"] == 0.9
+    assert canonical_entry["clip_weight"] == 0.9
+    print("Legacy weight key removal: PASSED")
+
     print("\n================================================================================")
-    print("[SUCCESS] ALL CAST_SPEC & BINDING TEST SUITES PASSED PERFECTLY!")
+    print("[SUCCESS] ALL 17 CAST_SPEC & BINDING TEST SUITES PASSED PERFECTLY!")
     print("================================================================================")
     return 0
 

@@ -1,6 +1,6 @@
 {
-  "last_node_id": 3,
-  "last_link_id": 2,
+  "last_node_id": 4,
+  "last_link_id": 3,
   "nodes": [
     {
       "id": 1,
@@ -108,7 +108,9 @@
         {
           "name": "compile_plan",
           "type": "COMPILE_PLAN",
-          "links": null,
+          "links": [
+            3
+          ],
           "slot_index": 0
         },
         {
@@ -135,6 +137,37 @@
         "{\n  \"version\": 1,\n  \"characters\": [\n    {\n      \"id\": \"char_alice\",\n      \"name\": \"Alice\",\n      \"enabled\": true,\n      \"prompt\": \"1girl, blonde twin tails, blue eyes, school uniform\",\n      \"negative_prompt\": \"blurry, low quality\",\n      \"loras\": [\n        {\n          \"name\": \"alice_costume\",\n          \"model_weight\": 0.8,\n          \"clip_weight\": 0.6,\n          \"enabled\": true\n        }\n      ]\n    },\n    {\n      \"id\": \"char_bob\",\n      \"name\": \"Bob\",\n      \"enabled\": true,\n      \"prompt\": \"1boy, short brown hair, school uniform\",\n      \"negative_prompt\": \"bad anatomy\",\n      \"loras\": []\n    }\n  ]\n}",
         "<lora:manga_lineart:0.5> <lora:tone_texture:0.3:0.2>"
       ]
+    },
+    {
+      "id": 4,
+      "type": "TegakiCompilePlanInspector",
+      "pos": [
+        1720,
+        80
+      ],
+      "size": [
+        480,
+        650
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "compile_plan",
+          "type": "COMPILE_PLAN",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "inspection_summary",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": []
     }
   ],
   "links": [
@@ -153,15 +186,23 @@
       3,
       0,
       "REGION_SPEC"
+    ],
+    [
+      3,
+      3,
+      0,
+      4,
+      0,
+      "COMPILE_PLAN"
     ]
   ],
   "groups": [
     {
-      "title": "Manga Scene Contract Inspection Harness (Phase 3A.1)",
+      "title": "Manga Scene Contract Inspection Harness (Phase 3B)",
       "bounding": [
         30,
         20,
-        1680,
+        2200,
         880
       ],
       "color": "#3f789e"

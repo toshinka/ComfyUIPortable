@@ -1,21 +1,24 @@
 import json
 import re
+import math
 import logging
 from typing import Dict, Any, List, Optional, Set, Tuple
 
 """
-scene_spec.py — Manga Scene Data Contract (Phase 3A.1 Hardened)
+scene_spec.py — Manga Scene Data Contract (Phase 3B Hardened)
 =============================================================
 PAGE ├ KOMA └ CHARACTER の3層構造を支えるデータ契約・バリデーション・LoRA Canonicalization。
 - REGION_SPEC (v1): コマ領域・幾何・Prompt・KOMA内Character Bindingの正本
 - CAST_SPEC (v1): キャラクター恒久定義（Base Prompt, Baseline LoRA, メタデータ）
 - COMPILE_PLAN (v1): CompilerがKOMA単位で出力する実行計画
+- PAGE_COMPILE_PLAN (v1): 全Active KOMAの実行計画を集約したページ実行計画
 - MANGA_SCENE_SPEC (v1): ページ全体の上位集約コンテナ
 """
 
 SUPPORTED_CAST_SPEC_VERSION = 1
 SUPPORTED_SCENE_SPEC_VERSION = 1
 SUPPORTED_COMPILE_PLAN_VERSION = 1
+SUPPORTED_PAGE_COMPILE_PLAN_VERSION = 1
 MIN_RECT_SIZE = 0.001
 
 # <lora:name:weight:clip_weight> タグ検出用正規表現
@@ -55,14 +58,17 @@ def normalize_rect(x: float, y: float, w: float, h: float, min_size: float = MIN
 
 def _check_strict_numeric(val: Any, name: str, context_name: str = "LoRA") -> float:
     """
-    Pythonの bool (True == 1) を排除し、厳格な int/float のみを許可する
+    Pythonの bool (True == 1) を排除し、厳格かつ有限な (not NaN, not Inf) int/float のみを許可する (Phase 3B)
     """
     if isinstance(val, bool) or not isinstance(val, (int, float)):
         raise ValueError(
             f"[{context_name}] '{name}' must be a strict numeric (int or float, not bool), "
             f"got {type(val).__name__} ({val!r})"
         )
-    return float(val)
+    f_val = float(val)
+    if not math.isfinite(f_val):
+        raise ValueError(f"[{context_name}] '{name}' must be a finite number (not NaN or Inf), got {val!r}")
+    return f_val
 
 
 def _validate_strict_string(val: Any, field_name: str, context_name: str, allow_empty: bool = True, default_if_missing: str = "") -> str:
@@ -148,6 +154,8 @@ def validate_lora_entry(entry: Any, context_name: str = "LoRA") -> Dict[str, Any
     validated["model_weight"] = round(final_model_w, 4)
     validated["clip_weight"] = round(final_clip_w, 4)
     validated["metadata"] = metadata
+    # Phase 3B-0: legacy 'weight' をCanonical出力から完全に除去 (指示書第3.2項)
+    validated.pop("weight", None)
     return validated
 
 
@@ -384,7 +392,7 @@ def get_active_panel_ids(region_spec: dict) -> List[int]:
 
 def validate_compile_plan(plan: Any) -> Dict[str, Any]:
     """
-    COMPILE_PLAN (v1) のデータ構造を厳格に検証する (Phase 3A.1 新設)。
+    COMPILE_PLAN (v1) のデータ構造を厳格に検証する (Phase 3B 深層境界検証)。
     Conditioningノードへの境界として、不正な計画データの伝播を水際で遮断します。
     """
     if not isinstance(plan, dict):
@@ -399,19 +407,50 @@ def validate_compile_plan(plan: Any) -> Dict[str, Any]:
         raise ValueError(f"[CompilePlanValidator] 'status' must be 'active' or 'inactive', got {status!r}")
 
     pid = plan.get("target_panel_id")
-    if not isinstance(pid, int) or not (1 <= pid <= 6):
-        raise ValueError(f"[CompilePlanValidator] 'target_panel_id' must be an integer between 1 and 6, got {pid!r}")
+    if isinstance(pid, bool) or not isinstance(pid, int) or not (1 <= pid <= 6):
+        raise ValueError(f"[CompilePlanValidator] 'target_panel_id' must be a strict integer between 1 and 6 (not bool), got {pid!r}")
 
     canvas = plan.get("canvas")
     if not isinstance(canvas, dict) or "width" not in canvas or "height" not in canvas:
-        raise ValueError(f"[CompilePlanValidator] 'canvas' must be a dictionary with 'width' and 'height'.")
+        raise ValueError("[CompilePlanValidator] 'canvas' must be a dictionary with 'width' and 'height'.")
+    cw = canvas.get("width")
+    ch = canvas.get("height")
+    if isinstance(cw, bool) or not isinstance(cw, int) or cw <= 0:
+        raise ValueError(f"[CompilePlanValidator] 'canvas.width' must be a positive integer, got {cw!r}")
+    if isinstance(ch, bool) or not isinstance(ch, int) or ch <= 0:
+        raise ValueError(f"[CompilePlanValidator] 'canvas.height' must be a positive integer, got {ch!r}")
 
     panel = plan.get("panel")
     if status == "active":
         if not isinstance(panel, dict):
             raise ValueError("[CompilePlanValidator] 'panel' must be a dictionary when status is 'active'.")
-        if "id" not in panel or "geometry" not in panel:
-            raise ValueError("[CompilePlanValidator] Active 'panel' must contain 'id' and 'geometry'.")
+        p_id = panel.get("id")
+        if isinstance(p_id, bool) or not isinstance(p_id, int) or p_id != pid:
+            raise ValueError(f"[CompilePlanValidator] Active panel 'id' ({p_id!r}) must match 'target_panel_id' ({pid!r}).")
+        
+        p_enabled = panel.get("enabled")
+        if not isinstance(p_enabled, bool):
+            raise ValueError(f"[CompilePlanValidator] Active panel 'enabled' must be a strict boolean, got {p_enabled!r}")
+
+        geom = panel.get("geometry")
+        if not isinstance(geom, dict):
+            raise ValueError("[CompilePlanValidator] Active 'panel.geometry' must be a dictionary.")
+        for coord in ("x", "y", "w", "h"):
+            if coord not in geom:
+                raise ValueError(f"[CompilePlanValidator] 'panel.geometry' missing coordinate '{coord}'.")
+            v = geom[coord]
+            if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(float(v)):
+                raise ValueError(f"[CompilePlanValidator] 'panel.geometry.{coord}' must be a finite float, got {v!r}")
+        gx, gy, gw, gh = float(geom["x"]), float(geom["y"]), float(geom["w"]), float(geom["h"])
+        if not (0.0 <= gx <= 1.0 and 0.0 <= gy <= 1.0):
+            raise ValueError(f"[CompilePlanValidator] 'panel.geometry' (x, y) out of bounds [0, 1]: ({gx}, {gy})")
+        if gw < MIN_RECT_SIZE or gh < MIN_RECT_SIZE:
+            raise ValueError(f"[CompilePlanValidator] 'panel.geometry' (w, h) must be >= {MIN_RECT_SIZE}, got ({gw}, {gh})")
+        if gx + gw > 1.0001 or gy + gh > 1.0001:
+            raise ValueError(f"[CompilePlanValidator] 'panel.geometry' exceeds bounds (x+w={gx+gw}, y+h={gy+gh})")
+
+        _validate_strict_string(panel.get("prompt"), "prompt", f"Panel {pid}")
+        _validate_strict_string(panel.get("negative_prompt"), "negative_prompt", f"Panel {pid}")
     else:
         if panel is not None:
             raise ValueError("[CompilePlanValidator] 'panel' must be null when status is 'inactive'.")
@@ -438,8 +477,24 @@ def validate_compile_plan(plan: Any) -> Dict[str, Any]:
         _validate_strict_string(c.get("combined_negative_prompt"), "combined_negative_prompt", f"PlanCharacter[{idx}]")
 
         area = c.get("area")
-        if area is not None and not isinstance(area, dict):
-            raise ValueError(f"[CompilePlanValidator] Character '{c.get('character_id')}' 'area' must be dict or null.")
+        if area is not None:
+            if not isinstance(area, dict):
+                raise ValueError(f"[CompilePlanValidator] Character '{c.get('character_id')}' 'area' must be dict or null.")
+            for coord in ("x", "y", "w", "h"):
+                if coord not in area:
+                    raise ValueError(f"[CompilePlanValidator] Character '{c.get('character_id')}' area missing '{coord}'.")
+                av = area[coord]
+                if isinstance(av, bool) or not isinstance(av, (int, float)) or not math.isfinite(float(av)):
+                    raise ValueError(f"[CompilePlanValidator] Character area '{coord}' must be a finite float, got {av!r}")
+            ax, ay, aw, ah = float(area["x"]), float(area["y"]), float(area["w"]), float(area["h"])
+            if not (0.0 <= ax <= 1.0 and 0.0 <= ay <= 1.0):
+                raise ValueError(f"[CompilePlanValidator] Character area (x, y) out of bounds [0, 1]: ({ax}, {ay})")
+            if aw <= 0.0 or ah <= 0.0 or ax + aw > 1.0001 or ay + ah > 1.0001:
+                raise ValueError(f"[CompilePlanValidator] Character area exceeds bounds: (ax={ax}, ay={ay}, aw={aw}, ah={ah})")
+
+        raw_meta = c.get("metadata")
+        if raw_meta is not None and not isinstance(raw_meta, dict):
+            raise ValueError(f"[CompilePlanValidator] Character '{c.get('character_id')}' 'metadata' must be a dictionary.")
 
         loras = c.get("loras", [])
         if not isinstance(loras, list):
@@ -451,14 +506,86 @@ def validate_compile_plan(plan: Any) -> Dict[str, Any]:
     if not isinstance(lora_plan, dict):
         raise ValueError("[CompilePlanValidator] 'lora_plan' must be a dictionary.")
 
-    for scope in ("global_loras", "koma_loras", "character_loras"):
+    for scope in ("global_loras", "koma_loras"):
         scope_list = lora_plan.get(scope, [])
         if not isinstance(scope_list, list):
             raise ValueError(f"[CompilePlanValidator] 'lora_plan.{scope}' must be a list, got {type(scope_list).__name__}")
         for le in scope_list:
             validate_lora_entry(le, f"LoRA Plan ({scope})")
 
+    # character_loras の検証 (character_id / character_name 必須)
+    char_loras = lora_plan.get("character_loras", [])
+    if not isinstance(char_loras, list):
+        raise ValueError(f"[CompilePlanValidator] 'lora_plan.character_loras' must be a list, got {type(char_loras).__name__}")
+    for idx, cle in enumerate(char_loras):
+        if not isinstance(cle, dict):
+            raise ValueError(f"[CompilePlanValidator] 'lora_plan.character_loras[{idx}]' must be a dictionary.")
+        _validate_strict_string(cle.get("character_id"), "character_id", f"CharLoRA[{idx}]", allow_empty=False)
+        _validate_strict_string(cle.get("character_name"), "character_name", f"CharLoRA[{idx}]", allow_empty=False)
+        validate_lora_entry(cle, f"CharLoRA[{idx}]")
+
     return plan
+
+
+def validate_page_compile_plan(page_plan: Any) -> Dict[str, Any]:
+    """
+    PAGE_COMPILE_PLAN (v1) のデータ構造を厳格に検証する (Phase 3B 新設)。
+    ページ全体の全Active KOMA実行計画を集約した契約境界。
+    """
+    if not isinstance(page_plan, dict):
+        raise ValueError("[PageCompilePlanValidator] Root PAGE_COMPILE_PLAN must be a dictionary.")
+
+    version = page_plan.get("version")
+    if version != SUPPORTED_PAGE_COMPILE_PLAN_VERSION:
+        raise ValueError(
+            f"[PageCompilePlanValidator] Unsupported PAGE_COMPILE_PLAN version: {version}. "
+            f"Expected {SUPPORTED_PAGE_COMPILE_PLAN_VERSION}."
+        )
+
+    canvas = page_plan.get("canvas")
+    if not isinstance(canvas, dict) or "width" not in canvas or "height" not in canvas:
+        raise ValueError("[PageCompilePlanValidator] 'canvas' must be a dictionary with 'width' and 'height'.")
+    cw = canvas.get("width")
+    ch = canvas.get("height")
+    if isinstance(cw, bool) or not isinstance(cw, int) or cw <= 0:
+        raise ValueError(f"[PageCompilePlanValidator] 'canvas.width' must be a positive integer, got {cw!r}")
+    if isinstance(ch, bool) or not isinstance(ch, int) or ch <= 0:
+        raise ValueError(f"[PageCompilePlanValidator] 'canvas.height' must be a positive integer, got {ch!r}")
+
+    active_pids = page_plan.get("active_panel_ids")
+    if not isinstance(active_pids, list):
+        raise ValueError(f"[PageCompilePlanValidator] 'active_panel_ids' must be a list, got {type(active_pids).__name__}")
+    for apid in active_pids:
+        if isinstance(apid, bool) or not isinstance(apid, int) or not (1 <= apid <= 6):
+            raise ValueError(f"[PageCompilePlanValidator] 'active_panel_ids' elements must be strict int (1..6), got {apid!r}")
+
+    _validate_strict_string(page_plan.get("global_prompt"), "global_prompt", "PageCompilePlan")
+    _validate_strict_string(page_plan.get("global_negative_prompt"), "global_negative_prompt", "PageCompilePlan")
+
+    global_loras = page_plan.get("global_loras", [])
+    if not isinstance(global_loras, list):
+        raise ValueError(f"[PageCompilePlanValidator] 'global_loras' must be a list, got {type(global_loras).__name__}")
+    for le in global_loras:
+        validate_lora_entry(le, "PageCompilePlan Global LoRA")
+
+    panels = page_plan.get("panels")
+    if not isinstance(panels, list):
+        raise ValueError(f"[PageCompilePlanValidator] 'panels' must be a list, got {type(panels).__name__}")
+
+    compiled_panel_ids = []
+    for idx, p_plan in enumerate(panels):
+        validated_p = validate_compile_plan(p_plan)
+        if validated_p.get("status") == "active":
+            compiled_panel_ids.append(validated_p["target_panel_id"])
+
+    if sorted(compiled_panel_ids) != sorted(active_pids):
+        raise ValueError(
+            f"[PageCompilePlanValidator] Active panels mismatch: "
+            f"'panels' has active IDs {sorted(compiled_panel_ids)}, "
+            f"but 'active_panel_ids' defines {sorted(active_pids)}"
+        )
+
+    return page_plan
 
 
 def default_manga_scene_spec(region_spec: Optional[Dict[str, Any]] = None, cast_spec: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
