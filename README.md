@@ -124,12 +124,14 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
 - `11_TWO_REGION_CORE_COUPLE_ORACLE.json`: 2領域専用Rectangle EditorとCore Masked Conditioningによる最短・最速Regional検証オラクル (Zero-Touch Verified / EXPERIMENTAL ORACLE)
 - `12_TWO_REGION_IMPACT_COUPLE_ORACLE.json`: Impact Pack RegionalSampler連携によるサンプラー分離方式検証オラクル (Zero-Touch Verified / EXPERIMENTAL BACKEND ORACLE)
 - `13_TWO_REGION_CONTROLNET_LAYOUT_AUX.json`: 矩形外枠線（Panel Outline）によるControlNet構図・境界誘導補助オラクル (Zero-Touch Verified / EXPERIMENTAL AUX)
+- `14_MANGA_PANEL_LAYOUT_GUIDE_EDITOR_TEST.json`: 漫画コマ割り専用の独立幾何エディター（Shared-Vertex Mesh）によるコマ分割・共有頂点ドラッグ変形・ControlNetガイド画像検証 (Zero-Touch Verified / DEVELOPMENT TOOL)
 
 ### Tag Complete (Phase 3B.1.1 導入)
 - 全テキスト入力欄（Region Editor Prompt、CLIPTextEncode 等）で、Danbooru 14万タグ、LoRA名、Embeddingのリアルタイム自動補完（Tag Complete）が完全動作します（`ComfyUI-Custom-Scripts` 統合）。
 
-### Two-Region Couple / Regional Prompter Oracle (Phase 3C 成果)
-- 2領域（Region A / Region B）に特化した最小データ契約 `TWO_REGION_SPEC` (v1) と専用GUI `TegakiTwoRegionCoupleEditor`（Presets完備）を配備。
-- **Core Masked Conditioning vs Impact RegionalSampler** の固定Seed実機比較により、Core Conditioning方式が **12秒（Impactの1.8倍高速）、局所性比率 3.51x（極めて高い分離性）、自然な同一シーン演技誘導** を実現することを実証。今後の多コマ・キャラクター融合の推奨バックエンドとして確定しました。
+### Semantic Region Hardening & Panel Layout Guide Foundation (Phase 3C / 3C.1 成果)
+- **意味領域（Semantic Region）とコマ割り（Panel Layout）の完全分離**:
+  - **Semantic Region**: 2領域（Region A / Region B）に特化した最小データ契約 `TWO_REGION_SPEC` (v1) とインタラクティブな `TegakiTwoRegionCoupleEditor`（ドラッグ移動・リサイズ・選択・作成完備）。演技・対話構図のため **「Semantic Overlap（重なり前提）」** を基本思想とし、局所性比率 4.52x の高い空間分離性を実証。
+  - **Panel Layout Guide**: 漫画コマ割り専用の独立エディター `TegakiMangaPanelLayoutEditor` と契約 `PANEL_LAYOUT_SPEC` (v1)。**Shared-Vertex Mesh（共有頂点メッシュ）** 方式により隙間・重なりのないコマ変形、水平/垂直/斜め分割（Split）、Undo/Redo、ControlNet 向け純白背景・黒枠線画像の出力を確立。
 
 

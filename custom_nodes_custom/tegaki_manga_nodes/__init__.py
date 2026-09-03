@@ -7,6 +7,7 @@ from .two_region_editor import TegakiTwoRegionCoupleEditor
 from .two_region_core_conditioner import TegakiTwoRegionCoreConditioner
 from .two_region_impact_adapter import TegakiTwoRegionImpactAdapter
 from .two_region_layout_guide import TegakiTwoRegionLayoutGuide
+from .panel_layout_editor import TegakiMangaPanelLayoutEditor
 
 NODE_CLASS_MAPPINGS = {
     "TegakiLoraPromptLoader": TegakiLoraPromptLoader,
@@ -21,6 +22,7 @@ NODE_CLASS_MAPPINGS = {
     "TegakiTwoRegionCoreConditioner": TegakiTwoRegionCoreConditioner,
     "TegakiTwoRegionImpactAdapter": TegakiTwoRegionImpactAdapter,
     "TegakiTwoRegionLayoutGuide": TegakiTwoRegionLayoutGuide,
+    "TegakiMangaPanelLayoutEditor": TegakiMangaPanelLayoutEditor,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -36,9 +38,11 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "TegakiTwoRegionCoreConditioner": "Tegaki Two Region Core Conditioner (Oracle)",
     "TegakiTwoRegionImpactAdapter": "Tegaki Two Region Impact Adapter (Oracle)",
     "TegakiTwoRegionLayoutGuide": "Tegaki Two Region Layout Guide (Oracle)",
+    "TegakiMangaPanelLayoutEditor": "Tegaki Manga Panel Layout Editor (Guide)",
 }
 
 WEB_DIRECTORY = "./web"
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS", "WEB_DIRECTORY"]
+
 

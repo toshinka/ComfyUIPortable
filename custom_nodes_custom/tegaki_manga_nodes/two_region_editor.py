@@ -6,16 +6,16 @@ from typing import Dict, Any, Tuple, Optional
 
 import torch
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
 from .two_region_spec import get_default_two_region_spec, validate_two_region_spec
 
 
 class TegakiTwoRegionCoupleEditor:
     """
-    Tegaki Two Region Couple Editor (Phase 3C Oracle)
+    Tegaki Two Region Couple Editor (Phase 3C.1 Hardened Oracle)
     2領域 (Region A / Region B) に特化した視覚的 Rectangle Editor ノード。
-    Horizontal Split / Vertical Split / Overlap などのプリセットを備え、
+    Semantic Overlap（約35%重なり）を基本思想とし、
     TWO_REGION_SPEC、Mask A/B、およびカラープレビュー画像を同時出力する。
     """
     @classmethod
@@ -51,36 +51,42 @@ class TegakiTwoRegionCoupleEditor:
         negative_prompt_B: str,
         two_region_spec_data: str = ""
     ) -> Tuple[Dict[str, Any], torch.Tensor, torch.Tensor, torch.Tensor, str]:
-        # 1. Spec の復元または初期化
+        # 1. Spec の復元または初期化 (fail-closed スキーマ検証)
         spec: Optional[Dict[str, Any]] = None
         if two_region_spec_data and two_region_spec_data.strip():
             try:
                 raw_spec = json.loads(two_region_spec_data)
-                spec = validate_two_region_spec(raw_spec)
-            except Exception as e:
-                logging.warning(f"[TegakiTwoRegionCoupleEditor] Fallback to default spec due to parse error: {e}")
-                spec = None
+            except json.JSONDecodeError as e:
+                logging.warning(f"[TegakiTwoRegionCoupleEditor] Fallback to default spec due to JSON syntax error: {e}")
+                raw_spec = None
+
+            if raw_spec is not None:
+                # Valid JSON だがスキーマ不正の場合は fail-closed で例外を投げる
+                spec = validate_two_region_spec(raw_spec, context_name="TegakiTwoRegionCoupleEditor")
 
         if spec is None:
             spec = get_default_two_region_spec(canvas_width, canvas_height)
 
-        # ウィジェットからのプロンプト・キャンバス同期
+        # ウィジェットからのプロンプト・キャンバス同期 (空文字へのクリアも完全許可)
         spec["canvas"]["width"] = int(canvas_width)
         spec["canvas"]["height"] = int(canvas_height)
-        spec["global_prompt"] = str(global_prompt or "")
-        spec["global_negative_prompt"] = str(global_negative_prompt or "")
+        spec["global_prompt"] = str(global_prompt if global_prompt is not None else "")
+        spec["global_negative_prompt"] = str(global_negative_prompt if global_negative_prompt is not None else "")
 
-        # A / B プロンプトの同期
         reg_map = {r["id"]: r for r in spec["regions"]}
         if "A" in reg_map:
-            if prompt_A != "": reg_map["A"]["prompt"] = prompt_A
-            reg_map["A"]["negative_prompt"] = negative_prompt_A
+            if prompt_A is not None:
+                reg_map["A"]["prompt"] = str(prompt_A)
+            if negative_prompt_A is not None:
+                reg_map["A"]["negative_prompt"] = str(negative_prompt_A)
         if "B" in reg_map:
-            if prompt_B != "": reg_map["B"]["prompt"] = prompt_B
-            reg_map["B"]["negative_prompt"] = negative_prompt_B
+            if prompt_B is not None:
+                reg_map["B"]["prompt"] = str(prompt_B)
+            if negative_prompt_B is not None:
+                reg_map["B"]["negative_prompt"] = str(negative_prompt_B)
 
         # 再検証
-        spec = validate_two_region_spec(spec)
+        spec = validate_two_region_spec(spec, context_name="TegakiTwoRegionCoupleEditor")
 
         W = spec["canvas"]["width"]
         H = spec["canvas"]["height"]
@@ -139,7 +145,6 @@ class TegakiTwoRegionCoupleEditor:
             if x1 > x0 and y1 > y0:
                 pal = color_palette.get(rid, {"fill": (100, 100, 100, 80), "stroke": (50, 50, 50, 200)})
                 overlay_draw.rectangle([x0, y0, x1, y1], fill=pal["fill"], outline=pal["stroke"], width=3)
-                # ラベル
                 p_snippet = reg.get("prompt", "")[:25]
                 label_text = f"Region {rid}: {p_snippet}"
                 overlay_draw.rectangle([x0, y0, min(x1, x0 + 260), min(y1, y0 + 26)], fill=pal["stroke"])
@@ -147,7 +152,6 @@ class TegakiTwoRegionCoupleEditor:
 
         preview_img.paste(Image.alpha_composite(Image.new("RGBA", (W, H), (252, 250, 242, 255)), overlay).convert("RGB"), (0, 0))
 
-        # PIL -> Tensor [1, H, W, 3] float 0..1
         np_img = np.array(preview_img).astype(np.float32) / 255.0
         tensor_preview = torch.from_numpy(np_img).unsqueeze(0)
 

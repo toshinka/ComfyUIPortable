@@ -189,9 +189,20 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 
 ---
 
-## 5. 互換性保証について (Phase 3B.1.1 & Phase 3C)
+### 14_MANGA_PANEL_LAYOUT_GUIDE_EDITOR_TEST.json
+- **区分**: 開発・レイアウトツール (DEVELOPMENT / PANEL LAYOUT TOOL)
+- **目的**: 漫画コマ割り専用の独立幾何エディター（`TegakiMangaPanelLayoutEditor`）による、Shared-Vertex Mesh コマ分割・共有頂点ドラッグ変形および ControlNet ガイド画像（白地・黒枠線・文字なし）のプレビュー検証ハーネス。
+- **必要Custom Node**:
+  - `TegakiMangaPanelLayoutEditor` (独自 / コマ割り専用エディター, 共有頂点メッシュ, H/V/D Split, Undo/Redo)
+  - ComfyUI標準: PreviewImage, SaveImage
+- **出力**: コマ割りガイド画像 (`ComfyUI/output/Tegaki/PanelLayout/...`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+## 5. 互換性保証について (Phase 3B.1.1 & Phase 3C / 3C.1)
 - **Zero-Touch Smoke Test 検証済み**:
-  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10_MANGA_REGIONAL_CONTROL_EXPANSION_TEST.json`、および `11`, `12`, `13` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して画像生成が正常完了することが実機検証されています。
+  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10_MANGA_REGIONAL_CONTROL_EXPANSION_TEST.json`、および `11`, `12`, `13`, `14` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが検証されています。
 - **Canonical Widget Order**:
   `TegakiMangaConditioningBuilder` の Widget 順序は `[panel_strength, character_strength, set_cond_area, local_region_strength, mask_feather]` に統一され、フロントエンド自動マイグレーション拡張（`manga_workflow_migration.js`）により過去のワークフローも透過的に自動変換・NaN修復されます。
 

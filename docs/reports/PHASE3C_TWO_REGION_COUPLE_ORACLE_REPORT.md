@@ -159,11 +159,11 @@ RTX 4070 実機にて Seed=42, 15 steps で全ケースを生成完了:
 
 ---
 
-## 14. Man / Woman 比較実験
+### 14. Man / Woman 比較実験
 
 - **Core Masked Conditioning**:
   - Horizontal: 左に黒髪・黒ジャケットの男性、右に金髪・白ドレスの笑顔の女性。二人が石造りのアーチの前で向かい合う。
-  - 属性漏れ（男性の服が白くなったり、女性の髪が黒くなったり）は一切発生せず。
+  - 今回の固定Seedサンプルでは、顕著な属性混線（男性の服が白くなったり、女性の髪が黒くなったり）は確認されず、安定した分離を示した。
 - **Impact RegionalSampler**:
   - Horizontal: 左に男性、右に座る女性。人物分離は成立。
 
@@ -175,7 +175,7 @@ RTX 4070 実機にて Seed=42, 15 steps で全ケースを生成完了:
 - **観察結果 (`Core_ManWoman_OneScene`)**:
   - 男性と女性が接近して手を繋ぎ、笑顔で見つめ合う構図が生成。
   - 漫画的なコマ枠やフキダシの装飾モチーフも自然に出現。
-  - 身体融合（fusion: 腕が3本になる、体がつながるなど）は一切起きず、二人の独立した存在感と演技の調和が両立。
+  - 身体融合（fusion: 腕が3本になる、体がつながるなど）は今回のサンプルでは発生せず、二人の独立した存在感と演技の調和が両立。
 
 ---
 
@@ -186,26 +186,28 @@ RTX 4070 実機にて Seed=42, 15 steps で全ケースを生成完了:
   - Base: Region A = "1woman, blonde hair, blue eyes, smiling, light dress"
   - Variant: Region A = "1woman, blue hair, blue eyes, smiling, light dress" (髪色のみ変更)
   - Region B: "1boy, black hair, dark jacket, standing" (固定)
-- **実測メトリクス結果**:
-  - $\Delta A$ (Target Change Inside A): **0.2289**
-  - $\Delta B$ (Fixed Partner Inside B): **0.0652**
-  - $\Delta \text{Outside}$ (Background): **0.1019**
-  - **局所性比率 ($\Delta A / \Delta B$)**: **3.51x** (B への漏れが A の変化の 1/3.5 以下)
-  - **外部分離度 ($\Delta A / \Delta \text{Outside}$)**: **2.25x**
-  - **判定**: **PASS**
+- **実測メトリクス結果 (Spec-Driven / Overlap 集計)**:
+  - $\Delta \text{A-only}$ (Exclusive Target): **0.2404**
+  - $\Delta \text{B-only}$ (Exclusive Partner): **0.0532**
+  - $\Delta (A \cap B)$ (Overlap): **0.1489**
+  - $\Delta \text{Outside}$ (Background): **0.0929**
+  - **空間的局所性比率 ($\Delta \text{A-only} / \Delta \text{B-only}$)**: **4.52x** (パートナー領域への変動漏れが極めて低い)
+  - **外部分離度 ($\Delta \text{A-only} / \Delta \text{Outside}$)**: **2.59x**
+  - **診断結果**: **PASS (SPATIALLY_LOCALIZED)**
+  - ※ 注: ピクセル差分は空間的変化の局所性（Spatial change locality）を測定する診断値であり、完全な意味論的正しさ（Semantic correctness）を直接保証するものではありません。
 
 ---
 
 ## 17. Attribute Leakage (属性混線の分析)
 
-- Core Conditioning において、Global Prompt で「構図・画風」を規定し、Region Prompt で「固有の外見（髪・服・種族）」を局所マスクすることで、属性混線が極小に抑えられることが実証された。
-- 局所性比率 3.51x は、人物ごとの独立した LoRA や衣装プロンプトを適用するのに十分な分離性能を示す。
+- Core Conditioning において、Global Prompt で「構図・画風」を規定し、Region Prompt で「固有の外見（髪・服・種族）」を局所マスクすることで、属性混線が抑えられる傾向が確認された。
+- 局所性比率 4.52x は、人物ごとの独立したプロンプトを適用する上で有望な空間分離性能を示す。
 
 ---
 
 ## 18. Interaction Behavior (演技・相互作用の分析)
 
-- 通常の別々生成（Inpainting 等）では「相手を見つめる」「手を繋ぐ」といった相互演技が極めて困難であるのに対し、Core Masked Conditioning は潜在空間全体で Global Prompt の相互作用文脈を共有しながら各領域にノイズ誘導を行うため、自然な対話・触れ合い演技が極めて高品位に成立する。
+- Core Masked Conditioning は潜在空間全体で Global Prompt の相互作用文脈を共有しながら各領域にノイズ誘導を行うため、同一シーンにおける対話・触れ合い演技の誘導において有望な挙動を示した。
 
 ---
 
@@ -232,36 +234,39 @@ RTX 4070 実機にて Seed=42, 15 steps で全ケースを生成完了:
 
 ## 21. ControlNet Layout Assist (`two_region_layout_guide.py`) & Workflow 13
 
-- ノード名: `TegakiTwoRegionLayoutGuide`
-  - `Panel Outline (White on Black)` / `Panel Outline (Black on White)` / `Binary Mask Block` / `Color Block`
+- ノード名: `TegakiTwoRegionLayoutGuide` (Legacy / Oracle 補助)
 - **公式 Workflow 13**: `workflows/13_TWO_REGION_CONTROLNET_LAYOUT_AUX.json`
   - `CN-anytest4_illustrious2_A.safetensors` を併用し、矩形外枠線を ControlNet ガイドとして注入。
-  - 実機生成 `ControlNet_Layout_Aux_Horizontal_00001_.png` (26.13s) にて、明確な仕切り柱・境界構造の誘導に成功。
+  - 実機生成 `ControlNet_Layout_Aux_Horizontal_00001_.png` (26.13s) にて、明確な仕切り柱・境界構造の誘導を確認。
+  - ※ 今後は独立した `TegakiMangaPanelLayoutEditor` をコマ割りの正本とする。
 
 ---
 
-## 22. Recommended Regional Backend (推奨判定)
+## 22. Regional Backend 判定
 
-- **推奨**: **`CORE MASKED CONDITIONING`**
+- **PRIMARY REGIONAL BACKEND**:
+  **`CORE MASKED CONDITIONING (PROVISIONAL)`**
+- **IMPACT**:
+  **`REFERENCE / FALLBACK ORACLE`**
 - **理由**:
   1. 生成速度が Impact の約 1.8 倍高速（12秒 vs 22秒）。
-  2. 外部アドオン依存がなく、ComfyUI の将来バージョンや他環境への移植性が最高。
-  3. 局所性比率 3.51x と高精度で、同一シーン内の人物相互作用（演技・手繋ぎ・視線）が極めて自然。
-  4. 6 コマや Character Region への拡張時にも、 Conditioning リストへの追加だけで対応可能。
+  2. 外部アドオン依存がなく、ComfyUI の将来バージョンや他環境への移植性が高い。
+  3. 局所性比率 4.52x と良好で、同一シーン内の人物相互作用（演技・手繋ぎ・視線）が自然。
+  4. ただし少数サンプルの検証であるため「暫定主要候補（Provisional Primary）」とし、将来比較の余地を残す。
 
 ---
 
 ## 23. N-region / 6 KOMA Readiness
 
-- **判定**: **`GO`**
-- 2領域での局所性・分離性・相互作用の基盤が実証されたため、最大 6 コマ（KOMA 1〜6）への拡張が技術的に可能。
+- **判定**:
+  - **`N-REGION BACKEND READINESS: PROMISING`**
+  - **`FULL MULTI-PANEL INTEGRATION: HOLD`** (Phase 3C.1 でコマ割りと意味領域を独立設計)
 
 ---
 
 ## 24. Character Region Readiness
 
-- **判定**: **`GO`**
-- コマ内の Character Region に対しても、Core Masked Conditioning を適用することで、同一コマ内の複数キャラクターの属性分離・演技誘導が可能。
+- **判定**: **`CHARACTER-REGION BACKEND READINESS: PROMISING`**
 
 ---
 
@@ -273,16 +278,15 @@ RTX 4070 実機にて Seed=42, 15 steps で全ケースを生成完了:
 
 ## 26. Next Phase 提案
 
-- **Phase 3D — Manga Multi-Panel (6 KOMA) & Character Regional Fusion**:
-  - 本 Oracle で確定した Core Masked Conditioning を正式バックエンドとして採用。
-  - 最大 6 コマのパネル分割および各コマ内 Character Region の階層的 Conditioning 生成の統合。
+- **Phase 3C.1 — Semantic Region Hardening & Panel Layout Guide Foundation**:
+  - コマ割り専用の独立 Panel Layout Guide（Shared Vertex Mesh）の構築と、意味領域（Semantic Overlap）の分離。
 
 ---
 
 ## 27. Gemini 独自判断
 
 - Impact Pack の `RegionalSampler` は各ステップでサブサンプラーを反復実行するためオーバーヘッドが大きく、テンポの速い漫画制作フローではユーザー負荷が高いと判断。
-- 一方、Core Masked Conditioning は ComfyUI 本体の C++ / PyTorch ネイティブテンソル演算で完結するため、超高速かつ省メモリで動作し、漫画生成の基盤として圧倒的に有利です。
+- 一方、Core Masked Conditioning は ComfyUI 本体の C++ / PyTorch ネイティブテンソル演算で完結するため軽快であり、現段階のプロトタイプ基盤として最も適格と評価する。
 
 ---
 
@@ -298,15 +302,22 @@ PASS
 CONTROLNET LAYOUT AUX:
 PASS
 
-RECOMMENDED REGIONAL BACKEND:
-CORE
+PRIMARY REGIONAL BACKEND:
+CORE MASKED CONDITIONING (PROVISIONAL)
 
-6-KOMA READINESS:
-GO
+IMPACT:
+REFERENCE / FALLBACK ORACLE
 
-CHARACTER-REGION READINESS:
-GO
+N-REGION BACKEND READINESS:
+PROMISING
+
+FULL MULTI-PANEL INTEGRATION:
+HOLD
+
+CHARACTER-REGION BACKEND READINESS:
+PROMISING
 
 NEXT RECOMMENDED PHASE:
-Phase 3D — Manga Multi-Panel (6 KOMA) & Character Regional Fusion
+Phase 3C.1 — Semantic Region Hardening & Panel Layout Guide Foundation
 ```
+

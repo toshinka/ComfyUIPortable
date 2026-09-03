@@ -84,14 +84,23 @@ def test_strict_bool_enabled():
 
 
 def test_duplicate_and_empty_id():
-    print("\n--- 6. Testing Duplicate and Empty IDs ---")
+    print("\n--- 6. Testing Duplicate, Non-A/B, and Count != 2 IDs ---")
     spec = get_default_two_region_spec()
     spec["regions"][1]["id"] = "A"
     assert_raises(ValueError, validate_two_region_spec, spec, match="Duplicate region id")
 
+    spec = get_default_two_region_spec()
     spec["regions"][1]["id"] = ""
-    assert_raises(ValueError, validate_two_region_spec, spec, match="non-empty string")
-    print("  Duplicate and empty ID rejection: PASSED")
+    assert_raises(ValueError, validate_two_region_spec, spec, match="Region id must be 'A' or 'B'")
+
+    spec = get_default_two_region_spec()
+    spec["regions"][1]["id"] = "C"
+    assert_raises(ValueError, validate_two_region_spec, spec, match="Region id must be 'A' or 'B'")
+
+    spec = get_default_two_region_spec()
+    spec["regions"].append({"id": "C", "enabled": True, "prompt": "", "negative_prompt": "", "x": 0, "y": 0, "w": 0.5, "h": 0.5})
+    assert_raises(ValueError, validate_two_region_spec, spec, match="exactly 2 entries")
+    print("  Duplicate, Non-A/B, and Count != 2 rejection: PASSED")
 
 
 def test_nan_and_infinite_coords():

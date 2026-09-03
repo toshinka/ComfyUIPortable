@@ -1,14 +1,23 @@
 import os
 import sys
 import glob
+import json
+from typing import Dict, Any, Optional
 import numpy as np
 from PIL import Image
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 OUTPUT_DIR = os.path.join(ROOT_DIR, "ComfyUI", "output", "Tegaki", "TwoRegionOracle")
+CUSTOM_NODES_DIR = os.path.join(ROOT_DIR, "ComfyUI", "custom_nodes")
+if CUSTOM_NODES_DIR not in sys.path:
+    sys.path.insert(0, CUSTOM_NODES_DIR)
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
+from custom_nodes.tegaki_manga_nodes.two_region_spec import validate_two_region_spec, get_default_two_region_spec
 
 
-def find_latest_image(prefix: str):
+def find_latest_image(prefix: str) -> Optional[str]:
     matches = glob.glob(os.path.join(OUTPUT_DIR, f"{prefix}_*.png"))
     if not matches:
         return None
@@ -16,9 +25,37 @@ def find_latest_image(prefix: str):
     return matches[-1]
 
 
-def calculate_locality_metrics():
+def build_masks_from_spec(spec_data: Dict[str, Any], H: int, W: int):
+    spec = validate_two_region_spec(spec_data)
+    mask_A = np.zeros((H, W), dtype=bool)
+    mask_B = np.zeros((H, W), dtype=bool)
+
+    for reg in spec["regions"]:
+        if not reg.get("enabled", True):
+            continue
+        rid = reg["id"]
+        rx = int(round(reg["x"] * W))
+        ry = int(round(reg["y"] * H))
+        rw = int(round(reg["w"] * W))
+        rh = int(round(reg["h"] * H))
+
+        x0 = max(0, min(W, rx))
+        y0 = max(0, min(H, ry))
+        x1 = max(0, min(W, rx + rw))
+        y1 = max(0, min(H, ry + rh))
+
+        if x1 > x0 and y1 > y0:
+            if rid == "A":
+                mask_A[y0:y1, x0:x1] = True
+            elif rid == "B":
+                mask_B[y0:y1, x0:x1] = True
+
+    return mask_A, mask_B
+
+
+def calculate_locality_metrics(spec_override: Optional[Dict[str, Any]] = None):
     print("================================================================================")
-    print("Evaluating Regional Locality Metrics (Phase 3C Oracle)")
+    print("Evaluating Regional Locality Metrics (Phase 3C.1 Spec-Driven)")
     print("================================================================================")
 
     base_path = find_latest_image("Core_Locality_Base")
@@ -26,8 +63,6 @@ def calculate_locality_metrics():
 
     if not base_path or not variant_path:
         print(f"[METRIC PENDING] Base or Variant image not found in {OUTPUT_DIR}")
-        print(f"  Base: {base_path}")
-        print(f"  Variant: {variant_path}")
         return {
             "status": "SKIPPED",
             "reason": "images_not_yet_generated"
@@ -42,52 +77,61 @@ def calculate_locality_metrics():
     H, W, _ = img_base.shape
     diff = np.abs(img_base - img_var).mean(axis=2)  # [H, W]
 
-    # マスクの構築:
-    # A: [0.05, 0.10, 0.42, 0.80]
-    # B: [0.53, 0.10, 0.42, 0.80]
-    mask_A = np.zeros((H, W), dtype=bool)
-    mask_B = np.zeros((H, W), dtype=bool)
+    # Spec 駆動によるマスク生成
+    spec = spec_override or get_default_two_region_spec(W, H)
+    mask_A, mask_B = build_masks_from_spec(spec, H, W)
 
-    ax0, ay0 = int(0.05 * W), int(0.10 * H)
-    ax1, ay1 = int((0.05 + 0.42) * W), int((0.10 + 0.80) * H)
-    mask_A[ay0:ay1, ax0:ax1] = True
-
-    bx0, by0 = int(0.53 * W), int(0.10 * H)
-    bx1, by1 = int((0.53 + 0.42) * W), int((0.10 + 0.80) * H)
-    mask_B[by0:by1, bx0:bx1] = True
-
+    # 4 分割領域の導出:
+    # 1. A-only (A \ B)
+    # 2. B-only (B \ A)
+    # 3. Overlap (A ∩ B)
+    # 4. Outside (not (A or B))
+    mask_A_only = mask_A & (~mask_B)
+    mask_B_only = mask_B & (~mask_A)
+    mask_overlap = mask_A & mask_B
     mask_outside = ~(mask_A | mask_B)
 
-    mean_diff_A = float(diff[mask_A].mean()) if mask_A.any() else 0.0
-    mean_diff_B = float(diff[mask_B].mean()) if mask_B.any() else 0.0
+    mean_diff_A_total = float(diff[mask_A].mean()) if mask_A.any() else 0.0
+    mean_diff_B_total = float(diff[mask_B].mean()) if mask_B.any() else 0.0
+    mean_diff_A_only = float(diff[mask_A_only].mean()) if mask_A_only.any() else 0.0
+    mean_diff_B_only = float(diff[mask_B_only].mean()) if mask_B_only.any() else 0.0
+    mean_diff_overlap = float(diff[mask_overlap].mean()) if mask_overlap.any() else 0.0
     mean_diff_outside = float(diff[mask_outside].mean()) if mask_outside.any() else 0.0
 
-    locality_ratio = mean_diff_A / (mean_diff_B + 1e-6)
-    outside_isolation = mean_diff_A / (mean_diff_outside + 1e-6)
+    # 局所性比率 (Target A_only / Fixed B_only)
+    locality_ratio = mean_diff_A_only / (mean_diff_B_only + 1e-6)
+    outside_isolation = mean_diff_A_only / (mean_diff_outside + 1e-6)
 
-    print("\n--- Locality Measurement Results ---")
-    print(f"  Mean Difference Inside Region A (Target Change): {mean_diff_A:.4f}")
-    print(f"  Mean Difference Inside Region B (Fixed Partner): {mean_diff_B:.4f}")
-    print(f"  Mean Difference Outside A/B (Background):        {mean_diff_outside:.4f}")
-    print(f"  Locality Ratio (Delta_A / Delta_B):             {locality_ratio:.2f}x")
-    print(f"  Outside Isolation (Delta_A / Delta_Outside):     {outside_isolation:.2f}x")
+    print("\n--- Spec-Driven Spatial Locality Measurements ---")
+    print(f"  Difference Inside Region A (Total Target):    {mean_diff_A_total:.4f}")
+    print(f"  Difference Inside Region B (Total Partner):   {mean_diff_B_total:.4f}")
+    print(f"  Difference Inside A-only (Exclusive Target):  {mean_diff_A_only:.4f}")
+    print(f"  Difference Inside B-only (Exclusive Partner): {mean_diff_B_only:.4f}")
+    print(f"  Difference Inside Overlap (A ∩ B):            {mean_diff_overlap:.4f}")
+    print(f"  Difference Outside A/B (Background):          {mean_diff_outside:.4f}")
+    print(f"  Spatial Locality Ratio (Delta_A_only / Delta_B_only):     {locality_ratio:.2f}x")
+    print(f"  Outside Isolation Ratio (Delta_A_only / Delta_Outside):   {outside_isolation:.2f}x")
 
-    # 評価判定
-    # Region A の変化が Region B より有意に大きく、局所性が維持されているか
-    is_localized = locality_ratio >= 1.5
+    # Diagnostic 判定
+    is_spatially_localized = locality_ratio >= 1.5
 
     result = {
-        "status": "PASS" if is_localized else "PARTIAL",
-        "mean_diff_A": round(mean_diff_A, 4),
-        "mean_diff_B": round(mean_diff_B, 4),
+        "status": "PASS" if is_spatially_localized else "PARTIAL",
+        "diagnostic": "SPATIALLY_LOCALIZED" if is_spatially_localized else "ATTRIBUTE_DIFFUSED",
+        "mean_diff_A_total": round(mean_diff_A_total, 4),
+        "mean_diff_B_total": round(mean_diff_B_total, 4),
+        "mean_diff_A_only": round(mean_diff_A_only, 4),
+        "mean_diff_B_only": round(mean_diff_B_only, 4),
+        "mean_diff_overlap": round(mean_diff_overlap, 4),
         "mean_diff_outside": round(mean_diff_outside, 4),
-        "locality_ratio": round(locality_ratio, 2),
-        "outside_isolation": round(outside_isolation, 2),
-        "is_localized": is_localized
+        "spatial_locality_ratio": round(locality_ratio, 2),
+        "outside_isolation_ratio": round(outside_isolation, 2),
+        "raw_metric_note": "Pixel difference measures spatial change locality, not full semantic correctness."
     }
 
     print("\n================================================================================")
-    print(f"Result: {result['status']} (Locality Ratio: {locality_ratio:.2f}x)")
+    print(f"Diagnostic Result: {result['status']} (Spatial Locality Ratio: {locality_ratio:.2f}x)")
+    print(f"Note: {result['raw_metric_note']}")
     print("================================================================================")
     return result
 
