@@ -4,137 +4,147 @@ ComfyUI Portable 漫画制作環境 (Tegaki Manga Edition) - External AI Review 
 
 Project Name: Tegaki ComfyUI Portable Manga Edition
 Purpose: Windowsローカル環境にIllustrious/SDXLモデルとEasyReforge資産を統合した漫画制作研究環境
-Updated: 2026-09-03 14:38 (JST)
+Updated: 2026-09-03 15:56 (JST)
 Repository URL: https://github.com/toshinka/tegaki
 Branch: main
 
-Review Target Commit SHA: b628f3d57699da615eb45ce6f11ab018a38d591d
-Current Status: Phase 3A 完了（Manga Scene Data Contract 設計・CAST_SPEC v1・Scene Compiler プロトタイプ・Phase 3B準備完了）
+Review Target Commit SHA: 95ab6023f07183cf9418c6a036c1c0186a3e183a
+Current Status: Phase 3A.1 完了（Scene Contract Hardening・LoRA Canonicalization・Negative Prompt Hierarchy・Workflow 08・Phase 3B準備完了）
 
 ※ 外部AIは以下の「Pinned URL (commit固定)」を参照してレビューを実施してください。
 
 --------------------------------------------------------------------------------
-1. Required First Reads (最優先確認資料 - Phase 3A データ契約・報告書)
+1. Required First Reads (最優先確認資料 - Phase 3A.1 データ契約・報告書)
 --------------------------------------------------------------------------------
-1. PHASE3A_SCENE_DATA_CONTRACT_REPORT.md (Phase 3A データ契約報告書・全15項目網羅)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/PHASE3A_SCENE_DATA_CONTRACT_REPORT.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/PHASE3A_SCENE_DATA_CONTRACT_REPORT.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/PHASE3A_SCENE_DATA_CONTRACT_REPORT.md
+1. PHASE3A_1_SCENE_CONTRACT_HARDENING_REPORT.md (Phase 3A.1 契約確定報告書・全15項目網羅)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/reports/PHASE3A_1_SCENE_CONTRACT_HARDENING_REPORT.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/docs/reports/PHASE3A_1_SCENE_CONTRACT_HARDENING_REPORT.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/docs/reports/PHASE3A_1_SCENE_CONTRACT_HARDENING_REPORT.md
 
 2. MANGA_SCENE_DATA_CONTRACT.md (漫画シーンデータ契約総合仕様書 - PAGE/KOMA/CAST)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/MANGA_SCENE_DATA_CONTRACT.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/docs/MANGA_SCENE_DATA_CONTRACT.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/docs/MANGA_SCENE_DATA_CONTRACT.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/docs/MANGA_SCENE_DATA_CONTRACT.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/docs/MANGA_SCENE_DATA_CONTRACT.md
 
 3. CAST_SPEC_V1.md (キャラクターマスター定義仕様書 - CAST_SPEC v1)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/CAST_SPEC_V1.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/docs/CAST_SPEC_V1.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/docs/CAST_SPEC_V1.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/docs/CAST_SPEC_V1.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/docs/CAST_SPEC_V1.md
 
 4. COMPILE_PLAN_V1.md (コマ実行計画仕様書 - COMPILE_PLAN v1)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/COMPILE_PLAN_V1.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/docs/COMPILE_PLAN_V1.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/docs/COMPILE_PLAN_V1.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/docs/COMPILE_PLAN_V1.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/docs/COMPILE_PLAN_V1.md
 
-5. KNOWN_ISSUES.md (既知の課題 & Phase 3A解決済み課題履歴)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/KNOWN_ISSUES.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/KNOWN_ISSUES.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/KNOWN_ISSUES.md
+5. LORA_ENTRY_V1.md (Canonical LoRA Entry仕様書 - v1)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/LORA_ENTRY_V1.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/docs/LORA_ENTRY_V1.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/docs/LORA_ENTRY_V1.md
 
-6. README.md
+6. KNOWN_ISSUES.md (既知の課題 & Phase 3A.1解決済み課題履歴)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/KNOWN_ISSUES.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/docs/KNOWN_ISSUES.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/docs/KNOWN_ISSUES.md
+
+7. README.md
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/README.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/README.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/README.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/README.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/README.md
 
 --------------------------------------------------------------------------------
 2. Custom Nodes & Specification Implementation (独自ノード・データ契約実装)
 --------------------------------------------------------------------------------
-1. scene_spec.py (Manga Scene Data Contract / CAST_SPEC / Binding バリデーション)
+1. scene_spec.py (Manga Scene Data Contract / CAST_SPEC / COMPILE_PLAN Validator)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_spec.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_spec.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_spec.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_spec.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_spec.py
 
 2. scene_compiler.py (Tegaki Manga Scene Compiler - COMPILE_PLAN 生成ノード)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_compiler.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_compiler.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_compiler.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_compiler.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_compiler.py
 
-3. region_editor.py (Tegaki Manga Region Editor - 境界値修正・MIN_REGION_SIZE・極小Preview安全化)
+3. region_editor.py (Tegaki Manga Region Editor - 境界値・Negative Prompt・Strict型検証)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/region_editor.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/region_editor.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/region_editor.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/region_editor.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/region_editor.py
 
 4. tegaki_region_editor.js (Manga Region Editor Frontend)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/tegaki_region_editor.js
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/tegaki_region_editor.js
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/tegaki_region_editor.js
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/tegaki_region_editor.js
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/tegaki_region_editor.js
 
 5. __init__.py (Node registration & WEB_DIRECTORY export)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/__init__.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/__init__.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/__init__.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/__init__.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/__init__.py
 
 --------------------------------------------------------------------------------
 3. Automated Testing Scripts (自動テスト・データ契約検証スクリプト)
 --------------------------------------------------------------------------------
-1. test_cast_spec.py (CAST_SPEC & Character Binding バリデーション検証スイート)
+1. test_cast_spec.py (CAST_SPEC & Binding バリデーション検証スイート・全15ケース)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/scripts/test_cast_spec.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/scripts/test_cast_spec.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/scripts/test_cast_spec.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/scripts/test_cast_spec.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/scripts/test_cast_spec.py
 
-2. test_scene_compiler.py (Manga Scene Compiler 統合実行計画検証スイート・全7ケース)
+2. test_scene_compiler.py (Manga Scene Compiler 統合検証スイート・全13ケース)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/scripts/test_scene_compiler.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/scripts/test_scene_compiler.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/scripts/test_scene_compiler.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/scripts/test_scene_compiler.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/scripts/test_scene_compiler.py
 
 3. test_region_spec.py (REGION_SPEC 包括的単体テスト・全14スイート)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/scripts/test_region_spec.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/scripts/test_region_spec.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/scripts/test_region_spec.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/scripts/test_region_spec.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/scripts/test_region_spec.py
 
-4. test_region_state_transitions.py (Phase 2.1.1 状態遷移・回帰テストスイート)
+4. test_region_state_transitions.py (Region Editor 状態遷移・回帰テストスイート)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/scripts/test_region_state_transitions.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/scripts/test_region_state_transitions.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/scripts/test_region_state_transitions.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/scripts/test_region_state_transitions.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/scripts/test_region_state_transitions.py
 
 5. test_runtime_source_identity.py (Git正本と実行時コードの物理同一性検証)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/scripts/test_runtime_source_identity.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/scripts/test_runtime_source_identity.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/scripts/test_runtime_source_identity.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/scripts/test_runtime_source_identity.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/scripts/test_runtime_source_identity.py
 
 6. test_region_editor_backend_api.py (Region Editor バックエンド実行API検証)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/scripts/test_region_editor_backend_api.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/scripts/test_region_editor_backend_api.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/scripts/test_region_editor_backend_api.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/scripts/test_region_editor_backend_api.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/scripts/test_region_editor_backend_api.py
 
 --------------------------------------------------------------------------------
 4. Patches & Verification Scripts (外部ノードパッチ管理)
 --------------------------------------------------------------------------------
 1. wildcard_organizer_windows_junction.patch (WildcardOrganizer Windowsジャンクション対応パッチ)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/patches/wildcard_organizer_windows_junction.patch
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/patches/wildcard_organizer_windows_junction.patch
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/patches/wildcard_organizer_windows_junction.patch
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/patches/wildcard_organizer_windows_junction.patch
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/patches/wildcard_organizer_windows_junction.patch
 
 2. verify_wildcard_patch.py (パッチ適用自己診断スクリプト)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/scripts/verify_wildcard_patch.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/scripts/verify_wildcard_patch.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/scripts/verify_wildcard_patch.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/scripts/verify_wildcard_patch.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/scripts/verify_wildcard_patch.py
 
 --------------------------------------------------------------------------------
 5. Workflows (漫画制作ワークフローJSON)
 --------------------------------------------------------------------------------
-1. 07_MANGA_REGION_EDITOR_UI_TEST.json (開発用検証ハーネス)
+1. 08_MANGA_SCENE_CONTRACT_TEST.json (Scene Contract 検査ハーネス - Phase 3A.1 新設)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/08_MANGA_SCENE_CONTRACT_TEST.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/workflows/08_MANGA_SCENE_CONTRACT_TEST.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/workflows/08_MANGA_SCENE_CONTRACT_TEST.json
+
+2. 07_MANGA_REGION_EDITOR_UI_TEST.json (開発用検証ハーネス)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/07_MANGA_REGION_EDITOR_UI_TEST.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/workflows/07_MANGA_REGION_EDITOR_UI_TEST.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/workflows/07_MANGA_REGION_EDITOR_UI_TEST.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/workflows/07_MANGA_REGION_EDITOR_UI_TEST.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/workflows/07_MANGA_REGION_EDITOR_UI_TEST.json
 
-2. 01_BASIC_ILLUSTRIOUS_TXT2IMG.json (安定版 txt2img)
+3. 01_BASIC_ILLUSTRIOUS_TXT2IMG.json (安定版 txt2img)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/01_BASIC_ILLUSTRIOUS_TXT2IMG.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/workflows/01_BASIC_ILLUSTRIOUS_TXT2IMG.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/workflows/01_BASIC_ILLUSTRIOUS_TXT2IMG.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/workflows/01_BASIC_ILLUSTRIOUS_TXT2IMG.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/workflows/01_BASIC_ILLUSTRIOUS_TXT2IMG.json
 
-3. 02_ILLUSTRIOUS_I2I.json (安定版 I2I)
+4. 02_ILLUSTRIOUS_I2I.json (安定版 I2I)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/02_ILLUSTRIOUS_I2I.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/workflows/02_ILLUSTRIOUS_I2I.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/b628f3d57699da615eb45ce6f11ab018a38d591d/ComfyUIPortable/workflows/02_ILLUSTRIOUS_I2I.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/workflows/02_ILLUSTRIOUS_I2I.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/95ab6023f07183cf9418c6a036c1c0186a3e183a/ComfyUIPortable/workflows/02_ILLUSTRIOUS_I2I.json
 ================================================================================
