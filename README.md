@@ -64,12 +64,19 @@ D:\GitHub\tegaki\ComfyUIPortable\
  ├─ GITHUB.TXT / GITHUB_ComfyUI.txt         # 外部AIレビュー用リンク集
  ├─ configs/
  │   └─ extra_model_paths.yaml              # 外部モデルパス定義テンプレート
+ ├─ docs/                                   # 漫画制作データ契約・仕様書集 (Phase 3A)
+ │   ├─ MANGA_SCENE_DATA_CONTRACT.md        # 漫画シーンデータ契約総合仕様書 (PAGE/KOMA/CAST)
+ │   ├─ CAST_SPEC_V1.md                     # キャラクターマスター定義仕様書 (CAST_SPEC v1)
+ │   └─ COMPILE_PLAN_V1.md                  # コマ実行計画仕様書 (COMPILE_PLAN v1)
  ├─ custom_nodes_custom/
- │   └─ tegaki_manga_nodes/                 # 独自LoRA記法・漫画Region Editorノード
+ │   └─ tegaki_manga_nodes/                 # 独自LoRA記法・Region Editor・Scene Compilerノード
  ├─ scripts/
  │   ├─ generate_workflows.py               # ワークフロー自動生成スクリプト
  │   ├─ test_runtime_source_identity.py     # Git正本・実行時コード同一性検証
  │   ├─ test_region_spec.py                 # Region Editor単体ロジック・バリデーション検証
+ │   ├─ test_region_state_transitions.py    # Region Editor状態遷移・回帰テストスイート
+ │   ├─ test_cast_spec.py                   # CAST_SPEC & Bindingバリデーション検証
+ │   ├─ test_scene_compiler.py              # Manga Scene Compiler統合実行計画検証
  │   ├─ test_region_editor_backend_api.py   # Region Editor バックエンド実行API検証
  │   ├─ verify_wildcard_patch.py            # Wildcardパッチ適用診断
  │   ├─ test_nodes.py                       # ノード・モデルインポート検証

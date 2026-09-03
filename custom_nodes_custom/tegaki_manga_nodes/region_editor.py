@@ -18,6 +18,9 @@ KOMA_COLORS = [
 SUPPORTED_SCHEMA_VERSION = 1
 
 
+MIN_REGION_SIZE = 0.001
+
+
 def is_active_region(region: dict, panel_count: int) -> bool:
     """
     KOMAが現在アクティブ（有効かつ現在のコマ数範囲内）であるかを判定する共通ルール。
@@ -76,9 +79,12 @@ def validate_region_spec(spec: dict) -> dict:
     seen_ids = set()
     validated_regions = []
 
-    for r in regions:
+    for idx, r in enumerate(regions):
         if not isinstance(r, dict):
-            continue
+            raise ValueError(
+                f"[TegakiRegionEditor] Invalid region entry at index {idx}: element in 'regions' "
+                f"must be a dictionary, got {type(r).__name__} ({r!r})"
+            )
         rid = int(r.get("id", 0))
         if rid < 1 or rid > 6:
             raise ValueError(f"[TegakiRegionEditor] Invalid region id: {rid}. Must be between 1 and 6.")
@@ -95,22 +101,26 @@ def validate_region_spec(spec: dict) -> dict:
             )
         r["enabled"] = enabled_val
 
-        # 座標の検証とクランプ
+        # 座標の検証と厳密クランプ (Phase 3A 境界値修正)
         x = float(r.get("x", 0.0))
         y = float(r.get("y", 0.0))
         w = float(r.get("w", 0.1))
         h = float(r.get("h", 0.1))
 
-        # 軽微な負値やはみ出しのクランプ
-        x = max(0.0, min(1.0, x))
-        y = max(0.0, min(1.0, y))
-        w = max(0.001, min(1.0, w))
-        h = max(0.001, min(1.0, h))
+        # x, y は最大 1.0 - MIN_REGION_SIZE まで
+        x = max(0.0, min(1.0 - MIN_REGION_SIZE, x))
+        y = max(0.0, min(1.0 - MIN_REGION_SIZE, y))
+
+        # w, h は最低 MIN_REGION_SIZE、最大 1.0 - x / 1.0 - y まで
+        max_w = max(MIN_REGION_SIZE, 1.0 - x)
+        max_h = max(MIN_REGION_SIZE, 1.0 - y)
+        w = max(MIN_REGION_SIZE, min(max_w, w))
+        h = max(MIN_REGION_SIZE, min(max_h, h))
 
         if x + w > 1.0:
-            w = max(0.001, 1.0 - x)
+            w = max(MIN_REGION_SIZE, 1.0 - x)
         if y + h > 1.0:
-            h = max(0.001, 1.0 - y)
+            h = max(MIN_REGION_SIZE, 1.0 - y)
 
         r["x"] = round(x, 4)
         r["y"] = round(y, 4)
@@ -237,17 +247,18 @@ def render_preview_image(spec: dict, width: int, height: int) -> torch.Tensor:
         # 太い枠線 (alpha=220)
         overlay_draw.rectangle([rx, ry, rx + rw, ry + rh], outline=(rgb[0], rgb[1], rgb[2], 220), width=4)
 
-        # ラベル描画
-        prompt_snippet = (r.get("prompt", "") or "").strip()
-        if prompt_snippet:
-            label = f"KOMA {rid}: {prompt_snippet[:24]}..."
-        else:
-            label = f"KOMA {rid}"
+        # ラベル描画 (極小Regionではbadge描画を安全にスキップ)
+        if rw >= 40 and rh >= 24:
+            prompt_snippet = (r.get("prompt", "") or "").strip()
+            if prompt_snippet:
+                label = f"KOMA {rid}: {prompt_snippet[:24]}..."
+            else:
+                label = f"KOMA {rid}"
 
-        badge_w = min(rw - 8, max(80, len(label) * 9))
-        badge_h = 24
-        overlay_draw.rectangle([rx + 4, ry + 4, rx + 4 + badge_w, ry + 4 + badge_h], fill=(rgb[0], rgb[1], rgb[2], 230))
-        overlay_draw.text((rx + 8, ry + 8), label, fill=(255, 255, 255, 255))
+            badge_w = min(rw - 8, max(40, len(label) * 8))
+            badge_h = min(rh - 8, 20)
+            overlay_draw.rectangle([rx + 4, ry + 4, rx + 4 + badge_w, ry + 4 + badge_h], fill=(rgb[0], rgb[1], rgb[2], 230))
+            overlay_draw.text((rx + 8, ry + 6), label, fill=(255, 255, 255, 255))
 
     img = Image.alpha_composite(img, overlay).convert("RGB")
 

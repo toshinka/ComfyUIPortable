@@ -192,10 +192,63 @@ def run_tests():
     v_future = validate_region_spec(future_spec)
     assert v_future["regions"][0]["control_strength"] == 0.85
     assert v_future["regions"][0]["lora_tag"] == "<lora:style:0.6>"
-    print("Unknown fields preservation: PASSED")
+    # 12. Phase 3A Boundary Clamping: x=1.0, y=1.0 with positive w, h
+    print("\n--- 12. Testing Phase 3A Boundary Clamping (x=1.0, y=1.0) ---")
+    boundary_spec = {
+        "version": 1,
+        "canvas": {"width": 832, "height": 1216},
+        "panel_count": 2,
+        "regions": [
+            {"id": 1, "enabled": True, "x": 1.0, "y": 1.0, "w": 0.05, "h": 0.05},
+            {"id": 2, "enabled": True, "x": 0.9999, "y": 0.5, "w": 0.1, "h": 0.1},
+        ]
+    }
+    clamped_b = validate_region_spec(boundary_spec)
+    for r in clamped_b["regions"]:
+        assert r["x"] + r["w"] <= 1.0, f"x+w must be <= 1.0, got {r['x'] + r['w']} for id {r['id']}"
+        assert r["y"] + r["h"] <= 1.0, f"y+h must be <= 1.0, got {r['y'] + r['h']} for id {r['id']}"
+        assert r["w"] >= 0.001 and r["h"] >= 0.001, "w and h must be at least MIN_REGION_SIZE"
+    print("Phase 3A Boundary Clamping: PASSED")
+
+    # 13. Phase 3A Tiny Region Preview Rendering safety
+    print("\n--- 13. Testing Phase 3A Tiny Region Preview Rendering ---")
+    tiny_spec = {
+        "version": 1,
+        "canvas": {"width": 832, "height": 1216},
+        "panel_count": 1,
+        "regions": [
+            {"id": 1, "enabled": True, "x": 0.5, "y": 0.5, "w": 0.001, "h": 0.001, "prompt": "tiny"}
+        ]
+    }
+    v_tiny = validate_region_spec(tiny_spec)
+    try:
+        preview_tiny = render_preview_image(v_tiny, 832, 1216)
+        assert preview_tiny.shape == (1, 1216, 832, 3)
+    except Exception as e:
+        assert False, f"render_preview_image raised an exception on tiny region: {e}"
+    print("Tiny Region Preview Rendering: PASSED")
+
+    # 14. Phase 3A Strict Non-dict Region Reject
+    print("\n--- 14. Testing Phase 3A Non-dict Region Reject ---")
+    bad_entries_spec = {
+        "version": 1,
+        "canvas": {"width": 832, "height": 1216},
+        "panel_count": 1,
+        "regions": [
+            {"id": 1, "enabled": True, "x": 0.1, "y": 0.1, "w": 0.4, "h": 0.4},
+            "broken string element in regions"
+        ]
+    }
+    try:
+        validate_region_spec(bad_entries_spec)
+        assert False, "validate_region_spec must reject non-dict entries in regions!"
+    except ValueError as e:
+        assert "must be a dictionary" in str(e).lower()
+        print(f"Non-dict element rejected successfully: {e}")
+    print("Non-dict Region Reject: PASSED")
 
     print("\n================================================================================")
-    print("[SUCCESS] ALL 11 TEST SUITES PASSED PERFECTLY!")
+    print("[SUCCESS] ALL 14 TEST SUITES PASSED PERFECTLY!")
     print("================================================================================")
     return 0
 
