@@ -118,12 +118,15 @@ def run_widget_compatibility_tests():
     assert migrated_3[4] == 0
     print(f"  Corrupted {corrupted_wv} -> {migrated_3} [PASSED]")
 
-    # 5. 実際の Workflow 08, 09, 10 の保存値の整合性検証
+    # 5. 実際の Workflow 08, 09, 10, 11, 12, 13 の保存値の整合性検証
     print("\n--- 5. Testing saved workflows widgets_values matching schema ---")
     workflows_to_check = [
         ("08_MANGA_SCENE_CONTRACT_TEST.json", "TegakiMangaRegionEditor", 5),
         ("09_MANGA_REGIONAL_GENERATION_POC.json", "TegakiMangaConditioningBuilder", 5),
         ("10_MANGA_REGIONAL_CONTROL_EXPANSION_TEST.json", "TegakiMangaConditioningBuilder", 5),
+        ("11_TWO_REGION_CORE_COUPLE_ORACLE.json", "TegakiTwoRegionCoreConditioner", 4),
+        ("12_TWO_REGION_IMPACT_COUPLE_ORACLE.json", "TegakiTwoRegionImpactAdapter", 3),
+        ("13_TWO_REGION_CONTROLNET_LAYOUT_AUX.json", "TegakiTwoRegionLayoutGuide", 2),
     ]
 
     for wf_name, target_node_type, expected_wv_len in workflows_to_check:
@@ -145,6 +148,12 @@ def run_widget_compatibility_tests():
                     assert isinstance(wv[2], str)
                     assert isinstance(wv[3], (int, float)) and math.isfinite(wv[3])
                     assert isinstance(wv[4], int) and math.isfinite(wv[4])
+                elif target_node_type == "TegakiTwoRegionCoreConditioner":
+                    # [strength_A, strength_B, set_cond_area, mask_feather]
+                    assert isinstance(wv[0], (int, float)) and math.isfinite(wv[0])
+                    assert isinstance(wv[1], (int, float)) and math.isfinite(wv[1])
+                    assert isinstance(wv[2], str)
+                    assert isinstance(wv[3], int) and math.isfinite(wv[3])
         assert found, f"Node type {target_node_type} not found in {wf_name}"
 
     print("\n================================================================================")

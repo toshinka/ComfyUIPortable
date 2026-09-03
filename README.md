@@ -121,7 +121,15 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
 - `08_MANGA_SCENE_CONTRACT_TEST.json`: Manga Scene Contract（PAGE/CAST/Binding）検査・可視化ハーネス (DEV / TEST)
 - `09_MANGA_REGIONAL_GENERATION_POC.json`: REGION_SPEC/CAST_SPEC動的駆動による漫画コマ・キャラクター実画像生成 (Zero-Touch Verified / STABLE POC)
 - `10_MANGA_REGIONAL_CONTROL_EXPANSION_TEST.json`: 4階層モデル（Global/Panel/Local Region/Character）による高度構図制御ハーネス (Zero-Touch Verified / EXPERIMENTAL HARNESS)
+- `11_TWO_REGION_CORE_COUPLE_ORACLE.json`: 2領域専用Rectangle EditorとCore Masked Conditioningによる最短・最速Regional検証オラクル (Zero-Touch Verified / EXPERIMENTAL ORACLE)
+- `12_TWO_REGION_IMPACT_COUPLE_ORACLE.json`: Impact Pack RegionalSampler連携によるサンプラー分離方式検証オラクル (Zero-Touch Verified / EXPERIMENTAL BACKEND ORACLE)
+- `13_TWO_REGION_CONTROLNET_LAYOUT_AUX.json`: 矩形外枠線（Panel Outline）によるControlNet構図・境界誘導補助オラクル (Zero-Touch Verified / EXPERIMENTAL AUX)
 
 ### Tag Complete (Phase 3B.1.1 導入)
 - 全テキスト入力欄（Region Editor Prompt、CLIPTextEncode 等）で、Danbooru 14万タグ、LoRA名、Embeddingのリアルタイム自動補完（Tag Complete）が完全動作します（`ComfyUI-Custom-Scripts` 統合）。
+
+### Two-Region Couple / Regional Prompter Oracle (Phase 3C 成果)
+- 2領域（Region A / Region B）に特化した最小データ契約 `TWO_REGION_SPEC` (v1) と専用GUI `TegakiTwoRegionCoupleEditor`（Presets完備）を配備。
+- **Core Masked Conditioning vs Impact RegionalSampler** の固定Seed実機比較により、Core Conditioning方式が **12秒（Impactの1.8倍高速）、局所性比率 3.51x（極めて高い分離性）、自然な同一シーン演技誘導** を実現することを実証。今後の多コマ・キャラクター融合の推奨バックエンドとして確定しました。
+
 

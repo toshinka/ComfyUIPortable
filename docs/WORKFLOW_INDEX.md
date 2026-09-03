@@ -151,9 +151,47 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 
 ---
 
-## 5. 互換性保証について (Phase 3B.1.1 ホットフィックス)
+### 11_TWO_REGION_CORE_COUPLE_ORACLE.json
+- **区分**: 実験・検証オラクル (EXPERIMENTAL / REGIONAL ORACLE)
+- **目的**: 2領域（Region A / Region B）に特化した最小・最速の Core Masked Conditioning 検証オラクル。横並び・縦並び・重なり・同一シーン内2人物の演技をクリーンに検証可能。
+- **必要Custom Node**:
+  - `TegakiTwoRegionCoupleEditor` (独自 / 2領域専用Rectangle Editor, Presets完備)
+  - `TegakiTwoRegionCoreConditioner` (独自 / Core API準拠 最短経路結合)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, KSampler, VAEDecode, SaveImage, PreviewImage
+- **出力**: 2領域制御画像 (`ComfyUI/output/Tegaki/TwoRegionOracle/Core/...`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 12_TWO_REGION_IMPACT_COUPLE_ORACLE.json
+- **区分**: 実験・検証オラクル (EXPERIMENTAL / REGIONAL BACKEND ORACLE)
+- **目的**: Impact Pack の `RegionalSampler` / `RegionalPrompt` によるサンプラー分離方式の挙動・性能検証オラクル。
+- **必要Custom Node**:
+  - `TegakiTwoRegionCoupleEditor` (独自)
+  - `TegakiTwoRegionImpactAdapter` (独自 / Impact連携アダプター)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, CLIPTextEncode, VAEDecode, SaveImage, PreviewImage
+- **出力**: Impactサンプリング画像 (`ComfyUI/output/Tegaki/TwoRegionOracle/Impact/...`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 13_TWO_REGION_CONTROLNET_LAYOUT_AUX.json
+- **区分**: 実験・レイアウト補助オラクル (EXPERIMENTAL / CONTROLNET LAYOUT AUX)
+- **目的**: 矩形外枠線（Panel Outline）をガイド画像として Illustrious 向け ControlNet へ投入し、Regional Prompt の境界制御・コマ割り誘導を補助するオラクル。
+- **必要Custom Node**:
+  - `TegakiTwoRegionCoupleEditor` (独自)
+  - `TegakiTwoRegionCoreConditioner` (独自)
+  - `TegakiTwoRegionLayoutGuide` (独自 / パネル枠線生成)
+  - ComfyUI標準: ControlNetLoader, ControlNetApplyAdvanced, CheckpointLoaderSimple, EmptyLatentImage, KSampler, VAEDecode, SaveImage, PreviewImage
+- **出力**: ControlNet補助画像 (`ComfyUI/output/Tegaki/TwoRegionOracle/ControlNetAux/...`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+## 5. 互換性保証について (Phase 3B.1.1 & Phase 3C)
 - **Zero-Touch Smoke Test 検証済み**:
-  `09_MANGA_REGIONAL_GENERATION_POC.json` および `10_MANGA_REGIONAL_CONTROL_EXPANSION_TEST.json` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して画像生成が正常完了することが実機検証されています。
+  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10_MANGA_REGIONAL_CONTROL_EXPANSION_TEST.json`、および `11`, `12`, `13` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して画像生成が正常完了することが実機検証されています。
 - **Canonical Widget Order**:
   `TegakiMangaConditioningBuilder` の Widget 順序は `[panel_strength, character_strength, set_cond_area, local_region_strength, mask_feather]` に統一され、フロントエンド自動マイグレーション拡張（`manga_workflow_migration.js`）により過去のワークフローも透過的に自動変換・NaN修復されます。
 

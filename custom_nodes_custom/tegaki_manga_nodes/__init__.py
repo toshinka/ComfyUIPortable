@@ -3,6 +3,10 @@ from .region_editor import TegakiMangaRegionEditor
 from .scene_compiler import TegakiMangaSceneCompiler, TegakiMangaPageCompiler, TegakiCompilePlanInspector
 from .mask_builder import TegakiMangaMaskBuilder
 from .conditioning_builder import TegakiMangaConditioningBuilder
+from .two_region_editor import TegakiTwoRegionCoupleEditor
+from .two_region_core_conditioner import TegakiTwoRegionCoreConditioner
+from .two_region_impact_adapter import TegakiTwoRegionImpactAdapter
+from .two_region_layout_guide import TegakiTwoRegionLayoutGuide
 
 NODE_CLASS_MAPPINGS = {
     "TegakiLoraPromptLoader": TegakiLoraPromptLoader,
@@ -13,6 +17,10 @@ NODE_CLASS_MAPPINGS = {
     "TegakiCompilePlanInspector": TegakiCompilePlanInspector,
     "TegakiMangaMaskBuilder": TegakiMangaMaskBuilder,
     "TegakiMangaConditioningBuilder": TegakiMangaConditioningBuilder,
+    "TegakiTwoRegionCoupleEditor": TegakiTwoRegionCoupleEditor,
+    "TegakiTwoRegionCoreConditioner": TegakiTwoRegionCoreConditioner,
+    "TegakiTwoRegionImpactAdapter": TegakiTwoRegionImpactAdapter,
+    "TegakiTwoRegionLayoutGuide": TegakiTwoRegionLayoutGuide,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -24,8 +32,13 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "TegakiCompilePlanInspector": "Tegaki Compile Plan Inspector",
     "TegakiMangaMaskBuilder": "Tegaki Manga Mask Builder",
     "TegakiMangaConditioningBuilder": "Tegaki Manga Conditioning Builder",
+    "TegakiTwoRegionCoupleEditor": "Tegaki Two Region Couple Editor (Oracle)",
+    "TegakiTwoRegionCoreConditioner": "Tegaki Two Region Core Conditioner (Oracle)",
+    "TegakiTwoRegionImpactAdapter": "Tegaki Two Region Impact Adapter (Oracle)",
+    "TegakiTwoRegionLayoutGuide": "Tegaki Two Region Layout Guide (Oracle)",
 }
 
 WEB_DIRECTORY = "./web"
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS", "WEB_DIRECTORY"]
+
