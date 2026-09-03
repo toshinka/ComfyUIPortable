@@ -1,6 +1,6 @@
 {
   "last_node_id": 14,
-  "last_link_id": 15,
+  "last_link_id": 16,
   "nodes": [
     {
       "id": 1,
@@ -400,8 +400,8 @@
       "widgets_values": [
         1.0,
         1.0,
-        1.0,
         "default",
+        1.0,
         0
       ]
     },

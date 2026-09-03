@@ -1,5 +1,6 @@
 import json
 import logging
+import math
 import torch
 from typing import Dict, Any, List, Optional, Tuple
 
@@ -10,14 +11,19 @@ from .mask_builder import TegakiMangaMaskBuilder
 
 class TegakiMangaConditioningBuilder:
     """
-    Tegaki Manga Conditioning Builder (Phase 3B / 3B.1)
+    Tegaki Manga Conditioning Builder (Phase 3B / 3B.1 / 3B.1.1)
     PAGE_COMPILE_PLAN と CLIP を受け取り、
     - Global Positive / Negative (ページ全体・マスクなし)
     - Panel Positive / Negative (各コマ領域・Mask付き)
-    - Local Region Positive / Negative (コマ内局所領域・Mask付き, Phase 3B.1新設)
+    - Local Region Positive / Negative (コマ内局所領域・Mask付き)
     - Character Positive / Negative (各Character Area・Mask付き)
     を ComfyUI Core API に準拠して構築・Combineした Conditioning を生成する。
-    優先順位: Global -> Panel -> Local Region -> Character
+    Append-Only Canonical Widget Order (Phase 3B.1.1):
+    1. panel_strength
+    2. character_strength
+    3. set_cond_area
+    4. local_region_strength
+    5. mask_feather
     """
     @classmethod
     def INPUT_TYPES(cls):
@@ -29,8 +35,8 @@ class TegakiMangaConditioningBuilder:
             "optional": {
                 "panel_strength": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.05}),
                 "character_strength": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.05}),
-                "local_region_strength": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.05}),
                 "set_cond_area": (["default", "mask bounds"], {"default": "default"}),
+                "local_region_strength": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 2.0, "step": 0.05}),
                 "mask_feather": ("INT", {"default": 0, "min": 0, "max": 64, "step": 1}),
             }
         }
@@ -65,10 +71,15 @@ class TegakiMangaConditioningBuilder:
         page_compile_plan: Any,
         panel_strength: float = 1.0,
         character_strength: float = 1.0,
-        local_region_strength: float = 1.0,
         set_cond_area: str = "default",
+        local_region_strength: float = 1.0,
         mask_feather: int = 0
     ):
+        # Backend Finite Validation (NaN, +Inf, -Inf の排除)
+        for name, val in [("panel_strength", panel_strength), ("character_strength", character_strength), ("local_region_strength", local_region_strength)]:
+            if val is None or not math.isfinite(float(val)):
+                raise ValueError(f"[TegakiConditioningBuilder] '{name}' must be a finite float, got {val!r}")
+
         plan = validate_page_compile_plan(page_compile_plan)
 
         # 1. Mask Builder を利用して各階層のマスクを生成 (フェザー対応)

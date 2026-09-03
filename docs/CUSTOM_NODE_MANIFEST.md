@@ -60,3 +60,10 @@ ComfyUIPortable環境（`ComfyUI/custom_nodes/`）に配備されている各Cus
 - **Repository**: `https://github.com/ltdrdata/ComfyUI-Manager.git`
 - **Commit SHA**: `fe1193c0c8168904e32d814190ba7f2ba2ad7581`
 - **ローカルパッチ**: なし (Clean)
+
+### 10. ComfyUI-Custom-Scripts (Phase 3B.1.1 導入)
+- **Repository**: `https://github.com/pythongosssss/ComfyUI-Custom-Scripts.git`
+- **Commit SHA**: `609f3afaa74b2f88ef9ce8d939626065e3247469`
+- **ローカルパッチ**: なし (Clean)
+- **用途**: 全プロンプト入力欄における Booru Tag Complete（Danbooru 14万タグ補完、LoRA/Embeddingオートコンプリート）
+
