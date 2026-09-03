@@ -1,0 +1,171 @@
+{
+  "last_node_id": 3,
+  "last_link_id": 2,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "TegakiMangaRegionEditor",
+      "pos": [
+        60,
+        80
+      ],
+      "size": [
+        540,
+        780
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "region_spec",
+          "type": "REGION_SPEC",
+          "links": [
+            2
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "region_spec_json",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 1
+        },
+        {
+          "name": "global_prompt",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 2
+        },
+        {
+          "name": "preview_image",
+          "type": "IMAGE",
+          "links": [
+            1
+          ],
+          "slot_index": 3
+        },
+        {
+          "name": "mask_batch",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 4
+        }
+      ],
+      "widgets_values": [
+        3,
+        832,
+        1216,
+        "manga page, monochrome, expressive linework, high contrast, screentone shading",
+        "{\n  \"version\": 1,\n  \"canvas\": {\"width\": 832, \"height\": 1216},\n  \"panel_count\": 3,\n  \"global_prompt\": \"manga page, monochrome, expressive linework, high contrast, screentone shading\",\n  \"global_negative_prompt\": \"bad anatomy, color, realistic photo\",\n  \"regions\": [\n    {\n      \"id\": 1,\n      \"name\": \"KOMA 1\",\n      \"enabled\": true,\n      \"x\": 0.06, \"y\": 0.05, \"w\": 0.88, \"h\": 0.28,\n      \"prompt\": \"classroom, two people talking, medium shot <lora:dramatic_angle:0.35>\",\n      \"negative_prompt\": \"empty room, solo\",\n      \"characters\": [\n        {\n          \"character_id\": \"char_alice\",\n          \"enabled\": true,\n          \"prompt_override\": \"annoyed, looking at Bob\",\n          \"negative_prompt_override\": \"happy, smiling\",\n          \"area\": {\"x\": 0.05, \"y\": 0.15, \"w\": 0.40, \"h\": 0.75}\n        },\n        {\n          \"character_id\": \"char_bob\",\n          \"enabled\": true,\n          \"prompt_override\": \"laughing, looking at Alice\",\n          \"negative_prompt_override\": \"crying, serious\",\n          \"area\": {\"x\": 0.55, \"y\": 0.15, \"w\": 0.40, \"h\": 0.75}\n        }\n      ]\n    },\n    {\n      \"id\": 2,\n      \"name\": \"KOMA 2\",\n      \"enabled\": true,\n      \"x\": 0.06, \"y\": 0.36, \"w\": 0.42, \"h\": 0.38,\n      \"prompt\": \"corridor, window view\",\n      \"negative_prompt\": \"\",\n      \"characters\": [\n        {\n          \"character_id\": \"char_alice\",\n          \"enabled\": true,\n          \"prompt_override\": \"walking, looking away\",\n          \"area\": null\n        }\n      ]\n    },\n    {\n      \"id\": 3,\n      \"name\": \"KOMA 3\",\n      \"enabled\": true,\n      \"x\": 0.52, \"y\": 0.36, \"w\": 0.42, \"h\": 0.38,\n      \"prompt\": \"sunset rooftop\",\n      \"negative_prompt\": \"\",\n      \"characters\": []\n    }\n  ]\n}"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "PreviewImage",
+      "pos": [
+        640,
+        80
+      ],
+      "size": [
+        440,
+        650
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 1
+        }
+      ],
+      "widgets_values": []
+    },
+    {
+      "id": 3,
+      "type": "TegakiMangaSceneCompiler",
+      "pos": [
+        1120,
+        80
+      ],
+      "size": [
+        560,
+        650
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "region_spec",
+          "type": "REGION_SPEC",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "compile_plan",
+          "type": "COMPILE_PLAN",
+          "links": null,
+          "slot_index": 0
+        },
+        {
+          "name": "compile_plan_json",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 1
+        },
+        {
+          "name": "compiled_prompt",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 2
+        },
+        {
+          "name": "character_count",
+          "type": "INT",
+          "links": null,
+          "slot_index": 3
+        }
+      ],
+      "widgets_values": [
+        1,
+        "{\n  \"version\": 1,\n  \"characters\": [\n    {\n      \"id\": \"char_alice\",\n      \"name\": \"Alice\",\n      \"enabled\": true,\n      \"prompt\": \"1girl, blonde twin tails, blue eyes, school uniform\",\n      \"negative_prompt\": \"blurry, low quality\",\n      \"loras\": [\n        {\n          \"name\": \"alice_costume\",\n          \"model_weight\": 0.8,\n          \"clip_weight\": 0.6,\n          \"enabled\": true\n        }\n      ]\n    },\n    {\n      \"id\": \"char_bob\",\n      \"name\": \"Bob\",\n      \"enabled\": true,\n      \"prompt\": \"1boy, short brown hair, school uniform\",\n      \"negative_prompt\": \"bad anatomy\",\n      \"loras\": []\n    }\n  ]\n}",
+        "<lora:manga_lineart:0.5> <lora:tone_texture:0.3:0.2>"
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      3,
+      2,
+      0,
+      "IMAGE"
+    ],
+    [
+      2,
+      1,
+      0,
+      3,
+      0,
+      "REGION_SPEC"
+    ]
+  ],
+  "groups": [
+    {
+      "title": "Manga Scene Contract Inspection Harness (Phase 3A.1)",
+      "bounding": [
+        30,
+        20,
+        1680,
+        880
+      ],
+      "color": "#3f789e"
+    }
+  ],
+  "version": 0.4
+}

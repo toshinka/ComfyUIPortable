@@ -199,19 +199,19 @@ def run_scene_compiler_tests():
     )
 
     lora_plan = plan5["lora_plan"]
-    # Global LoRAs
-    g_names = {l["name"]: l["weight"] for l in lora_plan["global_loras"]}
-    assert g_names["shinkai_style"] == 0.5
-    assert g_names["clean_lineart"] == 0.2
+    # Global LoRAs (Canonical format: model_weight, clip_weight)
+    g_names = {l["name"]: (l["model_weight"], l["clip_weight"]) for l in lora_plan["global_loras"]}
+    assert g_names["shinkai_style"] == (0.5, 0.5)
+    assert g_names["clean_lineart"] == (0.2, 0.2)
 
     # KOMA LoRAs
-    k_names = {l["name"]: l["weight"] for l in lora_plan["koma_loras"]}
-    assert k_names["dramatic_angle"] == 0.35
-    assert k_names["lighting_lora"] == 0.25
+    k_names = {l["name"]: (l["model_weight"], l["clip_weight"]) for l in lora_plan["koma_loras"]}
+    assert k_names["dramatic_angle"] == (0.35, 0.35)
+    assert k_names["lighting_lora"] == (0.25, 0.25)
 
     # Character LoRAs
-    c_names = {l["name"]: l["weight"] for l in lora_plan["character_loras"]}
-    assert c_names["alice_v1"] == 0.8
+    c_names = {l["name"]: (l["model_weight"], l["clip_weight"]) for l in lora_plan["character_loras"]}
+    assert c_names["alice_v1"] == (0.8, 0.8)
     assert lora_plan["character_loras"][0]["character_name"] == "Alice"
 
     # clean prompt からは <lora:...> が除去されていること
@@ -237,7 +237,7 @@ def run_scene_compiler_tests():
     # --------------------------------------------------------------------------
     # 7. CAST_SPEC なし互換モード (CAST_SPEC absent compatibility)
     # --------------------------------------------------------------------------
-    print("\n--- 7. Testing CAST_SPEC Absent Compatibility Mode ---")
+    print("\n--- 7. Testing CAST_SPEC Absent Compatibility Mode (No Bindings) ---")
     spec7 = copy.deepcopy(base_region_spec)
     spec7["regions"][0]["prompt"] = "landscape only, mountains and blue sky"
 
@@ -252,8 +252,123 @@ def run_scene_compiler_tests():
     assert "mountains and blue sky" in prompt7
     print("CAST_SPEC Absent Compatibility: PASSED")
 
+    # --------------------------------------------------------------------------
+    # 8. Phase 3A.1: CAST_SPEC なし + Character Binding ありの拒絶
+    # --------------------------------------------------------------------------
+    print("\n--- 8. Testing CAST_SPEC absent with Character Binding rejection ---")
+    spec8 = copy.deepcopy(base_region_spec)
+    spec8["regions"][0]["characters"] = [{"character_id": "char_alice", "enabled": True}]
+    try:
+        compiler.compile_panel(spec8, target_panel_id=1, cast_spec="{}")
+        assert False, "Should raise ValueError when binding exists without CAST_SPEC"
+    except ValueError as e:
+        assert "cast_spec is empty or missing" in str(e).lower()
+        print(f"CAST absent with binding rejected successfully: {e}")
+    print("CAST_SPEC absent with binding rejection: PASSED")
+
+    # --------------------------------------------------------------------------
+    # 9. Phase 3A.1: Broken CAST JSON + Character Binding ありの拒絶
+    # --------------------------------------------------------------------------
+    print("\n--- 9. Testing Broken CAST JSON with Character Binding rejection ---")
+    try:
+        compiler.compile_panel(spec8, target_panel_id=1, cast_spec="{ broken json")
+        assert False, "Should raise ValueError when binding exists with broken CAST JSON"
+    except ValueError as e:
+        assert "syntax error" in str(e).lower()
+        print(f"Broken CAST JSON with binding rejected successfully: {e}")
+    print("Broken CAST JSON with binding rejection: PASSED")
+
+    # --------------------------------------------------------------------------
+    # 10. Phase 3A.1: 1値および2値 LoRA タグのパースと正規化
+    # --------------------------------------------------------------------------
+    print("\n--- 10. Testing 1-value and 2-value LoRA tags ---")
+    spec10 = copy.deepcopy(base_region_spec)
+    spec10["regions"][0]["prompt"] = "scenery <lora:single_val:0.75> <lora:dual_val:0.8:0.4>"
+    plan10, _, clean_p10, _ = compiler.compile_panel(spec10, target_panel_id=1, cast_spec="{}")
+    k_loras = {l["name"]: (l["model_weight"], l["clip_weight"]) for l in plan10["lora_plan"]["koma_loras"]}
+    assert k_loras["single_val"] == (0.75, 0.75), f"Expected (0.75, 0.75), got {k_loras['single_val']}"
+    assert k_loras["dual_val"] == (0.8, 0.4), f"Expected (0.8, 0.4), got {k_loras['dual_val']}"
+    assert "<lora:" not in clean_p10
+    print("1-value and 2-value LoRA tags: PASSED")
+
+    # --------------------------------------------------------------------------
+    # 11. Phase 3A.1: 不正な LoRA タグの拒絶
+    # --------------------------------------------------------------------------
+    print("\n--- 11. Testing Invalid LoRA tags rejection ---")
+    spec11_a = copy.deepcopy(base_region_spec)
+    spec11_a["regions"][0]["prompt"] = "bad tag <lora::0.8>"
+    try:
+        compiler.compile_panel(spec11_a, target_panel_id=1, cast_spec="{}")
+        assert False, "Should reject LoRA tag with missing name"
+    except ValueError as e:
+        assert "missing lora name" in str(e).lower()
+        print(f"Missing LoRA name tag rejected: {e}")
+
+    spec11_b = copy.deepcopy(base_region_spec)
+    spec11_b["regions"][0]["prompt"] = "bad weight <lora:Test:notnumber>"
+    try:
+        compiler.compile_panel(spec11_b, target_panel_id=1, cast_spec="{}")
+        assert False, "Should reject LoRA tag with non-numeric weight"
+    except ValueError as e:
+        assert "must be numeric" in str(e).lower()
+        print(f"Non-numeric weight tag rejected: {e}")
+    print("Invalid LoRA tags rejection: PASSED")
+
+    # --------------------------------------------------------------------------
+    # 12. Phase 3A.1: Negative Prompt 階層の伝播
+    # --------------------------------------------------------------------------
+    print("\n--- 12. Testing Negative Prompt hierarchy propagation ---")
+    spec12 = copy.deepcopy(base_region_spec)
+    spec12["global_negative_prompt"] = "bad anatomy, color"
+    spec12["regions"][0]["negative_prompt"] = "empty room, solo"
+    spec12["regions"][0]["characters"] = [
+        {
+            "character_id": "char_alice",
+            "enabled": True,
+            "prompt_override": "annoyed",
+            "negative_prompt_override": "happy, smile"
+        }
+    ]
+    # Alice の base negative を付与
+    cast12 = copy.deepcopy(test_cast_spec)
+    cast12["characters"][0]["negative_prompt"] = "blurry, low quality"
+
+    plan12, _, _, _ = compiler.compile_panel(
+        region_spec=spec12,
+        target_panel_id=1,
+        cast_spec=json.dumps(cast12)
+    )
+    assert plan12["global_negative_prompt"] == "bad anatomy, color"
+    assert plan12["panel"]["negative_prompt"] == "empty room, solo"
+    c_alice12 = plan12["characters"][0]
+    assert c_alice12["base_negative_prompt"] == "blurry, low quality"
+    assert c_alice12["override_negative_prompt"] == "happy, smile"
+    assert "blurry, low quality" in c_alice12["combined_negative_prompt"]
+    assert "happy, smile" in c_alice12["combined_negative_prompt"]
+    # compiled_negative_prompt に全要素が集約されていること
+    assert "bad anatomy" in plan12["compiled_negative_prompt"]
+    assert "empty room" in plan12["compiled_negative_prompt"]
+    assert "blurry" in plan12["compiled_negative_prompt"]
+    assert "happy" in plan12["compiled_negative_prompt"]
+    print("Negative Prompt hierarchy propagation: PASSED")
+
+    # --------------------------------------------------------------------------
+    # 13. Phase 3A.1: COMPILE_PLAN Validator の自己検証
+    # --------------------------------------------------------------------------
+    print("\n--- 13. Testing COMPILE_PLAN Validator on corrupted plan ---")
+    from custom_nodes.tegaki_manga_nodes.scene_spec import validate_compile_plan
+    corrupted_plan = copy.deepcopy(plan12)
+    corrupted_plan["characters"] = "not a list"
+    try:
+        validate_compile_plan(corrupted_plan)
+        assert False, "validate_compile_plan should reject non-list characters"
+    except ValueError as e:
+        assert "must be a list" in str(e).lower()
+        print(f"Non-list characters in COMPILE_PLAN rejected successfully: {e}")
+    print("COMPILE_PLAN Validator: PASSED")
+
     print("\n================================================================================")
-    print("[SUCCESS] ALL 7 SCENE COMPILER TEST SUITES PASSED PERFECTLY!")
+    print("[SUCCESS] ALL 13 SCENE COMPILER TEST SUITES PASSED PERFECTLY!")
     print("================================================================================")
     return 0
 

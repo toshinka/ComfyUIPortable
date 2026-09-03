@@ -97,3 +97,16 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
   - 生成Backendから完全に分離されており、将来の外部GUI連携にも対応。
 - **出力**: コマレイアウトプレビュー画像 (`ComfyUI/output/Tegaki/RegionEditor_Test_...`)
 - **想定用途**: ネーム・コマ割りレイアウトの視覚的設計とPromptの整理。
+
+---
+
+### 08_MANGA_SCENE_CONTRACT_TEST.json
+- **区分**: 開発用検証ハーネス (DEVELOPMENT / CONTRACT INSPECTION HARNESS)
+- **目的**: `REGION_SPEC`、`CAST_SPEC`、Target KOMA、および `TegakiMangaSceneCompiler` による `COMPILE_PLAN` の生成関係を視覚的に検査・確認するためのハーネス。
+- **必要Custom Node**: `TegakiMangaRegionEditor` (独自), `TegakiMangaSceneCompiler` (独自), `PreviewImage` (Core)
+- **特徴**:
+  - SamplerやCheckpoint等の重い生成ノードに依存せず、Tegaki独自ノードとComfyUI標準ノードのみで構成。
+  - サンプルとして2人会話シーン（KOMA 1: Alice + Bob、Area左右分割、Prompt Override、LoRAタグ）を内包。
+  - `COMPILE_PLAN` (v1) のデータ構造、Clean Prompt、および出演キャラクター数を即座に確認可能。
+- **出力**: Regionプレビュー画像、および `COMPILE_PLAN` 実行計画。
+- **想定用途**: Scene Contract（PAGE ├ KOMA └ CAST）の構造整合性とコンパイル結果の可視化・監査。

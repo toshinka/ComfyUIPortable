@@ -55,19 +55,27 @@ D:\GitHub\tegaki\ComfyUIPortable\
  ├─ run_nvidia_gpu.bat                      # 起動バッチ
  ├─ .gitignore                              # Git除外設定
  ├─ README.md                               # 本ドキュメント
- ├─ BUILD_REPORT.md                         # 構築・検証詳細レポート (全20項目)
- ├─ PHASE2_MRP_UI_REPORT.md                 # Phase 2 改修報告書 (Wildcard+Region Editor)
- ├─ DEPENDENCIES.md                         # パッケージ・ハードウェア環境仕様
- ├─ WORKFLOW_INDEX.md                       # ワークフロー解説
- ├─ KNOWN_ISSUES.md                         # 未解決課題・制限事項
- ├─ RESEARCH_REFERENCES.md                  # 参照リポジトリ・ライセンス
  ├─ GITHUB.TXT / GITHUB_ComfyUI.txt         # 外部AIレビュー用リンク集
  ├─ configs/
  │   └─ extra_model_paths.yaml              # 外部モデルパス定義テンプレート
- ├─ docs/                                   # 漫画制作データ契約・仕様書集 (Phase 3A)
+ ├─ docs/                                   # 漫画制作データ契約・仕様書・設計資料集
  │   ├─ MANGA_SCENE_DATA_CONTRACT.md        # 漫画シーンデータ契約総合仕様書 (PAGE/KOMA/CAST)
  │   ├─ CAST_SPEC_V1.md                     # キャラクターマスター定義仕様書 (CAST_SPEC v1)
- │   └─ COMPILE_PLAN_V1.md                  # コマ実行計画仕様書 (COMPILE_PLAN v1)
+ │   ├─ COMPILE_PLAN_V1.md                  # コマ実行計画仕様書 (COMPILE_PLAN v1)
+ │   ├─ LORA_ENTRY_V1.md                    # Canonical LoRA Entry仕様書 (v1)
+ │   ├─ KNOWN_ISSUES.md                     # 既知の課題・解決済み履歴
+ │   ├─ WORKFLOW_INDEX.md                   # ワークフロー解説・索引
+ │   ├─ DEPENDENCIES.md                     # パッケージ・ハードウェア環境仕様
+ │   ├─ RESEARCH_REFERENCES.md              # 参照リポジトリ・ライセンス
+ │   ├─ CUSTOM_NODE_MANIFEST.md             # 外部Custom Nodeコミット追跡
+ │   └─ reports/                            # 開発フェーズ完了報告書・検証記録集
+ │       ├─ PHASE3A_1_SCENE_CONTRACT_HARDENING_REPORT.md
+ │       ├─ PHASE3A_SCENE_DATA_CONTRACT_REPORT.md
+ │       ├─ PHASE2_1_1_REGRESSION_FIX_REPORT.md
+ │       ├─ PHASE2_1_STABILIZATION_REPORT.md
+ │       ├─ PHASE2_MRP_UI_REPORT.md
+ │       ├─ BUILD_REPORT.md
+ │       └─ PHASE2_1_UI_TEST_CHECKLIST.md
  ├─ custom_nodes_custom/
  │   └─ tegaki_manga_nodes/                 # 独自LoRA記法・Region Editor・Scene Compilerノード
  ├─ scripts/
@@ -84,7 +92,7 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ test_i2i.py                         # 実機I2Iパイプライン検証スクリプト
  │   └─ test_wildcards.py                   # Wildcard/Dynamic Prompts検証
  ├─ patches/                                # 外部Custom Node向けローカルパッチ集
- ├─ workflows/                              # 漫画制作向けワークフローJSON (7種)
+ ├─ workflows/                              # 漫画制作向けワークフローJSON (8種)
  ├─ python_embeded/                         # [Git除外] Python 3.13 組み込み環境
  └─ ComfyUI/                                # [Git除外] ComfyUI本体 & 外部Custom Nodes
 ```
@@ -102,3 +110,4 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
 - `05_CONTROLNET_COMPOSITION.json`: ポーズ・構図の固定 (EXPERIMENTAL)
 - `06_LORA_MIX_EXPERIMENT.json`: 複数LoRAの配合比率探索 (STABLE)
 - `07_MANGA_REGION_EDITOR_UI_TEST.json`: 最大6コマ視覚的Region Editor UI操作・プレビュー検証ハーネス (DEV / TEST)
+- `08_MANGA_SCENE_CONTRACT_TEST.json`: Manga Scene Contract（PAGE/CAST/Binding）検査・可視化ハーネス (DEV / TEST)

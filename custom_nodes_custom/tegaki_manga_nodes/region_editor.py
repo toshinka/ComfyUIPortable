@@ -66,6 +66,17 @@ def validate_region_spec(spec: dict) -> dict:
     spec["canvas"]["width"] = width
     spec["canvas"]["height"] = height
 
+    # Global Prompt / Negative Prompt の厳格な型検証
+    raw_gp = spec.get("global_prompt", "")
+    if raw_gp is not None and not isinstance(raw_gp, str):
+        raise ValueError(f"[TegakiRegionEditor] 'global_prompt' must be a string, got {type(raw_gp).__name__}")
+    spec["global_prompt"] = raw_gp if raw_gp is not None else ""
+
+    raw_gnp = spec.get("global_negative_prompt", "")
+    if raw_gnp is not None and not isinstance(raw_gnp, str):
+        raise ValueError(f"[TegakiRegionEditor] 'global_negative_prompt' must be a string, got {type(raw_gnp).__name__}")
+    spec["global_negative_prompt"] = raw_gnp if raw_gnp is not None else ""
+
     panel_count = int(spec.get("panel_count", 3))
     if not (1 <= panel_count <= 6):
         logging.warning(f"[TegakiRegionEditor] panel_count ({panel_count}) out of bounds (1..6). Clamping.")
@@ -126,7 +137,21 @@ def validate_region_spec(spec: dict) -> dict:
         r["y"] = round(y, 4)
         r["w"] = round(w, 4)
         r["h"] = round(h, 4)
-        r["prompt"] = str(r.get("prompt", "") or "")
+
+        raw_p = r.get("prompt", "")
+        if raw_p is not None and not isinstance(raw_p, str):
+            raise ValueError(f"[TegakiRegionEditor] Region id {rid}: 'prompt' must be a string, got {type(raw_p).__name__}")
+        r["prompt"] = raw_p if raw_p is not None else ""
+
+        raw_np = r.get("negative_prompt", "")
+        if raw_np is not None and not isinstance(raw_np, str):
+            raise ValueError(f"[TegakiRegionEditor] Region id {rid}: 'negative_prompt' must be a string, got {type(raw_np).__name__}")
+        r["negative_prompt"] = raw_np if raw_np is not None else ""
+
+        # characters フィールドが存在する場合は list 必須 (指示書第32〜33項)
+        if "characters" in r:
+            if not isinstance(r["characters"], list):
+                raise ValueError(f"[TegakiRegionEditor] Region id {rid}: 'characters' must be a list, got {type(r['characters']).__name__}")
 
         # カラーは固定パレットと同期
         color_info = KOMA_COLORS[(rid - 1) % len(KOMA_COLORS)]

@@ -21,8 +21,10 @@
       "loras": [
         {
           "name": "alice_official_v1",
-          "weight": 0.8,
-          "enabled": true
+          "model_weight": 0.8,
+          "clip_weight": 0.6,
+          "enabled": true,
+          "metadata": {}
         }
       ],
       "metadata": {
@@ -42,29 +44,26 @@
 | フィールド | 型 | 必須 | 説明 |
 |---|---|---|---|
 | `version` | `integer` | 必須 | スキーマバージョン。現在は `1` 固定。 |
-| `characters` | `array` | 必須 | キャラクター定義オブジェクトのリスト。 |
+| `characters` | `array` | 必須 | キャラクター定義オブジェクトのリスト。存在する場合は必ず `list`（非listは即時 `ValueError`）。 |
 
 ### Character オブジェクト
 | フィールド | 型 | 必須 | 説明 |
 |---|---|---|---|
-| `id` | `string` | 必須 | 内部参照用の安定識別子（例: `char_alice`, `char_001`）。**プロジェクト内で一意**。 |
-| `name` | `string` | 任意 | 表示名（例: "Alice", "アリス"）。重複可能。 |
-| `enabled` | `boolean` | 必須 | 厳格な真偽値（`true` / `false`）。無効化時はコンパイル対象から除外。 |
-| `prompt` | `string` | 必須 | キャラクターの恒常的特徴（髪型、瞳色、標準衣装、固有特徴タグ）。 |
-| `negative_prompt` | `string` | 任意 | キャラクター個別のネガティブプロンプト。 |
-| `loras` | `array` | 任意 | キャラクター固有のLoRA定義リスト。 |
-| `metadata` | `object` | 任意 | 未知の将来属性（設定資料、参照画像URI、声優情報等）。前方互換性のため保持。 |
+| `id` | `string` | 必須 | 内部参照用の安定識別子（例: `char_alice`, `char_001`）。**strict string（非空文字列、数値・boolの暗黙変換不可）**。プロジェクト内で一意。 |
+| `name` | `string` | 任意 | 表示名（例: "Alice", "アリス"）。省略時は `id`。重複可能。 |
+| `enabled` | `boolean` | 必須 | 厳格な真偽値（`true` / `false`）。`isinstance(val, bool)` を必須化。 |
+| `prompt` | `string` | 必須 | キャラクターの恒常的特徴（髪型、瞳、基本衣装、固有特徴タグ）。strict string。 |
+| `negative_prompt` | `string` | 任意 | キャラクター個別のネガティブプロンプト。strict string。 |
+| `loras` | `array` | 任意 | キャラクター固有のCanonical LoRA定義リスト。 |
+| `metadata` | `object` | 任意 | 将来属性用dict（設定資料、参照画像パス等）。非dictは `ValueError`。 |
 
-### LoRA Entry オブジェクト
+### Canonical LoRA Entry オブジェクト
 | フィールド | 型 | 必須 | 説明 |
 |---|---|---|---|
-| `name` | `string` | 必須 | LoRAモデルファイル名または識別名。 |
-| `weight` | `number` | 必須 | 適用強度（例: `0.8`）。 |
+| `name` | `string` | 必須 | LoRAモデル識別名。非空文字列。 |
+| `model_weight` | `number` | 必須 | モデル適用強度。strict numeric（bool除外）。 |
+| `clip_weight` | `number` | 必須 | テキストエンコーダー適用強度。strict numeric（bool除外）。 |
 | `enabled` | `boolean` | 必須 | 厳格な真偽値。 |
+| `metadata` | `object` | 任意 | 将来属性用dict。 |
 
----
-
-## 4. 設計原則
-1. **IDと表示名の分離**: コマ割り変更や表示名変更でバインディングが壊れないよう、不変の `id` をキーとします。
-2. **演出・差分の分離**: 表情（smiling, crying）やコマごとのポーズ（looking at Bob）はここには含めず、KOMA側の `prompt_override` で指定します。
-3. **前方互換性**: 将来の属性（`actor_voice`, `control_net` 等）が追加されても、バリデータは未知フィールドを破棄せず透過保持します。
+※ レガシー入力 `weight` は `model_weight = weight, clip_weight = weight` として自動正規化されます。

@@ -29,6 +29,13 @@
 - **現象**: 一部のTriton依存拡張はWindowsネイティブではスキップされます。
 - **影響**: 標準のPyTorch Attention / VAEデコードが使用されるため、画像の生成結果や品質には一切影響ありません。
 
+## [RESOLVED IN PHASE 3A.1] 解決済みの課題履歴
+- **CASTなし/破損時のCharacter Binding暗黙実行**: KOMAに出演キャラがバインドされているにもかかわらずCAST_SPECが未指定または構文破損している場合、空キャラで続行せず `ValueError`（契約違反）として即時停止するよう厳格化・テスト完了。
+- **LoRAの2値指定および不完全タグの扱い**: `<lora:name:0.8:0.5>` の2値タグを `model_weight` / `clip_weight` に完全保持し、不正タグ（名前欠落や非数値）を即時 `ValueError` で拒絶するよう共通正規化・テスト完了。
+- **LoRA重みへのbool値混入**: Pythonの `True == 1` を防ぐため、`model_weight` / `clip_weight` への `bool` 型入力を厳格に排除・テスト完了。
+- **COMPILE_PLAN出力データの検証境界欠落**: `validate_compile_plan()` を配備し、Scene Compilerの出力直前で全スキーマ・strict型を自己検証するよう防壁を確立・テスト完了。
+- **Negative Prompt階層の未定義**: Global / Panel / Character Base / Character Override の4階層Negative Prompt契約を策定し、`COMPILE_PLAN` へ構造化出力するよう改修・テスト完了。
+
 ---
 
 ## [RESOLVED IN PHASE 3A] 解決済みの課題履歴

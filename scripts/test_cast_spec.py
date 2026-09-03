@@ -152,6 +152,118 @@ def run_cast_spec_tests():
         print(f"Unknown character_id rejected: {e}")
     print("Non-existent character_id in binding: PASSED")
 
+    # 9. Phase 3A.1: Character ID strict string (No numeric or bool)
+    print("\n--- 9. Testing Character ID strict string validation ---")
+    num_id_spec = {
+        "version": 1,
+        "characters": [{"id": 12345, "name": "Numeric Alice", "enabled": True, "prompt": "1girl"}]
+    }
+    try:
+        validate_cast_spec(num_id_spec)
+        assert False, "Should reject numeric character_id"
+    except ValueError as e:
+        assert "must be a string" in str(e).lower()
+        print(f"Numeric character_id rejected successfully: {e}")
+    print("Character ID strict string validation: PASSED")
+
+    # 10. Phase 3A.1: Prompt strict string (No numeric or bool)
+    print("\n--- 10. Testing Prompt strict string validation ---")
+    num_prompt_spec = {
+        "version": 1,
+        "characters": [{"id": "char_001", "name": "Alice", "enabled": True, "prompt": 9999}]
+    }
+    try:
+        validate_cast_spec(num_prompt_spec)
+        assert False, "Should reject numeric prompt"
+    except ValueError as e:
+        assert "must be a string" in str(e).lower()
+        print(f"Numeric prompt rejected successfully: {e}")
+    print("Prompt strict string validation: PASSED")
+
+    # 11. Phase 3A.1: LoRA weight bool reject
+    print("\n--- 11. Testing LoRA weight bool rejection ---")
+    bool_weight_spec = {
+        "version": 1,
+        "characters": [{
+            "id": "char_001",
+            "name": "Alice",
+            "enabled": True,
+            "prompt": "1girl",
+            "loras": [{"name": "alice_lora", "weight": True, "enabled": True}]
+        }]
+    }
+    try:
+        validate_cast_spec(bool_weight_spec)
+        assert False, "Should reject boolean weight in LoRA"
+    except ValueError as e:
+        assert "strict numeric" in str(e).lower()
+        print(f"Boolean LoRA weight rejected successfully: {e}")
+    print("LoRA weight bool rejection: PASSED")
+
+    # 12. Phase 3A.1: Legacy weight to canonical model_weight/clip_weight
+    print("\n--- 12. Testing legacy weight to Canonical LoRA Entry normalization ---")
+    legacy_lora_spec = {
+        "version": 1,
+        "characters": [{
+            "id": "char_001",
+            "name": "Alice",
+            "enabled": True,
+            "prompt": "1girl",
+            "loras": [{"name": "legacy_lora", "weight": 0.75, "enabled": True}]
+        }]
+    }
+    v_legacy = validate_cast_spec(legacy_lora_spec)
+    c_lora = v_legacy["characters"][0]["loras"][0]
+    assert c_lora["model_weight"] == 0.75, f"Expected 0.75, got {c_lora['model_weight']}"
+    assert c_lora["clip_weight"] == 0.75, f"Expected 0.75, got {c_lora['clip_weight']}"
+    print("Legacy weight normalization: PASSED")
+
+    # 13. Phase 3A.1: Conflicting LoRA weights rejection
+    print("\n--- 13. Testing conflicting LoRA weights rejection ---")
+    conflict_spec = {
+        "version": 1,
+        "characters": [{
+            "id": "char_001",
+            "name": "Alice",
+            "enabled": True,
+            "prompt": "1girl",
+            "loras": [{"name": "conflict_lora", "weight": 0.8, "model_weight": 0.5, "enabled": True}]
+        }]
+    }
+    try:
+        validate_cast_spec(conflict_spec)
+        assert False, "Should reject conflicting weight vs model_weight"
+    except ValueError as e:
+        assert "conflicting weight" in str(e).lower()
+        print(f"Conflicting weights rejected successfully: {e}")
+    print("Conflicting LoRA weights rejection: PASSED")
+
+    # 14. Phase 3A.1: Invalid characters type (dict or str instead of list)
+    print("\n--- 14. Testing invalid characters type rejection ---")
+    bad_chars_spec = {
+        "version": 1,
+        "characters": {"char_001": {"name": "Alice"}}  # dict instead of list
+    }
+    try:
+        validate_cast_spec(bad_chars_spec)
+        assert False, "Should reject dict for 'characters'"
+    except ValueError as e:
+        assert "must be a list" in str(e).lower()
+        print(f"Dict 'characters' rejected successfully: {e}")
+    print("Invalid characters type rejection: PASSED")
+
+    # 15. Phase 3A.1: Binding Negative Prompt Override
+    print("\n--- 15. Testing Binding negative_prompt_override ---")
+    b_neg = {
+        "character_id": "char_001",
+        "enabled": True,
+        "prompt_override": "smiling",
+        "negative_prompt_override": "crying, frown"
+    }
+    vb_neg = validate_character_binding(b_neg, available_ids)
+    assert vb_neg["negative_prompt_override"] == "crying, frown"
+    print("Binding negative_prompt_override: PASSED")
+
     print("\n================================================================================")
     print("[SUCCESS] ALL CAST_SPEC & BINDING TEST SUITES PASSED PERFECTLY!")
     print("================================================================================")
