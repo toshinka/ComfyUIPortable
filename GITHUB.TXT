@@ -4,111 +4,93 @@ ComfyUI Portable 漫画制作環境 (Tegaki Manga Edition) - External AI Review 
 
 Project Name: Tegaki ComfyUI Portable Manga Edition
 Purpose: Windowsローカル環境にIllustrious/SDXLモデルとEasyReforge資産を統合した漫画制作研究環境
-Updated: 2026-09-04 06:35 (JST)
+Updated: 2026-09-04 07:28 (JST)
 Repository URL: https://github.com/toshinka/tegaki
 Branch: main
 
-Review Target Commit SHA: a1175f6f79ee91e34102dec23ef7d8e69057aa87
-Current Status: Phase 3C.1 完了（Semantic Region Hardening & Panel Layout Guide Foundation・意味領域とコマ割りの完全分離・Shared-Vertex Mesh コマ割りエディター・インタラクティブポインタ操作・Semantic Overlap 基本思想・Workflow 14）
+Review Target Commit SHA: 40df7cebb633d6442709dd0ee643cc5709d8468e
+Current Status: Phase 3C.1.1 完了（Panel Topology Hardening & ControlNet Fusion Oracle・平面分割 Planar Subdivision・自己交差・Winding・エッジ重複次数・T-Junction 排除・Sutherland-Hodgman 半平面クリッピング一般分割・トランザクショナル共有頂点ドラッグ・ControlNet 融合実機実証・Workflow 15）
+
+Latest GITHUB.TXT Raw:
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB.TXT
 
 ※ 外部AIは以下の「Pinned URL (commit固定)」を参照してレビューを実施してください。
 
 --------------------------------------------------------------------------------
-1. Required First Reads (最優先確認資料 - Phase 3C.1 報告書・仕様・索引)
+1. Required First Reads (最優先確認資料 - Phase 3C.1.1 報告書・仕様・索引)
 --------------------------------------------------------------------------------
-1. PHASE3C_1_SEMANTIC_REGION_AND_PANEL_LAYOUT_REPORT.md (Phase 3C.1 完了報告書・全22項目網羅)
+1. PHASE3C_1_1_PANEL_TOPOLOGY_AND_CONTROLNET_FUSION_REPORT.md (Phase 3C.1.1 完了報告書・全26項目網羅)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/reports/PHASE3C_1_1_PANEL_TOPOLOGY_AND_CONTROLNET_FUSION_REPORT.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/docs/reports/PHASE3C_1_1_PANEL_TOPOLOGY_AND_CONTROLNET_FUSION_REPORT.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/docs/reports/PHASE3C_1_1_PANEL_TOPOLOGY_AND_CONTROLNET_FUSION_REPORT.md
+
+2. PHASE3C_1_SEMANTIC_REGION_AND_PANEL_LAYOUT_REPORT.md (Phase 3C.1 報告書・是正履歴版)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/reports/PHASE3C_1_SEMANTIC_REGION_AND_PANEL_LAYOUT_REPORT.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/docs/reports/PHASE3C_1_SEMANTIC_REGION_AND_PANEL_LAYOUT_REPORT.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/docs/reports/PHASE3C_1_SEMANTIC_REGION_AND_PANEL_LAYOUT_REPORT.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/docs/reports/PHASE3C_1_SEMANTIC_REGION_AND_PANEL_LAYOUT_REPORT.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/docs/reports/PHASE3C_1_SEMANTIC_REGION_AND_PANEL_LAYOUT_REPORT.md
 
-2. PHASE3C_TWO_REGION_COUPLE_ORACLE_REPORT.md (Phase 3C 報告書・過剰表現是正版)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/reports/PHASE3C_TWO_REGION_COUPLE_ORACLE_REPORT.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/docs/reports/PHASE3C_TWO_REGION_COUPLE_ORACLE_REPORT.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/docs/reports/PHASE3C_TWO_REGION_COUPLE_ORACLE_REPORT.md
-
-3. WORKFLOW_INDEX.md (ワークフロー解説・索引・Workflow 14 追記)
+3. WORKFLOW_INDEX.md (ワークフロー解説・索引・Workflow 15 追記)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/WORKFLOW_INDEX.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/docs/WORKFLOW_INDEX.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/docs/WORKFLOW_INDEX.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/docs/WORKFLOW_INDEX.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/docs/WORKFLOW_INDEX.md
 
 4. README.md (リポジトリトップドキュメント)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/README.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/README.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/README.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/README.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/README.md
 
 --------------------------------------------------------------------------------
-2. Track 1: Semantic Region Hardening (意味領域・重なり許容)
+2. Track 1: Panel Topology & Planar Subdivision (平面分割・幾何学的硬化)
 --------------------------------------------------------------------------------
-1. two_region_spec.py (TWO_REGION_SPEC v1 厳格固定2領域 & 境界安全クランプ)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_spec.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_spec.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_spec.py
+1. panel_layout_topology.py (平面分割バリデータ・自己交差・巻順・エッジ重複・T-Junction・面積保存・Gap/Overlap)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_layout_topology.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_layout_topology.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_layout_topology.py
 
-2. two_region_editor.py (TegakiTwoRegionCoupleEditor バックエンド・fail-closed & 空プロンプト同期)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_editor.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_editor.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_editor.py
-
-3. web/js/two_region_editor.js (2領域インタラクティブポインタ操作・Move/Resize/余白作成/Semantic Overlap)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/two_region_editor.js
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/two_region_editor.js
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/two_region_editor.js
-
-4. two_region_core_conditioner.py (Core Masked Conditioning Oracle - Provisional Primary)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_core_conditioner.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_core_conditioner.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_core_conditioner.py
-
---------------------------------------------------------------------------------
-3. Track 2: Manga Panel Layout Guide Foundation (コマ割り・重なり不可・共有頂点)
---------------------------------------------------------------------------------
-1. panel_layout_spec.py (PANEL_LAYOUT_SPEC v1 Shared-Vertex Mesh 契約 & バリデータ)
+2. panel_layout_spec.py (PANEL_LAYOUT_SPEC v1 明示的 Layout Frame & トポロジー統合契約)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_layout_spec.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_layout_spec.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_layout_spec.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_layout_spec.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_layout_spec.py
 
-2. panel_layout_editor.py (TegakiMangaPanelLayoutEditor バックエンド & ControlNet用白黒画像レンダラー)
+3. panel_layout_split.py (Sutherland-Hodgman 半平面クリッピング一般分割 & 交点頂点の全メッシュ伝播)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_layout_split.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_layout_split.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_layout_split.py
+
+4. panel_layout_editor.py (TegakiMangaPanelLayoutEditor バックエンド & Unique-Edge レンダラー)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_layout_editor.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_layout_editor.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_layout_editor.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_layout_editor.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_layout_editor.py
 
-3. web/js/panel_layout_editor.js (コマ割りエディターフロントエンド・共有頂点ドラッグ・Split・Undo/Redo)
+5. web/js/panel_layout_editor.js (トランザクショナルドラッグ・ロールバック・外周スライド拘束)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/panel_layout_editor.js
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/panel_layout_editor.js
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/panel_layout_editor.js
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/panel_layout_editor.js
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/panel_layout_editor.js
 
 --------------------------------------------------------------------------------
-4. Official Workflows (公式ワークフロー JSON)
+3. Track 2: ControlNet Fusion Oracle (構図統合・実機実証)
 --------------------------------------------------------------------------------
-1. 11_TWO_REGION_CORE_COUPLE_ORACLE.json (2領域 Core Masked Conditioning オラクル)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/11_TWO_REGION_CORE_COUPLE_ORACLE.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/workflows/11_TWO_REGION_CORE_COUPLE_ORACLE.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/workflows/11_TWO_REGION_CORE_COUPLE_ORACLE.json
-
-2. 12_TWO_REGION_IMPACT_COUPLE_ORACLE.json (2領域 Impact RegionalSampler オラクル)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/12_TWO_REGION_IMPACT_COUPLE_ORACLE.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/workflows/12_TWO_REGION_IMPACT_COUPLE_ORACLE.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/workflows/12_TWO_REGION_IMPACT_COUPLE_ORACLE.json
-
-3. 14_MANGA_PANEL_LAYOUT_GUIDE_EDITOR_TEST.json (漫画コマ割りエディター検証ハーネス)
+1. 14_MANGA_PANEL_LAYOUT_GUIDE_EDITOR_TEST.json (コマ割りエディター検証ハーネス)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/14_MANGA_PANEL_LAYOUT_GUIDE_EDITOR_TEST.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/workflows/14_MANGA_PANEL_LAYOUT_GUIDE_EDITOR_TEST.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/workflows/14_MANGA_PANEL_LAYOUT_GUIDE_EDITOR_TEST.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/workflows/14_MANGA_PANEL_LAYOUT_GUIDE_EDITOR_TEST.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/workflows/14_MANGA_PANEL_LAYOUT_GUIDE_EDITOR_TEST.json
+
+2. 15_MANGA_PANEL_LAYOUT_CONTROLNET_FUSION_ORACLE.json (コマ割りCN + Semantic Overlap 構図統合オラクル)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/15_MANGA_PANEL_LAYOUT_CONTROLNET_FUSION_ORACLE.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/workflows/15_MANGA_PANEL_LAYOUT_CONTROLNET_FUSION_ORACLE.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/workflows/15_MANGA_PANEL_LAYOUT_CONTROLNET_FUSION_ORACLE.json
 
 --------------------------------------------------------------------------------
-5. Automated Test Suites (自動テストスクリプト)
+4. Automated Test Suites (自動テストスクリプト)
 --------------------------------------------------------------------------------
-1. test_two_region_editor_state.py (2領域エディター状態遷移・ポインタ操作・fail-closed検証テスト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/scripts/test_two_region_editor_state.py
+1. test_panel_layout_topology.py (平面分割トポロジー検証単体テスト)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/scripts/test_panel_layout_topology.py
 
-2. test_two_region_locality_metrics.py (Spec駆動・Overlap詳細集計局所性メトリクス測定テスト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/scripts/test_two_region_locality_metrics.py
+2. test_panel_layout_split_operations.py (一般半平面クリッピング分割回帰マトリクステスト)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/scripts/test_panel_layout_split_operations.py
 
-3. test_panel_layout_spec.py (PANEL_LAYOUT_SPEC 厳格バリデーション単体テスト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/scripts/test_panel_layout_spec.py
+3. test_panel_layout_drag_validation.py (トランザクショナルドラッグ・ロールバック・外周拘束テスト)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/scripts/test_panel_layout_drag_validation.py
 
-4. test_panel_layout_state.py (コマ割り共有頂点変形・Split・Undo/Redo状態遷移テスト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/scripts/test_panel_layout_state.py
-
-5. test_panel_layout_renderer.py (白地・黒枠線・無文字レンダラーテスト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/a1175f6f79ee91e34102dec23ef7d8e69057aa87/ComfyUIPortable/scripts/test_panel_layout_renderer.py
+4. test_panel_layout_controlnet_fusion.py (実機 ControlNet 融合実験・Edge Response 計測ランナー)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/40df7cebb633d6442709dd0ee643cc5709d8468e/ComfyUIPortable/scripts/test_panel_layout_controlnet_fusion.py
