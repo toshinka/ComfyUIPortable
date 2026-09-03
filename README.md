@@ -68,12 +68,15 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   └─ tegaki_manga_nodes/                 # 独自LoRA記法・漫画Region Editorノード
  ├─ scripts/
  │   ├─ generate_workflows.py               # ワークフロー自動生成スクリプト
+ │   ├─ test_runtime_source_identity.py     # Git正本・実行時コード同一性検証
+ │   ├─ test_region_spec.py                 # Region Editor単体ロジック・バリデーション検証
+ │   ├─ test_region_editor_backend_api.py   # Region Editor バックエンド実行API検証
+ │   ├─ verify_wildcard_patch.py            # Wildcardパッチ適用診断
  │   ├─ test_nodes.py                       # ノード・モデルインポート検証
  │   ├─ test_generation.py                  # 実機txt2img生成検証スクリプト
  │   ├─ test_i2i.py                         # 実機I2Iパイプライン検証スクリプト
- │   ├─ test_wildcards.py                   # Wildcard/Dynamic Prompts検証
- │   ├─ test_region_spec.py                 # Region Editor単体ロジック自動検証
- │   └─ test_workflow_07.py                 # Workflow 07 実機推論検証
+ │   └─ test_wildcards.py                   # Wildcard/Dynamic Prompts検証
+ ├─ patches/                                # 外部Custom Node向けローカルパッチ集
  ├─ workflows/                              # 漫画制作向けワークフローJSON (7種)
  ├─ python_embeded/                         # [Git除外] Python 3.13 組み込み環境
  └─ ComfyUI/                                # [Git除外] ComfyUI本体 & 外部Custom Nodes
@@ -85,10 +88,10 @@ D:\GitHub\tegaki\ComfyUIPortable\
 
 ComfyUIをブラウザで開いた後、画面右上の「Load」または画面上へ `workflows/` フォルダ内の `.json` ファイルをドラッグ＆ドロップしてください。
 
-- `01_BASIC_ILLUSTRIOUS_TXT2IMG.json`: まず最初に試すべき基本生成ワークフロー
-- `02_ILLUSTRIOUS_I2I.json`: 生成画像のディテールアップ・修正用
-- `03_MANGA_REGIONAL_PROMPT.json`: コマ割り・複数キャラ描き分け用 (固定2分割配線)
-- `04_REGIONAL_LORA_EXPERIMENT.json`: 領域ごとに別LoRAを適用するRLL先行実験
-- `05_CONTROLNET_COMPOSITION.json`: ポーズ・構図の固定
-- `06_LORA_MIX_EXPERIMENT.json`: 複数LoRAの配合比率探索
-- `07_MANGA_REGION_EDITOR_UI_TEST.json`: 最大6コマ視覚的Region Editor UI操作・プレビュー検証
+- `01_BASIC_ILLUSTRIOUS_TXT2IMG.json`: まず最初に試すべき基本生成ワークフロー (STABLE)
+- `02_ILLUSTRIOUS_I2I.json`: 生成画像のディテールアップ・修正用 (STABLE)
+- `03_MANGA_REGIONAL_PROMPT.json`: コマ割り・複数キャラ描き分け用 (固定2分割配線 / STABLE)
+- `04_REGIONAL_LORA_EXPERIMENT.json`: 領域別LoRA接続構造の試験用・未完成 (EXPERIMENTAL / NOT YET REGIONAL)
+- `05_CONTROLNET_COMPOSITION.json`: ポーズ・構図の固定 (EXPERIMENTAL)
+- `06_LORA_MIX_EXPERIMENT.json`: 複数LoRAの配合比率探索 (STABLE)
+- `07_MANGA_REGION_EDITOR_UI_TEST.json`: 最大6コマ視覚的Region Editor UI操作・プレビュー検証ハーネス (DEV / TEST)

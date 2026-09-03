@@ -19,9 +19,12 @@
 ---
 
 ## 3. インストール済み Custom Nodes
+詳細なコミットハッシュおよびパッチ状況は [CUSTOM_NODE_MANIFEST.md](file:///d:/GitHub/tegaki/ComfyUIPortable/CUSTOM_NODE_MANIFEST.md) を参照してください。
+
 | Node名 | リポジトリ / ソース | 概要・用途 |
 |---|---|---|
-| **tegaki_manga_nodes** | `custom_nodes_custom/` (ローカル独自開発) | `<lora:name:weight>` 構文パーサー & ローダー |
+| **tegaki_manga_nodes** | `custom_nodes_custom/` (ローカル独自開発・Junction) | `<lora:name:weight>` パーサー & `TegakiMangaRegionEditor` |
+| **ComfyUI-WildcardOrganizer** | [lokitsar/ComfyUI-WildcardOrganizer](https://github.com/lokitsar/ComfyUI-WildcardOrganizer) | Wildcard検索・内容プレビュー・Promptビルダー (Junctionパッチ適用済) |
 | **ComfyUI-Impact-Pack** | [ltdrdata/ComfyUI-Impact-Pack](https://github.com/ltdrdata/ComfyUI-Impact-Pack) | Regional Sampler, Mask制御, 顔/手検出補正 |
 | **ComfyUI-Inspire-Pack** | [ltdrdata/ComfyUI-Inspire-Pack](https://github.com/ltdrdata/ComfyUI-Inspire-Pack) | Regional LoRA, LoRA Block Weight, LoRA Stack |
 | **ComfyUI-Advanced-ControlNet** | [Kosinkadink/ComfyUI-Advanced-ControlNet](https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet) | ControlNetステップ・重みスケジューリング |

@@ -1,0 +1,34 @@
+diff --git a/nodes.py b/nodes.py
+index 9d7d0e3..9c7bdb7 100644
+--- a/nodes.py
++++ b/nodes.py
+@@ -272,7 +272,16 @@ def _search_wildcards(root, query, include_contents=False, exclude_terms="", ref
+ 
+ 
+ def _preview(root, path_text, key_text=""):
+-    path = Path(path_text or "").expanduser().resolve()
++    if not path_text and key_text:
++        entries = _wildcard_entries_by_key(root)
++        entry = entries.get(_impact_normalize(key_text))
++        if entry and entry.get("path"):
++            path = Path(entry["path"]).resolve()
++        else:
++            raise FileNotFoundError(f"Wildcard not found for key: {key_text}")
++    else:
++        path = Path(path_text or "").expanduser().resolve()
++
+     try:
+         path.relative_to(root)
+     except ValueError as exc:
+@@ -510,8 +519,9 @@ def _json_error(message, status=400):
+     return web.json_response({"error": message}, status=status)
+ 
+ 
+-if PromptServer is not None and web is not None:
+-    routes = PromptServer.instance.routes
++server_instance = getattr(PromptServer, "instance", None) if PromptServer is not None else None
++if server_instance is not None and web is not None:
++    routes = server_instance.routes
+ 
+     @routes.get("/wildcard_organizer/search")
+     async def wildcard_organizer_search(request):

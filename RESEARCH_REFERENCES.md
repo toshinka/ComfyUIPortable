@@ -24,11 +24,11 @@
 
 ## 3. comfyui_manga_panel (Phase 2 調査・参照)
 - **Repository**: [Tsubasa109/comfyui_manga_panel](https://github.com/Tsubasa109/comfyui_manga_panel)
-- **License**: MIT
+- **License**: Apache License 2.0 (※実リポジトリライセンスに準拠して訂正)
 - **参照内容**:
-  - Canvas上でのドラッグ矩形作成、移動、コーナーハンドルリサイズ、Crop/Composite処理。
-- **適用内容**:
-  - `TegakiMangaRegionEditor` のCanvasインタラクション設計の参考。
+  - Canvas上でのドラッグ矩形作成、移動、コーナーハンドルリサイズ、Crop/Composite処理の思想。
+- **外部コード流用の有無**:
+  - **コードコピーなし（思想・挙動のみ参考）**。TegakiMangaRegionEditor のPythonバックエンドおよびJS拡張は、Tegakiのアーキテクチャ（REGION_SPEC Single Source of Truth）に合わせて100%独自実装しています。
 
 ---
 
@@ -37,8 +37,8 @@
 - **License**: MIT
 - **参照内容**:
   - Regional Rect Masks等のブラウザ側矩形エディタ、0〜1正規化座標系。
-- **適用内容**:
-  - 解像度非依存の正規化座標系および `REGION_SPEC` (v1) データ構造の設計。
+- **外部コード流用の有無**:
+  - **コードコピーなし（思想のみ参考）**。0〜1の正規化座標系による解像度非依存管理思想を取り入れ、データスキーマ（REGION_SPEC v1）は独自に策定しました。
 
 ---
 

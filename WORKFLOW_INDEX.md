@@ -87,7 +87,7 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 ---
 
 ### 07_MANGA_REGION_EDITOR_UI_TEST.json
-- **区分**: 安定UI版 (STABLE UI / TEST)
+- **区分**: 開発用検証ハーネス (DEVELOPMENT / UI TEST HARNESS)
 - **目的**: 最大6コマ対応の視覚的Region Editorノード (`TegakiMangaRegionEditor`) の単体操作・レイアウトプレビュー・状態保存検証。
 - **必要Custom Node**: `TegakiMangaRegionEditor` (独自)
 - **特徴**:
