@@ -129,6 +129,7 @@ def run_widget_compatibility_tests():
         ("13_TWO_REGION_CONTROLNET_LAYOUT_AUX.json", "TegakiTwoRegionLayoutGuide", 2),
         ("14_MANGA_PANEL_LAYOUT_GUIDE_EDITOR_TEST.json", "TegakiMangaPanelLayoutEditor", 4),
         ("15_MANGA_PANEL_LAYOUT_CONTROLNET_FUSION_ORACLE.json", "TegakiMangaPanelLayoutEditor", 4),
+        ("16_MANGA_VARIABLE_N_REGION_LAYOUT_FUSION_POC.json", "TegakiMangaLayoutAwareConditioningBuilder", 5),
     ]
 
     for wf_name, target_node_type, expected_wv_len in workflows_to_check:
@@ -143,7 +144,7 @@ def run_widget_compatibility_tests():
                 wv = n.get("widgets_values", [])
                 print(f"  Workflow {wf_name} node '{target_node_type}': widgets_values = {wv}")
                 assert len(wv) == expected_wv_len, f"Expected length {expected_wv_len}, got {len(wv)}"
-                if target_node_type == "TegakiMangaConditioningBuilder":
+                if target_node_type in ("TegakiMangaConditioningBuilder", "TegakiMangaLayoutAwareConditioningBuilder"):
                     # [panel, char, area, local, feather]
                     assert isinstance(wv[0], (int, float)) and math.isfinite(wv[0])
                     assert isinstance(wv[1], (int, float)) and math.isfinite(wv[1])

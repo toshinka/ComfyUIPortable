@@ -69,6 +69,7 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ RESEARCH_REFERENCES.md              # 参照リポジトリ・ライセンス
  │   ├─ CUSTOM_NODE_MANIFEST.md             # 外部Custom Nodeコミット追跡
  │   └─ reports/                            # 開発フェーズ完了報告書・検証記録集
+ │       ├─ PHASE3D_VARIABLE_N_REGION_MANGA_INTEGRATION_REPORT.md
  │       ├─ PHASE3C_1_2_FRONTEND_BACKEND_GEOMETRY_PARITY_REPORT.md
  │       ├─ PHASE3C_1_1_PANEL_TOPOLOGY_AND_CONTROLNET_FUSION_REPORT.md
  │       ├─ PHASE3C_1_SEMANTIC_REGION_AND_PANEL_LAYOUT_REPORT.md
@@ -86,6 +87,11 @@ D:\GitHub\tegaki\ComfyUIPortable\
  ├─ custom_nodes_custom/
  │   └─ tegaki_manga_nodes/                 # 独自LoRA記法・Region Editor・Scene/Page Compiler・Mask/Conditioning・Panel Layout APIノード
  ├─ scripts/
+ │   ├─ test_phase3d_variable_region_generation.py # Phase 3D 実機N領域・幾何融合生成検証スクリプト
+ │   ├─ test_layout_aware_conditioning.py   # Phase 3D 4階層Conditioning結合単体テスト
+ │   ├─ test_layout_aware_masks.py          # Phase 3D 多角形パネル/人物BBox投影マスク単体テスト
+ │   ├─ test_layout_region_mapping.py       # Phase 3D 幾何・意味シーン決定論的Bridge単体テスト
+ │   ├─ test_panel_layout_http_routes.py    # Phase 3D-0 実稼働HTTP REST API検証
  │   ├─ test_panel_layout_api_routes.py     # Phase 3C.1.2 Panel Layout REST API単体テスト
  │   ├─ test_panel_layout_frontend_backend_parity.py # Phase 3C.1.2 Frontend/Backend Splitパリティテスト
  │   ├─ test_panel_layout_drag_validation.py# Phase 3C.1.2 トランザクショナルドラッグ・ロールバック検証
@@ -113,7 +119,7 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ test_i2i.py                         # 実機I2Iパイプライン検証スクリプト
  │   └─ test_wildcards.py                   # Wildcard/Dynamic Prompts検証
  ├─ patches/                                # 外部Custom Node向けローカルパッチ集
- ├─ workflows/                              # 漫画制作向けワークフローJSON (9種)
+ ├─ workflows/                              # 漫画制作向けワークフローJSON (16種)
  ├─ python_embeded/                         # [Git除外] Python 3.13 組み込み環境
  └─ ComfyUI/                                # [Git除外] ComfyUI本体 & 外部Custom Nodes
 ```
@@ -139,6 +145,7 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
 - `13_TWO_REGION_CONTROLNET_LAYOUT_AUX.json`: 矩形外枠線（Panel Outline）によるControlNet構図・境界誘導補助オラクル (Zero-Touch Verified / EXPERIMENTAL AUX)
 - `14_MANGA_PANEL_LAYOUT_GUIDE_EDITOR_TEST.json`: 漫画コマ割り専用の独立幾何エディター（Shared-Vertex Mesh）によるコマ分割・共有頂点ドラッグ変形・ControlNetガイド画像検証 (Zero-Touch Verified / DEVELOPMENT TOOL)
 - `15_MANGA_PANEL_LAYOUT_CONTROLNET_FUSION_ORACLE.json`: 平面分割（Planar Subdivision）コマ割りControlNetと上段コマ内Semantic Overlap（2人物）の構図統合オラクル (Zero-Touch Verified / EXPERIMENTAL FUSION)
+- `16_MANGA_VARIABLE_N_REGION_LAYOUT_FUSION_POC.json`: 3〜6コマ可変多角形コマ割りと意味シーン計画（人物・ローカル背景）のControlNet統合漫画生成POC (Zero-Touch Verified / STABLE POC)
 
 ### Tag Complete (Phase 3B.1.1 導入)
 - 全テキスト入力欄（Region Editor Prompt、CLIPTextEncode 等）で、Danbooru 14万タグ、LoRA名、Embeddingのリアルタイム自動補完（Tag Complete）が完全動作します（`ComfyUI-Custom-Scripts` 統合）。
@@ -161,6 +168,14 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
 - **幾何契約（Planar Subdivision Contract）の完全硬化**:
   - 厳格 Frame 検証（finite float, bool 拒絶, 境界整合性）、頂点 Frame 包含チェック、重複座標排除、孤立頂点排除、厳格外枠 Incidence（内部 Gap 排除）、ペアワイズ多角形重なり判定（Exact Pairwise Overlap Check）、面積保存許容誤差の引き締め（0.001）を完全達成。
   - テストスイート 17本（単体・結合・パリティ・回帰）すべてで 100% PASS を達成。
+
+### Variable N-Region Manga Integration & Layout-Aware Semantic Fusion (Phase 3D 成果)
+- **コマ割り幾何（PANEL_LAYOUT_SPEC）と意味シーン計画（PAGE_COMPILE_PLAN）の完全統合**:
+  - **純粋関数 Bridge (`layout_region_bridge.py`)**: 物理幾何と意味シーンのデータ契約を混同・汚染することなく、Active KOMA と Layout Panel を決定論的に 1:1 対応付け。パネル数不一致時は Fail-Closed（`ValueError`）で安全停止。
+  - **多角形パネルマスク & 人物 BBox 相対投影 (`layout_aware_mask_builder.py`)**: パネル多角形マスクの正確な二値ラスタライズ、コマ内相対人物 BBox の大域キャンバス投影および親パネル多角形による厳格クリッピング（枠外へのプロンプト漏れを完全防止）。同一コマ内での人物同士の Semantic Overlap は許容して豊かな会話・演技表現を保証。
+  - **4階層 Layout-Aware Conditioning (`layout_aware_conditioning.py`)**: 新設ノード `TegakiMangaLayoutAwareConditioningBuilder` により、Global / Panel Polygon / Local Region / Character の 4 階層プロンプトを階層結合。
+  - **ControlNet 幾何共有 & 実機画像生成 (Workflow 16)**: RTX 4070 実機において、ControlNet 強度 0.60 によるシャープなコマ枠線形成（Edge Response: 0.1341 vs OFF: 0.1052, +27.5%）と各コマ個別プロンプト（局所性比率 0.6614）、人物アリスの髪色局所制御を完全実証。
+  - **Fail-Closed 原則の徹底**: ドラッグ確定時の Backend API 失敗時ロールバック、頂点座標 `[0.0, 1.0]` 外の厳格拒絶、実稼働 aiohttp REST API のスモークテスト全 PASS を達成。
 
 
 

@@ -213,12 +213,29 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 
 ---
 
-## 5. 互換性保証について (Phase 3B.1.1 & Phase 3C / 3C.1 / 3C.1.1 / 3C.1.2)
+### 16_MANGA_VARIABLE_N_REGION_LAYOUT_FUSION_POC.json
+- **区分**: 可変N領域・幾何融合オラクル (STABLE / VARIABLE N-REGION & LAYOUT FUSION POC)
+- **目的**: 3〜6コマの任意の多角形コマ割り幾何（`PANEL_LAYOUT_SPEC`）と意味シーン計画（`PAGE_COMPILE_PLAN`）を純粋関数 Bridge を介して完全統合。ControlNet 枠線誘導、多角形コママスク、コマ内相対人物 BBox 投影・多角形クリップ、局所背景領域、大域漫画スタイルを 4 階層 Conditioning で結合し、物理コマ枠と登場人物演技が完全調和した本格漫画ページを生成する実証ワークフロー。
+- **必要Custom Node**:
+  - `TegakiLoraPromptLoader` (独自 / LoRA構文ローダー)
+  - `TegakiMangaRegionEditor` (独自 / 意味コマ領域エディター)
+  - `TegakiMangaPageCompiler` (独自 / シーン・キャスト・ローカル領域コンパイラー)
+  - `TegakiMangaPanelLayoutEditor` (独自 / 多角形コマ割りエディター & ControlNet白線ガイド)
+  - `TegakiMangaLayoutAwareConditioningBuilder` (独自 / 4階層多角形レイアウト融合ノード)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, ControlNetLoader, ControlNetApplyAdvanced, KSampler, VAEDecode, SaveImage, PreviewImage
+- **出力**: 漫画ページ完成画像 (`ComfyUI/output/Tegaki/MangaLayoutFusion/...`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+## 5. 互換性保証について (Phase 3B.1.1 & Phase 3C / 3C.1 / 3C.1.1 / 3C.1.2 / Phase 3D)
 - **Zero-Touch Smoke Test 検証済み**:
-  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10_MANGA_REGIONAL_CONTROL_EXPANSION_TEST.json`、および `11`, `12`, `13`, `14`, `15` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
+  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10_MANGA_REGIONAL_CONTROL_EXPANSION_TEST.json`、`11`〜`15`、および最新の `16_MANGA_VARIABLE_N_REGION_LAYOUT_FUSION_POC.json` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
 - **Canonical Widget Order**:
   `TegakiMangaConditioningBuilder` の Widget 順序は `[panel_strength, character_strength, set_cond_area, local_region_strength, mask_feather]` に統一され、フロントエンド自動マイグレーション拡張（`manga_workflow_migration.js`）により過去のワークフローも透過的に自動変換・NaN修復されます。
-- **Frontend / Backend Geometry Parity (Phase 3C.1.2)**:
-  `TegakiMangaPanelLayoutEditor` の分割操作（H/V/Diagonal）は Backend REST API (`POST /tegaki/panel-layout/split`) と完全統合され、フロントエンド独自の bbox 分割によるトポロジー破壊を完全排除。ドラッグ操作は `committedSpec` と `previewCandidateSpec` の完全分離によるトランザクション化（即時ロールバック保証）が施され、既存の `14_MANGA_PANEL_LAYOUT_GUIDE_EDITOR_TEST.json` および `15_MANGA_PANEL_LAYOUT_CONTROLNET_FUSION_ORACLE.json` の仕様変更なしで 100% の後方互換性が維持されています。
+- **Frontend / Backend Geometry Parity (Phase 3C.1.2) & Fail-Closed**:
+  `TegakiMangaPanelLayoutEditor` の分割操作（H/V/Diagonal）は Backend REST API (`POST /tegaki/panel-layout/split`) と完全統合され、フロントエンド独自の bbox 分割によるトポロジー破壊を完全排除。ドラッグ操作は `committedSpec` と `previewCandidateSpec` の完全分離によるトランザクション化（API 失敗時即時ロールバック保証）が施され、既存の `14`, `15` の仕様変更なしで 100% の後方互換性が維持されています。
+- **Variable N-Region Layout-Aware Conditioning (Phase 3D)**:
+  幾何正本（`PANEL_LAYOUT_SPEC`）と意味正本（`PAGE_COMPILE_PLAN`）のデータ契約を一切汚染することなく、純粋関数 Bridge (`layout_region_bridge.py`) と新設ノード `TegakiMangaLayoutAwareConditioningBuilder` を介して多角形コママスク・人物BBox相対投影・多角形クリップを実現。既存の `TegakiMangaConditioningBuilder` を 100% 温存したまま、可変コマ割りでの漫画生成環境を確立しました。
 
 
