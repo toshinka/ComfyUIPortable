@@ -68,7 +68,10 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ DEPENDENCIES.md                     # パッケージ・ハードウェア環境仕様
  │   ├─ RESEARCH_REFERENCES.md              # 参照リポジトリ・ライセンス
  │   ├─ CUSTOM_NODE_MANIFEST.md             # 外部Custom Nodeコミット追跡
+ │   ├─ verification/                           # 正準検証マニフェスト (PHASE3G_CANONICAL_VERIFICATION_MANIFEST.json)
  │   └─ reports/                            # 開発フェーズ完了報告書・検証記録集
+ │       ├─ PHASE3G_CANONICAL_VERIFICATION_AND_FAST_MODE_REPORT.md
+ │       ├─ PHASE3F_ZERO_TOUCH_AND_PROGRESSIVE_AUTHORING_REPORT.md
  │       ├─ PHASE3E_IMPACT_MANGA_REINTEGRATION_AND_PROGRESSIVE_AUTHORING_REPORT.md
  │       ├─ PHASE3D_2_REGIONAL_SEMANTICS_FIRST_REPORT.md
  │       ├─ PHASE3D_1_REGIONAL_LOCALITY_AND_CAST_MASTER_REPORT.md
@@ -128,7 +131,7 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ test_i2i.py                         # 実機I2Iパイプライン検証スクリプト
  │   └─ test_wildcards.py                   # Wildcard/Dynamic Prompts検証
  ├─ patches/                                # 外部Custom Node向けローカルパッチ集
- ├─ workflows/                              # 漫画制作向けワークフローJSON (24種)
+ ├─ workflows/                              # 漫画制作向けワークフローJSON (28種)
  ├─ python_embeded/                         # [Git除外] Python 3.13 組み込み環境
  └─ ComfyUI/                                # [Git除外] ComfyUI本体 & 外部Custom Nodes
 ```

@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "phase": "Phase 3G",
+  "title": "Canonical Verification Manifest",
+  "version": "1.0.0",
+  "principles": [
+    "1 Workflow = 1 Hypothesis",
+    "Zero-Touch Execution Required (0 Validation Errors)",
+    "Strict Parameter Invariance (Seed 42, 1024x1024, Euler/Normal, CFG 7.0, Impact Regional Backend)",
+    "No Positional Adjectives in Prompts for Spatial Oracles"
+  ],
+  "suites": {
+    "spatial_verification_set": [
+      {
+        "workflow": "25_VERIFY_SINGLE_A_TOP_LEFT.json",
+        "save_node_id": "18",
+        "output_image": "wf25_canonical_single_a_top_left.png",
+        "hypothesis": "Region geometry alone determines character placement without positional prompting (Top-Left placement)",
+        "seed": 42,
+        "invariants": {
+          "model": "waiIllustriousSDXL_v170.safetensors",
+          "global_prompt": "manga illustration, simple clean background, white background, high quality",
+          "global_negative": "worst quality, low quality, blurry, bad anatomy",
+          "region_a_prompt": "a white dog, full body",
+          "region_b_prompt": "disabled",
+          "canvas_size": [1024, 1024],
+          "steps": 20,
+          "cfg": 7.0,
+          "sampler": "euler",
+          "scheduler": "normal",
+          "backend": "Impact"
+        },
+        "changed_variable": {
+          "region_a_bounds": [0.05, 0.05, 0.45, 0.45],
+          "semantic_label": "Top-Left"
+        },
+        "expected": "White dog synthesized strictly in the top-left quadrant of the canvas; other quadrants remain clean background",
+        "human_review_default": "Verify white dog is located in the top-left area."
+      },
+      {
+        "workflow": "26_VERIFY_SINGLE_A_BOTTOM_RIGHT.json",
+        "save_node_id": "18",
+        "output_image": "wf26_canonical_single_a_bottom_right.png",
+        "hypothesis": "Region geometry alone determines character placement without positional prompting (Bottom-Right placement)",
+        "seed": 42,
+        "invariants": {
+          "model": "waiIllustriousSDXL_v170.safetensors",
+          "global_prompt": "manga illustration, simple clean background, white background, high quality",
+          "global_negative": "worst quality, low quality, blurry, bad anatomy",
+          "region_a_prompt": "a white dog, full body",
+          "region_b_prompt": "disabled",
+          "canvas_size": [1024, 1024],
+          "steps": 20,
+          "cfg": 7.0,
+          "sampler": "euler",
+          "scheduler": "normal",
+          "backend": "Impact"
+        },
+        "changed_variable": {
+          "region_a_bounds": [0.50, 0.50, 0.45, 0.45],
+          "semantic_label": "Bottom-Right"
+        },
+        "expected": "White dog synthesized strictly in the bottom-right quadrant of the canvas; top-left remains clean background",
+        "human_review_default": "Verify white dog is located in the bottom-right area, cleanly opposing Workflow 25."
+      },
+      {
+        "workflow": "27_VERIFY_TWO_REGION_DOG_CAT_LEFT_RIGHT.json",
+        "save_node_id": "18",
+        "output_image": "wf27_canonical_two_region_dog_cat_left_right.png",
+        "hypothesis": "Two-region geometry binds distinct character semantics without spatial words in prompts (Dog Left, Cat Right)",
+        "seed": 42,
+        "invariants": {
+          "model": "waiIllustriousSDXL_v170.safetensors",
+          "global_prompt": "manga illustration, simple clean background, white background, high quality",
+          "global_negative": "worst quality, low quality, blurry, bad anatomy",
+          "region_a_prompt": "a white dog, full body",
+          "region_b_prompt": "a black cat, full body",
+          "canvas_size": [1024, 1024],
+          "steps": 20,
+          "cfg": 7.0,
+          "sampler": "euler",
+          "scheduler": "normal",
+          "backend": "Impact"
+        },
+        "changed_variable": {
+          "region_a_bounds": [0.05, 0.15, 0.45, 0.70],
+          "region_b_bounds": [0.50, 0.15, 0.45, 0.70],
+          "semantic_label": "Dog Left, Cat Right"
+        },
+        "expected": "White dog cleanly rendered on left half; black cat cleanly rendered on right half; no chimera or identity fusion",
+        "human_review_default": "Verify dog is on left and cat is on right."
+      },
+      {
+        "workflow": "28_VERIFY_TWO_REGION_DOG_CAT_SWAP.json",
+        "save_node_id": "18",
+        "output_image": "wf28_canonical_two_region_dog_cat_swap.png",
+        "hypothesis": "Swapping region geometries cleanly swaps character positions without altering prompts or seeds (Dog Right, Cat Left)",
+        "seed": 42,
+        "invariants": {
+          "model": "waiIllustriousSDXL_v170.safetensors",
+          "global_prompt": "manga illustration, simple clean background, white background, high quality",
+          "global_negative": "worst quality, low quality, blurry, bad anatomy",
+          "region_a_prompt": "a white dog, full body",
+          "region_b_prompt": "a black cat, full body",
+          "canvas_size": [1024, 1024],
+          "steps": 20,
+          "cfg": 7.0,
+          "sampler": "euler",
+          "scheduler": "normal",
+          "backend": "Impact"
+        },
+        "changed_variable": {
+          "region_a_bounds": [0.50, 0.15, 0.45, 0.70],
+          "region_b_bounds": [0.05, 0.15, 0.45, 0.70],
+          "semantic_label": "Dog Right, Cat Left (SWAP)"
+        },
+        "expected": "White dog cleanly rendered on right half; black cat cleanly rendered on left half; perfect spatial mirror of Workflow 27",
+        "human_review_default": "Verify dog is on right and cat is on left (exact inversion of Workflow 27)."
+      }
+    ],
+    "canonical_authoring_set": [
+      {
+        "workflow": "21_MANGA_IMPACT_RECURRENT_CAST_POC.json",
+        "save_node_id": "15",
+        "output_image": "wf21_zero_touch_recurrent_cast.png",
+        "hypothesis": "Recurrent cast across 4 panels maintains character attendance, appearance, and acting separation",
+        "seed": 42,
+        "invariants": {
+          "layout": "4-panel manga layout",
+          "cast": ["Alice", "Bob"],
+          "backend": "Impact",
+          "canvas_size": [1024, 1024]
+        },
+        "changed_variable": "Per-panel character attendance and acting prompt bindings",
+        "expected": "Panels show designated characters with consistent appearances and distinct actions",
+        "human_review_default": "Verify Alice and Bob appear in their assigned panels."
+      },
+      {
+        "workflow": "22_SINGLE_PANEL_MULTI_SCENE_SAME_CAST_ORACLE.json",
+        "save_node_id": "13",
+        "output_image": "wf22_zero_touch_multiscene.png",
+        "hypothesis": "Same character appearing in multiple subscenes within one panel maintains identity without collapsing into a single figure or blending",
+        "seed": 42,
+        "invariants": {
+          "panel_count": 1,
+          "cast": ["Alice"],
+          "backend": "Impact",
+          "canvas_size": [1024, 1024]
+        },
+        "changed_variable": "Subscene spatial partition (Top vs Bottom subscenes)",
+        "expected": "Two distinct instances of Alice rendered in different subscene regions within one panel frame",
+        "human_review_default": "Verify two distinct Alice instances appear in their respective subscenes."
+      },
+      {
+        "workflow": "23_MANGA_PROGRESSIVE_PANEL_AUTHORING_IMPACT.json",
+        "save_node_id": "16",
+        "output_image": "wf23_zero_touch_progressive_4panel.png",
+        "hypothesis": "Progressive panel authoring via TegakiMangaPanelContentEditor produces a valid multi-panel compile plan executed by Impact backend",
+        "seed": 42,
+        "invariants": {
+          "layout": "4-panel manga layout",
+          "backend": "Impact",
+          "canvas_size": [1024, 1024]
+        },
+        "changed_variable": "Interactive panel content authoring state",
+        "expected": "Clean panel separation and correct regional rendering driven by panel content specifications",
+        "human_review_default": "Verify progressive panel authoring yields 4 cleanly authored panels."
+      },
+      {
+        "workflow": "24_SINGLE_PANEL_PROGRESSIVE_SUBSCENE_IMPACT.json",
+        "save_node_id": "16",
+        "output_image": "wf24_zero_touch_progressive_subscene.png",
+        "hypothesis": "Progressive subscene authoring compiles subscene masks and regional pipes for multi-instance panel composition",
+        "seed": 42,
+        "invariants": {
+          "panel_count": 1,
+          "subscene_count": 2,
+          "backend": "Impact",
+          "canvas_size": [1024, 1024]
+        },
+        "changed_variable": "Subscene authoring definitions within single panel",
+        "expected": "Subscene masks drive regional composition cleanly without bleed across subscene borders",
+        "human_review_default": "Verify single panel contains 2 cleanly defined subscene actions."
+      }
+    ]
+  }
+}

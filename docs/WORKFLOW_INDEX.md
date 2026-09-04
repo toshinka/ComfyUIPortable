@@ -345,11 +345,60 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 
 ---
 
-## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3F)
+### 25_VERIFY_SINGLE_A_TOP_LEFT.json
+- **区分**: 正準空間オラクル (CANONICAL SPATIAL ORACLE: SINGLE A TOP-LEFT)
+- **目的**: 領域幾何学（Region Geometry）のみによる被写体配置の因果性を実証する固定オラクル。プロンプトに方位語（top, left等）を一切含めず、「`a white dog, full body`」を左上領域 `[0.05, 0.05, 0.45, 0.45]` に配置し、厳格な固定条件（Seed 42, 20 steps, Euler/Normal, CFG 7.0, Impact Regional Backend）で検証。
+- **必要Custom Node**:
+  - `TegakiTwoRegionImpactAdapter` (独自)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, CLIPTextEncode, VAEDecode, SaveImage
+- **出力**: 左上配置犬画像 (`ComfyUI/output/Tegaki/Phase3G/canonical/wf25_canonical_single_a_top_left.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 26_VERIFY_SINGLE_A_BOTTOM_RIGHT.json
+- **区分**: 正準空間オラクル (CANONICAL SPATIAL ORACLE: SINGLE A BOTTOM-RIGHT)
+- **目的**: Workflow 25 と完全同一の Prompt・Seed (42)・サンプラー条件を維持し、Region A の領域幾何学のみを右下 `[0.50, 0.50, 0.45, 0.45]` に移動。「1 Workflow = 1 Hypothesis」に基づき、幾何変更のみで犬が右下へ正確に移動することを実証するオラクル。
+- **必要Custom Node**:
+  - `TegakiTwoRegionImpactAdapter` (独自)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, CLIPTextEncode, VAEDecode, SaveImage
+- **出力**: 右下配置犬画像 (`ComfyUI/output/Tegaki/Phase3G/canonical/wf26_canonical_single_a_bottom_right.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 27_VERIFY_TWO_REGION_DOG_CAT_LEFT_RIGHT.json
+- **区分**: 正準意味結合オラクル (CANONICAL SEMANTIC BINDING: DOG LEFT, CAT RIGHT)
+- **目的**: 2 領域における明確な意味分離と被写体結合を実証するオラクル。方位語抜きの「`a white dog, full body`」を左領域 `[0.05, 0.15, 0.45, 0.70]`、「`a black cat, full body`」を右領域 `[0.50, 0.15, 0.45, 0.70]` に割り当て、混色・キメラ化・位置崩れのない共存を検証（Seed 42）。
+- **必要Custom Node**:
+  - `TegakiTwoRegionImpactAdapter` (独自)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, CLIPTextEncode, VAEDecode, SaveImage
+- **出力**: 犬（左）／猫（右）画像 (`ComfyUI/output/Tegaki/Phase3G/canonical/wf27_canonical_two_region_dog_cat_left_right.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 28_VERIFY_TWO_REGION_DOG_CAT_SWAP.json
+- **区分**: 正準空間スワップオラクル (CANONICAL SPATIAL SWAP: DOG RIGHT, CAT LEFT)
+- **目的**: Workflow 27 と完全同一の Prompt・Seed (42)・サンプラー条件のもと、犬と猫の幾何領域のみを完全反転（犬: 右 `[0.50, 0.15, 0.45, 0.70]`、猫: 左 `[0.05, 0.15, 0.45, 0.70]`）。幾何スワップのみによって左右の被写体位置が完全に入れ替わることを実証するオラクル。
+- **必要Custom Node**:
+  - `TegakiTwoRegionImpactAdapter` (独自)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, CLIPTextEncode, VAEDecode, SaveImage
+- **出力**: 猫（左）／犬（右）スワップ画像 (`ComfyUI/output/Tegaki/Phase3G/canonical/wf28_canonical_two_region_dog_cat_swap.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3G)
 - **Zero-Touch Smoke Test 検証済み**:
-  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、および最新の `21`、`22`、`23_MANGA_PROGRESSIVE_PANEL_AUTHORING_IMPACT.json`、`24_SINGLE_PANEL_PROGRESSIVE_SUBSCENE_IMPACT.json` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
-- **Zero-Touch Parity & Progressive Authoring (Phase 3F)**:
-  ComfyUI Webフロントエンドの `control_after_generate` 自動挿入に伴うウィジェット配列オフセットを完全解明・恒久修正（12 ウィジェット整合）。`ToBasicPipe.clip` の完全配線およびスキーマ耐障害性を強化。さらに Progressive Authoring UI（Cast Spec Editor, Panel Content Editor, Panel Layout Editor, Character Staging Editor）と SubScene v1 Contract（段階的開示）を確立し、初心者向けシンプル制作と高度なマルチシーン演出を両立しました。
+  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、`21`〜`24`、および最新の正準空間検証セット `25`〜`28` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
+- **Zero-Touch Parity & Canonical Spatial Verification (Phase 3G)**:
+  「1 Workflow = 1 Hypothesis」原則に基づき、手動変更を排した固定比較オラクル（25〜28）を確立。Impact Pack Regional Sampler の 12 ウィジェット整合性および ToBasicPipe 接続要件を常設テストハーネス化。さらに Character Staging のマウスイベントハンドラー（移動・リサイズ・クランプ）と動的キャスト UI 連携を導入し、検証とオーサリング双方の信頼性を確立しました。
+
 
 
 

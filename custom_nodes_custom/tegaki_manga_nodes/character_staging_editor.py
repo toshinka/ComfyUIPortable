@@ -107,10 +107,117 @@ def render_staging_preview_image(
     return tensor
 
 
+class CharacterStagingStateManager:
+    """
+    State manager for panel selection, character selection, move, resize,
+    bounding box clamping [0.0, 1.0], and override persistence.
+    """
+    def __init__(self, region_spec: Dict[str, Any], staging_overrides: Optional[Dict[str, Any]] = None):
+        self.region_spec = region_spec
+        self.overrides = dict(staging_overrides) if staging_overrides else {}
+        self.selected_panel_id = 1
+        self.selected_char_id = None
+        attending = self.get_attending_characters(1)
+        if attending:
+            self.selected_char_id = attending[0]["character_id"]
+
+    def select_panel(self, panel_id: int):
+        self.selected_panel_id = int(panel_id)
+        attending = self.get_attending_characters(self.selected_panel_id)
+        if self.selected_char_id not in [c["character_id"] for c in attending]:
+            self.selected_char_id = attending[0]["character_id"] if attending else None
+
+    def get_attending_characters(self, panel_id: int) -> List[Dict[str, Any]]:
+        for r in self.region_spec.get("regions", []):
+            if int(r.get("id", 0)) == int(panel_id):
+                chars = []
+                for c in r.get("characters", []):
+                    if c.get("enabled", True):
+                        cid = c.get("character_id")
+                        area = self.get_character_area(panel_id, cid, c.get("area"))
+                        chars.append({
+                            "character_id": cid,
+                            "area": area,
+                            "enabled": True
+                        })
+                return chars
+        return []
+
+    def get_character_area(self, panel_id: int, char_id: str, default_area: Optional[Dict[str, float]] = None) -> Dict[str, float]:
+        pid_str = str(panel_id)
+        if pid_str in self.overrides and char_id in self.overrides[pid_str]:
+            return dict(self.overrides[pid_str][char_id].get("area", default_area or {"x": 0.1, "y": 0.15, "w": 0.4, "h": 0.75}))
+        if default_area:
+            return dict(default_area)
+        return {"x": 0.1, "y": 0.15, "w": 0.4, "h": 0.75}
+
+    def select_character(self, char_id: str):
+        attending = [c["character_id"] for c in self.get_attending_characters(self.selected_panel_id)]
+        if char_id not in attending:
+            raise ValueError(f"Character {char_id!r} is not attending Panel {self.selected_panel_id}")
+        self.selected_char_id = char_id
+
+    def move_character(self, panel_id: int, char_id: str, dx: float, dy: float) -> Dict[str, float]:
+        attending = [c["character_id"] for c in self.get_attending_characters(panel_id)]
+        if char_id not in attending:
+            raise ValueError(f"Cannot move non-attending character {char_id!r} in Panel {panel_id}")
+        curr = self.get_character_area(panel_id, char_id)
+        new_x = max(0.0, min(1.0 - curr["w"], curr["x"] + dx))
+        new_y = max(0.0, min(1.0 - curr["h"], curr["y"] + dy))
+        area = {
+            "x": round(new_x, 3),
+            "y": round(new_y, 3),
+            "w": round(curr["w"], 3),
+            "h": round(curr["h"], 3)
+        }
+        self._commit_override(panel_id, char_id, area)
+        return area
+
+    def resize_character(self, panel_id: int, char_id: str, dw: float, dh: float, min_size: float = 0.05) -> Dict[str, float]:
+        attending = [c["character_id"] for c in self.get_attending_characters(panel_id)]
+        if char_id not in attending:
+            raise ValueError(f"Cannot resize non-attending character {char_id!r} in Panel {panel_id}")
+        curr = self.get_character_area(panel_id, char_id)
+        new_w = max(min_size, min(1.0 - curr["x"], curr["w"] + dw))
+        new_h = max(min_size, min(1.0 - curr["y"], curr["h"] + dh))
+        area = {
+            "x": round(curr["x"], 3),
+            "y": round(curr["y"], 3),
+            "w": round(new_w, 3),
+            "h": round(new_h, 3)
+        }
+        self._commit_override(panel_id, char_id, area)
+        return area
+
+    def _commit_override(self, panel_id: int, char_id: str, area: Dict[str, float]):
+        pid_str = str(panel_id)
+        if pid_str not in self.overrides:
+            self.overrides[pid_str] = {}
+        self.overrides[pid_str][char_id] = {"area": area}
+
+    def reset_overrides(self):
+        self.overrides = {}
+
+    def serialize_overrides(self) -> str:
+        return json.dumps(self.overrides, indent=2, ensure_ascii=False)
+
+    def apply_to_region_spec(self) -> Dict[str, Any]:
+        copied = json.loads(json.dumps(self.region_spec))
+        for r in copied.get("regions", []):
+            pid = str(r.get("id"))
+            if pid in self.overrides:
+                p_ov = self.overrides[pid]
+                for c in r.get("characters", []):
+                    cid = c.get("character_id")
+                    if cid in p_ov and "area" in p_ov[cid]:
+                        c["area"] = dict(p_ov[cid]["area"])
+        return copied
+
+
 class TegakiMangaCharacterStagingEditor:
     """
-    Tegaki Manga Character Staging Editor (Phase 3F)
-    ===============================================
+    Tegaki Manga Character Staging Editor (Phase 3F / 3G)
+    ===================================================
     Visual layout & character staging editor with real-time canvas preview.
     """
     @classmethod
@@ -142,26 +249,23 @@ class TegakiMangaCharacterStagingEditor:
         v_region_spec = validate_region_spec(region_spec)
         v_layout_spec = validate_panel_layout_spec(panel_layout_spec, context_name="StagingEditor")
 
-        # Apply any explicit staging overrides
+        # Parse overrides and apply via CharacterStagingStateManager
+        overrides_dict = {}
         trimmed = staging_overrides.strip() if staging_overrides else "{}"
         if trimmed and trimmed != "{}":
             try:
-                overrides = json.loads(trimmed)
-                if isinstance(overrides, dict):
-                    # Apply coordinate overrides by panel_id & char_id
-                    for r in v_region_spec.get("regions", []):
-                        pid = str(r.get("id"))
-                        if pid in overrides:
-                            p_overrides = overrides[pid]
-                            for c in r.get("characters", []):
-                                cid = c.get("character_id")
-                                if cid in p_overrides and "area" in p_overrides[cid]:
-                                    c["area"] = p_overrides[cid]["area"]
+                parsed = json.loads(trimmed)
+                if isinstance(parsed, dict):
+                    overrides_dict = parsed
             except Exception as e:
                 logging.warning(f"[CharacterStagingEditor] Could not parse staging_overrides: {e}")
 
-        # Render preview image
-        preview_tensor = render_staging_preview_image(v_region_spec, v_layout_spec)
-        staging_json = json.dumps(v_region_spec, indent=2, ensure_ascii=False)
+        mgr = CharacterStagingStateManager(v_region_spec, overrides_dict)
+        updated_region_spec = mgr.apply_to_region_spec()
 
-        return (v_region_spec, preview_tensor, staging_json)
+        # Render preview image
+        preview_tensor = render_staging_preview_image(updated_region_spec, v_layout_spec)
+        staging_json = json.dumps(updated_region_spec, indent=2, ensure_ascii=False)
+
+        return (updated_region_spec, preview_tensor, staging_json)
+
