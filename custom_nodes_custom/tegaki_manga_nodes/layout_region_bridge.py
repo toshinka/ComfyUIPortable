@@ -31,9 +31,22 @@ def build_panel_content_bridge(
     plan = validate_page_compile_plan(page_compile_plan)
     layout = validate_panel_layout_spec(panel_layout_spec, context_name=f"{context_name}.panel_layout")
 
-    canvas = plan["canvas"]
-    width = int(canvas["width"])
-    height = int(canvas["height"])
+    plan_canvas = plan["canvas"]
+    layout_canvas = layout["canvas"]
+    plan_w = int(plan_canvas["width"])
+    plan_h = int(plan_canvas["height"])
+    layout_w = int(layout_canvas["width"])
+    layout_h = int(layout_canvas["height"])
+
+    if plan_w != layout_w or plan_h != layout_h:
+        raise ValueError(
+            f"[{context_name}] Canvas dimension mismatch: "
+            f"PAGE_COMPILE_PLAN is {plan_w}x{plan_h} but PANEL_LAYOUT_SPEC is {layout_w}x{layout_h}. "
+            f"Content and layout must have matching canvas dimensions."
+        )
+
+    width = plan_w
+    height = plan_h
 
     # 1. Active KOMA の収集とソート (ID昇順)
     raw_panels = plan.get("panels", [])

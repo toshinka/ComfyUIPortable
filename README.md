@@ -69,6 +69,7 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ RESEARCH_REFERENCES.md              # 参照リポジトリ・ライセンス
  │   ├─ CUSTOM_NODE_MANIFEST.md             # 外部Custom Nodeコミット追跡
  │   └─ reports/                            # 開発フェーズ完了報告書・検証記録集
+ │       ├─ PHASE3D_1_REGIONAL_LOCALITY_AND_CAST_MASTER_REPORT.md
  │       ├─ PHASE3D_VARIABLE_N_REGION_MANGA_INTEGRATION_REPORT.md
  │       ├─ PHASE3C_1_2_FRONTEND_BACKEND_GEOMETRY_PARITY_REPORT.md
  │       ├─ PHASE3C_1_1_PANEL_TOPOLOGY_AND_CONTROLNET_FUSION_REPORT.md
@@ -85,8 +86,14 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │       ├─ BUILD_REPORT.md
  │       └─ PHASE2_1_UI_TEST_CHECKLIST.md
  ├─ custom_nodes_custom/
- │   └─ tegaki_manga_nodes/                 # 独自LoRA記法・Region Editor・Scene/Page Compiler・Mask/Conditioning・Panel Layout APIノード
+ │   └─ tegaki_manga_nodes/                 # 独自LoRA記法・Region Editor・Scene/Page Compiler・Mask/Conditioning・Panel Layout API・Cast Masterノード
  ├─ scripts/
+ │   ├─ test_phase3d1_character_locality.py # Phase 3D.1 人物A/B差分測定・5コマ実画像生成スクリプト
+ │   ├─ test_phase3d1_panel_locality.py     # Phase 3D.1 コマ別マルチゾーン局所性・CN ON/OFF診断スクリプト
+ │   ├─ test_canvas_contract_match.py       # Phase 3D.1 Canvas寸法一致Fail-Closed単体テスト
+ │   ├─ test_cast_master_state.py           # Phase 3D.1 Cast Master状態遷移・不変ID単体テスト
+ │   ├─ test_cast_binding_references.py     # Phase 3D.1 参照中キャラ削除防御・無効化スキップ単体テスト
+ │   ├─ generate_workflow_17.py             # Phase 3D.1 Workflow 17自動生成スクリプト
  │   ├─ test_phase3d_variable_region_generation.py # Phase 3D 実機N領域・幾何融合生成検証スクリプト
  │   ├─ test_layout_aware_conditioning.py   # Phase 3D 4階層Conditioning結合単体テスト
  │   ├─ test_layout_aware_masks.py          # Phase 3D 多角形パネル/人物BBox投影マスク単体テスト
@@ -119,7 +126,7 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ test_i2i.py                         # 実機I2Iパイプライン検証スクリプト
  │   └─ test_wildcards.py                   # Wildcard/Dynamic Prompts検証
  ├─ patches/                                # 外部Custom Node向けローカルパッチ集
- ├─ workflows/                              # 漫画制作向けワークフローJSON (16種)
+ ├─ workflows/                              # 漫画制作向けワークフローJSON (17種)
  ├─ python_embeded/                         # [Git除外] Python 3.13 組み込み環境
  └─ ComfyUI/                                # [Git除外] ComfyUI本体 & 外部Custom Nodes
 ```
@@ -146,6 +153,7 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
 - `14_MANGA_PANEL_LAYOUT_GUIDE_EDITOR_TEST.json`: 漫画コマ割り専用の独立幾何エディター（Shared-Vertex Mesh）によるコマ分割・共有頂点ドラッグ変形・ControlNetガイド画像検証 (Zero-Touch Verified / DEVELOPMENT TOOL)
 - `15_MANGA_PANEL_LAYOUT_CONTROLNET_FUSION_ORACLE.json`: 平面分割（Planar Subdivision）コマ割りControlNetと上段コマ内Semantic Overlap（2人物）の構図統合オラクル (Zero-Touch Verified / EXPERIMENTAL FUSION)
 - `16_MANGA_VARIABLE_N_REGION_LAYOUT_FUSION_POC.json`: 3〜6コマ可変多角形コマ割りと意味シーン計画（人物・ローカル背景）のControlNet統合漫画生成POC (Zero-Touch Verified / STABLE POC)
+- `17_MANGA_CAST_MASTER_AND_LOCALITY_VALIDATION.json`: 登場人物マスター管理（`TegakiMangaCastMaster`）・同一コマ内 Semantic Overlap・局所性検証オラクル (Zero-Touch Verified / STABLE ORACLE)
 
 ### Tag Complete (Phase 3B.1.1 導入)
 - 全テキスト入力欄（Region Editor Prompt、CLIPTextEncode 等）で、Danbooru 14万タグ、LoRA名、Embeddingのリアルタイム自動補完（Tag Complete）が完全動作します（`ComfyUI-Custom-Scripts` 統合）。
@@ -174,8 +182,22 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
   - **純粋関数 Bridge (`layout_region_bridge.py`)**: 物理幾何と意味シーンのデータ契約を混同・汚染することなく、Active KOMA と Layout Panel を決定論的に 1:1 対応付け。パネル数不一致時は Fail-Closed（`ValueError`）で安全停止。
   - **多角形パネルマスク & 人物 BBox 相対投影 (`layout_aware_mask_builder.py`)**: パネル多角形マスクの正確な二値ラスタライズ、コマ内相対人物 BBox の大域キャンバス投影および親パネル多角形による厳格クリッピング（枠外へのプロンプト漏れを完全防止）。同一コマ内での人物同士の Semantic Overlap は許容して豊かな会話・演技表現を保証。
   - **4階層 Layout-Aware Conditioning (`layout_aware_conditioning.py`)**: 新設ノード `TegakiMangaLayoutAwareConditioningBuilder` により、Global / Panel Polygon / Local Region / Character の 4 階層プロンプトを階層結合。
-  - **ControlNet 幾何共有 & 実機画像生成 (Workflow 16)**: RTX 4070 実機において、ControlNet 強度 0.60 によるシャープなコマ枠線形成（Edge Response: 0.1341 vs OFF: 0.1052, +27.5%）と各コマ個別プロンプト（局所性比率 0.6614）、人物アリスの髪色局所制御を完全実証。
-  - **Fail-Closed 原則の徹底**: ドラッグ確定時の Backend API 失敗時ロールバック、頂点座標 `[0.0, 1.0]` 外の厳格拒絶、実稼働 aiohttp REST API のスモークテスト全 PASS を達成。
+  - **ControlNet 幾何共有 & 実機画像生成 (Workflow 16)**: RTX 4070 実機において、ControlNet 強度 0.60 によるシャープなコマ枠線形成（Edge Response: 0.1341 vs OFF: 0.1052, +27.5%）と各コマ個別プロンプト、人物アリスの髪色局所制御を実証。
+
+### Regional Locality Validation & Character / CAST Master UI Foundation (Phase 3D.1 成果)
+- **局所性検証の是正とマルチゾーン診断**:
+  - 単一比率 PASS 判定（0.6614 の過大解釈）を撤退・是正し、多角形コマ・他コマ・外枠・人物マスク・同一コマ背景を分離したマルチゾーン診断メトリクスを確立。
+  - KOMA 2 A/B（廊下 vs コンビニ）で Target/Other 比率 1.04〜1.08 を記録。ControlNet ON (0.60) / OFF (0.00) 比較により、ControlNet がコマ内意味変化を阻害しないことを実証。
+  - KOMA 1 において Alice & Bob の Semantic Overlap（37.78% 重複）を維持しながら、Alice 髪色 A/B で同一コマ背景比 4.02倍の強い人物局所変化を実証。
+  - 変則 5 コマレイアウトでの実機 SDXL 画像生成（18.1s）を完了し、5コマ漫画生成の成立性を証明。
+  - Core Conditioning は追加拡張なしで動く基盤として極めて有用（`PARTIAL` 判定）であり、次 Phase での Impact RegionalSampler（Attention Masking 方式）比較へ向けた客観的ベースラインを確立。
+- **Canvas 寸法一致の Fail-Closed 化**:
+  - `PAGE_COMPILE_PLAN.canvas == PANEL_LAYOUT_SPEC.canvas` を Bridge で厳格検査し、寸法不一致時は直ちに `ValueError` で停止。
+- **Character / CAST Master 契約と UI Foundation**:
+  - `CAST_SPEC` (v1) を SSOT として管理する新設ノード `TegakiMangaCastMaster` およびフロントエンド拡張 `cast_master_editor.js` を実装。
+  - 不変 ID（Immutable ID）、アクティブ KOMA 参照中キャラの誤削除 Fail-Closed 防御、無効化キャラの安全スキップ、出演コマ逆引きバッジ表示、未適用の人物 LoRA 計画表示（`[NOT YET SPATIALLY APPLIED - Plan Only]`）を完備。
+  - 本番ワークフロー `17_MANGA_CAST_MASTER_AND_LOCALITY_VALIDATION.json` を整備し、Zero-Touch 100% 稼働を実証。
+
 
 
 

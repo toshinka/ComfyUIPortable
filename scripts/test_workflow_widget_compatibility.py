@@ -130,6 +130,7 @@ def run_widget_compatibility_tests():
         ("14_MANGA_PANEL_LAYOUT_GUIDE_EDITOR_TEST.json", "TegakiMangaPanelLayoutEditor", 4),
         ("15_MANGA_PANEL_LAYOUT_CONTROLNET_FUSION_ORACLE.json", "TegakiMangaPanelLayoutEditor", 4),
         ("16_MANGA_VARIABLE_N_REGION_LAYOUT_FUSION_POC.json", "TegakiMangaLayoutAwareConditioningBuilder", 5),
+        ("17_MANGA_CAST_MASTER_AND_LOCALITY_VALIDATION.json", "TegakiMangaCastMaster", 1),
     ]
 
     for wf_name, target_node_type, expected_wv_len in workflows_to_check:
