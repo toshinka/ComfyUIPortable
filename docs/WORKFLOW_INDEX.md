@@ -283,21 +283,42 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 - **出力**: ControlNet幾何補助生成画像 (`ComfyUI/output/Tegaki/Phase3D2/LayoutAssist/...`)
 - **Zero-Touch Smoke Test**: **PASS**
 
+### 21_MANGA_IMPACT_RECURRENT_CAST_POC.json
+- **区分**: 漫画統合・反復出演オラクル (STABLE / MANGA IMPACT RECURRENT CAST POC)
+- **目的**: 登場人物マスター（`CAST_SPEC`）の同一キャラクター（Alice / Bob）を複数コマ（Panel 1, 2, 4 および Panel 1, 3, 4）へ繰り返し出演させ、コマごとの演技指示（握手・花壇水やり・植木鉢運搬・対立背向）を独立サンプリング。4コマ漫画グリッドにおいて、コマ背景の先行描画（`scene_first`）とコマ内人物の局所サンプリングを Impact Pack 汎用 N 領域エンジンで一括統合する実証ワークフロー。
+- **必要Custom Node**:
+  - `TegakiMangaCastMaster` (独自 / キャストマスター管理)
+  - `TegakiMangaRegionEditor` (独自 / 4コマ意味領域エディター)
+  - `TegakiMangaPageCompiler` (独自 / ページコンパイラー)
+  - `TegakiMangaPanelLayoutEditor` (独自 / 4分割コマ割り幾何エディター)
+  - `TegakiMangaImpactRegionalAdapter` (独自 / 動的 N 領域 Impact アダプター)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, CLIPTextEncode, VAEDecode, SaveImage, PreviewImage
+- **出力**: 4コマ漫画ページ画像 (`ComfyUI/output/Tegaki/Phase3E/manga_recurrent_cast_4panel.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
 ---
 
-## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3D.2)
+### 22_SINGLE_PANEL_MULTI_SCENE_SAME_CAST_ORACLE.json
+- **区分**: 意地悪テスト・単一コマ内複数シーンオラクル (EXPERIMENTAL / SINGLE PANEL MULTI-SCENE SAME CAST ORACLE)
+- **目的**: 単一の可視コマ枠（1 Visible Panel）内部に、独立した 2 つのシーン（Scene A: 夕暮れ校門・対立 vs Scene B: 朝花壇・握手）を幾何分割（Split Scene）配置。同一の Alice Master x2、Bob Master x2 をインスタンスとして共存させ、プロンプトに一切の方位語（left, right）を含めずに 2 つの対照的な人間関係・演技・背景が同一コマ内に成立するかを実機検証するオラクル。
+- **必要Custom Node**:
+  - `TegakiMangaCastMaster` (独自 / キャストマスター管理)
+  - `TegakiMangaPanelLayoutEditor` (独自 / 1コマ全画面幾何エディター)
+  - `TegakiSinglePanelMultiSceneImpactAdapter` (独自 / 意地悪テスト専用マルチシーンアダプター)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, CLIPTextEncode, VAEDecode, SaveImage, PreviewImage
+- **出力**: 単一コマ内複数シーン画像 (`ComfyUI/output/Tegaki/Phase3E/single_panel_multiscene_hostile.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3E)
 - **Zero-Touch Smoke Test 検証済み**:
-  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`17`、および最新の `18_SINGLE_REGION_PLACEMENT_CORE_VS_IMPACT_ORACLE.json`、`19_TWO_REGION_SEMANTIC_BINDING_ORACLE.json`、`20_TWO_REGION_LAYOUT_ASSIST_ORACLE.json` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
-- **Canonical Widget Order**:
-  `TegakiMangaConditioningBuilder` の Widget 順序は `[panel_strength, character_strength, set_cond_area, local_region_strength, mask_feather]` に統一され、フロントエンド自動マイグレーション拡張（`manga_workflow_migration.js`）により過去のワークフローも透過的に自動変換・NaN修復されます。
-- **Frontend / Backend Geometry Parity (Phase 3C.1.2) & Fail-Closed**:
-  `TegakiMangaPanelLayoutEditor` の分割操作（H/V/Diagonal）は Backend REST API (`POST /tegaki/panel-layout/split`) と完全統合され、フロントエンド独自の bbox 分割によるトポロジー破壊を完全排除。ドラッグ操作は `committedSpec` と `previewCandidateSpec` の完全分離によるトランザクション化（API 失敗時即時ロールバック保証）が施され、既存の `14`, `15` の仕様変更なしで 100% の後方互換性が維持されています。
-- **Variable N-Region Layout-Aware Conditioning (Phase 3D)**:
-  幾何正本（`PANEL_LAYOUT_SPEC`）と意味正本（`PAGE_COMPILE_PLAN`）のデータ契約を一切汚染することなく、純粋関数 Bridge (`layout_region_bridge.py`) と新設ノード `TegakiMangaLayoutAwareConditioningBuilder` を介して多角形コママスク・人物BBox相対投影・多角形クリップを実現。既存の `TegakiMangaConditioningBuilder` を 100% 温存したまま、可変コマ割りでの漫画生成環境を確立しました。
-- **Canvas Dimension Contract & Cast Master SSOT (Phase 3D.1)**:
-  `PAGE_COMPILE_PLAN.canvas` と `PANEL_LAYOUT_SPEC.canvas` の厳格一致（不一致時 `ValueError`）を Fail-Closed で施行。さらに `CAST_SPEC` (v1) を SSOT として管理する `TegakiMangaCastMaster` を新設し、参照中キャラクターの誤削除防御・不変 ID 保証・無効化キャラの安全スキップを確立しました。
-- **Regional Semantics First & Backend Selection (Phase 3D.2)**:
-  漫画ページ体裁やCAST UI拡張を一時凍結し、「指定矩形へPrompt対象を空間誘導・分離できるか」の因果関係を実機検証。単一領域5位置配置（TL/TR/BL/BR/C）、Dog/Cat幾何スワップ、Man/Woman人物分離およびCouple Overlapを実証し、`Impact RegionalSampler` を Primary Backend として採択。ControlNet Layout Assist の額縁化弊害を特定し、ControlNetを漫画コマ枠線専用とする設計境界を確立しました。
+  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、および最新の `21_MANGA_IMPACT_RECURRENT_CAST_POC.json`、`22_SINGLE_PANEL_MULTI_SCENE_SAME_CAST_ORACLE.json` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
+- **Impact Regional Backend Manga Reintegration & Progressive Authoring (Phase 3E)**:
+  `TegakiMangaImpactRegionalAdapter` を介して、任意のコマ数（1〜6コマ）および任意の人物インスタンス数に対応する動的 N 領域サンプリングを実現。`scene_first`（背景先行描画）による人物潜在空間 Washout 防御、4コマ漫画における反復出演（Recurrent Cast）の同一性・出席完全性（100%）、および単一コマ内複数シーン（Hostile Test）での PROMISING 判定を実証。さらに Progressive Authoring（01 Global → 02 Cast → 03 Panel Content → 04 Layout → 05 Staging → 06 Generate）の導線整理と `INTERNAL ENGINE` 隔離を確立しました。
+
 
 
 

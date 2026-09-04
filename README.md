@@ -69,6 +69,7 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ RESEARCH_REFERENCES.md              # 参照リポジトリ・ライセンス
  │   ├─ CUSTOM_NODE_MANIFEST.md             # 外部Custom Nodeコミット追跡
  │   └─ reports/                            # 開発フェーズ完了報告書・検証記録集
+ │       ├─ PHASE3E_IMPACT_MANGA_REINTEGRATION_AND_PROGRESSIVE_AUTHORING_REPORT.md
  │       ├─ PHASE3D_2_REGIONAL_SEMANTICS_FIRST_REPORT.md
  │       ├─ PHASE3D_1_REGIONAL_LOCALITY_AND_CAST_MASTER_REPORT.md
  │       ├─ PHASE3D_VARIABLE_N_REGION_MANGA_INTEGRATION_REPORT.md
@@ -127,7 +128,7 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ test_i2i.py                         # 実機I2Iパイプライン検証スクリプト
  │   └─ test_wildcards.py                   # Wildcard/Dynamic Prompts検証
  ├─ patches/                                # 外部Custom Node向けローカルパッチ集
- ├─ workflows/                              # 漫画制作向けワークフローJSON (17種)
+ ├─ workflows/                              # 漫画制作向けワークフローJSON (22種)
  ├─ python_embeded/                         # [Git除外] Python 3.13 組み込み環境
  └─ ComfyUI/                                # [Git除外] ComfyUI本体 & 外部Custom Nodes
 ```
@@ -155,6 +156,11 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
 - `15_MANGA_PANEL_LAYOUT_CONTROLNET_FUSION_ORACLE.json`: 平面分割（Planar Subdivision）コマ割りControlNetと上段コマ内Semantic Overlap（2人物）の構図統合オラクル (Zero-Touch Verified / EXPERIMENTAL FUSION)
 - `16_MANGA_VARIABLE_N_REGION_LAYOUT_FUSION_POC.json`: 3〜6コマ可変多角形コマ割りと意味シーン計画（人物・ローカル背景）のControlNet統合漫画生成POC (Zero-Touch Verified / STABLE POC)
 - `17_MANGA_CAST_MASTER_AND_LOCALITY_VALIDATION.json`: 登場人物マスター管理（`TegakiMangaCastMaster`）・同一コマ内 Semantic Overlap・局所性検証オラクル (Zero-Touch Verified / STABLE ORACLE)
+- `18_SINGLE_REGION_PLACEMENT_CORE_VS_IMPACT_ORACLE.json`: 単一領域5位置配置・Core vs Impact比較オラクル (Zero-Touch Verified / EXPERIMENTAL ORACLE)
+- `19_TWO_REGION_SEMANTIC_BINDING_ORACLE.json`: 2領域意味分離・幾何スワップ・Semantic Overlapオラクル (Zero-Touch Verified / EXPERIMENTAL ORACLE)
+- `20_TWO_REGION_LAYOUT_ASSIST_ORACLE.json`: 意味領域幾何外枠線ControlNet補助評価オラクル (Zero-Touch Verified / EXPERIMENTAL ORACLE)
+- `21_MANGA_IMPACT_RECURRENT_CAST_POC.json`: 4コマ漫画反復出演（Recurrent Cast）・Impact N領域エンジン実証 (Zero-Touch Verified / STABLE POC)
+- `22_SINGLE_PANEL_MULTI_SCENE_SAME_CAST_ORACLE.json`: 単一コマ内複数シーン（Split Scene）・同一キャスト共存意地悪オラクル (Zero-Touch Verified / EXPERIMENTAL ORACLE)
 
 ### Tag Complete (Phase 3B.1.1 導入)
 - 全テキスト入力欄（Region Editor Prompt、CLIPTextEncode 等）で、Danbooru 14万タグ、LoRA名、Embeddingのリアルタイム自動補完（Tag Complete）が完全動作します（`ComfyUI-Custom-Scripts` 統合）。

@@ -10,6 +10,8 @@ from .two_region_layout_guide import TegakiTwoRegionLayoutGuide
 from .panel_layout_editor import TegakiMangaPanelLayoutEditor
 from .layout_aware_conditioning import TegakiMangaLayoutAwareConditioningBuilder
 from .cast_master import TegakiMangaCastMaster
+from .manga_impact_regional_adapter import TegakiMangaImpactRegionalAdapter
+from .single_panel_multiscene_adapter import TegakiSinglePanelMultiSceneImpactAdapter
 from . import panel_layout_api
 
 NODE_CLASS_MAPPINGS = {
@@ -28,6 +30,8 @@ NODE_CLASS_MAPPINGS = {
     "TegakiMangaPanelLayoutEditor": TegakiMangaPanelLayoutEditor,
     "TegakiMangaLayoutAwareConditioningBuilder": TegakiMangaLayoutAwareConditioningBuilder,
     "TegakiMangaCastMaster": TegakiMangaCastMaster,
+    "TegakiMangaImpactRegionalAdapter": TegakiMangaImpactRegionalAdapter,
+    "TegakiSinglePanelMultiSceneImpactAdapter": TegakiSinglePanelMultiSceneImpactAdapter,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -46,6 +50,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "TegakiMangaPanelLayoutEditor": "Tegaki Manga Panel Layout Editor (Guide)",
     "TegakiMangaLayoutAwareConditioningBuilder": "Tegaki Manga Layout-Aware Conditioning Builder",
     "TegakiMangaCastMaster": "Tegaki Manga Cast Master",
+    "TegakiMangaImpactRegionalAdapter": "Tegaki Manga Impact Regional Adapter",
+    "TegakiSinglePanelMultiSceneImpactAdapter": "Tegaki Single Panel Multi-Scene Impact Adapter",
 }
 
 WEB_DIRECTORY = "./web"
