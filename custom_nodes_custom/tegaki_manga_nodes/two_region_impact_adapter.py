@@ -1,5 +1,7 @@
 import json
 import logging
+import os
+import sys
 from typing import Dict, Any, Tuple, List, Optional
 
 import torch
@@ -20,9 +22,9 @@ class TegakiTwoRegionImpactAdapter:
             "required": {
                 "two_region_spec": ("TWO_REGION_SPEC",),
                 "sampler_A": ("KSAMPLER_ADVANCED",),
-                "sampler_B": ("KSAMPLER_ADVANCED",),
             },
             "optional": {
+                "sampler_B": ("KSAMPLER_ADVANCED",),
                 "variation_seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
                 "variation_strength": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.01}),
                 "variation_method": (["linear", "slerp"], {"default": "linear"}),
@@ -38,7 +40,7 @@ class TegakiTwoRegionImpactAdapter:
         self,
         two_region_spec: Any,
         sampler_A: Any,
-        sampler_B: Any,
+        sampler_B: Any = None,
         variation_seed: int = 0,
         variation_strength: float = 0.0,
         variation_method: str = "linear"
@@ -53,17 +55,20 @@ class TegakiTwoRegionImpactAdapter:
                 impact_pack_mod = importlib.import_module("ComfyUI-Impact-Pack.modules.impact.core")
                 impact_core = impact_pack_mod
             except Exception:
-                try:
-                    import importlib.util
-                    import os
-                    pack_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "ComfyUI-Impact-Pack", "modules", "impact", "core.py"))
-                    if os.path.exists(pack_path):
-                        spec_imp = importlib.util.spec_from_file_location("impact_core", pack_path)
-                        mod = importlib.util.module_from_spec(spec_imp)
-                        spec_imp.loader.exec_module(mod)
-                        impact_core = mod
-                except Exception:
-                    pass
+                pass
+
+        if impact_core is None:
+            candidate_dirs = [
+                os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "ComfyUI", "custom_nodes", "ComfyUI-Impact-Pack", "modules")),
+                os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "ComfyUI-Impact-Pack", "modules")),
+            ]
+            for cdir in candidate_dirs:
+                if os.path.exists(cdir) and cdir not in sys.path:
+                    sys.path.insert(0, cdir)
+            try:
+                import impact.core as impact_core
+            except Exception:
+                pass
 
         if impact_core is None:
             raise RuntimeError(

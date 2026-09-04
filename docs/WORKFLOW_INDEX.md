@@ -244,9 +244,50 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 
 ---
 
-## 5. 互換性保証について (Phase 3B.1.1 & Phase 3C / 3C.1 / 3C.1.1 / 3C.1.2 / Phase 3D / Phase 3D.1)
+### 18_SINGLE_REGION_PLACEMENT_CORE_VS_IMPACT_ORACLE.json
+- **区分**: 単一領域配置・Backend比較オラクル (EXPERIMENTAL / REGIONAL SEMANTICS ORACLE)
+- **目的**: Canvas内の単一指定矩形（Region A, B無効）に対し、対象Prompt（a white dog, full body）をTL/TR/BL/BR/Centerの5位置へ移動させた際、Core Masked Conditioning と Impact RegionalSampler が意図通り対象を空間誘導できるかを同一起点・同一Seed（42）で直接比較・実証するオラクル。
+- **必要Custom Node**:
+  - `TegakiTwoRegionCoupleEditor` (独自 / 5位置プリセット対応エディター)
+  - `TegakiTwoRegionCoreConditioner` (独自 / Core Masked Conditioning)
+  - `TegakiTwoRegionImpactAdapter` (独自 / Impact連携アダプター, 単一領域対応)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, CLIPTextEncode, KSampler, VAEDecode, SaveImage, PreviewImage
+- **出力**: Core / Impact 単一領域配置画像 (`ComfyUI/output/Tegaki/Phase3D2/SingleRegion/...`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 19_TWO_REGION_SEMANTIC_BINDING_ORACLE.json
+- **区分**: 2領域意味分離・幾何スワップオラクル (EXPERIMENTAL / TWO-REGION SEMANTIC BINDING ORACLE)
+- **目的**: 2つの独立領域（Region A: White Dog, Region B: Black Cat または Man / Woman）において、Promptを一切変更せずに矩形幾何のみを左右入れ替える（Geometry Swap）ことで生成対象の物理位置が反転するかを実証。さらに垂直配置および約35%のSemantic Overlapでの演技相互作用と境界シーム解消を検証するオラクル。
+- **必要Custom Node**:
+  - `TegakiTwoRegionCoupleEditor` (独自 / 2領域エディター)
+  - `TegakiTwoRegionImpactAdapter` (独自 / Impact連携アダプター)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, CLIPTextEncode, VAEDecode, SaveImage, PreviewImage
+- **出力**: 2領域意味分離生成画像 (`ComfyUI/output/Tegaki/Phase3D2/TwoRegion/...`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 20_TWO_REGION_LAYOUT_ASSIST_ORACLE.json
+- **区分**: 幾何補助オラクル (EXPERIMENTAL / LAYOUT ASSIST ORACLE)
+- **目的**: 意味領域幾何から生成された外枠線ガイド（`TegakiTwoRegionLayoutGuide`）を ControlNet へ投入し、Regional Backend 単体と幾何補助併用時での位置拘束力および生成画質・境界アーティファクトへの影響を比較評価するオラクル。
+- **必要Custom Node**:
+  - `TegakiTwoRegionCoupleEditor` (独自 / 2領域エディター)
+  - `TegakiTwoRegionLayoutGuide` (独自 / パネル枠線生成)
+  - `TegakiTwoRegionImpactAdapter` (独自 / Impact連携アダプター)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: ControlNetLoader, ControlNetApplyAdvanced, CheckpointLoaderSimple, EmptyLatentImage, CLIPTextEncode, VAEDecode, SaveImage, PreviewImage
+- **出力**: ControlNet幾何補助生成画像 (`ComfyUI/output/Tegaki/Phase3D2/LayoutAssist/...`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3D.2)
 - **Zero-Touch Smoke Test 検証済み**:
-  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10_MANGA_REGIONAL_CONTROL_EXPANSION_TEST.json`、`11`〜`16`、および最新の `17_MANGA_CAST_MASTER_AND_LOCALITY_VALIDATION.json` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
+  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`17`、および最新の `18_SINGLE_REGION_PLACEMENT_CORE_VS_IMPACT_ORACLE.json`、`19_TWO_REGION_SEMANTIC_BINDING_ORACLE.json`、`20_TWO_REGION_LAYOUT_ASSIST_ORACLE.json` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
 - **Canonical Widget Order**:
   `TegakiMangaConditioningBuilder` の Widget 順序は `[panel_strength, character_strength, set_cond_area, local_region_strength, mask_feather]` に統一され、フロントエンド自動マイグレーション拡張（`manga_workflow_migration.js`）により過去のワークフローも透過的に自動変換・NaN修復されます。
 - **Frontend / Backend Geometry Parity (Phase 3C.1.2) & Fail-Closed**:
@@ -255,6 +296,8 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
   幾何正本（`PANEL_LAYOUT_SPEC`）と意味正本（`PAGE_COMPILE_PLAN`）のデータ契約を一切汚染することなく、純粋関数 Bridge (`layout_region_bridge.py`) と新設ノード `TegakiMangaLayoutAwareConditioningBuilder` を介して多角形コママスク・人物BBox相対投影・多角形クリップを実現。既存の `TegakiMangaConditioningBuilder` を 100% 温存したまま、可変コマ割りでの漫画生成環境を確立しました。
 - **Canvas Dimension Contract & Cast Master SSOT (Phase 3D.1)**:
   `PAGE_COMPILE_PLAN.canvas` と `PANEL_LAYOUT_SPEC.canvas` の厳格一致（不一致時 `ValueError`）を Fail-Closed で施行。さらに `CAST_SPEC` (v1) を SSOT として管理する `TegakiMangaCastMaster` を新設し、参照中キャラクターの誤削除防御・不変 ID 保証・無効化キャラの安全スキップを確立しました。
+- **Regional Semantics First & Backend Selection (Phase 3D.2)**:
+  漫画ページ体裁やCAST UI拡張を一時凍結し、「指定矩形へPrompt対象を空間誘導・分離できるか」の因果関係を実機検証。単一領域5位置配置（TL/TR/BL/BR/C）、Dog/Cat幾何スワップ、Man/Woman人物分離およびCouple Overlapを実証し、`Impact RegionalSampler` を Primary Backend として採択。ControlNet Layout Assist の額縁化弊害を特定し、ControlNetを漫画コマ枠線専用とする設計境界を確立しました。
 
 
 

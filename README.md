@@ -69,6 +69,7 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ RESEARCH_REFERENCES.md              # 参照リポジトリ・ライセンス
  │   ├─ CUSTOM_NODE_MANIFEST.md             # 外部Custom Nodeコミット追跡
  │   └─ reports/                            # 開発フェーズ完了報告書・検証記録集
+ │       ├─ PHASE3D_2_REGIONAL_SEMANTICS_FIRST_REPORT.md
  │       ├─ PHASE3D_1_REGIONAL_LOCALITY_AND_CAST_MASTER_REPORT.md
  │       ├─ PHASE3D_VARIABLE_N_REGION_MANGA_INTEGRATION_REPORT.md
  │       ├─ PHASE3C_1_2_FRONTEND_BACKEND_GEOMETRY_PARITY_REPORT.md

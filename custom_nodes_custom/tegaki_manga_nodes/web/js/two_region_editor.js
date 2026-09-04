@@ -22,7 +22,7 @@ const PALETTE = {
     handle: "#ffffff"
 };
 
-// Phase 3C.1: Semantic Overlap を既定テンプレートとする
+// Phase 3D.2: Regional Semantics First Presets
 const PRESETS = {
     overlap: [
         { id: "A", enabled: true, x: 0.05, y: 0.10, w: 0.62, h: 0.80 },
@@ -31,6 +31,10 @@ const PRESETS = {
     horizontal: [
         { id: "A", enabled: true, x: 0.05, y: 0.10, w: 0.42, h: 0.80 },
         { id: "B", enabled: true, x: 0.53, y: 0.10, w: 0.42, h: 0.80 }
+    ],
+    swap: [
+        { id: "A", enabled: true, x: 0.53, y: 0.10, w: 0.42, h: 0.80 },
+        { id: "B", enabled: true, x: 0.05, y: 0.10, w: 0.42, h: 0.80 }
     ],
     vertical: [
         { id: "A", enabled: true, x: 0.10, y: 0.05, w: 0.80, h: 0.42 },
@@ -43,6 +47,27 @@ const PRESETS = {
     one_b: [
         { id: "A", enabled: false, x: 0.05, y: 0.10, w: 0.62, h: 0.80 },
         { id: "B", enabled: true, x: 0.10, y: 0.10, w: 0.80, h: 0.80 }
+    ],
+    // Phase 3D.2 Single Region 5 Positions (w=0.35, h=0.45)
+    single_tl: [
+        { id: "A", enabled: true, x: 0.05, y: 0.05, w: 0.35, h: 0.45 },
+        { id: "B", enabled: false, x: 0.55, y: 0.50, w: 0.35, h: 0.45 }
+    ],
+    single_tr: [
+        { id: "A", enabled: true, x: 0.60, y: 0.05, w: 0.35, h: 0.45 },
+        { id: "B", enabled: false, x: 0.05, y: 0.50, w: 0.35, h: 0.45 }
+    ],
+    single_bl: [
+        { id: "A", enabled: true, x: 0.05, y: 0.50, w: 0.35, h: 0.45 },
+        { id: "B", enabled: false, x: 0.60, y: 0.05, w: 0.35, h: 0.45 }
+    ],
+    single_br: [
+        { id: "A", enabled: true, x: 0.60, y: 0.50, w: 0.35, h: 0.45 },
+        { id: "B", enabled: false, x: 0.05, y: 0.05, w: 0.35, h: 0.45 }
+    ],
+    single_c: [
+        { id: "A", enabled: true, x: 0.325, y: 0.275, w: 0.35, h: 0.45 },
+        { id: "B", enabled: false, x: 0.05, y: 0.05, w: 0.35, h: 0.45 }
     ]
 };
 
@@ -103,23 +128,29 @@ app.registerExtension({
             }
         };
 
-        // プリセットボタンウィジェットの追加 (Phase 3C.1 改称)
-        node.addWidget("button", "Semantic Overlap (~35%)", null, () => node.applyPreset("overlap"));
-        node.addWidget("button", "Separate Left / Right", null, () => node.applyPreset("horizontal"));
-        node.addWidget("button", "Separate Top / Bottom", null, () => node.applyPreset("vertical"));
-        node.addWidget("button", "A Only (Disable B)", null, () => node.applyPreset("one_a"));
-        node.addWidget("button", "B Only (Disable A)", null, () => node.applyPreset("one_b"));
+        // プリセットボタンウィジェットの追加 (Phase 3D.2 Single / Two Region Presets)
+        node.addWidget("button", "Single A: Top-Left (TL)", null, () => node.applyPreset("single_tl"));
+        node.addWidget("button", "Single A: Top-Right (TR)", null, () => node.applyPreset("single_tr"));
+        node.addWidget("button", "Single A: Bottom-Left (BL)", null, () => node.applyPreset("single_bl"));
+        node.addWidget("button", "Single A: Bottom-Right (BR)", null, () => node.applyPreset("single_br"));
+        node.addWidget("button", "Single A: Center (C)", null, () => node.applyPreset("single_c"));
+        node.addWidget("button", "Two Region: Left / Right", null, () => node.applyPreset("horizontal"));
+        node.addWidget("button", "Two Region: Geometry Swap", null, () => node.applyPreset("swap"));
+        node.addWidget("button", "Two Region: Overlap (~35%)", null, () => node.applyPreset("overlap"));
+        node.addWidget("button", "Two Region: Vertical (T/B)", null, () => node.applyPreset("vertical"));
         node.addWidget("button", "Toggle Selected A/B Enable", null, () => node.toggleActiveRegion());
 
         // Canvas描画ウィジェットの追加
         const canvasWidget = node.addWidget("customCanvas", "two_region_canvas", null, () => { });
         canvasWidget.computeSize = () => [node.size[0] - 20, 260];
 
-        // 描画座標計算ヘルパー
+        // 描画座標計算ヘルパー (Canvas解像度ウィジェットと動的同期)
         node.getCanvasLayout = function (width, y) {
             const spec = node.getSpec();
-            const canvasW = spec.canvas?.width || 832;
-            const canvasH = spec.canvas?.height || 1216;
+            const wW = getWidget("canvas_width")?.value;
+            const wH = getWidget("canvas_height")?.value;
+            const canvasW = (typeof wW === "number" && wW > 0) ? wW : (spec.canvas?.width || 832);
+            const canvasH = (typeof wH === "number" && wH > 0) ? wH : (spec.canvas?.height || 1216);
             const aspect = canvasW / canvasH;
 
             const pad = 10;
@@ -134,16 +165,22 @@ app.registerExtension({
             }
 
             const drawX = (width - drawW) / 2;
-            const drawY = y + 10;
-            return { drawX, drawY, drawW, drawH, canvasW, canvasH };
+            const drawY = y + 14;
+            return { drawX, drawY, drawW, drawH, canvasW, canvasH, aspect };
         };
 
         canvasWidget.draw = function (ctx, node, width, y) {
             const layout = node.getCanvasLayout(width, y);
-            const { drawX, drawY, drawW, drawH } = layout;
+            const { drawX, drawY, drawW, drawH, canvasW, canvasH, aspect } = layout;
             node.lastCanvasLayout = layout; // マウスイベント用キャッシュ
 
             const spec = node.getSpec();
+
+            // 解像度・アスペクト比ヘッダー
+            ctx.fillStyle = "#8c7b70";
+            ctx.font = "bold 9px sans-serif";
+            const aspStr = aspect >= 1 ? `${aspect.toFixed(2)}:1` : `1:${(1 / aspect).toFixed(2)}`;
+            ctx.fillText(`Canvas: ${canvasW}x${canvasH} (${aspStr})`, drawX + 2, drawY - 4);
 
             // 背景 & 枠
             ctx.fillStyle = PALETTE.bg;
@@ -175,14 +212,18 @@ app.registerExtension({
                 ctx.lineWidth = isSelected ? 3 : 1.5;
                 ctx.strokeRect(rx, ry, rw, rh);
 
-                // ラベル
+                // ラベル (Prompt プレビュー)
                 const promptWidget = getWidget(isA ? "prompt_A" : "prompt_B");
-                const pText = promptWidget?.value?.substring(0, 18) || "";
+                const pRaw = (promptWidget?.value || reg.prompt || "").trim();
+                const pText = pRaw.length > 20 ? pRaw.substring(0, 20) + "..." : pRaw;
+                const statusTag = reg.enabled ? "" : " (OFF)";
+
                 ctx.fillStyle = pal.stroke;
-                ctx.fillRect(rx, ry, Math.min(rw, 130), 18);
+                const labelW = Math.min(rw, 150);
+                ctx.fillRect(rx, ry, labelW, 18);
                 ctx.fillStyle = "#ffffff";
                 ctx.font = "bold 10px sans-serif";
-                ctx.fillText(`${reg.id}${reg.enabled ? "" : " (OFF)"}: ${pText}`, rx + 4, ry + 13);
+                ctx.fillText(`${reg.id}${statusTag}: ${pText}`, rx + 4, ry + 13);
 
                 // ハンドル (選択中のみ右下に描画)
                 if (isSelected && reg.enabled) {
@@ -339,7 +380,7 @@ app.registerExtension({
             return false;
         };
 
-        // ノード初期サイズ
-        node.setSize([380, 600]);
+        // ノード初期サイズ (Phase 3D.2 プリセットボタン拡張対応)
+        node.setSize([400, 720]);
     }
 });
