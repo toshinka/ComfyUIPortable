@@ -4,12 +4,12 @@ ComfyUI Portable 漫画制作環境 (Tegaki Manga Edition) - External AI Review 
 
 Project Name: Tegaki ComfyUI Portable Manga Edition
 Purpose: Windowsローカル環境にIllustrious/SDXLモデルとEasyReforge資産を統合した漫画制作研究環境
-Updated: 2026-09-05 02:40 (JST)
+Updated: 2026-09-05 03:40 (JST)
 Repository URL: https://github.com/toshinka/tegaki
 Branch: main
 
-Review Target Commit SHA: 13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a
-Current Status: Phase 3D.1 完了 (Regional Locality Validation & Character / CAST Master UI Foundation・KOMA2 A/Bマルチゾーン差分測定・CN ON/OFF比較・Alice/Bob実画像A/B差分測定・同一コマ内Semantic Overlap維持・5コマ漫画実機SDXL生成PASS・Canvas寸法一致Fail-Closed・CAST_SPEC SSOT & Cast Masterノード/UI・Workflow 17・Zero-Touch)
+Review Target Commit SHA: 5409fceec73243ef648a2e1c5ac6f8a74a0522cf
+Current Status: Phase 3D.2 完了 (Regional Semantics First・単一領域5位置配置TL/TR/BL/BR/C・Core vs Impact比較・White Dog vs Black Cat 幾何スワップ左右反転因果実証・Man vs Woman 人物演技分離・Couple Overlap ~35%境界シーム解消・ControlNet幾何補助評価(NOT NEEDED判定)・Workflow 18, 19, 20・Primary Backend Impact採択・Manga Reintegration GO)
 
 Latest GITHUB.TXT Raw:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB.TXT
@@ -17,93 +17,95 @@ https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB.TX
 ※ 外部AIは以下の「Pinned URL (commit固定)」を参照してレビューを実施してください。
 
 --------------------------------------------------------------------------------
-1. Required First Reads (最優先確認資料 - Phase 3D.1 報告書・仕様・索引)
+1. Required First Reads (最優先確認資料 - Phase 3D.2 報告書・仕様・索引)
 --------------------------------------------------------------------------------
-1. PHASE3D_1_REGIONAL_LOCALITY_AND_CAST_MASTER_REPORT.md (Phase 3D.1 完了報告書・全26項目完全網羅)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/reports/PHASE3D_1_REGIONAL_LOCALITY_AND_CAST_MASTER_REPORT.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/docs/reports/PHASE3D_1_REGIONAL_LOCALITY_AND_CAST_MASTER_REPORT.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/docs/reports/PHASE3D_1_REGIONAL_LOCALITY_AND_CAST_MASTER_REPORT.md
+1. PHASE3D_2_REGIONAL_SEMANTICS_FIRST_REPORT.md (Phase 3D.2 完了報告書・全25項目完全網羅)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/reports/PHASE3D_2_REGIONAL_SEMANTICS_FIRST_REPORT.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/docs/reports/PHASE3D_2_REGIONAL_SEMANTICS_FIRST_REPORT.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/docs/reports/PHASE3D_2_REGIONAL_SEMANTICS_FIRST_REPORT.md
 
-2. WORKFLOW_INDEX.md (ワークフロー解説・索引・Phase 3D.1 互換性保証追記)
+2. WORKFLOW_INDEX.md (ワークフロー解説・索引・Phase 3D.2 互換性保証追記)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/WORKFLOW_INDEX.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/docs/WORKFLOW_INDEX.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/docs/WORKFLOW_INDEX.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/docs/WORKFLOW_INDEX.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/docs/WORKFLOW_INDEX.md
 
-3. README.md (リポジトリトップドキュメント・Phase 3D.1 反映版)
+3. README.md (リポジトリトップドキュメント・Phase 3D.2 反映版)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/README.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/README.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/README.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/README.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/README.md
 
 --------------------------------------------------------------------------------
-2. Track 1: Cast Master & Architecture (登場人物管理 & 幾何・意味シーン統合)
+2. Track 1: Regional Semantic Nodes & Adapters (意味領域エディター & アダプター)
 --------------------------------------------------------------------------------
-1. cast_master.py (CAST_SPEC v1 SSOT 管理ノード・不変ID・参照削除Fail-Closed防御)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/cast_master.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/cast_master.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/cast_master.py
+1. two_region_editor.py (TWO_REGION_SPEC 正本管理 & マスク・プレビュー生成ノード)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_editor.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_editor.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_editor.py
 
-2. web/js/cast_master_editor.js (Character Master カード型 UI エクステンション)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/cast_master_editor.js
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/cast_master_editor.js
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/cast_master_editor.js
+2. web/js/two_region_editor.js (5位置プリセット・スワップ・動的アスペクト比追従 Canvas UI)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/two_region_editor.js
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/two_region_editor.js
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/two_region_editor.js
 
-3. layout_region_bridge.py (Canvas寸法一致 Fail-Closed 検査 & 純粋関数 Bridge)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/layout_region_bridge.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/layout_region_bridge.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/layout_region_bridge.py
+3. two_region_impact_adapter.py (Impact Pack 連携アダプター・単一領域省略対応)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_impact_adapter.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_impact_adapter.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_impact_adapter.py
 
-4. layout_aware_mask_builder.py (多角形パネルマスク & 人物BBox相対投影・多角形クリッピング)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/layout_aware_mask_builder.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/layout_aware_mask_builder.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/layout_aware_mask_builder.py
+4. two_region_core_conditioner.py (Core Masked Conditioning 低依存フォールバックノード)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_core_conditioner.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_core_conditioner.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_core_conditioner.py
 
-5. layout_aware_conditioning.py (4階層多角形レイアウト融合 Conditioning Builder ノード)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/layout_aware_conditioning.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/layout_aware_conditioning.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/layout_aware_conditioning.py
-
---------------------------------------------------------------------------------
-3. Track 2: Workflows (完成ワークフロー)
---------------------------------------------------------------------------------
-1. 17_MANGA_CAST_MASTER_AND_LOCALITY_VALIDATION.json (Phase 3D.1 Cast Master・局所性実証ワークフロー)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/17_MANGA_CAST_MASTER_AND_LOCALITY_VALIDATION.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/workflows/17_MANGA_CAST_MASTER_AND_LOCALITY_VALIDATION.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/workflows/17_MANGA_CAST_MASTER_AND_LOCALITY_VALIDATION.json
-
-2. 16_MANGA_VARIABLE_N_REGION_LAYOUT_FUSION_POC.json (Phase 3D 可変N領域・幾何融合実証ワークフロー)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/16_MANGA_VARIABLE_N_REGION_LAYOUT_FUSION_POC.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/workflows/16_MANGA_VARIABLE_N_REGION_LAYOUT_FUSION_POC.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/workflows/16_MANGA_VARIABLE_N_REGION_LAYOUT_FUSION_POC.json
+5. two_region_layout_guide.py (外枠線・矩形ブロック幾何生成ノード)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_layout_guide.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_layout_guide.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/two_region_layout_guide.py
 
 --------------------------------------------------------------------------------
-4. Automated Test Suites (自動テストスクリプト)
+3. Track 2: Workflows (研究・検証ワークフロー)
 --------------------------------------------------------------------------------
-1. test_phase3d1_panel_locality.py (コマ別マルチゾーン差分測定・CN ON/OFF診断)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/scripts/test_phase3d1_panel_locality.py
+1. 18_SINGLE_REGION_PLACEMENT_CORE_VS_IMPACT_ORACLE.json (単一領域5位置配置・Core vs Impact比較)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/18_SINGLE_REGION_PLACEMENT_CORE_VS_IMPACT_ORACLE.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/workflows/18_SINGLE_REGION_PLACEMENT_CORE_VS_IMPACT_ORACLE.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/workflows/18_SINGLE_REGION_PLACEMENT_CORE_VS_IMPACT_ORACLE.json
 
-2. test_phase3d1_character_locality.py (人物A/Bマルチゾーン差分測定・5コマ実画像生成)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/scripts/test_phase3d1_character_locality.py
+2. 19_TWO_REGION_SEMANTIC_BINDING_ORACLE.json (2領域意味分離・幾何スワップ反転オラクル)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/19_TWO_REGION_SEMANTIC_BINDING_ORACLE.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/workflows/19_TWO_REGION_SEMANTIC_BINDING_ORACLE.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/workflows/19_TWO_REGION_SEMANTIC_BINDING_ORACLE.json
 
-3. test_canvas_contract_match.py (Canvas寸法一致 Fail-Closed 単体テスト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/scripts/test_canvas_contract_match.py
+3. 20_TWO_REGION_LAYOUT_ASSIST_ORACLE.json (ControlNet幾何補助評価オラクル)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/20_TWO_REGION_LAYOUT_ASSIST_ORACLE.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/workflows/20_TWO_REGION_LAYOUT_ASSIST_ORACLE.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/workflows/20_TWO_REGION_LAYOUT_ASSIST_ORACLE.json
 
-4. test_cast_master_state.py (Cast Master 状態遷移・不変ID単体テスト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/scripts/test_cast_master_state.py
+--------------------------------------------------------------------------------
+4. Automated Test Suites (自動テスト・実機生成スクリプト)
+--------------------------------------------------------------------------------
+1. test_single_region_oracle_contract.py (単一領域契約・5位置プリセット・マスク分離単体テスト)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/scripts/test_single_region_oracle_contract.py
 
-5. test_cast_binding_references.py (参照中キャラ削除防御・無効化スキップ単体テスト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/scripts/test_cast_binding_references.py
+2. test_two_region_geometry_swap.py (プロンプト無変更・幾何スワップ重心反転単体テスト)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/scripts/test_two_region_geometry_swap.py
 
-6. test_layout_region_mapping.py (幾何・意味シーン決定論的Bridge単体テスト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/scripts/test_layout_region_mapping.py
+3. test_single_region_core_runtime.py (Core 5位置実画像生成スクリプト)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/scripts/test_single_region_core_runtime.py
 
-7. test_layout_aware_masks.py (多角形パネル/人物BBox投影マスク単体テスト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/scripts/test_layout_aware_masks.py
+4. test_single_region_impact_runtime.py (Impact 5位置実画像生成スクリプト)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/scripts/test_single_region_impact_runtime.py
 
-8. test_layout_aware_conditioning.py (4階層 Conditioning 結合単体テスト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/scripts/test_layout_aware_conditioning.py
+5. test_two_region_backend_runtime.py (Dog/Cat・Man/Woman 幾何スワップ・演技分離実画像生成)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/scripts/test_two_region_backend_runtime.py
 
-9. test_workflow_json_integrity.py (ワークフロー 07〜17 構造整合性テスト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/scripts/test_workflow_json_integrity.py
+6. test_two_region_layout_assist.py (ControlNet幾何補助 ON/OFF 比較生成スクリプト)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/scripts/test_two_region_layout_assist.py
 
-10. test_workflow_widget_compatibility.py (ウィジェット互換性・マイグレーションテスト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/13e6e6b988dc2edf596c8ad5f73bd00c8f3de43a/ComfyUIPortable/scripts/test_workflow_widget_compatibility.py
+7. generate_single_region_contact_sheet.py (単一領域5位置比較コンタクトシート生成スクリプト)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/scripts/generate_single_region_contact_sheet.py
+
+8. test_workflow_json_integrity.py (全14ワークフロー 07〜20 構造整合性テスト)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/scripts/test_workflow_json_integrity.py
+
+9. test_workflow_widget_compatibility.py (ウィジェット互換性・マイグレーションテスト)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/5409fceec73243ef648a2e1c5ac6f8a74a0522cf/ComfyUIPortable/scripts/test_workflow_widget_compatibility.py
