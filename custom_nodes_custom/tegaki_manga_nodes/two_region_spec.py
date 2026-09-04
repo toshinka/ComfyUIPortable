@@ -67,9 +67,13 @@ def validate_two_region_spec(spec_data: Any, context_name: str = "TWO_REGION_SPE
         raise ValueError(f"[{context_name}] Root element must be a dictionary, got {type(spec_data).__name__}")
 
     # 1. Version validation
-    version = spec_data.get("version")
+    raw_version = spec_data.get("version")
+    try:
+        version = int(float(raw_version)) if raw_version is not None and not isinstance(raw_version, bool) else raw_version
+    except (ValueError, TypeError):
+        version = raw_version
     if version != 1:
-        raise ValueError(f"[{context_name}] Unsupported schema version: {version}. Expected version 1.")
+        raise ValueError(f"[{context_name}] Unsupported schema version: {raw_version}. Expected version 1.")
 
     # 2. Canvas validation
     canvas = spec_data.get("canvas")

@@ -313,11 +313,43 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 
 ---
 
-## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3E)
+### 23_MANGA_PROGRESSIVE_PANEL_AUTHORING_IMPACT.json
+- **区分**: 段階的オーサリング標準 (STABLE / PROGRESSIVE AUTHORING 4-PANEL)
+- **目的**: ユーザーの制作心理に沿った 6 段階パイプライン（01 GLOBAL → 02 CAST → 03 PANEL CONTENT → 04 PANEL LAYOUT → 05 CHARACTER STAGING → 06 GENERATE）を確立。内部エンジン（Impact Adapter + ToBasicPipe + RegionalSampler）を視覚的に完全隔離し、制作ノード 5 つのみとの対話で 4 コマ漫画を直感的にオーサリング・生成する標準ワークフロー。
+- **必要Custom Node**:
+  - `TegakiMangaCastSpecEditor` (独自 / キャスト定義)
+  - `TegakiMangaPanelContentEditor` (独自 / コマ演出プロンプト・出演管理)
+  - `TegakiMangaPanelLayoutEditor` (独自 / コマ割り幾何エディター)
+  - `TegakiMangaCharacterStagingEditor` (独自 / キャラクター配置・プレビュー)
+  - `TegakiMangaImpactRegionalAdapter` (独自 / 動的 N 領域 Impact アダプター)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, CLIPTextEncode, VAEDecode, SaveImage
+- **出力**: 段階的オーサリング 4 コマ画像 (`ComfyUI/output/Tegaki/Phase3F/wf23_zero_touch_progressive_4panel.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 24_SINGLE_PANEL_PROGRESSIVE_SUBSCENE_IMPACT.json
+- **区分**: 段階的サブシーン・オラクル (EXPERIMENTAL / PROGRESSIVE SUBSCENE ORACLE)
+- **目的**: 単一パネル内において、オプションの SubScene v1 Contract を用いて高度な複数シーン（左: Alice の教室、右: Bob の夕暮れ）を展開。通常は不要なサブシーン設定を Progressive Disclosure（段階的開示）により必要な場合のみ有効化し、Impact Pack による動的 N 領域結合でシームレスにサンプリング・描画するオラクル。
+- **必要Custom Node**:
+  - `TegakiMangaCastSpecEditor` (独自 / キャスト定義)
+  - `TegakiMangaPanelContentEditor` (独自 / コマ演出・SubScene 定義)
+  - `TegakiMangaPanelLayoutEditor` (独自 / コマ割り幾何エディター)
+  - `TegakiMangaCharacterStagingEditor` (独自 / キャラクター・サブシーン配置)
+  - `TegakiMangaImpactRegionalAdapter` (独自 / 動的 N 領域 Impact アダプター)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, CLIPTextEncode, VAEDecode, SaveImage
+- **出力**: 段階的サブシーン画像 (`ComfyUI/output/Tegaki/Phase3F/wf24_zero_touch_progressive_subscene.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3F)
 - **Zero-Touch Smoke Test 検証済み**:
-  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、および最新の `21_MANGA_IMPACT_RECURRENT_CAST_POC.json`、`22_SINGLE_PANEL_MULTI_SCENE_SAME_CAST_ORACLE.json` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
-- **Impact Regional Backend Manga Reintegration & Progressive Authoring (Phase 3E)**:
-  `TegakiMangaImpactRegionalAdapter` を介して、任意のコマ数（1〜6コマ）および任意の人物インスタンス数に対応する動的 N 領域サンプリングを実現。`scene_first`（背景先行描画）による人物潜在空間 Washout 防御、4コマ漫画における反復出演（Recurrent Cast）の同一性・出席完全性（100%）、および単一コマ内複数シーン（Hostile Test）での PROMISING 判定を実証。さらに Progressive Authoring（01 Global → 02 Cast → 03 Panel Content → 04 Layout → 05 Staging → 06 Generate）の導線整理と `INTERNAL ENGINE` 隔離を確立しました。
+  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、および最新の `21`、`22`、`23_MANGA_PROGRESSIVE_PANEL_AUTHORING_IMPACT.json`、`24_SINGLE_PANEL_PROGRESSIVE_SUBSCENE_IMPACT.json` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
+- **Zero-Touch Parity & Progressive Authoring (Phase 3F)**:
+  ComfyUI Webフロントエンドの `control_after_generate` 自動挿入に伴うウィジェット配列オフセットを完全解明・恒久修正（12 ウィジェット整合）。`ToBasicPipe.clip` の完全配線およびスキーマ耐障害性を強化。さらに Progressive Authoring UI（Cast Spec Editor, Panel Content Editor, Panel Layout Editor, Character Staging Editor）と SubScene v1 Contract（段階的開示）を確立し、初心者向けシンプル制作と高度なマルチシーン演出を両立しました。
 
 
 

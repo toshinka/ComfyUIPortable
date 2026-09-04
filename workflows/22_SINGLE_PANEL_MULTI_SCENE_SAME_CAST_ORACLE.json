@@ -1,6 +1,6 @@
 {
   "last_node_id": 13,
-  "last_link_id": 18,
+  "last_link_id": 19,
   "nodes": [
     {
       "id": 1,
@@ -31,7 +31,8 @@
           "links": [
             2,
             3,
-            4
+            4,
+            19
           ],
           "slot_index": 1
         },
@@ -172,7 +173,7 @@
         {
           "name": "clip",
           "type": "CLIP",
-          "link": null
+          "link": 19
         },
         {
           "name": "vae",
@@ -294,7 +295,7 @@
         }
       ],
       "widgets_values": [
-        "{\n  \"version\": \"1.0\",\n  \"characters\": [\n    {\n      \"id\": \"char_alice\",\n      \"name\": \"Alice\",\n      \"enabled\": true,\n      \"prompt\": \"1girl, blonde twin tails, blue eyes, school uniform, white shirt, red necktie, pleated skirt\",\n      \"negative_prompt\": \"blurry, low quality, bad anatomy, duplicate girl\",\n      \"loras\": []\n    },\n    {\n      \"id\": \"char_bob\",\n      \"name\": \"Bob\",\n      \"enabled\": true,\n      \"prompt\": \"1boy, short black hair, dark eyes, school uniform, black gakuran jacket, male student\",\n      \"negative_prompt\": \"blurry, low quality, bad anatomy, duplicate boy\",\n      \"loras\": []\n    }\n  ]\n}"
+        "{\n  \"version\": 1,\n  \"characters\": [\n    {\n      \"id\": \"char_alice\",\n      \"name\": \"Alice\",\n      \"enabled\": true,\n      \"prompt\": \"1girl, blonde twin tails, blue eyes, school uniform, white shirt, red necktie, pleated skirt\",\n      \"negative_prompt\": \"blurry, low quality, bad anatomy, duplicate girl\",\n      \"loras\": []\n    },\n    {\n      \"id\": \"char_bob\",\n      \"name\": \"Bob\",\n      \"enabled\": true,\n      \"prompt\": \"1boy, short black hair, dark eyes, school uniform, black gakuran jacket, male student\",\n      \"negative_prompt\": \"blurry, low quality, bad anatomy, duplicate boy\",\n      \"loras\": []\n    }\n  ]\n}"
       ]
     },
     {
@@ -337,7 +338,7 @@
         1024,
         1024,
         4,
-        "{\n  \"version\": \"1.0\",\n  \"canvas\": {\n    \"width\": 1024,\n    \"height\": 1024\n  },\n  \"vertices\": [\n    {\n      \"id\": \"v0\",\n      \"x\": 0.05,\n      \"y\": 0.05\n    },\n    {\n      \"id\": \"v1\",\n      \"x\": 0.95,\n      \"y\": 0.05\n    },\n    {\n      \"id\": \"v2\",\n      \"x\": 0.95,\n      \"y\": 0.95\n    },\n    {\n      \"id\": \"v3\",\n      \"x\": 0.05,\n      \"y\": 0.95\n    }\n  ],\n  \"panels\": [\n    {\n      \"id\": \"p1\",\n      \"vertex_ids\": [\n        \"v0\",\n        \"v1\",\n        \"v2\",\n        \"v3\"\n      ]\n    }\n  ]\n}"
+        "{\n  \"version\": 1,\n  \"canvas\": {\n    \"width\": 1024,\n    \"height\": 1024\n  },\n  \"vertices\": [\n    {\n      \"id\": \"v0\",\n      \"x\": 0.05,\n      \"y\": 0.05\n    },\n    {\n      \"id\": \"v1\",\n      \"x\": 0.95,\n      \"y\": 0.05\n    },\n    {\n      \"id\": \"v2\",\n      \"x\": 0.95,\n      \"y\": 0.95\n    },\n    {\n      \"id\": \"v3\",\n      \"x\": 0.05,\n      \"y\": 0.95\n    }\n  ],\n  \"panels\": [\n    {\n      \"id\": \"p1\",\n      \"vertex_ids\": [\n        \"v0\",\n        \"v1\",\n        \"v2\",\n        \"v3\"\n      ]\n    }\n  ]\n}"
       ]
     },
     {
@@ -486,6 +487,7 @@
       ],
       "widgets_values": [
         42,
+        "fixed",
         0,
         "ignore",
         20,
@@ -706,6 +708,14 @@
       13,
       0,
       "IMAGE"
+    ],
+    [
+      19,
+      1,
+      1,
+      5,
+      1,
+      "CLIP"
     ]
   ],
   "groups": [

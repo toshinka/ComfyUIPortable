@@ -128,7 +128,7 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ test_i2i.py                         # 実機I2Iパイプライン検証スクリプト
  │   └─ test_wildcards.py                   # Wildcard/Dynamic Prompts検証
  ├─ patches/                                # 外部Custom Node向けローカルパッチ集
- ├─ workflows/                              # 漫画制作向けワークフローJSON (22種)
+ ├─ workflows/                              # 漫画制作向けワークフローJSON (24種)
  ├─ python_embeded/                         # [Git除外] Python 3.13 組み込み環境
  └─ ComfyUI/                                # [Git除外] ComfyUI本体 & 外部Custom Nodes
 ```
@@ -161,6 +161,8 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
 - `20_TWO_REGION_LAYOUT_ASSIST_ORACLE.json`: 意味領域幾何外枠線ControlNet補助評価オラクル (Zero-Touch Verified / EXPERIMENTAL ORACLE)
 - `21_MANGA_IMPACT_RECURRENT_CAST_POC.json`: 4コマ漫画反復出演（Recurrent Cast）・Impact N領域エンジン実証 (Zero-Touch Verified / STABLE POC)
 - `22_SINGLE_PANEL_MULTI_SCENE_SAME_CAST_ORACLE.json`: 単一コマ内複数シーン（Split Scene）・同一キャスト共存意地悪オラクル (Zero-Touch Verified / EXPERIMENTAL ORACLE)
+- `23_MANGA_PROGRESSIVE_PANEL_AUTHORING_IMPACT.json`: 段階的オーサリング（01 Global → 02 Cast → 03 Content → 04 Layout → 05 Staging → 06 Generate）4コマ標準ワークフロー (Zero-Touch Verified / STABLE)
+- `24_SINGLE_PANEL_PROGRESSIVE_SUBSCENE_IMPACT.json`: 段階的開示（Progressive Disclosure）SubScene v1 オラクル (Zero-Touch Verified / EXPERIMENTAL ORACLE)
 
 ### Tag Complete (Phase 3B.1.1 導入)
 - 全テキスト入力欄（Region Editor Prompt、CLIPTextEncode 等）で、Danbooru 14万タグ、LoRA名、Embeddingのリアルタイム自動補完（Tag Complete）が完全動作します（`ComfyUI-Custom-Scripts` 統合）。
@@ -204,6 +206,22 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
   - `CAST_SPEC` (v1) を SSOT として管理する新設ノード `TegakiMangaCastMaster` およびフロントエンド拡張 `cast_master_editor.js` を実装。
   - 不変 ID（Immutable ID）、アクティブ KOMA 参照中キャラの誤削除 Fail-Closed 防御、無効化キャラの安全スキップ、出演コマ逆引きバッジ表示、未適用の人物 LoRA 計画表示（`[NOT YET SPATIALLY APPLIED - Plan Only]`）を完備。
   - 本番ワークフロー `17_MANGA_CAST_MASTER_AND_LOCALITY_VALIDATION.json` を整備し、Zero-Touch 100% 稼働を実証。
+
+### Zero-Touch Workflow Parity & Progressive Authoring UI (Phase 3F 成果)
+- **Zero-Touch 互換性の確立 (3F-0 Schema Closure)**:
+  - ComfyUI Web フロントエンドが `seed` / `noise_seed` の直後に `control_after_generate` コンボウィジェットを自動挿入する仕様を完全解明。
+  - `RegionalSampler` の保存ウィジェット配列を 12 要素に整合（`"fixed"` 明示挿入）し、ウィジェット位置ずれによる型・範囲バリデーションエラーを完全根絶。
+  - `ToBasicPipe` の `clip` 必須ソケット配線を全保存ワークフローで完全接続。
+  - 稼働中 ComfyUI の `/object_info` を正本とする自動テスト `scripts/test_live_external_node_schema.py` および全主要ワークフローの互換性テスト `scripts/test_saved_workflow_live_compatibility.py`（全 8 ワークフロー 100% PASS）を整備。
+- **段階的オーサリング UI (Progressive Authoring Pipeline)**:
+  - ユーザーの制作心理に即した 6 段階パイプライン `01 GLOBAL -> 02 CAST -> 03 PANEL CONTENT -> 04 PANEL LAYOUT -> 05 CHARACTER STAGING -> 06 GENERATE` を構築。
+  - `TegakiMangaPanelContentEditor`: コマ演出プロンプトとキャストの出演（Attendance）・演技（Acting）をチェックボックス等で直感的に一括管理。
+  - `TegakiMangaCharacterStagingEditor`: 各コマのキャラクター立ち位置矩形（BBox）のドラッグ＆リサイズ、および Canvas 枠線と人物配置のリアルタイムカラーテンソルプレビュー出力を実装。
+  - 内部エンジン（Impact Adapter + ToBasicPipe + RegionalSampler）を `INTERNAL ENGINE / DO NOT TOUCH` として視覚的に隔離。
+- **段階的開示 (Progressive Disclosure) & SubScene v1 Contract**:
+  - 通常の 4 コマ漫画はシンプルなパネルプロンプトとキャスト選択だけで完結（Simple First）。
+  - 同一コマ内での回想・対比など高度な演出を要する場合のみ、オプションの SubScene v1 契約（`id`, `enabled`, `prompt`, `area`, `character_bindings`, `metadata`）を展開。
+  - 標準 4 コマ本番ワークフロー `23_MANGA_PROGRESSIVE_PANEL_AUTHORING_IMPACT.json` およびサブシーン実証オラクル `24_SINGLE_PANEL_PROGRESSIVE_SUBSCENE_IMPACT.json` において Zero-Touch 実行を達成。
 
 
 

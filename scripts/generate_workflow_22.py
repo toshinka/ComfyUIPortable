@@ -22,7 +22,7 @@ WORKFLOW_FILE = os.path.join(PROJECT_ROOT, "workflows", "22_SINGLE_PANEL_MULTI_S
 def build_workflow_22():
     # 1. Cast Spec JSON (Alice & Bob)
     cast_data = {
-        "version": "1.0",
+        "version": 1,
         "characters": [
             {
                 "id": "char_alice",
@@ -45,7 +45,7 @@ def build_workflow_22():
 
     # 2. Panel Layout Spec JSON (Single Panel 1024x1024)
     layout_data = {
-        "version": "1.0",
+        "version": 1,
         "canvas": {"width": 1024, "height": 1024},
         "vertices": [
             {"id": "v0", "x": 0.05, "y": 0.05},

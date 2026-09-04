@@ -1,6 +1,6 @@
 {
-  "last_node_id": 15,
-  "last_link_id": 21,
+  "last_node_id": 16,
+  "last_link_id": 24,
   "nodes": [
     {
       "id": 1,
@@ -31,8 +31,8 @@
           "links": [
             2,
             3,
-            4,
-            21
+            20,
+            24
           ],
           "slot_index": 1
         },
@@ -40,8 +40,8 @@
           "name": "VAE",
           "type": "VAE",
           "links": [
-            5,
-            6
+            4,
+            18
           ],
           "slot_index": 2
         }
@@ -69,7 +69,7 @@
           "name": "LATENT",
           "type": "LATENT",
           "links": [
-            7
+            5
           ],
           "slot_index": 0
         }
@@ -106,13 +106,13 @@
           "name": "CONDITIONING",
           "type": "CONDITIONING",
           "links": [
-            8
+            6
           ],
           "slot_index": 0
         }
       ],
       "widgets_values": [
-        "masterpiece, high quality, manga page, 4-panel comic, story sequence"
+        "masterpiece, high quality, 4-panel manga page, comic strip"
       ]
     },
     {
@@ -120,7 +120,7 @@
       "type": "CLIPTextEncode",
       "pos": [
         400,
-        220
+        240
       ],
       "size": [
         340,
@@ -141,7 +141,7 @@
           "name": "CONDITIONING",
           "type": "CONDITIONING",
           "links": [
-            9
+            7
           ],
           "slot_index": 0
         }
@@ -173,22 +173,22 @@
         {
           "name": "clip",
           "type": "CLIP",
-          "link": 21
+          "link": 20
         },
         {
           "name": "vae",
           "type": "VAE",
-          "link": 5
+          "link": 4
         },
         {
           "name": "positive",
           "type": "CONDITIONING",
-          "link": 8
+          "link": 6
         },
         {
           "name": "negative",
           "type": "CONDITIONING",
-          "link": 9
+          "link": 7
         }
       ],
       "outputs": [
@@ -196,7 +196,7 @@
           "name": "basic_pipe",
           "type": "BASIC_PIPE",
           "links": [
-            10
+            8
           ],
           "slot_index": 0
         }
@@ -221,7 +221,7 @@
         {
           "name": "basic_pipe",
           "type": "BASIC_PIPE",
-          "link": 10
+          "link": 8
         },
         {
           "name": "sampler_opt",
@@ -239,8 +239,8 @@
           "name": "KSAMPLER_ADVANCED",
           "type": "KSAMPLER_ADVANCED",
           "links": [
-            11,
-            12
+            9,
+            10
           ],
           "slot_index": 0
         }
@@ -257,7 +257,7 @@
       "type": "TegakiMangaCastMaster",
       "pos": [
         40,
-        420
+        480
       ],
       "size": [
         360,
@@ -270,14 +270,16 @@
         {
           "name": "cast_spec",
           "type": "CAST_SPEC",
-          "links": null,
+          "links": [
+            21
+          ],
           "slot_index": 0
         },
         {
           "name": "cast_spec_json",
           "type": "STRING",
           "links": [
-            13
+            11
           ],
           "slot_index": 1
         },
@@ -300,90 +302,195 @@
     },
     {
       "id": 8,
-      "type": "TegakiMangaRegionEditor",
+      "type": "TegakiMangaPanelContentEditor",
       "pos": [
         440,
-        420
+        480
       ],
       "size": [
-        380,
-        480
+        420,
+        560
       ],
       "flags": {},
       "order": 7,
       "mode": 0,
+      "inputs": [
+        {
+          "name": "cast_spec",
+          "type": "CAST_SPEC",
+          "link": 21
+        }
+      ],
       "outputs": [
         {
           "name": "region_spec",
           "type": "REGION_SPEC",
           "links": [
-            14
+            12
           ],
           "slot_index": 0
         },
         {
-          "name": "region_spec_json",
+          "name": "content_data_json",
           "type": "STRING",
           "links": null,
           "slot_index": 1
         },
         {
-          "name": "global_prompt",
-          "type": "STRING",
+          "name": "panel_count",
+          "type": "INT",
           "links": null,
           "slot_index": 2
-        },
-        {
-          "name": "preview_image",
-          "type": "IMAGE",
-          "links": null,
-          "slot_index": 3
-        },
-        {
-          "name": "mask_batch",
-          "type": "MASK",
-          "links": null,
-          "slot_index": 4
-        },
-        {
-          "name": "active_region_ids_json",
-          "type": "STRING",
-          "links": null,
-          "slot_index": 5
         }
       ],
       "widgets_values": [
-        4,
-        1024,
-        1024,
-        "manga page, 4-panel comic",
-        "{\n  \"version\": 1,\n  \"canvas\": {\n    \"width\": 1024,\n    \"height\": 1024\n  },\n  \"panel_count\": 4,\n  \"global_prompt\": \"manga page, 4-panel comic, sequence of events, high quality\",\n  \"global_negative_prompt\": \"blurry, low quality, bad anatomy\",\n  \"regions\": [\n    {\n      \"id\": 1,\n      \"name\": \"KOMA 1\",\n      \"enabled\": true,\n      \"x\": 0.05,\n      \"y\": 0.05,\n      \"w\": 0.43,\n      \"h\": 0.43,\n      \"prompt\": \"simple school garden, sunny afternoon, outdoor stone path\",\n      \"negative_prompt\": \"blurry\",\n      \"characters\": [\n        {\n          \"character_id\": \"char_alice\",\n          \"enabled\": true,\n          \"prompt_override\": \"smiling happily, friendly handshake, reaching hand forward\",\n          \"area\": {\n            \"x\": 0.08,\n            \"y\": 0.15,\n            \"w\": 0.45,\n            \"h\": 0.8\n          }\n        },\n        {\n          \"character_id\": \"char_bob\",\n          \"enabled\": true,\n          \"prompt_override\": \"smiling warmly, friendly handshake, shaking hands\",\n          \"area\": {\n            \"x\": 0.47,\n            \"y\": 0.15,\n            \"w\": 0.45,\n            \"h\": 0.8\n          }\n        }\n      ]\n    },\n    {\n      \"id\": 2,\n      \"name\": \"KOMA 2\",\n      \"enabled\": true,\n      \"x\": 0.52,\n      \"y\": 0.05,\n      \"w\": 0.43,\n      \"h\": 0.43,\n      \"prompt\": \"school flower bed, colorful blooming flowers, soil, sunny morning\",\n      \"negative_prompt\": \"blurry\",\n      \"characters\": [\n        {\n          \"character_id\": \"char_alice\",\n          \"enabled\": true,\n          \"prompt_override\": \"watering flowers with a watering can, cheerful expression\",\n          \"area\": {\n            \"x\": 0.15,\n            \"y\": 0.12,\n            \"w\": 0.7,\n            \"h\": 0.82\n          }\n        }\n      ]\n    },\n    {\n      \"id\": 3,\n      \"name\": \"KOMA 3\",\n      \"enabled\": true,\n      \"x\": 0.05,\n      \"y\": 0.52,\n      \"w\": 0.43,\n      \"h\": 0.43,\n      \"prompt\": \"school garden stone path, trees in background\",\n      \"negative_prompt\": \"blurry\",\n      \"characters\": [\n        {\n          \"character_id\": \"char_bob\",\n          \"enabled\": true,\n          \"prompt_override\": \"carrying a large potted green plant with both hands, focused expression\",\n          \"area\": {\n            \"x\": 0.15,\n            \"y\": 0.12,\n            \"w\": 0.7,\n            \"h\": 0.82\n          }\n        }\n      ]\n    },\n    {\n      \"id\": 4,\n      \"name\": \"KOMA 4\",\n      \"enabled\": true,\n      \"x\": 0.52,\n      \"y\": 0.52,\n      \"w\": 0.43,\n      \"h\": 0.43,\n      \"prompt\": \"school iron gate in sunset, dramatic evening light, long shadows\",\n      \"negative_prompt\": \"blurry\",\n      \"characters\": [\n        {\n          \"character_id\": \"char_alice\",\n          \"enabled\": true,\n          \"prompt_override\": \"arguing, angry pout, looking away to the left with arms crossed\",\n          \"area\": {\n            \"x\": 0.08,\n            \"y\": 0.15,\n            \"w\": 0.45,\n            \"h\": 0.8\n          }\n        },\n        {\n          \"character_id\": \"char_bob\",\n          \"enabled\": true,\n          \"prompt_override\": \"arguing, annoyed expression, looking away to the right\",\n          \"area\": {\n            \"x\": 0.47,\n            \"y\": 0.15,\n            \"w\": 0.45,\n            \"h\": 0.8\n          }\n        }\n      ]\n    }\n  ]\n}"
+        "{\n  \"version\": 1,\n  \"canvas\": {\n    \"width\": 1024,\n    \"height\": 1024\n  },\n  \"panel_count\": 4,\n  \"global_prompt\": \"manga page, 4-panel comic, sequence of events, high quality\",\n  \"global_negative_prompt\": \"blurry, low quality, bad anatomy\",\n  \"panels\": [\n    {\n      \"id\": 1,\n      \"name\": \"Panel 1\",\n      \"enabled\": true,\n      \"prompt\": \"simple school garden, sunny afternoon, outdoor stone path\",\n      \"negative_prompt\": \"blurry\",\n      \"characters\": [\n        {\n          \"character_id\": \"char_alice\",\n          \"enabled\": true,\n          \"prompt_override\": \"smiling happily, friendly handshake, reaching hand forward\",\n          \"negative_prompt_override\": \"\",\n          \"area\": {\n            \"x\": 0.08,\n            \"y\": 0.15,\n            \"w\": 0.45,\n            \"h\": 0.8\n          }\n        },\n        {\n          \"character_id\": \"char_bob\",\n          \"enabled\": true,\n          \"prompt_override\": \"smiling warmly, friendly handshake, shaking hands\",\n          \"negative_prompt_override\": \"\",\n          \"area\": {\n            \"x\": 0.47,\n            \"y\": 0.15,\n            \"w\": 0.45,\n            \"h\": 0.8\n          }\n        }\n      ],\n      \"subscenes\": []\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Panel 2\",\n      \"enabled\": true,\n      \"prompt\": \"school flower bed, colorful blooming flowers, soil, sunny morning\",\n      \"negative_prompt\": \"blurry\",\n      \"characters\": [\n        {\n          \"character_id\": \"char_alice\",\n          \"enabled\": true,\n          \"prompt_override\": \"watering flowers with a watering can, cheerful expression\",\n          \"negative_prompt_override\": \"\",\n          \"area\": {\n            \"x\": 0.15,\n            \"y\": 0.12,\n            \"w\": 0.7,\n            \"h\": 0.82\n          }\n        }\n      ],\n      \"subscenes\": []\n    },\n    {\n      \"id\": 3,\n      \"name\": \"Panel 3\",\n      \"enabled\": true,\n      \"prompt\": \"school garden stone path, trees in background\",\n      \"negative_prompt\": \"blurry\",\n      \"characters\": [\n        {\n          \"character_id\": \"char_bob\",\n          \"enabled\": true,\n          \"prompt_override\": \"carrying a large potted green plant with both hands, focused expression\",\n          \"negative_prompt_override\": \"\",\n          \"area\": {\n            \"x\": 0.15,\n            \"y\": 0.12,\n            \"w\": 0.7,\n            \"h\": 0.82\n          }\n        }\n      ],\n      \"subscenes\": []\n    },\n    {\n      \"id\": 4,\n      \"name\": \"Panel 4\",\n      \"enabled\": true,\n      \"prompt\": \"school iron gate in sunset, dramatic evening light, long shadows\",\n      \"negative_prompt\": \"blurry\",\n      \"characters\": [\n        {\n          \"character_id\": \"char_alice\",\n          \"enabled\": true,\n          \"prompt_override\": \"arguing, angry pout, looking away to the left with arms crossed\",\n          \"negative_prompt_override\": \"\",\n          \"area\": {\n            \"x\": 0.08,\n            \"y\": 0.15,\n            \"w\": 0.45,\n            \"h\": 0.8\n          }\n        },\n        {\n          \"character_id\": \"char_bob\",\n          \"enabled\": true,\n          \"prompt_override\": \"arguing, annoyed expression, looking away to the right\",\n          \"negative_prompt_override\": \"\",\n          \"area\": {\n            \"x\": 0.47,\n            \"y\": 0.15,\n            \"w\": 0.45,\n            \"h\": 0.8\n          }\n        }\n      ],\n      \"subscenes\": []\n    }\n  ]\n}"
       ]
     },
     {
       "id": 9,
-      "type": "TegakiMangaPageCompiler",
+      "type": "TegakiMangaPanelLayoutEditor",
       "pos": [
-        860,
-        420
+        900,
+        480
       ],
       "size": [
         380,
-        480
+        440
       ],
       "flags": {},
       "order": 8,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "layout_image",
+          "type": "IMAGE",
+          "links": null,
+          "slot_index": 0
+        },
+        {
+          "name": "panel_layout_spec",
+          "type": "PANEL_LAYOUT_SPEC",
+          "links": [
+            13,
+            14
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "debug_json",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 2
+        }
+      ],
+      "widgets_values": [
+        1024,
+        1024,
+        4,
+        "{\n  \"version\": 1,\n  \"canvas\": {\n    \"width\": 1024,\n    \"height\": 1024\n  },\n  \"frame\": {\n    \"x\": 0.05,\n    \"y\": 0.05,\n    \"w\": 0.9,\n    \"h\": 0.9\n  },\n  \"vertices\": [\n    {\n      \"id\": \"v1\",\n      \"x\": 0.05,\n      \"y\": 0.05\n    },\n    {\n      \"id\": \"v2\",\n      \"x\": 0.5,\n      \"y\": 0.05\n    },\n    {\n      \"id\": \"v3\",\n      \"x\": 0.95,\n      \"y\": 0.05\n    },\n    {\n      \"id\": \"v4\",\n      \"x\": 0.05,\n      \"y\": 0.5\n    },\n    {\n      \"id\": \"v5\",\n      \"x\": 0.5,\n      \"y\": 0.5\n    },\n    {\n      \"id\": \"v6\",\n      \"x\": 0.95,\n      \"y\": 0.5\n    },\n    {\n      \"id\": \"v7\",\n      \"x\": 0.05,\n      \"y\": 0.95\n    },\n    {\n      \"id\": \"v8\",\n      \"x\": 0.5,\n      \"y\": 0.95\n    },\n    {\n      \"id\": \"v9\",\n      \"x\": 0.95,\n      \"y\": 0.95\n    }\n  ],\n  \"panels\": [\n    {\n      \"id\": \"p1\",\n      \"vertex_ids\": [\n        \"v1\",\n        \"v4\",\n        \"v5\",\n        \"v2\"\n      ]\n    },\n    {\n      \"id\": \"p2\",\n      \"vertex_ids\": [\n        \"v2\",\n        \"v5\",\n        \"v6\",\n        \"v3\"\n      ]\n    },\n    {\n      \"id\": \"p3\",\n      \"vertex_ids\": [\n        \"v4\",\n        \"v7\",\n        \"v8\",\n        \"v5\"\n      ]\n    },\n    {\n      \"id\": \"p4\",\n      \"vertex_ids\": [\n        \"v5\",\n        \"v8\",\n        \"v9\",\n        \"v6\"\n      ]\n    }\n  ],\n  \"metadata\": {\n    \"preset\": \"4_grid\"\n  }\n}"
+      ]
+    },
+    {
+      "id": 10,
+      "type": "TegakiMangaCharacterStagingEditor",
+      "pos": [
+        1320,
+        480
+      ],
+      "size": [
+        400,
+        480
+      ],
+      "flags": {},
+      "order": 9,
       "mode": 0,
       "inputs": [
         {
           "name": "region_spec",
           "type": "REGION_SPEC",
-          "link": 14
+          "link": 12
+        },
+        {
+          "name": "panel_layout_spec",
+          "type": "PANEL_LAYOUT_SPEC",
+          "link": 13
+        }
+      ],
+      "outputs": [
+        {
+          "name": "region_spec",
+          "type": "REGION_SPEC",
+          "links": [
+            15
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "staging_preview",
+          "type": "IMAGE",
+          "links": [
+            22
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "staging_json",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 2
+        }
+      ],
+      "widgets_values": [
+        "{}"
+      ]
+    },
+    {
+      "id": 13,
+      "type": "PreviewImage",
+      "pos": [
+        1760,
+        480
+      ],
+      "size": [
+        360,
+        360
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 22
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "TegakiMangaPageCompiler",
+      "pos": [
+        1280,
+        80
+      ],
+      "size": [
+        340,
+        200
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "region_spec",
+          "type": "REGION_SPEC",
+          "link": 15
         },
         {
           "name": "cast_spec",
           "type": "STRING",
-          "link": 13
+          "link": 11
         }
       ],
       "outputs": [
@@ -391,7 +498,7 @@
           "name": "page_compile_plan",
           "type": "PAGE_COMPILE_PLAN",
           "links": [
-            15
+            16
           ],
           "slot_index": 0
         },
@@ -420,82 +527,39 @@
       ]
     },
     {
-      "id": 10,
-      "type": "TegakiMangaPanelLayoutEditor",
-      "pos": [
-        1280,
-        420
-      ],
-      "size": [
-        380,
-        420
-      ],
-      "flags": {},
-      "order": 9,
-      "mode": 0,
-      "outputs": [
-        {
-          "name": "layout_image",
-          "type": "IMAGE",
-          "links": null,
-          "slot_index": 0
-        },
-        {
-          "name": "panel_layout_spec",
-          "type": "PANEL_LAYOUT_SPEC",
-          "links": [
-            16
-          ],
-          "slot_index": 1
-        },
-        {
-          "name": "debug_json",
-          "type": "STRING",
-          "links": null,
-          "slot_index": 2
-        }
-      ],
-      "widgets_values": [
-        1024,
-        1024,
-        4,
-        "{\n  \"version\": 1,\n  \"canvas\": {\n    \"width\": 1024,\n    \"height\": 1024\n  },\n  \"frame\": {\n    \"x\": 0.05,\n    \"y\": 0.05,\n    \"w\": 0.9,\n    \"h\": 0.9\n  },\n  \"vertices\": [\n    {\n      \"id\": \"v1\",\n      \"x\": 0.05,\n      \"y\": 0.05\n    },\n    {\n      \"id\": \"v2\",\n      \"x\": 0.5,\n      \"y\": 0.05\n    },\n    {\n      \"id\": \"v3\",\n      \"x\": 0.95,\n      \"y\": 0.05\n    },\n    {\n      \"id\": \"v4\",\n      \"x\": 0.05,\n      \"y\": 0.5\n    },\n    {\n      \"id\": \"v5\",\n      \"x\": 0.5,\n      \"y\": 0.5\n    },\n    {\n      \"id\": \"v6\",\n      \"x\": 0.95,\n      \"y\": 0.5\n    },\n    {\n      \"id\": \"v7\",\n      \"x\": 0.05,\n      \"y\": 0.95\n    },\n    {\n      \"id\": \"v8\",\n      \"x\": 0.5,\n      \"y\": 0.95\n    },\n    {\n      \"id\": \"v9\",\n      \"x\": 0.95,\n      \"y\": 0.95\n    }\n  ],\n  \"panels\": [\n    {\n      \"id\": \"p1\",\n      \"vertex_ids\": [\n        \"v1\",\n        \"v4\",\n        \"v5\",\n        \"v2\"\n      ]\n    },\n    {\n      \"id\": \"p2\",\n      \"vertex_ids\": [\n        \"v2\",\n        \"v5\",\n        \"v6\",\n        \"v3\"\n      ]\n    },\n    {\n      \"id\": \"p3\",\n      \"vertex_ids\": [\n        \"v4\",\n        \"v7\",\n        \"v8\",\n        \"v5\"\n      ]\n    },\n    {\n      \"id\": \"p4\",\n      \"vertex_ids\": [\n        \"v5\",\n        \"v8\",\n        \"v9\",\n        \"v6\"\n      ]\n    }\n  ],\n  \"metadata\": {\n    \"preset\": \"4_grid\"\n  }\n}"
-      ]
-    },
-    {
-      "id": 11,
+      "id": 12,
       "type": "TegakiMangaImpactRegionalAdapter",
       "pos": [
-        1700,
+        1660,
         80
       ],
       "size": [
-        380,
-        360
+        340,
+        220
       ],
       "flags": {},
-      "order": 10,
+      "order": 12,
       "mode": 0,
       "inputs": [
         {
           "name": "page_compile_plan",
           "type": "PAGE_COMPILE_PLAN",
-          "link": 15
+          "link": 16
         },
         {
           "name": "panel_layout_spec",
           "type": "PANEL_LAYOUT_SPEC",
-          "link": 16
+          "link": 14
         },
         {
           "name": "base_sampler",
           "type": "KSAMPLER_ADVANCED",
-          "link": 11
+          "link": 9
         },
         {
           "name": "clip",
           "type": "CLIP",
-          "link": 4
+          "link": 24
         }
       ],
       "outputs": [
@@ -508,24 +572,10 @@
           "slot_index": 0
         },
         {
-          "name": "region_masks",
-          "type": "MASK",
+          "name": "staging_image",
+          "type": "IMAGE",
           "links": null,
           "slot_index": 1
-        },
-        {
-          "name": "preview_image",
-          "type": "IMAGE",
-          "links": [
-            18
-          ],
-          "slot_index": 2
-        },
-        {
-          "name": "debug_json",
-          "type": "STRING",
-          "links": null,
-          "slot_index": 3
         }
       ],
       "widgets_values": [
@@ -533,17 +583,14 @@
         "scene_composed",
         true,
         false,
-        0,
-        0,
-        0.0,
-        "linear"
+        0
       ]
     },
     {
-      "id": 12,
-      "type": "PreviewImage",
+      "id": 14,
+      "type": "RegionalSampler",
       "pos": [
-        2120,
+        2040,
         80
       ],
       "size": [
@@ -551,41 +598,18 @@
         360
       ],
       "flags": {},
-      "order": 11,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 18
-        }
-      ],
-      "widgets_values": []
-    },
-    {
-      "id": 13,
-      "type": "RegionalSampler",
-      "pos": [
-        1700,
-        480
-      ],
-      "size": [
-        380,
-        360
-      ],
-      "flags": {},
-      "order": 12,
+      "order": 13,
       "mode": 0,
       "inputs": [
         {
           "name": "samples",
           "type": "LATENT",
-          "link": 7
+          "link": 5
         },
         {
           "name": "base_sampler",
           "type": "KSAMPLER_ADVANCED",
-          "link": 12
+          "link": 10
         },
         {
           "name": "regional_prompts",
@@ -619,18 +643,18 @@
       ]
     },
     {
-      "id": 14,
+      "id": 15,
       "type": "VAEDecode",
       "pos": [
-        2120,
-        480
+        2440,
+        80
       ],
       "size": [
-        220,
+        240,
         100
       ],
       "flags": {},
-      "order": 13,
+      "order": 14,
       "mode": 0,
       "inputs": [
         {
@@ -641,7 +665,7 @@
         {
           "name": "vae",
           "type": "VAE",
-          "link": 6
+          "link": 18
         }
       ],
       "outputs": [
@@ -649,7 +673,7 @@
           "name": "IMAGE",
           "type": "IMAGE",
           "links": [
-            20
+            23
           ],
           "slot_index": 0
         }
@@ -657,28 +681,28 @@
       "widgets_values": []
     },
     {
-      "id": 15,
+      "id": 16,
       "type": "SaveImage",
       "pos": [
-        2380,
+        2160,
         480
       ],
       "size": [
-        360,
-        400
+        380,
+        440
       ],
       "flags": {},
-      "order": 14,
+      "order": 15,
       "mode": 0,
       "inputs": [
         {
           "name": "images",
           "type": "IMAGE",
-          "link": 20
+          "link": 23
         }
       ],
       "widgets_values": [
-        "Tegaki/Phase3E/manga_recurrent_cast_4panel"
+        "Tegaki/Phase3F/wf23_progressive_4panel"
       ]
     }
   ],
@@ -710,53 +734,37 @@
     [
       4,
       1,
-      1,
-      11,
-      3,
-      "CLIP"
-    ],
-    [
-      5,
-      1,
       2,
       5,
       2,
       "VAE"
     ],
     [
-      6,
-      1,
-      2,
-      14,
-      1,
-      "VAE"
-    ],
-    [
-      7,
+      5,
       2,
       0,
-      13,
+      14,
       0,
       "LATENT"
     ],
     [
+      6,
+      3,
+      0,
+      5,
+      3,
+      "CONDITIONING"
+    ],
+    [
+      7,
+      4,
+      0,
+      5,
+      4,
+      "CONDITIONING"
+    ],
+    [
       8,
-      3,
-      0,
-      5,
-      3,
-      "CONDITIONING"
-    ],
-    [
-      9,
-      4,
-      0,
-      5,
-      4,
-      "CONDITIONING"
-    ],
-    [
-      10,
       5,
       0,
       6,
@@ -764,170 +772,217 @@
       "BASIC_PIPE"
     ],
     [
-      11,
+      9,
       6,
       0,
-      11,
+      12,
       2,
       "KSAMPLER_ADVANCED"
     ],
     [
-      12,
+      10,
       6,
       0,
-      13,
+      14,
       1,
       "KSAMPLER_ADVANCED"
     ],
     [
-      13,
+      11,
       7,
       1,
-      9,
+      11,
       1,
       "STRING"
     ],
     [
-      14,
+      12,
       8,
       0,
-      9,
+      10,
       0,
       "REGION_SPEC"
     ],
     [
-      15,
+      13,
       9,
-      0,
-      11,
-      0,
-      "PAGE_COMPILE_PLAN"
-    ],
-    [
-      16,
-      10,
       1,
-      11,
+      10,
       1,
       "PANEL_LAYOUT_SPEC"
     ],
     [
-      17,
+      14,
+      9,
+      1,
+      12,
+      1,
+      "PANEL_LAYOUT_SPEC"
+    ],
+    [
+      15,
+      10,
+      0,
       11,
       0,
-      13,
+      "REGION_SPEC"
+    ],
+    [
+      16,
+      11,
+      0,
+      12,
+      0,
+      "PAGE_COMPILE_PLAN"
+    ],
+    [
+      17,
+      12,
+      0,
+      14,
       2,
       "REGIONAL_PROMPTS"
     ],
     [
       18,
-      11,
+      1,
       2,
-      12,
-      0,
-      "IMAGE"
+      15,
+      1,
+      "VAE"
     ],
     [
       19,
-      13,
-      0,
       14,
+      0,
+      15,
       0,
       "LATENT"
     ],
     [
       20,
-      14,
-      0,
-      15,
-      0,
-      "IMAGE"
-    ],
-    [
-      21,
       1,
       1,
       5,
       1,
       "CLIP"
+    ],
+    [
+      21,
+      7,
+      0,
+      8,
+      0,
+      "CAST_SPEC"
+    ],
+    [
+      22,
+      10,
+      1,
+      13,
+      0,
+      "IMAGE"
+    ],
+    [
+      23,
+      15,
+      0,
+      16,
+      0,
+      "IMAGE"
+    ],
+    [
+      24,
+      1,
+      1,
+      12,
+      3,
+      "CLIP"
     ]
   ],
   "groups": [
     {
-      "title": "01 GLOBAL & MODEL SETUP",
+      "title": "01 GLOBAL — MODEL / PIPE / BASE SAMPLER",
       "bounding": [
         20,
         20,
         1040,
-        360
-      ],
-      "color": "#2a363b"
-    },
-    {
-      "title": "02 CHARACTER CAST MASTER",
-      "bounding": [
-        20,
-        400,
-        390,
-        520
-      ],
-      "color": "#3f51b5"
-    },
-    {
-      "title": "03 MANGA PANEL CONTENTS",
-      "bounding": [
-        420,
-        400,
-        830,
-        520
-      ],
-      "color": "#009688"
-    },
-    {
-      "title": "04 PANEL GEOMETRY LAYOUT",
-      "bounding": [
-        1260,
-        400,
-        410,
-        520
-      ],
-      "color": "#ff9800"
-    },
-    {
-      "title": "05 REGIONAL STAGING PREVIEW",
-      "bounding": [
-        2100,
-        20,
-        400,
         430
       ],
-      "color": "#4caf50"
+      "color": "#3f3f46",
+      "font_size": 22
     },
     {
-      "title": "06 FINAL GENERATION OUTPUT",
+      "title": "02 CAST — RECURRENT CHARACTER MASTER",
       "bounding": [
-        2100,
-        460,
-        660,
-        450
+        20,
+        450,
+        400,
+        530
       ],
-      "color": "#e91e63"
+      "color": "#2563eb",
+      "font_size": 22
+    },
+    {
+      "title": "03 PANEL CONTENT — SCENE & ATTENDANCE",
+      "bounding": [
+        430,
+        450,
+        440,
+        610
+      ],
+      "color": "#ea580c",
+      "font_size": 22
+    },
+    {
+      "title": "04 PANEL LAYOUT — 4-GRID GEOMETRY",
+      "bounding": [
+        880,
+        450,
+        420,
+        490
+      ],
+      "color": "#16a34a",
+      "font_size": 22
+    },
+    {
+      "title": "05 CHARACTER STAGING & PREVIEW",
+      "bounding": [
+        1310,
+        450,
+        820,
+        530
+      ],
+      "color": "#9333ea",
+      "font_size": 22
+    },
+    {
+      "title": "06 GENERATE — FINAL OUTPUT",
+      "bounding": [
+        2150,
+        450,
+        400,
+        490
+      ],
+      "color": "#0d9488",
+      "font_size": 22
     },
     {
       "title": "INTERNAL ENGINE — DO NOT TOUCH",
       "bounding": [
-        1680,
+        1260,
         20,
-        410,
-        840
+        1440,
+        430
       ],
-      "color": "#607d8b"
+      "color": "#991b1b",
+      "font_size": 22
     }
   ],
   "config": {},
   "extra": {
-    "manga_edition": "Phase 3E Recurrent Cast POC",
-    "progressive_authoring": true
+    "title": "23_MANGA_PROGRESSIVE_PANEL_AUTHORING_IMPACT",
+    "description": "Phase 3F Progressive Panel Authoring with Simple First flow and Impact Backend."
   },
   "version": 0.4
 }

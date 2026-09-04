@@ -12,6 +12,8 @@ from .layout_aware_conditioning import TegakiMangaLayoutAwareConditioningBuilder
 from .cast_master import TegakiMangaCastMaster
 from .manga_impact_regional_adapter import TegakiMangaImpactRegionalAdapter
 from .single_panel_multiscene_adapter import TegakiSinglePanelMultiSceneImpactAdapter
+from .panel_content_editor import TegakiMangaPanelContentEditor
+from .character_staging_editor import TegakiMangaCharacterStagingEditor
 from . import panel_layout_api
 
 NODE_CLASS_MAPPINGS = {
@@ -32,6 +34,8 @@ NODE_CLASS_MAPPINGS = {
     "TegakiMangaCastMaster": TegakiMangaCastMaster,
     "TegakiMangaImpactRegionalAdapter": TegakiMangaImpactRegionalAdapter,
     "TegakiSinglePanelMultiSceneImpactAdapter": TegakiSinglePanelMultiSceneImpactAdapter,
+    "TegakiMangaPanelContentEditor": TegakiMangaPanelContentEditor,
+    "TegakiMangaCharacterStagingEditor": TegakiMangaCharacterStagingEditor,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -52,6 +56,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "TegakiMangaCastMaster": "Tegaki Manga Cast Master",
     "TegakiMangaImpactRegionalAdapter": "Tegaki Manga Impact Regional Adapter",
     "TegakiSinglePanelMultiSceneImpactAdapter": "Tegaki Single Panel Multi-Scene Impact Adapter",
+    "TegakiMangaPanelContentEditor": "Tegaki Manga Panel Content Editor",
+    "TegakiMangaCharacterStagingEditor": "Tegaki Manga Character Staging Editor",
 }
 
 WEB_DIRECTORY = "./web"

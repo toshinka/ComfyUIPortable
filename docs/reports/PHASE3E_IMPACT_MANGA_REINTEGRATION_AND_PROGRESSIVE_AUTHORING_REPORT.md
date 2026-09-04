@@ -1,4 +1,4 @@
-﻿# ComfyUI Portable Phase 3E 完了報告書
+# ComfyUI Portable Phase 3E 完了報告書
 ## Impact Regional Backend Manga Reintegration & Progressive Authoring Foundation
 
 - **実施期間**: 2026-09-05
@@ -6,6 +6,14 @@
 - **作業Baseline**: `5409fceec73243ef648a2e1c5ac6f8a74a0522cf` (Phase 3D.2 Commit B)
 - **対象モデル**: `♃CN_Skeb\waiIllustriousSDXL_v170.safetensors` (SDXL, Euler/Normal, CFG 7.0, 20 steps, seed 42)
 - **実行検証**: 実機ローカルSDXL生成（Region Order Oracle, Recurrent Cast 4-Panel, Single-Panel Multi-Scene Hostile Test）完全完走・プロセス自動停止確認済
+
+> [!IMPORTANT]
+> **Phase 3F 追記・補正 (Programmatic API vs Saved Workflow Distinction)**:
+> - Phase 3E generation PASS was established by programmatic API prompt execution.
+> - Saved browser workflow compatibility was a separate unverified path.
+> - User manual validation exposed stale/mismatched frontend node inputs (`ToBasicPipe` clip unlinked, `RegionalSampler` 11 vs 12 widget offset).
+> - Phase 3F-0 closes this gap via Live Schema synchronization, automated compatibility tests, and Zero-Touch verified workflows.
+> - Phase 3E の N-Region / Recurrent Cast / Multi-Scene 生成成果自体は有効であり、完全維持されています。
 
 ---
 

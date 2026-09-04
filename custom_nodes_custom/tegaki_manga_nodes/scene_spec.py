@@ -240,12 +240,17 @@ def validate_cast_spec(spec: Any) -> Dict[str, Any]:
     if not isinstance(spec, dict):
         raise ValueError("[CastSpecValidator] Root CAST_SPEC must be a dictionary.")
 
-    version = spec.get("version")
-    if version != SUPPORTED_CAST_SPEC_VERSION:
+    raw_version = spec.get("version")
+    try:
+        v_int = int(float(str(raw_version)))
+    except (ValueError, TypeError):
+        v_int = None
+    if v_int != SUPPORTED_CAST_SPEC_VERSION:
         raise ValueError(
-            f"[CastSpecValidator] Unsupported CAST_SPEC version: {version}. "
+            f"[CastSpecValidator] Unsupported CAST_SPEC version: {raw_version}. "
             f"Expected version {SUPPORTED_CAST_SPEC_VERSION}."
         )
+    spec["version"] = SUPPORTED_CAST_SPEC_VERSION
 
     characters = spec.get("characters")
     if not isinstance(characters, list):
