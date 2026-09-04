@@ -107,16 +107,36 @@ def render_staging_preview_image(
     return tensor
 
 
+def _normalize_box_area(val: Any, default_area: Optional[Dict[str, float]] = None) -> Dict[str, float]:
+    if isinstance(val, (list, tuple)) and len(val) >= 4:
+        return {
+            "x": round(float(val[0]), 3),
+            "y": round(float(val[1]), 3),
+            "w": round(float(val[2]), 3),
+            "h": round(float(val[3]), 3)
+        }
+    if isinstance(val, dict):
+        return {
+            "x": round(float(val.get("x", 0.1)), 3),
+            "y": round(float(val.get("y", 0.15)), 3),
+            "w": round(float(val.get("w", 0.4)), 3),
+            "h": round(float(val.get("h", 0.75)), 3)
+        }
+    if default_area is not None:
+        return _normalize_box_area(default_area)
+    return {"x": 0.1, "y": 0.15, "w": 0.4, "h": 0.75}
+
+
 class CharacterStagingStateManager:
     """
-    State manager for panel selection, character selection, move, resize,
-    bounding box clamping [0.0, 1.0], and override persistence.
+    State manager for character staging overrides and live manipulation.
     """
-    def __init__(self, region_spec: Dict[str, Any], staging_overrides: Optional[Dict[str, Any]] = None):
+    def __init__(self, region_spec: Dict[str, Any], overrides: Optional[Dict[str, Any]] = None):
         self.region_spec = region_spec
-        self.overrides = dict(staging_overrides) if staging_overrides else {}
-        self.selected_panel_id = 1
-        self.selected_char_id = None
+        self.overrides = overrides or {}
+        self.selected_panel_id: int = 1
+        self.selected_char_id: Optional[str] = None
+
         attending = self.get_attending_characters(1)
         if attending:
             self.selected_char_id = attending[0]["character_id"]
@@ -146,9 +166,10 @@ class CharacterStagingStateManager:
     def get_character_area(self, panel_id: int, char_id: str, default_area: Optional[Dict[str, float]] = None) -> Dict[str, float]:
         pid_str = str(panel_id)
         if pid_str in self.overrides and char_id in self.overrides[pid_str]:
-            return dict(self.overrides[pid_str][char_id].get("area", default_area or {"x": 0.1, "y": 0.15, "w": 0.4, "h": 0.75}))
+            raw = self.overrides[pid_str][char_id].get("area")
+            return _normalize_box_area(raw, default_area)
         if default_area:
-            return dict(default_area)
+            return _normalize_box_area(default_area)
         return {"x": 0.1, "y": 0.15, "w": 0.4, "h": 0.75}
 
     def select_character(self, char_id: str):
@@ -210,7 +231,7 @@ class CharacterStagingStateManager:
                 for c in r.get("characters", []):
                     cid = c.get("character_id")
                     if cid in p_ov and "area" in p_ov[cid]:
-                        c["area"] = dict(p_ov[cid]["area"])
+                        c["area"] = _normalize_box_area(p_ov[cid]["area"])
         return copied
 
 

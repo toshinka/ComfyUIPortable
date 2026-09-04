@@ -68,8 +68,9 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ DEPENDENCIES.md                     # パッケージ・ハードウェア環境仕様
  │   ├─ RESEARCH_REFERENCES.md              # 参照リポジトリ・ライセンス
  │   ├─ CUSTOM_NODE_MANIFEST.md             # 外部Custom Nodeコミット追跡
- │   ├─ verification/                           # 正準検証マニフェスト (PHASE3G_CANONICAL_VERIFICATION_MANIFEST.json)
+ │   ├─ verification/                           # 正準検証マニフェスト (PHASE3G / PHASE3H)
  │   └─ reports/                            # 開発フェーズ完了報告書・検証記録集
+ │       ├─ PHASE3H_SUBJECT_EXCLUSIVITY_AND_AUTHORING_CAUSALITY_REPORT.md
  │       ├─ PHASE3G_CANONICAL_VERIFICATION_AND_FAST_MODE_REPORT.md
  │       ├─ PHASE3F_ZERO_TOUCH_AND_PROGRESSIVE_AUTHORING_REPORT.md
  │       ├─ PHASE3E_IMPACT_MANGA_REINTEGRATION_AND_PROGRESSIVE_AUTHORING_REPORT.md
@@ -131,9 +132,9 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ test_i2i.py                         # 実機I2Iパイプライン検証スクリプト
  │   └─ test_wildcards.py                   # Wildcard/Dynamic Prompts検証
  ├─ patches/                                # 外部Custom Node向けローカルパッチ集
- ├─ workflows/                              # 漫画制作向けワークフローJSON (28種)
- ├─ python_embeded/                         # [Git除外] Python 3.13 組み込み環境
- └─ ComfyUI/                                # [Git除外] ComfyUI本体 & 外部Custom Nodes
+  ├─ workflows/                              # 漫画制作向けワークフローJSON (34種)
+  ├─ python_embeded/                         # [Git除外] Python 3.13 組み込み環境
+  └─ ComfyUI/                                # [Git除外] ComfyUI本体 & 外部Custom Nodes
 ```
 
 ---
@@ -166,6 +167,16 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
 - `22_SINGLE_PANEL_MULTI_SCENE_SAME_CAST_ORACLE.json`: 単一コマ内複数シーン（Split Scene）・同一キャスト共存意地悪オラクル (Zero-Touch Verified / EXPERIMENTAL ORACLE)
 - `23_MANGA_PROGRESSIVE_PANEL_AUTHORING_IMPACT.json`: 段階的オーサリング（01 Global → 02 Cast → 03 Content → 04 Layout → 05 Staging → 06 Generate）4コマ標準ワークフロー (Zero-Touch Verified / STABLE)
 - `24_SINGLE_PANEL_PROGRESSIVE_SUBSCENE_IMPACT.json`: 段階的開示（Progressive Disclosure）SubScene v1 オラクル (Zero-Touch Verified / EXPERIMENTAL ORACLE)
+- `25_VERIFY_SINGLE_A_TOP_LEFT.json`: 正準空間オラクル (単一犬・左上配置 / Zero-Touch Verified)
+- `26_VERIFY_SINGLE_A_BOTTOM_RIGHT.json`: 正準空間オラクル (単一犬・右下配置 / Zero-Touch Verified)
+- `27_VERIFY_TWO_REGION_DOG_CAT_LEFT_RIGHT.json`: 正準意味結合オラクル (犬左・猫右 / Zero-Touch Verified)
+- `28_VERIFY_TWO_REGION_DOG_CAT_SWAP.json`: 正準空間スワップオラクル (犬右・猫左 / Zero-Touch Verified)
+- `29_VERIFY_SINGLE_A_TOP_LEFT_EXCLUSIVE_BASE.json`: 正準排他オラクル (犬左上・Exclusive Base 背景人物完全抑制 / Zero-Touch Verified)
+- `30_VERIFY_SINGLE_A_BOTTOM_RIGHT_EXCLUSIVE_BASE.json`: 正準排他オラクル (犬右下・Exclusive Base 背景人物完全抑制・98%内包 / Zero-Touch Verified)
+- `31_VERIFY_TWO_REGION_DOG_CAT_LR_EXCLUSIVE_BASE.json`: 正準排他・意味結合オラクル (犬左・猫右・フキダシ/岩完全排除 / Zero-Touch Verified)
+- `32_VERIFY_TWO_REGION_DOG_CAT_SWAP_EXCLUSIVE_BASE.json`: 正準排他・空間スワップオラクル (犬右・猫左・背景人物ゼロ / Zero-Touch Verified)
+- `33_VERIFY_AUTHORING_ALICE_LEFT_BOB_RIGHT.json`: 本番オーサリング因果性オラクル (Alice左・Bob右・校庭1コマ・UI幾何駆動 / Zero-Touch Verified)
+- `34_VERIFY_AUTHORING_ALICE_RIGHT_BOB_LEFT.json`: 本番オーサリング因果スワップオラクル (Alice右・Bob左・UI幾何スワップ駆動 / Zero-Touch Verified)
 
 ### Tag Complete (Phase 3B.1.1 導入)
 - 全テキスト入力欄（Region Editor Prompt、CLIPTextEncode 等）で、Danbooru 14万タグ、LoRA名、Embeddingのリアルタイム自動補完（Tag Complete）が完全動作します（`ComfyUI-Custom-Scripts` 統合）。
@@ -221,10 +232,25 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
   - `TegakiMangaPanelContentEditor`: コマ演出プロンプトとキャストの出演（Attendance）・演技（Acting）をチェックボックス等で直感的に一括管理。
   - `TegakiMangaCharacterStagingEditor`: 各コマのキャラクター立ち位置矩形（BBox）のドラッグ＆リサイズ、および Canvas 枠線と人物配置のリアルタイムカラーテンソルプレビュー出力を実装。
   - 内部エンジン（Impact Adapter + ToBasicPipe + RegionalSampler）を `INTERNAL ENGINE / DO NOT TOUCH` として視覚的に隔離。
-- **段階的開示 (Progressive Disclosure) & SubScene v1 Contract**:
-  - 通常の 4 コマ漫画はシンプルなパネルプロンプトとキャスト選択だけで完結（Simple First）。
-  - 同一コマ内での回想・対比など高度な演出を要する場合のみ、オプションの SubScene v1 契約（`id`, `enabled`, `prompt`, `area`, `character_bindings`, `metadata`）を展開。
-  - 標準 4 コマ本番ワークフロー `23_MANGA_PROGRESSIVE_PANEL_AUTHORING_IMPACT.json` およびサブシーン実証オラクル `24_SINGLE_PANEL_PROGRESSIVE_SUBSCENE_IMPACT.json` において Zero-Touch 実行を達成。
+### Canonical Spatial Verification & Fast Mode (Phase 3G 成果)
+- **正準空間オラクル (Canonical Spatial Verification Set)**:
+  - 方位語（left/right等）を一切含まないプロンプトと同一Seed（42）のもと、領域幾何学（Region Geometry）のみで被写体位置および左右反転が完全に成立することを実証（WF25〜28）。
+  - Impact Regional Sampler と ToBasicPipe 接続の 100% Zero-Touch 実行を実機確認。
+- **Hyper-SD 12-Step Fast Mode**:
+  - Reference（20 steps, CFG 7.0）の品質を維持しながら、12 steps, CFG 6.0 で約 1.7x の高速生成を達成。Fast 8-step はアーティファクト多発のため安全に却下。
+
+### Subject Exclusivity & Authoring Causality (Phase 3H 成果)
+- **Base / Global プロンプトスコープ分離と背景人物抑制 (Exclusive Base)**:
+  - Illustrious SDXL のモデル学習傾向による意図しない背景美少女人物の発生（Figure Leakage）を解明。
+  - プロンプトを Global Style / Exclusive Base Scene / Regional Subjects の 3 責務へ分離し、Base Negative で人物・動物を厳格に抑止することで、背景人物発生を 100% 根絶（WF29〜32）。
+- **3 パネル診断コンタクトシート (Target Map | Output | Evaluation Overlay)**:
+  - 領域幾何学と生成画像、および半透明カラーオーバーレイを結合した診断画像（Sheet D, E, F, G）を自動生成し、被写体内包率・局所重心・境界精度を客観評価。
+- **本番オーサリング因果性実証 (Production Staging Causality)**:
+  - 段階的オーサリングチェーン（Cast → Content → Layout → Staging → Page Compiler → Impact Regional Adapter）において、Character Staging UI の幾何変更のみで Alice と Bob の位置が因果的に完全反転することを実証（WF33, WF34）。
+- **Generation Profile 契約**:
+  - `custom_nodes_custom/tegaki_manga_nodes/generation_profile.py` を整備し、品質基準正本（Reference 20-step）と高速下描き（Fast Draft 12-step）の切り替え契約を確立。
+- **ControlNet Assist Decision Gate**:
+  - Case B 判定（領域による左右位置誘導は成立するが、厳格なスケール内包・シルエット拘束には補助が必要）が確定し、次期 Phase 3I での ControlNet 構図・ポーズ補助導入を決定。
 
 
 

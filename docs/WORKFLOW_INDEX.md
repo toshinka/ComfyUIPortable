@@ -393,11 +393,97 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 
 ---
 
-## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3G)
+### 29_VERIFY_SINGLE_A_TOP_LEFT_EXCLUSIVE_BASE.json
+- **区分**: 正準排他オラクル (CANONICAL EXCLUSIVE BASE ORACLE: SINGLE A TOP-LEFT)
+- **目的**: Base Sampler の人物・動物抑制（Exclusive Base Conditioning）と Region A の結合により、不要な背景美少女人物の発生を 100% 抑制しつつ左上領域 `[0.05, 0.05, 0.45, 0.45]` に白犬を正確に配置することを実証するオラクル（Seed 42, 20 steps, Euler/Normal, CFG 7.0）。
+- **必要Custom Node**:
+  - `TegakiTwoRegionCoupleEditor` (独自)
+  - `TegakiTwoRegionImpactAdapter` (独自)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, CLIPTextEncode, VAEDecode, SaveImage, PreviewImage
+- **出力**: 排他左上配置犬画像 (`output/Tegaki/Phase3H/canonical/wf29_canonical_single_a_top_left_exclusive_base.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 30_VERIFY_SINGLE_A_BOTTOM_RIGHT_EXCLUSIVE_BASE.json
+- **区分**: 正準排他オラクル (CANONICAL EXCLUSIVE BASE ORACLE: SINGLE A BOTTOM-RIGHT)
+- **目的**: Workflow 29 と完全同一条件で領域幾何学のみを右下 `[0.50, 0.50, 0.45, 0.45]` へ移動。Exclusive Base による背景人物抑制を維持したまま、白犬が右下に高精度（98%ボックス内包率）で配置されることを実証するオラクル。
+- **必要Custom Node**:
+  - `TegakiTwoRegionCoupleEditor` (独自)
+  - `TegakiTwoRegionImpactAdapter` (独自)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, CLIPTextEncode, VAEDecode, SaveImage, PreviewImage
+- **出力**: 排他右下配置犬画像 (`output/Tegaki/Phase3H/canonical/wf30_canonical_single_a_bottom_right_exclusive_base.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 31_VERIFY_TWO_REGION_DOG_CAT_LR_EXCLUSIVE_BASE.json
+- **区分**: 正準排他・意味結合オラクル (CANONICAL EXCLUSIVE BASE ORACLE: DOG LEFT, CAT RIGHT)
+- **目的**: 2 領域結合において Exclusive Base を適用し、疑似漫画フキダシや岩・枠線などのアーティファクトを完全排除した純白キャンバス上で、犬（左 `[0.05, 0.15, 0.45, 0.70]`）と猫（右 `[0.50, 0.15, 0.45, 0.70]`）の意味的共存を実証するオラクル。
+- **必要Custom Node**:
+  - `TegakiTwoRegionCoupleEditor` (独自)
+  - `TegakiTwoRegionImpactAdapter` (独自)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, CLIPTextEncode, VAEDecode, SaveImage, PreviewImage
+- **出力**: 排他犬（左）／猫（右）画像 (`output/Tegaki/Phase3H/canonical/wf31_canonical_two_region_dog_cat_lr_exclusive_base.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 32_VERIFY_TWO_REGION_DOG_CAT_SWAP_EXCLUSIVE_BASE.json
+- **区分**: 正準排他・空間スワップオラクル (CANONICAL EXCLUSIVE BASE ORACLE: DOG RIGHT, CAT LEFT SWAP)
+- **目的**: Workflow 31 と同一条件で領域幾何学のみを左右反転（犬: 右 `[0.50, 0.15, 0.45, 0.70]`、猫: 左 `[0.05, 0.15, 0.45, 0.70]`）。背景人物や迷走線の発生をゼロに抑え、幾何スワップのみによる左右配置逆転を実証するオラクル。Fast Draft 12 プロファイルの高速回帰検証対象。
+- **必要Custom Node**:
+  - `TegakiTwoRegionCoupleEditor` (独自)
+  - `TegakiTwoRegionImpactAdapter` (独自)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, CLIPTextEncode, VAEDecode, SaveImage, PreviewImage
+- **出力**: 排他スワップ画像 (`output/Tegaki/Phase3H/canonical/wf32_canonical_two_region_dog_cat_swap_exclusive_base.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 33_VERIFY_AUTHORING_ALICE_LEFT_BOB_RIGHT.json
+- **区分**: 本番オーサリング因果性オラクル (PRODUCTION AUTHORING CAUSALITY: ALICE LEFT, BOB RIGHT)
+- **目的**: 実験オラクルから本番制作パイプライン（Cast Master → Panel Content → Panel Layout → Character Staging → Page Compiler → Impact Regional Adapter → RegionalSampler）への移行を検証。プロンプトに方位語を一切含めず、Character Staging UI のオーバーライド幾何学のみで 1 コマ校庭シーンの Alice（左 `[0.05, 0.15, 0.42, 0.70]`）と Bob（右 `[0.53, 0.15, 0.42, 0.70]`）の配置因果性を実証するオラクル。
+- **必要Custom Node**:
+  - `TegakiMangaCastMaster` (独自 / キャスト管理)
+  - `TegakiMangaPanelContentEditor` (独自 / コマ演出プロンプト管理)
+  - `TegakiMangaPanelLayoutEditor` (独自 / コマ割り幾何エディター)
+  - `TegakiMangaCharacterStagingEditor` (独自 / キャラクター配置・ステージング)
+  - `TegakiMangaPageCompiler` (独自 / 統合実行計画コンパイラー)
+  - `TegakiMangaImpactRegionalAdapter` (独自 / 動的 N 領域 Impact アダプター)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, CLIPTextEncode, VAEDecode, SaveImage, PreviewImage
+- **出力**: 本番オーサリング配置画像 (`output/Tegaki/Phase3H/canonical/wf33_authoring_alice_left_bob_right.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 34_VERIFY_AUTHORING_ALICE_RIGHT_BOB_LEFT.json
+- **区分**: 本番オーサリング因果スワップオラクル (PRODUCTION AUTHORING CAUSALITY: ALICE RIGHT, BOB LEFT SWAP)
+- **目的**: Workflow 33 と同一のシーン・キャスト・演技指示・Seed（42）のもと、Character Staging UI の配置ボックスのみを左右反転（Alice: 右 `[0.53, 0.15, 0.42, 0.70]`、Bob: 左 `[0.05, 0.15, 0.42, 0.70]`）。本番制作フローにおいて UI 上のステージング操作が diffusion 生成結果を因果的に 100% 駆動することを実証するオラクル。Fast Draft 12 プロファイルの高速回帰検証対象。
+- **必要Custom Node**:
+  - `TegakiMangaCastMaster` (独自 / キャスト管理)
+  - `TegakiMangaPanelContentEditor` (独自 / コマ演出プロンプト管理)
+  - `TegakiMangaPanelLayoutEditor` (独自 / コマ割り幾何エディター)
+  - `TegakiMangaCharacterStagingEditor` (独自 / キャラクター配置・ステージング)
+  - `TegakiMangaPageCompiler` (独自 / 統合実行計画コンパイラー)
+  - `TegakiMangaImpactRegionalAdapter` (独自 / 動的 N 領域 Impact アダプター)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: CheckpointLoaderSimple, EmptyLatentImage, CLIPTextEncode, VAEDecode, SaveImage, PreviewImage
+- **出力**: 本番オーサリング反転画像 (`output/Tegaki/Phase3H/canonical/wf34_authoring_alice_right_bob_left.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3H)
 - **Zero-Touch Smoke Test 検証済み**:
-  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、`21`〜`24`、および最新の正準空間検証セット `25`〜`28` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
-- **Zero-Touch Parity & Canonical Spatial Verification (Phase 3G)**:
-  「1 Workflow = 1 Hypothesis」原則に基づき、手動変更を排した固定比較オラクル（25〜28）を確立。Impact Pack Regional Sampler の 12 ウィジェット整合性および ToBasicPipe 接続要件を常設テストハーネス化。さらに Character Staging のマウスイベントハンドラー（移動・リサイズ・クランプ）と動的キャスト UI 連携を導入し、検証とオーサリング双方の信頼性を確立しました。
+  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、`21`〜`24`、正準空間検証セット `25`〜`28`、および最新の被写体排他・オーサリング因果セット `29`〜`34`（全34件）は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
+- **Subject Exclusivity & Authoring Causality (Phase 3H)**:
+  Base / Global プロンプトスコープ分離により、背景への意図しない人物発生（Figure Leakage）を 100% 抑止。さらに実験オラクルから本番オーサリングチェーン（Cast → Panel Content → Panel Layout → Character Staging → Page Compiler → Impact Regional Adapter）への因果的空間制御の完全移行を実証。Generation Profile（Reference 20-step / Fast Draft 12-step）による高速化契約を確立しました。
 
 
 

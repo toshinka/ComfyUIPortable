@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "phase": "Phase 3H",
+  "title": "Phase 3H Canonical Verification Manifest: Subject Exclusivity & Authoring Causality",
+  "version": "1.0.0",
+  "principles": [
+    "1 Workflow = 1 Hypothesis",
+    "Zero-Touch Execution Required (0 Validation Errors)",
+    "Strict Parameter Invariance (Seed 42, 1024x1024, Euler/Normal, CFG 7.0, Impact Regional Backend)",
+    "No Positional Adjectives in Prompts",
+    "Prompt Scope Separation: Global Style, Base Scene, Regional Subject"
+  ],
+  "suites": {
+    "subject_exclusivity_set": [
+      {
+        "workflow": "29_VERIFY_SINGLE_A_TOP_LEFT_EXCLUSIVE_BASE.json",
+        "save_node_id": "18",
+        "output_image": "wf29_canonical_single_a_top_left_exclusive_base.png",
+        "hypothesis": "Exclusive Base conditioning suppresses unprompted background subjects while preserving Region A white dog placement at Top-Left",
+        "seed": 42,
+        "invariants": {
+          "model": "waiIllustriousSDXL_v170.safetensors",
+          "global_style": "manga illustration, monochrome expressive linework, high quality",
+          "region_a_prompt": "a white dog, full body",
+          "region_b_prompt": "disabled",
+          "canvas_size": [1024, 1024],
+          "steps": 20,
+          "cfg": 7.0,
+          "sampler": "euler",
+          "scheduler": "normal",
+          "backend": "Impact"
+        },
+        "changed_variable": {
+          "base_scene": "clean empty white background, simple blank manga background, no focal subject",
+          "base_negative": "worst quality, low quality, blurry, bad anatomy, person, human, girl, boy, extra character, face, body, animal, dog, cat",
+          "region_a_bounds": [0.05, 0.05, 0.45, 0.45]
+        },
+        "expected": "White dog is synthesized at top-left; background anime girl figure seen in WF25 is successfully suppressed.",
+        "human_review_default": "Verify white dog is at top-left and background girl is suppressed."
+      },
+      {
+        "workflow": "30_VERIFY_SINGLE_A_BOTTOM_RIGHT_EXCLUSIVE_BASE.json",
+        "save_node_id": "18",
+        "output_image": "wf30_canonical_single_a_bottom_right_exclusive_base.png",
+        "hypothesis": "Exclusive Base conditioning suppresses unprompted background subjects while preserving Region A white dog placement at Bottom-Right",
+        "seed": 42,
+        "invariants": {
+          "model": "waiIllustriousSDXL_v170.safetensors",
+          "global_style": "manga illustration, monochrome expressive linework, high quality",
+          "region_a_prompt": "a white dog, full body",
+          "region_b_prompt": "disabled",
+          "canvas_size": [1024, 1024],
+          "steps": 20,
+          "cfg": 7.0,
+          "sampler": "euler",
+          "scheduler": "normal",
+          "backend": "Impact"
+        },
+        "changed_variable": {
+          "base_scene": "clean empty white background, simple blank manga background, no focal subject",
+          "base_negative": "worst quality, low quality, blurry, bad anatomy, person, human, girl, boy, extra character, face, body, animal, dog, cat",
+          "region_a_bounds": [0.50, 0.50, 0.45, 0.45]
+        },
+        "expected": "White dog is synthesized at bottom-right; background anime girl figure seen in WF26 is successfully suppressed.",
+        "human_review_default": "Verify white dog is at bottom-right and background girl is suppressed."
+      },
+      {
+        "workflow": "31_VERIFY_TWO_REGION_DOG_CAT_LR_EXCLUSIVE_BASE.json",
+        "save_node_id": "18",
+        "output_image": "wf31_canonical_two_region_dog_cat_lr_exclusive_base.png",
+        "hypothesis": "Exclusive Base conditioning eliminates extraneous background characters/figures while maintaining Dog Left, Cat Right semantic binding",
+        "seed": 42,
+        "invariants": {
+          "model": "waiIllustriousSDXL_v170.safetensors",
+          "global_style": "manga illustration, monochrome expressive linework, high quality",
+          "region_a_prompt": "a white dog, full body",
+          "region_b_prompt": "a black cat, full body",
+          "canvas_size": [1024, 1024],
+          "steps": 20,
+          "cfg": 7.0,
+          "sampler": "euler",
+          "scheduler": "normal",
+          "backend": "Impact"
+        },
+        "changed_variable": {
+          "base_scene": "clean empty white background, simple blank manga background, no focal subject",
+          "base_negative": "worst quality, low quality, blurry, bad anatomy, person, human, girl, boy, extra character, face, body, animal, dog, cat",
+          "region_a_bounds": [0.05, 0.15, 0.45, 0.70],
+          "region_b_bounds": [0.50, 0.15, 0.45, 0.70]
+        },
+        "expected": "White dog on left, black cat on right; extraneous background strokes and unbound person elements eliminated.",
+        "human_review_default": "Verify white dog is on left, black cat is on right, and background is clean."
+      },
+      {
+        "workflow": "32_VERIFY_TWO_REGION_DOG_CAT_SWAP_EXCLUSIVE_BASE.json",
+        "save_node_id": "18",
+        "output_image": "wf32_canonical_two_region_dog_cat_swap_exclusive_base.png",
+        "hypothesis": "Exclusive Base conditioning cleanly preserves spatial swap (Dog Right, Cat Left) without stray background person synthesis",
+        "seed": 42,
+        "invariants": {
+          "model": "waiIllustriousSDXL_v170.safetensors",
+          "global_style": "manga illustration, monochrome expressive linework, high quality",
+          "region_a_prompt": "a white dog, full body",
+          "region_b_prompt": "a black cat, full body",
+          "canvas_size": [1024, 1024],
+          "steps": 20,
+          "cfg": 7.0,
+          "sampler": "euler",
+          "scheduler": "normal",
+          "backend": "Impact"
+        },
+        "changed_variable": {
+          "base_scene": "clean empty white background, simple blank manga background, no focal subject",
+          "base_negative": "worst quality, low quality, blurry, bad anatomy, person, human, girl, boy, extra character, face, body, animal, dog, cat",
+          "region_a_bounds": [0.50, 0.15, 0.45, 0.70],
+          "region_b_bounds": [0.05, 0.15, 0.45, 0.70]
+        },
+        "expected": "White dog on right, black cat on left; clean spatial swap without unintended human figure holding cat.",
+        "human_review_default": "Verify dog on right, cat on left, and no unexpected human."
+      }
+    ],
+    "authoring_causality_set": [
+      {
+        "workflow": "33_VERIFY_AUTHORING_ALICE_LEFT_BOB_RIGHT.json",
+        "save_node_id": "16",
+        "output_image": "wf33_authoring_alice_left_bob_right.png",
+        "hypothesis": "Production Character Staging UI geometry alone causally places Alice on Left and Bob on Right in a 1-panel school courtyard scene without directional words in prompts",
+        "seed": 42,
+        "invariants": {
+          "pipeline": "Cast Master -> Panel Content -> Panel Layout -> Character Staging -> Page Compiler -> Impact Regional Adapter -> RegionalSampler",
+          "panel_count": 1,
+          "scene_prompt": "simple school courtyard, two students standing",
+          "cast": ["Alice (blonde hair, twin tails)", "Bob (short black hair, male student)"],
+          "acting": "standing calmly",
+          "canvas_size": [1024, 1024],
+          "steps": 20,
+          "cfg": 7.0,
+          "backend": "Impact"
+        },
+        "changed_variable": {
+          "staging_alice": [0.05, 0.15, 0.42, 0.70],
+          "staging_bob": [0.53, 0.15, 0.42, 0.70]
+        },
+        "expected": "Alice (blonde twin tails) synthesized on Left, Bob (dark short hair) synthesized on Right.",
+        "human_review_default": "Verify Alice is on Left and Bob is on Right."
+      },
+      {
+        "workflow": "34_VERIFY_AUTHORING_ALICE_RIGHT_BOB_LEFT.json",
+        "save_node_id": "16",
+        "output_image": "wf34_authoring_alice_right_bob_left.png",
+        "hypothesis": "Swapping Character Staging geometry in production UI causally swaps Alice to Right and Bob to Left under identical scene, cast, acting, and seed",
+        "seed": 42,
+        "invariants": {
+          "pipeline": "Cast Master -> Panel Content -> Panel Layout -> Character Staging -> Page Compiler -> Impact Regional Adapter -> RegionalSampler",
+          "panel_count": 1,
+          "scene_prompt": "simple school courtyard, two students standing",
+          "cast": ["Alice (blonde hair, twin tails)", "Bob (short black hair, male student)"],
+          "acting": "standing calmly",
+          "canvas_size": [1024, 1024],
+          "steps": 20,
+          "cfg": 7.0,
+          "backend": "Impact"
+        },
+        "changed_variable": {
+          "staging_alice": [0.53, 0.15, 0.42, 0.70],
+          "staging_bob": [0.05, 0.15, 0.42, 0.70]
+        },
+        "expected": "Alice (blonde twin tails) synthesized on Right, Bob (dark short hair) synthesized on Left (exact inversion of WF33).",
+        "human_review_default": "Verify Alice is on Right and Bob is on Left (mirroring WF33)."
+      }
+    ],
+    "fast_draft_regression_set": [
+      {
+        "source_workflow": "32_VERIFY_TWO_REGION_DOG_CAT_SWAP_EXCLUSIVE_BASE.json",
+        "save_node_id": "18",
+        "output_image": "wf32_fast12_swap_exclusive_base.png",
+        "profile": "fast_draft_12",
+        "steps": 12,
+        "cfg": 6.0,
+        "lora": "調整\\Hyper-SDXL-12steps-CFG-lora.safetensors",
+        "hypothesis": "Fast Draft 12 maintains spatial swap and subject exclusivity without tile seam artifacts",
+        "expected": "Dog on Right, Cat on Left, no tile seams, clean boundaries."
+      },
+      {
+        "source_workflow": "34_VERIFY_AUTHORING_ALICE_RIGHT_BOB_LEFT.json",
+        "save_node_id": "16",
+        "output_image": "wf34_fast12_authoring_swap.png",
+        "profile": "fast_draft_12",
+        "steps": 12,
+        "cfg": 6.0,
+        "lora": "調整\\Hyper-SDXL-12steps-CFG-lora.safetensors",
+        "hypothesis": "Fast Draft 12 maintains authoring staging swap without identity blend or border artifacts",
+        "expected": "Alice on Right, Bob on Left, clean character rendering in fast draft mode."
+      }
+    ]
+  }
+}

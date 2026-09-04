@@ -150,7 +150,12 @@ def wait_for_prompt(prompt_id: str, timeout: int = 180) -> Dict[str, Any]:
             with urllib.request.urlopen(f"{COMFY_URL}/history/{prompt_id}", timeout=5) as resp:
                 history = json.loads(resp.read().decode("utf-8"))
             if prompt_id in history:
-                outputs = history[prompt_id].get("outputs", {})
+                entry = history[prompt_id]
+                status = entry.get("status", {})
+                if status.get("status_str") == "error":
+                    messages = status.get("messages", [])
+                    raise RuntimeError(f"[ComfyRuntimeHelper] Prompt {prompt_id} failed during execution: {messages}")
+                outputs = entry.get("outputs", {})
                 print(f"[ComfyRuntimeHelper] Prompt {prompt_id} completed in {elapsed:.1f}s.")
                 return outputs
         except Exception:
