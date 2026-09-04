@@ -1,15 +1,15 @@
-﻿================================================================================
+================================================================================
 ComfyUI Portable 漫画制作環境 (Tegaki Manga Edition) - External AI Review Entry
 ================================================================================
 
 Project Name: Tegaki ComfyUI Portable Manga Edition
 Purpose: Windowsローカル環境にIllustrious/SDXLモデルとEasyReforge資産を統合した漫画制作研究環境
-Updated: 2026-09-05 04:55 (JST)
+Updated: 2026-09-05 06:35 (JST)
 Repository URL: https://github.com/toshinka/tegaki
 Branch: main
 
-Review Target Commit SHA: eeb63e4faf8d2736eb40b8b30931ab3758b95c44
-Current Status: Phase 3E 完了 (Impact Regional Backend Manga Reintegration & Progressive Authoring Foundation・Generic N-Region Engine・Recurrent Cast 4-Panel PASS・Panel Action Separation PASS・Simple Panel Authoring READY・Single Panel Multi-Scene Hostile Test PROMISING・Region Ordering SCENE_FIRST・Workflows 21 & 22・Process Teardown & Timeout Breakers 完備)
+Review Target Commit SHA: cc7d3e4dc8b6fac620df9aee8f69067ca3da564a
+Current Status: Phase 3F 完了 (Zero-Touch Workflow Parity & Progressive Panel / Scene Authoring UI・3F-0 Schema Closure・Live Schema Synchronization・ToBasicPipe Clip Wiring・RegionalSampler 12-Widget Parity・Progressive Authoring Pipeline [01 Global -> 02 Cast -> 03 Panel Content -> 04 Panel Layout -> 05 Character Staging -> 06 Generate]・SubScene v1 Contract・Workflows 23 & 24 100% PASS)
 
 Latest GITHUB.TXT Raw:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB.TXT
@@ -17,96 +17,101 @@ https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB.TX
 ※ 外部AIは以下の「Pinned URL (commit固定)」を参照してレビューを実施してください。
 
 --------------------------------------------------------------------------------
-1. Required First Reads (最優先確認資料 - Phase 3E 報告書・仕様・索引)
+1. Required First Reads (最優先確認資料 - Phase 3F 報告書・仕様・索引)
 --------------------------------------------------------------------------------
-1. PHASE3E_IMPACT_MANGA_REINTEGRATION_AND_PROGRESSIVE_AUTHORING_REPORT.md (Phase 3E 完了報告書・全28項目完全網羅)
+1. PHASE3F_ZERO_TOUCH_AND_PROGRESSIVE_AUTHORING_REPORT.md (Phase 3F 完了報告書・全27項目完全網羅)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/reports/PHASE3F_ZERO_TOUCH_AND_PROGRESSIVE_AUTHORING_REPORT.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/docs/reports/PHASE3F_ZERO_TOUCH_AND_PROGRESSIVE_AUTHORING_REPORT.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/docs/reports/PHASE3F_ZERO_TOUCH_AND_PROGRESSIVE_AUTHORING_REPORT.md
+
+2. PHASE3E_IMPACT_MANGA_REINTEGRATION_AND_PROGRESSIVE_AUTHORING_REPORT.md (Phase 3E 完了報告書・Phase 3F追記補正版)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/reports/PHASE3E_IMPACT_MANGA_REINTEGRATION_AND_PROGRESSIVE_AUTHORING_REPORT.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/docs/reports/PHASE3E_IMPACT_MANGA_REINTEGRATION_AND_PROGRESSIVE_AUTHORING_REPORT.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/docs/reports/PHASE3E_IMPACT_MANGA_REINTEGRATION_AND_PROGRESSIVE_AUTHORING_REPORT.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/docs/reports/PHASE3E_IMPACT_MANGA_REINTEGRATION_AND_PROGRESSIVE_AUTHORING_REPORT.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/docs/reports/PHASE3E_IMPACT_MANGA_REINTEGRATION_AND_PROGRESSIVE_AUTHORING_REPORT.md
 
-2. WORKFLOW_INDEX.md (ワークフロー解説・索引・Phase 3E 互換性保証追記)
+3. WORKFLOW_INDEX.md (ワークフロー解説・索引・Phase 3F 互換性保証追記)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/WORKFLOW_INDEX.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/docs/WORKFLOW_INDEX.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/docs/WORKFLOW_INDEX.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/docs/WORKFLOW_INDEX.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/docs/WORKFLOW_INDEX.md
 
-3. README.md (リポジトリトップドキュメント・Phase 3E 反映版)
+4. README.md (リポジトリトップドキュメント・Phase 3F 反映版)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/README.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/README.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/README.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/README.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/README.md
 
 --------------------------------------------------------------------------------
-2. Track 1: N-Region Engine & Manga Adapters (N領域エンジン & アダプター)
+2. Track 1: Progressive Authoring & SubScene Contracts (段階的制作ノード & 契約)
 --------------------------------------------------------------------------------
-1. impact_region_plan.py (PAGE_COMPILE_PLAN + PANEL_LAYOUT_SPEC からの動的 N 領域計画生成純粋関数)
+1. panel_content_editor.py (TegakiMangaPanelContentEditor・コマ別プロンプト/キャスト出演管理)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_content_editor.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_content_editor.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/panel_content_editor.py
+
+2. panel_content_editor.js (Panel Content Editor Web UIフロントエンド)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/panel_content_editor.js
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/panel_content_editor.js
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/panel_content_editor.js
+
+3. character_staging_editor.py (TegakiMangaCharacterStagingEditor・人物配置 & リアルタイムテンソルプレビュー)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/character_staging_editor.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/character_staging_editor.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/character_staging_editor.py
+
+4. character_staging_editor.js (Character Staging Web UIフロントエンド・ドラッグ/リサイズ)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/character_staging_editor.js
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/character_staging_editor.js
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/web/js/character_staging_editor.js
+
+5. subscene_contract.py (SubScene v1 データ契約・バリデーション純粋関数)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/subscene_contract.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/subscene_contract.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/subscene_contract.py
+
+6. impact_region_plan.py (SubScene v1 & Recurrent Cast 対応動的 N 領域計画生成純粋関数)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/impact_region_plan.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/impact_region_plan.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/impact_region_plan.py
-
-2. manga_impact_regional_adapter.py (汎用 N 領域 Impact Pack Regional Prompt 構築ノード)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/manga_impact_regional_adapter.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/manga_impact_regional_adapter.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/manga_impact_regional_adapter.py
-
-3. single_panel_multiscene_adapter.py (単一コマ内複数シーン意地悪テスト専用アダプター)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/single_panel_multiscene_adapter.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/single_panel_multiscene_adapter.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/single_panel_multiscene_adapter.py
-
-4. cast_master.py (CAST_SPEC 正本管理 & 登場人物マスターノード)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/cast_master.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/cast_master.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/cast_master.py
-
-5. scene_compiler.py (PAGE_COMPILE_PLAN コンパイラー & 監査ノード)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_compiler.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_compiler.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_compiler.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/impact_region_plan.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/impact_region_plan.py
 
 --------------------------------------------------------------------------------
-3. Track 2: Workflows (研究・検証ワークフロー)
+3. Track 2: Workflows (保存ワークフロー・Zero-Touch 整合版)
 --------------------------------------------------------------------------------
-1. 21_MANGA_IMPACT_RECURRENT_CAST_POC.json (4コマ漫画反復出演・Progressive Authoring実証)
+1. 21_MANGA_IMPACT_RECURRENT_CAST_POC.json (4コマ漫画反復出演・Zero-Touch Verified)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/21_MANGA_IMPACT_RECURRENT_CAST_POC.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/workflows/21_MANGA_IMPACT_RECURRENT_CAST_POC.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/workflows/21_MANGA_IMPACT_RECURRENT_CAST_POC.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/workflows/21_MANGA_IMPACT_RECURRENT_CAST_POC.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/workflows/21_MANGA_IMPACT_RECURRENT_CAST_POC.json
 
-2. 22_SINGLE_PANEL_MULTI_SCENE_SAME_CAST_ORACLE.json (単一コマ内複数シーン・同一キャスト意地悪オラクル)
+2. 22_SINGLE_PANEL_MULTI_SCENE_SAME_CAST_ORACLE.json (単一コマ内複数シーン意地悪オラクル・Zero-Touch Verified)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/22_SINGLE_PANEL_MULTI_SCENE_SAME_CAST_ORACLE.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/workflows/22_SINGLE_PANEL_MULTI_SCENE_SAME_CAST_ORACLE.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/workflows/22_SINGLE_PANEL_MULTI_SCENE_SAME_CAST_ORACLE.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/workflows/22_SINGLE_PANEL_MULTI_SCENE_SAME_CAST_ORACLE.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/workflows/22_SINGLE_PANEL_MULTI_SCENE_SAME_CAST_ORACLE.json
+
+3. 23_MANGA_PROGRESSIVE_PANEL_AUTHORING_IMPACT.json (4コマ段階的制作標準ワークフロー・Zero-Touch Verified)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/23_MANGA_PROGRESSIVE_PANEL_AUTHORING_IMPACT.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/workflows/23_MANGA_PROGRESSIVE_PANEL_AUTHORING_IMPACT.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/workflows/23_MANGA_PROGRESSIVE_PANEL_AUTHORING_IMPACT.json
+
+4. 24_SINGLE_PANEL_PROGRESSIVE_SUBSCENE_IMPACT.json (段階的開示SubSceneオラクル・Zero-Touch Verified)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/24_SINGLE_PANEL_PROGRESSIVE_SUBSCENE_IMPACT.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/workflows/24_SINGLE_PANEL_PROGRESSIVE_SUBSCENE_IMPACT.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/workflows/24_SINGLE_PANEL_PROGRESSIVE_SUBSCENE_IMPACT.json
 
 --------------------------------------------------------------------------------
 4. Automated Test Suites (自動テスト・実機生成スクリプト)
 --------------------------------------------------------------------------------
-1. test_impact_n_region_plan.py (N領域計画・ポリゴンクリッピング・ID一意性単体テスト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/scripts/test_impact_n_region_plan.py
+1. test_live_external_node_schema.py (稼働中ComfyUIサーバーからの外部ノードLive Schema検証)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/scripts/test_live_external_node_schema.py
 
-2. test_impact_region_order.py (領域順序オラクル・scene_first vs character_first実機比較スクリプト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/scripts/test_impact_region_order.py
+2. test_saved_workflow_live_compatibility.py (全8主要ワークフロー保存JSON live互換性検証)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/scripts/test_saved_workflow_live_compatibility.py
 
-3. test_recurrent_cast_instances.py (同一キャスト反復出演・コマ別オーバーライド契約単体テスト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/scripts/test_recurrent_cast_instances.py
+3. test_subscene_contract.py (SubScene v1 データ契約単体テストスイート)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/scripts/test_subscene_contract.py
 
-4. test_manga_impact_recurrent_cast_runtime.py (4コマ反復出演実画像生成・出席/演技診断スクリプト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/scripts/test_manga_impact_recurrent_cast_runtime.py
+4. test_workflow_zero_touch_parity.py (Zero-Touch Parity 実機実行・画像生成スイート)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/scripts/test_workflow_zero_touch_parity.py
 
-5. test_single_panel_multiscene_contract.py (単一コマ内複数シーン幾何・インスタンス契約単体テスト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/scripts/test_single_panel_multiscene_contract.py
+5. generate_phase3f_contact_sheet.py (Phase 3F 生成画像4種コンタクトシート作成スクリプト)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/scripts/generate_phase3f_contact_sheet.py
 
-6. test_single_panel_multiscene_runtime.py (単一コマ内複数シーン意地悪テスト実画像生成スクリプト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/scripts/test_single_panel_multiscene_runtime.py
-
-7. generate_recurrent_cast_contact_sheet.py (4コマ個別クロップ & 出席・演技注釈コンタクトシート生成スクリプト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/scripts/generate_recurrent_cast_contact_sheet.py
-
-8. run_all_phase3e_generations.py (Phase 3E 全実機生成シーケンス統合ランナースクリプト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/scripts/run_all_phase3e_generations.py
-
-9. comfy_runtime_helper.py (サーバーライフサイクル・タイムアウトブレーカー・パイプデッドロック防止ヘルパー)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/scripts/comfy_runtime_helper.py
-
-10. test_workflow_json_integrity.py (全16ワークフロー 07〜22 構造整合性テスト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/scripts/test_workflow_json_integrity.py
-
-11. test_workflow_widget_compatibility.py (ウィジェット互換性・マイグレーションテスト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/eeb63e4faf8d2736eb40b8b30931ab3758b95c44/ComfyUIPortable/scripts/test_workflow_widget_compatibility.py
+6. test_workflow_json_integrity.py (全18ワークフロー 07〜24 構造整合性テスト)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cc7d3e4dc8b6fac620df9aee8f69067ca3da564a/ComfyUIPortable/scripts/test_workflow_json_integrity.py
