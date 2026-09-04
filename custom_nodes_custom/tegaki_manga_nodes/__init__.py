@@ -8,6 +8,7 @@ from .two_region_core_conditioner import TegakiTwoRegionCoreConditioner
 from .two_region_impact_adapter import TegakiTwoRegionImpactAdapter
 from .two_region_layout_guide import TegakiTwoRegionLayoutGuide
 from .panel_layout_editor import TegakiMangaPanelLayoutEditor
+from .layout_aware_conditioning import TegakiMangaLayoutAwareConditioningBuilder
 from . import panel_layout_api
 
 NODE_CLASS_MAPPINGS = {
@@ -24,6 +25,7 @@ NODE_CLASS_MAPPINGS = {
     "TegakiTwoRegionImpactAdapter": TegakiTwoRegionImpactAdapter,
     "TegakiTwoRegionLayoutGuide": TegakiTwoRegionLayoutGuide,
     "TegakiMangaPanelLayoutEditor": TegakiMangaPanelLayoutEditor,
+    "TegakiMangaLayoutAwareConditioningBuilder": TegakiMangaLayoutAwareConditioningBuilder,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -40,6 +42,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "TegakiTwoRegionImpactAdapter": "Tegaki Two Region Impact Adapter (Oracle)",
     "TegakiTwoRegionLayoutGuide": "Tegaki Two Region Layout Guide (Oracle)",
     "TegakiMangaPanelLayoutEditor": "Tegaki Manga Panel Layout Editor (Guide)",
+    "TegakiMangaLayoutAwareConditioningBuilder": "Tegaki Manga Layout-Aware Conditioning Builder",
 }
 
 WEB_DIRECTORY = "./web"

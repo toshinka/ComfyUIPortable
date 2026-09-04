@@ -160,9 +160,19 @@ def test_exact_pairwise_overlap_rejection():
     print("  Exact pairwise polygon overlap rejected: PASSED")
 
 
+def test_raw_vertex_outside_unit_square_rejection():
+    print("\n--- 13. Testing Raw Vertex Coordinate Outside [0, 1] Rejection (Phase 3D-0) ---")
+    spec = get_default_panel_layout_spec(832, 1216, preset="1_full")
+    # frame を [0, 1] 全域に変更した場合でも raw x > 1.0 が clamp されず reject されること
+    spec["frame"] = {"x": 0.0, "y": 0.0, "w": 1.0, "h": 1.0}
+    spec["vertices"][0]["x"] = 1.25
+    assert_raises(ValueError, validate_panel_layout_spec, spec, match="must be in \\[0.0, 1.0\\]")
+    print("  Raw vertex outside [0, 1] rejected: PASSED")
+
+
 def run_all():
     print("================================================================================")
-    print("Running Rigorous Panel Layout Topology Tests (Phase 3C.1.2)")
+    print("Running Rigorous Panel Layout Topology Tests (Phase 3D-0 / 3C.1.2)")
     print("================================================================================")
     test_valid_presets_topology()
     test_self_intersection_bow_tie_rejection()
@@ -176,12 +186,14 @@ def run_all():
     test_orphan_vertex_rejection()
     test_internal_edge_gap_incidence_1_rejection()
     test_exact_pairwise_overlap_rejection()
+    test_raw_vertex_outside_unit_square_rejection()
     print("\n================================================================================")
-    print("[SUCCESS] ALL 12 PANEL LAYOUT TOPOLOGY TESTS PASSED!")
+    print("[SUCCESS] ALL 13 PANEL LAYOUT TOPOLOGY TESTS PASSED!")
     print("================================================================================")
     return 0
 
 
 if __name__ == "__main__":
     sys.exit(run_all())
+
 

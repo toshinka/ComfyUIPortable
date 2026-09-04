@@ -445,7 +445,7 @@ app.registerExtension({
             node.dragVertexId = null;
 
             if (!node.previewCandidateSpec || !node.committedSpec) {
-                node.committedSpec = null;
+                node.committedSpec = node.getSpec();
                 node.previewCandidateSpec = null;
                 node.setDirtyCanvas(true, true);
                 return true;
@@ -458,6 +458,7 @@ app.registerExtension({
             // 1. ローカル Fast Check
             if (!fastValidateCandidate(candidate)) {
                 console.warn("[PanelLayoutEditor] Fast drag validation failed -> Rolled back to committed spec.");
+                node.committedSpec = node.getSpec();
                 node.setDirtyCanvas(true, true);
                 return true;
             }
@@ -475,15 +476,18 @@ app.registerExtension({
                     node.setSpec(data.spec, true);
                     console.log("[PanelLayoutEditor] Drag candidate committed successfully.");
                 } else {
-                    console.warn("[PanelLayoutEditor] Backend drag validation failed:", data.error, "-> Rolled back.");
+                    console.warn("[PanelLayoutEditor] Backend drag validation failed:", data.error, "-> Rolled back (Fail-Closed).");
+                    node.committedSpec = node.getSpec();
                     node.setDirtyCanvas(true, true);
                 }
             } catch (err) {
-                // サーバー未起動等のフォールバック
-                console.warn("[PanelLayoutEditor] API unreachable, falling back to local check commit:", err);
-                node.setSpec(candidate, true);
+                // Fail-Closed: API unreachable / timeout / network error は安全にロールバック
+                console.warn("[PanelLayoutEditor] Backend validation API unreachable or failed:", err, "-> Rolled back to committed spec (Fail-Closed).");
+                node.committedSpec = node.getSpec();
+                node.setDirtyCanvas(true, true);
             }
 
+            node.committedSpec = node.getSpec();
             node.setDirtyCanvas(true, true);
             return true;
         };

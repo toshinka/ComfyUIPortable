@@ -195,9 +195,14 @@ def validate_panel_layout_spec(spec_data: Any, context_name: str = "PANEL_LAYOUT
         if vy is None or isinstance(vy, bool) or not isinstance(vy, (int, float)) or not math.isfinite(float(vy)):
             raise ValueError(f"[{v_ctx}] Vertex 'y' must be a finite float, got {vy!r}")
 
-        norm_x = max(0.0, min(1.0, float(vx)))
-        norm_y = max(0.0, min(1.0, float(vy)))
-        v_entry = {"id": vid, "x": round(norm_x, 4), "y": round(norm_y, 4)}
+        fx_val = float(vx)
+        fy_val = float(vy)
+        if fx_val < 0.0 or fx_val > 1.0:
+            raise ValueError(f"[{v_ctx}] Vertex 'x' must be in [0.0, 1.0], got {fx_val}")
+        if fy_val < 0.0 or fy_val > 1.0:
+            raise ValueError(f"[{v_ctx}] Vertex 'y' must be in [0.0, 1.0], got {fy_val}")
+
+        v_entry = {"id": vid, "x": round(fx_val, 4), "y": round(fy_val, 4)}
         vertex_map[vid] = (v_entry["x"], v_entry["y"])
         validated_vertices.append(v_entry)
 
