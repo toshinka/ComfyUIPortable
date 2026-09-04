@@ -24,13 +24,16 @@ from custom_nodes.tegaki_manga_nodes.panel_layout_topology import (
 )
 
 
+import re
+
+
 def assert_raises(exc_type, fn, *args, match=None, **kwargs):
     try:
         fn(*args, **kwargs)
         raise AssertionError(f"Expected {exc_type.__name__} was not raised.")
     except exc_type as e:
-        if match and match not in str(e):
-            raise AssertionError(f"Expected exception message containing '{match}', got: {e}")
+        if match and not re.search(match, str(e)):
+            raise AssertionError(f"Expected exception message matching '{match}', got: {e}")
         return e
 
 
@@ -57,19 +60,19 @@ def test_self_intersection_bow_tie_rejection():
 def test_duplicate_vertex_in_cycle_rejection():
     print("\n--- 3. Testing Duplicate Vertex in Panel Cycle Rejection ---")
     spec = get_default_panel_layout_spec(832, 1216, preset="1_full")
-    spec["panels"][0]["vertex_ids"] = ["v1", "v2", "v3", "v2"]
+    spec["panels"][0]["vertex_ids"] = ["v1", "v4", "v3", "v2", "v1"]
     assert_raises(ValueError, validate_layout_topology, spec, match="Duplicate vertex ID")
     print("  Duplicate vertex in cycle rejected: PASSED")
 
 
 def test_zero_length_edge_rejection():
-    print("\n--- 4. Testing Zero-Length Edge Rejection ---")
+    print("\n--- 4. Testing Zero-Length Edge / Duplicate Coordinate Rejection ---")
     spec = get_default_panel_layout_spec(832, 1216, preset="1_full")
     # 同一座標の頂点を追加
     spec["vertices"].append({"id": "v_dup_pos", "x": 0.05, "y": 0.05})
     spec["panels"][0]["vertex_ids"] = ["v1", "v_dup_pos", "v3", "v4"]
-    assert_raises(ValueError, validate_layout_topology, spec, match="Zero-length edge")
-    print("  Zero-length edge rejected: PASSED")
+    assert_raises(ValueError, validate_layout_topology, spec, match="Zero-length edge|Duplicate vertex coordinates detected")
+    print("  Zero-length edge / duplicate coordinates rejected: PASSED")
 
 
 def test_edge_incidence_overflow_rejection():
@@ -100,13 +103,66 @@ def test_area_conservation_and_gap_overlap_diagnostics():
     spec = get_default_panel_layout_spec(832, 1216, preset="1_full")
     # パネルの座標を縮めて隙間を作る
     spec["vertices"][2]["x"] = 0.80  # 0.95 -> 0.80
-    assert_raises(ValueError, validate_layout_topology, spec, match="Area conservation violated")
-    print("  Area conservation violation rejected: PASSED")
+    assert_raises(ValueError, validate_layout_topology, spec, match="Area conservation violated|Structural gap detected")
+    print("  Area conservation violation / gap rejected: PASSED")
+
+
+def test_frame_outside_vertex_rejection():
+    print("\n--- 8. Testing Frame Outside Vertex Rejection ---")
+    spec = get_default_panel_layout_spec(832, 1216, preset="1_full")
+    spec["vertices"][0]["x"] = 0.01  # frame.x (0.05) より外側
+    assert_raises(ValueError, validate_layout_topology, spec, match="outside the Layout Frame")
+    print("  Frame outside vertex rejected: PASSED")
+
+
+def test_duplicate_coordinate_rejection():
+    print("\n--- 9. Testing Duplicate Coordinate Rejection ---")
+    spec = get_default_panel_layout_spec(832, 1216, preset="1_full")
+    # 別 ID なのに v1(0.05, 0.05) と同じ座標を持つ頂点 v_dup を追加
+    spec["vertices"].append({"id": "v_dup", "x": 0.05, "y": 0.05})
+    spec["panels"][0]["vertex_ids"].append("v_dup")
+    assert_raises(ValueError, validate_layout_topology, spec, match="Duplicate vertex coordinates detected")
+    print("  Duplicate vertex coordinates rejected: PASSED")
+
+
+def test_orphan_vertex_rejection():
+    print("\n--- 10. Testing Orphan Vertex Rejection ---")
+    spec = get_default_panel_layout_spec(832, 1216, preset="1_full")
+    # どのパネルからも参照されていない孤立頂点
+    spec["vertices"].append({"id": "v_orphan", "x": 0.50, "y": 0.50})
+    assert_raises(ValueError, validate_layout_topology, spec, match="Orphan vertices detected")
+    print("  Orphan vertex rejected: PASSED")
+
+
+def test_internal_edge_gap_incidence_1_rejection():
+    print("\n--- 11. Testing Internal Edge Gap (Incidence 1) Rejection ---")
+    spec = get_default_panel_layout_spec(832, 1216, preset="3_basic")
+    # p2(下左) を削除して内部エッジ (v4-v5, v5-v7) が incidence 1 (穴あき) になるようにする
+    spec["panels"] = [spec["panels"][0], spec["panels"][2]]
+    # 未参照になった v6 を削除
+    spec["vertices"] = [v for v in spec["vertices"] if v["id"] != "v6"]
+    assert_raises(ValueError, validate_layout_topology, spec, match="Structural gap detected")
+    print("  Internal edge structural gap rejected: PASSED")
+
+
+def test_exact_pairwise_overlap_rejection():
+    print("\n--- 12. Testing Exact Pairwise Polygon Overlap Rejection ---")
+    spec = get_default_panel_layout_spec(832, 1216, preset="1_full")
+    # p1 の真の内部に入り込む重複パネル p_overlap を追加
+    spec["vertices"].extend([
+        {"id": "ov1", "x": 0.20, "y": 0.20},
+        {"id": "ov2", "x": 0.80, "y": 0.20},
+        {"id": "ov3", "x": 0.80, "y": 0.80},
+        {"id": "ov4", "x": 0.20, "y": 0.80},
+    ])
+    spec["panels"].append({"id": "p_overlap", "vertex_ids": ["ov1", "ov4", "ov3", "ov2"]})
+    assert_raises(ValueError, validate_layout_topology, spec, match="Exact polygon overlap detected")
+    print("  Exact pairwise polygon overlap rejected: PASSED")
 
 
 def run_all():
     print("================================================================================")
-    print("Running Rigorous Panel Layout Topology Tests (Phase 3C.1.1)")
+    print("Running Rigorous Panel Layout Topology Tests (Phase 3C.1.2)")
     print("================================================================================")
     test_valid_presets_topology()
     test_self_intersection_bow_tie_rejection()
@@ -115,11 +171,17 @@ def run_all():
     test_edge_incidence_overflow_rejection()
     test_t_junction_detection_and_rejection()
     test_area_conservation_and_gap_overlap_diagnostics()
+    test_frame_outside_vertex_rejection()
+    test_duplicate_coordinate_rejection()
+    test_orphan_vertex_rejection()
+    test_internal_edge_gap_incidence_1_rejection()
+    test_exact_pairwise_overlap_rejection()
     print("\n================================================================================")
-    print("[SUCCESS] ALL PANEL LAYOUT TOPOLOGY TESTS PASSED!")
+    print("[SUCCESS] ALL 12 PANEL LAYOUT TOPOLOGY TESTS PASSED!")
     print("================================================================================")
     return 0
 
 
 if __name__ == "__main__":
     sys.exit(run_all())
+

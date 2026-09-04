@@ -8,6 +8,7 @@ from .two_region_core_conditioner import TegakiTwoRegionCoreConditioner
 from .two_region_impact_adapter import TegakiTwoRegionImpactAdapter
 from .two_region_layout_guide import TegakiTwoRegionLayoutGuide
 from .panel_layout_editor import TegakiMangaPanelLayoutEditor
+from . import panel_layout_api
 
 NODE_CLASS_MAPPINGS = {
     "TegakiLoraPromptLoader": TegakiLoraPromptLoader,

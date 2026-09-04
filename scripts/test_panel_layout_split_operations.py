@@ -43,23 +43,35 @@ def test_split_matrix():
 
 
 def test_3_basic_and_dynamic_splits():
-    print("\n--- 2. Testing 3_basic & 3_dynamic Slanted Panel Splits ---")
-    # 3_basic p1 -> H
+    print("\n--- 2. Testing 3_basic & 3_dynamic Slanted Panel Splits (All 4 Modes) ---")
+    # 3_basic p1 (5-vertex panel) -> H, V, Diag
     spec_3b = get_default_panel_layout_spec(832, 1216, preset="3_basic")
-    spec_3b_h = generic_split_panel(spec_3b, "p1", split_mode="horizontal", split_ratio=0.5)
+    self_p1_vlen = len(spec_3b["panels"][0]["vertex_ids"])
+    assert self_p1_vlen == 5, f"p1 must be a 5-vertex panel, got {self_p1_vlen}"
+
+    spec_3b_h = generic_split_panel(copy.deepcopy(spec_3b), "p1", split_mode="horizontal", split_ratio=0.5)
     assert len(spec_3b_h["panels"]) == 4
-    print("  3_basic p1 -> Horizontal: PASSED (4 panels)")
+    print("  3_basic 5-vertex p1 -> Horizontal: PASSED (4 panels)")
 
-    # 3_basic p1 -> V
-    spec_3b_v = generic_split_panel(spec_3b, "p1", split_mode="vertical", split_ratio=0.5)
+    spec_3b_v = generic_split_panel(copy.deepcopy(spec_3b), "p1", split_mode="vertical", split_ratio=0.5)
     assert len(spec_3b_v["panels"]) == 4
-    print("  3_basic p1 -> Vertical: PASSED (4 panels)")
+    print("  3_basic 5-vertex p1 -> Vertical: PASSED (4 panels)")
 
-    # 3_dynamic slanted panel p1 -> diagonal
-    spec_3d = get_default_panel_layout_spec(832, 1216, preset="3_dynamic")
-    spec_3d_d = generic_split_panel(spec_3d, "p1", split_mode="diag_slash")
-    assert len(spec_3d_d["panels"]) == 4
-    print("  3_dynamic slanted panel p1 -> Diagonal: PASSED (4 panels)")
+    # 3_dynamic slanted panel p1 -> All 4 modes (H, V, Diag /, Diag \)
+    for mode in ("horizontal", "vertical", "diag_slash", "diag_backslash"):
+        spec_3d = get_default_panel_layout_spec(832, 1216, preset="3_dynamic")
+        spec_3d_split = generic_split_panel(spec_3d, "p1", split_mode=mode)
+        assert len(spec_3d_split["panels"]) == 4
+        print(f"  3_dynamic slanted p1 -> {mode}: PASSED (4 panels)")
+
+    # 共有頂点変形後の分割 (Deformation -> Split)
+    spec_def = get_default_panel_layout_spec(832, 1216, preset="3_basic")
+    v5 = next(v for v in spec_def["vertices"] if v["id"] == "v5")
+    v5["x"] = 0.40
+    v5["y"] = 0.50
+    spec_def_h = generic_split_panel(spec_def, "p1", split_mode="horizontal")
+    assert len(spec_def_h["panels"]) == 4
+    print("  Deformed shared vertex panel -> Horizontal: PASSED (4 panels)")
 
 
 def test_repeat_splits_up_to_limit():

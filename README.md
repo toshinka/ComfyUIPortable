@@ -69,6 +69,11 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ RESEARCH_REFERENCES.md              # 参照リポジトリ・ライセンス
  │   ├─ CUSTOM_NODE_MANIFEST.md             # 外部Custom Nodeコミット追跡
  │   └─ reports/                            # 開発フェーズ完了報告書・検証記録集
+ │       ├─ PHASE3C_1_2_FRONTEND_BACKEND_GEOMETRY_PARITY_REPORT.md
+ │       ├─ PHASE3C_1_1_PANEL_TOPOLOGY_AND_CONTROLNET_FUSION_REPORT.md
+ │       ├─ PHASE3C_1_SEMANTIC_REGION_AND_PANEL_LAYOUT_REPORT.md
+ │       ├─ PHASE3C_TWO_REGION_COUPLE_ORACLE_REPORT.md
+ │       ├─ PHASE3B_1_1_WORKFLOW_COMPATIBILITY_HOTFIX_REPORT.md
  │       ├─ PHASE3B_1_REGIONAL_CONTROL_EXPANSION_REPORT.md
  │       ├─ PHASE3B_END_TO_END_REGIONAL_GENERATION_REPORT.md
  │       ├─ PHASE3A_1_SCENE_CONTRACT_HARDENING_REPORT.md
@@ -79,8 +84,16 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │       ├─ BUILD_REPORT.md
  │       └─ PHASE2_1_UI_TEST_CHECKLIST.md
  ├─ custom_nodes_custom/
- │   └─ tegaki_manga_nodes/                 # 独自LoRA記法・Region Editor・Scene/Page Compiler・Mask/Conditioningノード
+ │   └─ tegaki_manga_nodes/                 # 独自LoRA記法・Region Editor・Scene/Page Compiler・Mask/Conditioning・Panel Layout APIノード
  ├─ scripts/
+ │   ├─ test_panel_layout_api_routes.py     # Phase 3C.1.2 Panel Layout REST API単体テスト
+ │   ├─ test_panel_layout_frontend_backend_parity.py # Phase 3C.1.2 Frontend/Backend Splitパリティテスト
+ │   ├─ test_panel_layout_drag_validation.py# Phase 3C.1.2 トランザクショナルドラッグ・ロールバック検証
+ │   ├─ test_panel_layout_split_operations.py # Phase 3C.1.1/3C.1.2 一般分割幾何アルゴリズムテスト
+ │   ├─ test_panel_layout_topology.py       # Phase 3C.1.1/3C.1.2 平面分割トポロジー契約テスト
+ │   ├─ test_panel_layout_fusion_generation.py # Phase 3C.1.1 実機ControlNet融合生成スクリプト
+ │   ├─ test_two_region_couple_editor.py    # Phase 3C.1 Two Regionエディター幾何テスト
+ │   ├─ test_two_region_oracle_generation.py# Phase 3C 実機Two Region A/B生成検証スクリプト
  │   ├─ test_regional_control_expansion_generation.py # Phase 3B.1 実機A/B生成検証スクリプト
  │   ├─ test_regional_control_expansion.py  # Phase 3B.1 4階層統合・Mask投影・Conditioningテスト
  │   ├─ test_local_region_spec.py           # Phase 3B.1 LOCAL_REGIONデータ契約単体テスト
@@ -134,7 +147,20 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
 - **意味領域（Semantic Region）とコマ割り幾何（Panel Layout）の完全分離と融合**:
   - **Semantic Region**: 2領域（Region A / Region B）に特化した最小データ契約 `TWO_REGION_SPEC` (v1) と `TegakiTwoRegionCoupleEditor`（ドラッグ移動・リサイズ・選択・作成完備）。演技・対話構図のため **「Semantic Overlap（重なり前提）」** を基本思想とし、局所性比率 4.52x の高い空間分離性を実証。
   - **Panel Layout Topology**: 漫画コマ割り専用契約 `PANEL_LAYOUT_SPEC` (v1) を **Planar Subdivision（平面分割）** として硬化。自己交差（bow-tie 検出）、Winding CCW 正規化、Edge Incidence（外枠1/内枠2）、T-Junction 検出・排除、面積保存則、Gap/Overlap 診断（0.0%）を完全実装。
-  - **Generic Split by Line & Transactional Drag**: Sutherland-Hodgman 半平面クリッピングによる H/V/Diagonal 4方向分割、交点頂点の全メッシュ伝播（T-Junction 根本防止）、および candidate 検証失敗時の自動ロールバックを完備。
+  - **Generic Split by Line**: Sutherland-Hodgman 半平面クリッピングによる H/V/Diagonal 4方向分割、交点頂点の全メッシュ伝播（T-Junction 根本防止）を完備。
   - **ControlNet Fusion 実機実証 (Workflow 15)**: RTX 4070 実機において、ControlNet 強度 0.60 で明瞭なコマ枠線形成（Edge Response: 0.1099, +222%）と上段コマ内での自然な 2 人物演技（Semantic Overlap）の完全共存を実証。
+
+### Frontend / Backend Geometry Parity & Topology Contract Closure (Phase 3C.1.2 成果)
+- **Frontend / Backend Split 操作の Single Source of Truth (SSOT) 統合**:
+  - フロントエンドの Split ボタン（H, V, /, \）を Python バックエンド REST API (`POST /tegaki/panel-layout/split`) 呼び出しへ完全一本化。
+  - フロントエンド独自の手作業 bbox スライスロジックを撤廃し、Backend の Sutherland-Hodgman 多角形クリッピングと新設頂点伝播によるトポロジー整合性をブラウザ上でも 100% 保証。
+- **ドラッグ操作の完全トランザクション化 & ロールバック保証**:
+  - `committedSpec`（確定状態）と `previewCandidateSpec`（プレビュー候補）を物理分離。
+  - ドラッグ中は Canvas 描画のみを candidate で更新し、ComfyUI の widget 値を非破壊に保護。
+  - `mouseup` 時に幾何事前検査および Backend API (`POST /tegaki/panel-layout/validate`) を実行。自己交差・面積不整合・境界逸脱等のトポロジー違反発生時は即座に `committedSpec` へロールバックし、不整合状態の永続化をゼロ化。
+- **幾何契約（Planar Subdivision Contract）の完全硬化**:
+  - 厳格 Frame 検証（finite float, bool 拒絶, 境界整合性）、頂点 Frame 包含チェック、重複座標排除、孤立頂点排除、厳格外枠 Incidence（内部 Gap 排除）、ペアワイズ多角形重なり判定（Exact Pairwise Overlap Check）、面積保存許容誤差の引き締め（0.001）を完全達成。
+  - テストスイート 17本（単体・結合・パリティ・回帰）すべてで 100% PASS を達成。
+
 
 

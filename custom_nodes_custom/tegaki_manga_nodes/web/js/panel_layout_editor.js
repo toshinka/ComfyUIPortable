@@ -1,8 +1,9 @@
 /**
- * Tegaki Manga Panel Layout Editor (Phase 3C.1.1 Hardened Topology Frontend)
+ * Tegaki Manga Panel Layout Editor (Phase 3C.1.2 Hardened Topology & Parity Frontend)
  * 
  * Planar Subdivision (平面分割) 契約に基づき、
- * - トランザクショナルな共有頂点ドラッグ (検証失敗時ロールバック)
+ * - Backend Split API (/tegaki/panel-layout/split) 統合による SSOT (Single Source of Truth)
+ * - トランザクショナルな共有頂点ドラッグ (Committed vs Preview 分離 & 検証失敗時ロールバック)
  * - 外周頂点の Layout Frame 拘束スライド
  * - T-Junction を排除する交点頂点伝播 Split
  * - Undo / Redo 履歴管理
@@ -83,6 +84,32 @@ const PRESET_DATA = {
     }
 };
 
+function fastValidateCandidate(spec) {
+    if (!spec || !Array.isArray(spec.vertices) || !Array.isArray(spec.panels)) return false;
+    const frame = spec.frame || { x: 0.05, y: 0.05, w: 0.90, h: 0.90 };
+    const fxMin = frame.x - 1e-4, fxMax = frame.x + frame.w + 1e-4;
+    const fyMin = frame.y - 1e-4, fyMax = frame.y + frame.h + 1e-4;
+    const vMap = {};
+    for (const v of spec.vertices) {
+        if (v.x < fxMin || v.x > fxMax || v.y < fyMin || v.y > fyMax) return false;
+        vMap[v.id] = v;
+    }
+    // パネル面積と最小辺長
+    for (const p of spec.panels) {
+        const pts = p.vertex_ids.map(id => vMap[id]);
+        if (pts.length < 3 || pts.some(pt => !pt)) return false;
+        let area = 0;
+        const n = pts.length;
+        for (let i = 0; i < n; i++) {
+            const j = (i + 1) % n;
+            area += pts[i].x * pts[j].y - pts[j].x * pts[i].y;
+            if (Math.hypot(pts[i].x - pts[j].x, pts[i].y - pts[j].y) < 1e-4) return false;
+        }
+        if (Math.abs(area * 0.5) < 0.005) return false;
+    }
+    return true;
+}
+
 app.registerExtension({
     name: "Tegaki.MangaPanelLayoutEditor",
 
@@ -91,7 +118,8 @@ app.registerExtension({
 
         node.selectedPanelId = "p1";
         node.dragVertexId = null;
-        node.lastValidSpec = null; // トランザクショナルロールバック用
+        node.committedSpec = null;      // トランザクション確定 Spec
+        node.previewCandidateSpec = null; // ドラッグ中 Preview Candidate Spec
         node.undoStack = [];
         node.redoStack = [];
 
@@ -122,7 +150,7 @@ app.registerExtension({
         };
 
         node.setSpec = function (spec, recordHistory = true) {
-            if (recordHistory) {
+            if (recordHistory && specWidget && specWidget.value) {
                 node.undoStack.push(specWidget.value);
                 if (node.undoStack.length > 30) node.undoStack.shift();
                 node.redoStack = [];
@@ -130,6 +158,8 @@ app.registerExtension({
             if (specWidget) {
                 specWidget.value = JSON.stringify(spec, null, 2);
             }
+            node.committedSpec = JSON.parse(JSON.stringify(spec));
+            node.previewCandidateSpec = null;
             node.setDirtyCanvas(true, true);
         };
 
@@ -140,6 +170,8 @@ app.registerExtension({
             node.redoStack.push(cur);
             const prev = node.undoStack.pop();
             if (specWidget) specWidget.value = prev;
+            node.committedSpec = node.getSpec();
+            node.previewCandidateSpec = null;
             node.setDirtyCanvas(true, true);
         };
 
@@ -149,6 +181,8 @@ app.registerExtension({
             node.undoStack.push(cur);
             const next = node.redoStack.pop();
             if (specWidget) specWidget.value = next;
+            node.committedSpec = node.getSpec();
+            node.previewCandidateSpec = null;
             node.setDirtyCanvas(true, true);
         };
 
@@ -166,85 +200,43 @@ app.registerExtension({
         };
 
         // -------------------------------------------------------------
-        // Split 操作 (交点伝播による T-Junction 排除)
+        // Split 操作 (Backend API による Single Source of Truth 統合)
         // -------------------------------------------------------------
-        node.splitSelectedPanel = function (mode) {
+        node.splitSelectedPanel = async function (mode) {
             const spec = node.getSpec();
             if (spec.panels.length >= 6) {
                 alert("Panel capacity limit reached (max 6 panels).");
                 return;
             }
 
-            const targetIdx = spec.panels.findIndex(p => p.id === node.selectedPanelId);
-            if (targetIdx === -1) return;
-            const targetPanel = spec.panels[targetIdx];
-
-            const vMap = {};
-            spec.vertices.forEach(v => { vMap[v.id] = v; });
-            const pts = targetPanel.vertex_ids.map(id => vMap[id]).filter(Boolean);
-            if (pts.length < 3) return;
-
-            const minX = Math.min(...pts.map(p => p.x));
-            const maxX = Math.max(...pts.map(p => p.x));
-            const minY = Math.min(...pts.map(p => p.y));
-            const maxY = Math.max(...pts.map(p => p.y));
-            const midX = (minX + maxX) / 2;
-            const midY = (minY + maxY) / 2;
-
-            const nextVid = () => "v" + (Math.max(0, ...spec.vertices.map(v => parseInt(v.id.replace("v", "")) || 0)) + 1);
-            const nextPid = () => "p" + (Math.max(0, ...spec.panels.map(p => parseInt(p.id.replace("p", "")) || 0)) + 1);
-
-            let vidA, vidB;
-            if (mode === "horizontal") {
-                vidA = nextVid();
-                spec.vertices.push({ id: vidA, x: minX, y: midY });
-                vidB = "v" + (parseInt(vidA.replace("v", "")) + 1);
-                spec.vertices.push({ id: vidB, x: maxX, y: midY });
-            } else if (mode === "vertical") {
-                vidA = nextVid();
-                spec.vertices.push({ id: vidA, x: midX, y: minY });
-                vidB = "v" + (parseInt(vidA.replace("v", "")) + 1);
-                spec.vertices.push({ id: vidB, x: midX, y: maxY });
-            } else if (mode === "diag_slash") {
-                vidA = nextVid();
-                spec.vertices.push({ id: vidA, x: minX, y: maxY });
-                vidB = "v" + (parseInt(vidA.replace("v", "")) + 1);
-                spec.vertices.push({ id: vidB, x: maxX, y: minY });
-            } else {
-                vidA = nextVid();
-                spec.vertices.push({ id: vidA, x: minX, y: minY });
-                vidB = "v" + (parseInt(vidA.replace("v", "")) + 1);
-                spec.vertices.push({ id: vidB, x: maxX, y: maxY });
+            if (!node.selectedPanelId) {
+                node.selectedPanelId = spec.panels[0]?.id || "p1";
             }
 
-            const pidA = targetPanel.id;
-            const pidB = nextPid();
+            try {
+                const resp = await fetch("/tegaki/panel-layout/split", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        spec: spec,
+                        panel_id: node.selectedPanelId,
+                        split_mode: mode,
+                        split_ratio: 0.5
+                    })
+                });
 
-            // 2つの多角形を作成
-            if (mode === "horizontal") {
-                spec.panels[targetIdx] = {
-                    id: pidA,
-                    vertex_ids: [targetPanel.vertex_ids[0], vidA, vidB, targetPanel.vertex_ids[targetPanel.vertex_ids.length - 1]].filter(Boolean)
-                };
-                spec.panels.push({
-                    id: pidB,
-                    vertex_ids: [vidA, targetPanel.vertex_ids[1] || vidA, targetPanel.vertex_ids[2] || vidB, vidB].filter(Boolean)
-                };
-            } else {
-                // Vertical / Diagonal
-                const half = Math.floor(targetPanel.vertex_ids.length / 2);
-                spec.panels[targetIdx] = {
-                    id: pidA,
-                    vertex_ids: [targetPanel.vertex_ids[0], vidA, vidB]
-                };
-                spec.panels.push({
-                    id: pidB,
-                    vertex_ids: [vidA, targetPanel.vertex_ids[half], vidB]
-                };
+                const data = await resp.json();
+                if (data.ok && data.spec) {
+                    node.setSpec(data.spec, true);
+                    node.selectedPanelId = data.spec.panels[data.spec.panels.length - 1]?.id || node.selectedPanelId;
+                } else {
+                    console.warn("[PanelLayoutEditor] Split rejected by backend:", data.error);
+                    alert(`Split rejected: ${data.error || "Unknown validation error"}`);
+                }
+            } catch (err) {
+                console.error("[PanelLayoutEditor] Split API request failed:", err);
+                alert(`Split API connection error: ${err.message}`);
             }
-
-            node.selectedPanelId = targetPanel.id;
-            node.setSpec(spec, true);
         };
 
         // UI ウィジェットボタン
@@ -266,7 +258,7 @@ app.registerExtension({
         canvasWidget.computeSize = () => [node.size[0] - 20, 280];
 
         node.getCanvasLayout = function (width, y) {
-            const spec = node.getSpec();
+            const spec = node.previewCandidateSpec || node.getSpec();
             const canvasW = spec.canvas?.width || 832;
             const canvasH = spec.canvas?.height || 1216;
             const aspect = canvasW / canvasH;
@@ -287,13 +279,14 @@ app.registerExtension({
             return { drawX, drawY, drawW, drawH, canvasW, canvasH };
         };
 
-        // 描画 (Unique-Edge Traversal 準拠)
+        // 描画 (Unique-Edge Traversal 準拠 & Preview Candidate 優先)
         canvasWidget.draw = function (ctx, node, width, y) {
             const layout = node.getCanvasLayout(width, y);
             const { drawX, drawY, drawW, drawH } = layout;
             node.lastCanvasLayout = layout;
 
-            const spec = node.getSpec();
+            // ドラッグ中は previewCandidateSpec を表示、通常時は canonical spec を表示
+            const spec = node.previewCandidateSpec || node.getSpec();
             const vMap = {};
             spec.vertices.forEach(v => {
                 vMap[v.id] = {
@@ -343,7 +336,7 @@ app.registerExtension({
 
                 ctx.beginPath();
                 ctx.arc(pos.x, pos.y, 5, 0, Math.PI * 2);
-                ctx.fillStyle = "#ffffff";
+                ctx.fillStyle = (v.id === node.dragVertexId) ? "#fbbf24" : "#ffffff";
                 ctx.fill();
                 ctx.strokeStyle = "#2563eb";
                 ctx.lineWidth = 2;
@@ -352,7 +345,7 @@ app.registerExtension({
         };
 
         // -------------------------------------------------------------
-        // トランザクショナルな共有頂点ドラッグ (検証 & ロールバック)
+        // トランザクショナルな共有頂点ドラッグ (Committed vs Preview 分離)
         // -------------------------------------------------------------
         node.onMouseDown = function (event, local_pos) {
             if (!node.lastCanvasLayout) return false;
@@ -374,8 +367,9 @@ app.registerExtension({
                 const dist = Math.hypot(v.x - normX, v.y - normY);
                 if (dist <= hitR) {
                     node.dragVertexId = v.id;
-                    node.lastValidSpec = JSON.parse(JSON.stringify(spec));
-                    node.undoStack.push(specWidget.value);
+                    // トランザクション分離
+                    node.committedSpec = JSON.parse(JSON.stringify(spec));
+                    node.previewCandidateSpec = JSON.parse(JSON.stringify(spec));
                     return true;
                 }
             }
@@ -407,7 +401,7 @@ app.registerExtension({
         };
 
         node.onMouseMove = function (event, local_pos) {
-            if (!node.dragVertexId || !node.lastCanvasLayout) return false;
+            if (!node.dragVertexId || !node.lastCanvasLayout || !node.previewCandidateSpec) return false;
             const { drawX, drawY, drawW, drawH } = node.lastCanvasLayout;
             const px = local_pos[0];
             const py = local_pos[1];
@@ -415,16 +409,16 @@ app.registerExtension({
             const normX = Math.max(0.01, Math.min(0.99, (px - drawX) / drawW));
             const normY = Math.max(0.01, Math.min(0.99, (py - drawY) / drawH));
 
-            const spec = node.getSpec();
-            const targetV = spec.vertices.find(v => v.id === node.dragVertexId);
+            const candidate = node.previewCandidateSpec;
+            const targetV = candidate.vertices.find(v => v.id === node.dragVertexId);
             if (!targetV) return false;
 
-            const frame = spec.frame || { x: 0.05, y: 0.05, w: 0.90, h: 0.90 };
+            const frame = candidate.frame || { x: 0.05, y: 0.05, w: 0.90, h: 0.90 };
             const fxMin = frame.x, fxMax = frame.x + frame.w;
             const fyMin = frame.y, fyMax = frame.y + frame.h;
 
             // 外周頂点拘束 (Outer boundary constraint)
-            const origV = node.lastValidSpec.vertices.find(v => v.id === node.dragVertexId);
+            const origV = node.committedSpec.vertices.find(v => v.id === node.dragVertexId);
             let candX = normX;
             let candY = normY;
 
@@ -441,21 +435,57 @@ app.registerExtension({
             targetV.x = Math.round(candX * 1000) / 1000;
             targetV.y = Math.round(candY * 1000) / 1000;
 
-            if (specWidget) {
-                specWidget.value = JSON.stringify(spec, null, 2);
-            }
+            // 注意: ここでは specWidget.value は一切書き換えない！ (Preview のみ)
             node.setDirtyCanvas(true, true);
             return true;
         };
 
-        node.onMouseUp = function (event, local_pos) {
-            if (node.dragVertexId) {
-                node.dragVertexId = null;
-                node.lastValidSpec = null;
+        node.onMouseUp = async function (event, local_pos) {
+            if (!node.dragVertexId) return false;
+            node.dragVertexId = null;
+
+            if (!node.previewCandidateSpec || !node.committedSpec) {
+                node.committedSpec = null;
+                node.previewCandidateSpec = null;
                 node.setDirtyCanvas(true, true);
                 return true;
             }
-            return false;
+
+            const candidate = node.previewCandidateSpec;
+            const committed = node.committedSpec;
+            node.previewCandidateSpec = null;
+
+            // 1. ローカル Fast Check
+            if (!fastValidateCandidate(candidate)) {
+                console.warn("[PanelLayoutEditor] Fast drag validation failed -> Rolled back to committed spec.");
+                node.setDirtyCanvas(true, true);
+                return true;
+            }
+
+            // 2. Backend 厳格 Validator API
+            try {
+                const resp = await fetch("/tegaki/panel-layout/validate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ spec: candidate })
+                });
+                const data = await resp.json();
+                if (data.ok && data.spec) {
+                    // Commit to widget and history!
+                    node.setSpec(data.spec, true);
+                    console.log("[PanelLayoutEditor] Drag candidate committed successfully.");
+                } else {
+                    console.warn("[PanelLayoutEditor] Backend drag validation failed:", data.error, "-> Rolled back.");
+                    node.setDirtyCanvas(true, true);
+                }
+            } catch (err) {
+                // サーバー未起動等のフォールバック
+                console.warn("[PanelLayoutEditor] API unreachable, falling back to local check commit:", err);
+                node.setSpec(candidate, true);
+            }
+
+            node.setDirtyCanvas(true, true);
+            return true;
         };
 
         node.setSize([380, 680]);

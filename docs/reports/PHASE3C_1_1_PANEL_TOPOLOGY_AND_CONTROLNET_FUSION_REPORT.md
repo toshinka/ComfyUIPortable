@@ -97,6 +97,7 @@
 - **Diagonal `/`**: 左下から右上を結ぶ直線
 - **Diagonal `\`**: 左上から右下を結ぶ直線
 - `1_full`、`3_basic`、`3_dynamic`（斜めパネル）、変形後パネルのいずれに対しても安全に分割可能。
+- *(Corrected in Phase 3C.1.2)*: Phase 3C.1.1 で実装されたのは Backend 側の Python `generic_split_panel` であり、Frontend Editor の UI ボタンは旧来の別実装（手作業 bounding box）のままでした。Frontend 操作と Backend の完全な SSOT 統合（API 経由での `generic_split_panel` 共有）は Phase 3C.1.2 にて達成されました。
 
 ---
 
@@ -121,6 +122,7 @@
 - ドラッグ中の各 candidate move に対してトポロジー検証を実行。
 - 不正な幾何（自己交差、縮退、T-Junction、Frame外逸脱）を検知した場合は変更を即座に破棄し、直前の valid 状態へロールバック。
 - 外周中間頂点は Frame 枠線上に沿ってのみ安全にスライド拘束。
+- *(Corrected in Phase 3C.1.2)*: Phase 3C.1.1 の Frontend ドラッグは直接 `specWidget.value` を書き換えており、コード上の真のトランザクションロールバックではありませんでした。Committed Spec と Preview Candidate Spec の分離および `mouseup` 時の検証失敗時ロールバック機構は Phase 3C.1.2 にて正式実装されました。
 
 ---
 

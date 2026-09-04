@@ -209,6 +209,17 @@ def generic_split_panel(
         "vertex_ids": vids_b_clean
     })
 
+    for p in spec["panels"]:
+        if p["id"] != target_panel_id:
+            p["vertex_ids"] = normalize_winding_ccw(dedupe_cycle(p["vertex_ids"]), v_map)
+
+    # 参照されている全頂点 ID を収集し、未参照頂点を prune
+    all_referenced_vids = set()
+    for p in spec["panels"]:
+        for vid in p["vertex_ids"]:
+            all_referenced_vids.add(vid)
+    spec["vertices"] = [v for v in spec["vertices"] if v["id"] in all_referenced_vids]
+
     # 厳格なトポロジー・面積保存・T-Junction 検証 (失敗時例外で自動ロールバック)
     validate_layout_topology(spec, context_name="GenericSplit")
 

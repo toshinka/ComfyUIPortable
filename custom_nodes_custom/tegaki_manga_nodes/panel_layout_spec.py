@@ -138,16 +138,35 @@ def validate_panel_layout_spec(spec_data: Any, context_name: str = "PANEL_LAYOUT
     if not isinstance(height, int) or isinstance(height, bool) or height <= 0 or height > 8192:
         raise ValueError(f"[{context_name}] 'canvas.height' must be an integer between 1 and 8192, got {height!r}")
 
-    # 3. Layout Frame (未指定時はデフォルト補完)
+    # 3. Layout Frame (未指定時はデフォルト補完、指定時は厳格検証)
     raw_frame = spec_data.get("frame")
-    if raw_frame is None or not isinstance(raw_frame, dict):
+    if raw_frame is None:
         frame = {"x": 0.05, "y": 0.05, "w": 0.90, "h": 0.90}
+    elif not isinstance(raw_frame, dict):
+        raise ValueError(f"[{context_name}] 'frame' must be a dictionary.")
     else:
+        for k in ("x", "y", "w", "h"):
+            val = raw_frame.get(k)
+            if val is None or isinstance(val, bool) or not isinstance(val, (int, float)) or not math.isfinite(float(val)):
+                raise ValueError(f"[{context_name}.frame.{k}] Frame dimension must be a finite float, got {val!r}")
+
+        fx = float(raw_frame["x"])
+        fy = float(raw_frame["y"])
+        fw = float(raw_frame["w"])
+        fh = float(raw_frame["h"])
+
+        if fw <= 0 or fh <= 0:
+            raise ValueError(f"[{context_name}.frame] Dimensions must be positive, got w={fw}, h={fh}")
+        if fx < 0 or fy < 0:
+            raise ValueError(f"[{context_name}.frame] Coordinates must be >= 0, got x={fx}, y={fy}")
+        if fx + fw > 1.0001 or fy + fh > 1.0001:
+            raise ValueError(f"[{context_name}.frame] Frame exceeds normalized unit square [0, 1], got x+w={fx+fw}, y+h={fy+fh}")
+
         frame = {
-            "x": round(float(raw_frame.get("x", 0.05)), 4),
-            "y": round(float(raw_frame.get("y", 0.05)), 4),
-            "w": round(float(raw_frame.get("w", 0.90)), 4),
-            "h": round(float(raw_frame.get("h", 0.90)), 4),
+            "x": round(fx, 4),
+            "y": round(fy, 4),
+            "w": round(fw, 4),
+            "h": round(fh, 4),
         }
 
     # 4. Vertices

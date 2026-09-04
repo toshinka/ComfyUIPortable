@@ -213,9 +213,12 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 
 ---
 
-## 5. 互換性保証について (Phase 3B.1.1 & Phase 3C / 3C.1 / 3C.1.1)
+## 5. 互換性保証について (Phase 3B.1.1 & Phase 3C / 3C.1 / 3C.1.1 / 3C.1.2)
 - **Zero-Touch Smoke Test 検証済み**:
   `09_MANGA_REGIONAL_GENERATION_POC.json`、`10_MANGA_REGIONAL_CONTROL_EXPANSION_TEST.json`、および `11`, `12`, `13`, `14`, `15` は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
 - **Canonical Widget Order**:
   `TegakiMangaConditioningBuilder` の Widget 順序は `[panel_strength, character_strength, set_cond_area, local_region_strength, mask_feather]` に統一され、フロントエンド自動マイグレーション拡張（`manga_workflow_migration.js`）により過去のワークフローも透過的に自動変換・NaN修復されます。
+- **Frontend / Backend Geometry Parity (Phase 3C.1.2)**:
+  `TegakiMangaPanelLayoutEditor` の分割操作（H/V/Diagonal）は Backend REST API (`POST /tegaki/panel-layout/split`) と完全統合され、フロントエンド独自の bbox 分割によるトポロジー破壊を完全排除。ドラッグ操作は `committedSpec` と `previewCandidateSpec` の完全分離によるトランザクション化（即時ロールバック保証）が施され、既存の `14_MANGA_PANEL_LAYOUT_GUIDE_EDITOR_TEST.json` および `15_MANGA_PANEL_LAYOUT_CONTROLNET_FUSION_ORACLE.json` の仕様変更なしで 100% の後方互換性が維持されています。
+
 
