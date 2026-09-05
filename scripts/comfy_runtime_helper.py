@@ -158,6 +158,8 @@ def wait_for_prompt(prompt_id: str, timeout: int = 180) -> Dict[str, Any]:
                 outputs = entry.get("outputs", {})
                 print(f"[ComfyRuntimeHelper] Prompt {prompt_id} completed in {elapsed:.1f}s.")
                 return outputs
+        except RuntimeError:
+            raise
         except Exception:
             pass
 

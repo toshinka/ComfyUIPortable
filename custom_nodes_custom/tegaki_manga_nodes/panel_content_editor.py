@@ -186,6 +186,10 @@ class TegakiMangaPanelContentEditor:
         panels = spec_dict.get("panels", [])
         for p in panels[:panel_count]:
             pid = int(p.get("id", len(regions) + 1))
+            cam_dist = p.get("camera_distance") or (p.get("metadata", {}).get("camera_distance") if isinstance(p.get("metadata"), dict) else None) or "medium"
+            koma_meta = dict(p.get("metadata", {})) if isinstance(p.get("metadata"), dict) else {}
+            koma_meta["camera_distance"] = cam_dist
+
             koma_entry = {
                 "id": pid,
                 "name": p.get("name", f"Panel {pid}"),
@@ -197,7 +201,9 @@ class TegakiMangaPanelContentEditor:
                 "prompt": p.get("prompt", ""),
                 "negative_prompt": p.get("negative_prompt", ""),
                 "characters": p.get("characters", []),
-                "subscenes": p.get("subscenes", [])
+                "subscenes": p.get("subscenes", []),
+                "camera_distance": cam_dist,
+                "metadata": koma_meta
             }
             regions.append(koma_entry)
 

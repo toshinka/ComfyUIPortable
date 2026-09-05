@@ -288,6 +288,24 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
 - **Operational Authoring Profile 昇格**:
   - Hyper12（12 steps, CFG 6.0, 22〜30s）を正式オーサリングプロファイルへ昇格。Native20 との等価性を実証。
 
+### Pose Contract, Interaction Binding & Scene Composition (Phase 3K 成果)
+- **Shot Type ガイド幾何因果性の純粋証明**:
+  - プロンプトから構図単語（`full body`, `half body`, `bust shot`）を 100% 排除し、ガイド幾何（BBox + カプセルマネキン）単独で被写体クロップとフレーミングが決定されることを実証（Contact Sheet Z1）。
+- **方向性ポーズ・着席ポーズ基盤 (Pose Contract)**:
+  - `standing_neutral`、`facing_left`、`facing_right`、`sitting` の end-to-end 伝播を確立。
+  - 方向性マネキン描画においてラスター左右反転（`Image.FLIP_LEFT_RIGHT`）を導入し、左右の完全幾何対称性（100% Mirror Symmetry）を数学的に保証。
+  - 着席ポーズ（`sitting`）における低重心・水平大腿部・膝クロスバー描画により、安定した着席構図を確立（Contact Sheet Z2）。
+- **Staging Override ディープマージ修復**:
+  - ドラッグ＆リサイズ時に `shot_type`、`pose_preset`、`interaction` が消失するバグを解消し、UIコンボ操作と幾何変更の共存を実現。
+- **2人物相互向き・対話構図 (Workflows 60, 61)**:
+  - 内向き対話（`facing_each_other`）および外向き背反（`facing_outward`）の構図制御を実証（Contact Sheet Z3）。
+- **接触演技・握手プロトタイプ (Workflow 63)**:
+  - 2人物の肩・手首から中央の共有握手アンカーノードへ腕線を接続する対話ガイドを生成。ガイドなしでは不成立だった物理的接触演技を空間誘導（Contact Sheet Z4）。
+- **コマ被写界距離階層 (Scene Camera Distance / Workflows 64, 65)**:
+  - パネル属性として `near`、`medium`、`far` を定義し、`explicit staging > camera default` 契約のもとで未指定人物の自動フレーミングを制御（Contact Sheet Z5）。
+- **Zero-Touch 互換性**:
+  - Workflows 60〜65（全6件）を新規策定し、対象全49ワークフローのライブスキーマ適合性 100% PASS を達成。
+
 
 
 

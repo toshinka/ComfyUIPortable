@@ -59,7 +59,10 @@ app.registerExtension({
             const ov = node.getOverrides();
             const pidStr = String(panelId);
             if (!ov[pidStr]) ov[pidStr] = {};
-            ov[pidStr][charId] = { area: { ...area } };
+            if (!ov[pidStr][charId] || typeof ov[pidStr][charId] !== "object") {
+                ov[pidStr][charId] = {};
+            }
+            ov[pidStr][charId].area = { ...area };
             if (overridesWidget) {
                 overridesWidget.value = JSON.stringify(ov, null, 2);
             }
@@ -150,9 +153,51 @@ app.registerExtension({
             const match = chars.find(c => c.name === val || c.character_id === val);
             if (match) {
                 node.selectedCharId = match.character_id;
+                node.updateCharPoseWidgets();
                 node.setDirtyCanvas(true, true);
             }
         }, { values: [] });
+
+        // Shot Type Selector (Phase 3K)
+        const shotTypeSelector = node.addWidget("combo", "Shot Type", "full_body", (val) => {
+            if (!node.selectedCharId) return;
+            const ov = node.getOverrides();
+            const pidStr = String(node.selectedPanel);
+            if (!ov[pidStr]) ov[pidStr] = {};
+            if (!ov[pidStr][node.selectedCharId] || typeof ov[pidStr][node.selectedCharId] !== "object") {
+                ov[pidStr][node.selectedCharId] = {};
+            }
+            ov[pidStr][node.selectedCharId].shot_type = val;
+            if (overridesWidget) {
+                overridesWidget.value = JSON.stringify(ov, null, 2);
+            }
+            node.setDirtyCanvas(true, true);
+        }, { values: ["full_body", "half_body", "bust"] });
+
+        // Pose Preset Selector (Phase 3K)
+        const posePresetSelector = node.addWidget("combo", "Pose Preset", "standing_neutral", (val) => {
+            if (!node.selectedCharId) return;
+            const ov = node.getOverrides();
+            const pidStr = String(node.selectedPanel);
+            if (!ov[pidStr]) ov[pidStr] = {};
+            if (!ov[pidStr][node.selectedCharId] || typeof ov[pidStr][node.selectedCharId] !== "object") {
+                ov[pidStr][node.selectedCharId] = {};
+            }
+            ov[pidStr][node.selectedCharId].pose_preset = val;
+            if (overridesWidget) {
+                overridesWidget.value = JSON.stringify(ov, null, 2);
+            }
+            node.setDirtyCanvas(true, true);
+        }, { values: ["standing_neutral", "facing_left", "facing_right", "sitting"] });
+
+        node.updateCharPoseWidgets = function () {
+            if (!node.selectedCharId) return;
+            const ov = node.getOverrides();
+            const pidStr = String(node.selectedPanel);
+            const charOv = ov[pidStr]?.[node.selectedCharId] || {};
+            shotTypeSelector.value = charOv.shot_type || "full_body";
+            posePresetSelector.value = charOv.pose_preset || "standing_neutral";
+        };
 
         node.updateActiveCharSelector = function () {
             const chars = node.getAttendingCharactersForPanel(node.selectedPanel);
@@ -168,6 +213,7 @@ app.registerExtension({
                 node.selectedCharId = null;
                 charSelector.value = "(None)";
             }
+            node.updateCharPoseWidgets();
         };
 
         // Reset Button
@@ -175,10 +221,11 @@ app.registerExtension({
             if (overridesWidget) {
                 overridesWidget.value = "{}";
             }
+            node.updateCharPoseWidgets();
             node.setDirtyCanvas(true, true);
         });
 
-        node.size = [400, 480];
+        node.size = [400, 540];
         node.updateActiveCharSelector();
 
         // --- Canvas Rendering ---
@@ -317,6 +364,7 @@ app.registerExtension({
                 node.selectedCharId = hitChar.character_id;
                 const cur = chars.find(c => c.character_id === hitChar.character_id);
                 if (cur) charSelector.value = cur.name;
+                node.updateCharPoseWidgets();
 
                 node.dragState = {
                     mode: "move",

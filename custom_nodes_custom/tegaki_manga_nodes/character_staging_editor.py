@@ -219,7 +219,33 @@ class CharacterStagingStateManager:
         pid_str = str(panel_id)
         if pid_str not in self.overrides:
             self.overrides[pid_str] = {}
-        self.overrides[pid_str][char_id] = {"area": area}
+        if char_id not in self.overrides[pid_str] or not isinstance(self.overrides[pid_str][char_id], dict):
+            self.overrides[pid_str][char_id] = {}
+        self.overrides[pid_str][char_id]["area"] = area
+
+    def set_character_shot_type(self, panel_id: int, char_id: str, shot_type: str):
+        pid_str = str(panel_id)
+        if pid_str not in self.overrides:
+            self.overrides[pid_str] = {}
+        if char_id not in self.overrides[pid_str] or not isinstance(self.overrides[pid_str][char_id], dict):
+            self.overrides[pid_str][char_id] = {}
+        self.overrides[pid_str][char_id]["shot_type"] = shot_type
+
+    def set_character_pose_preset(self, panel_id: int, char_id: str, pose_preset: str):
+        pid_str = str(panel_id)
+        if pid_str not in self.overrides:
+            self.overrides[pid_str] = {}
+        if char_id not in self.overrides[pid_str] or not isinstance(self.overrides[pid_str][char_id], dict):
+            self.overrides[pid_str][char_id] = {}
+        self.overrides[pid_str][char_id]["pose_preset"] = pose_preset
+
+    def set_character_interaction(self, panel_id: int, char_id: str, interaction: Dict[str, Any]):
+        pid_str = str(panel_id)
+        if pid_str not in self.overrides:
+            self.overrides[pid_str] = {}
+        if char_id not in self.overrides[pid_str] or not isinstance(self.overrides[pid_str][char_id], dict):
+            self.overrides[pid_str][char_id] = {}
+        self.overrides[pid_str][char_id]["interaction"] = interaction
 
     def reset_overrides(self):
         self.overrides = {}
@@ -235,13 +261,18 @@ class CharacterStagingStateManager:
                 p_ov = self.overrides[pid]
                 for c in r.get("characters", []):
                     cid = c.get("character_id")
-                    if cid in p_ov:
-                        if "area" in p_ov[cid]:
-                            c["area"] = _normalize_box_area(p_ov[cid]["area"])
-                        if "shot_type" in p_ov[cid]:
-                            c["shot_type"] = p_ov[cid]["shot_type"]
-                        elif "shot" in p_ov[cid]:
-                            c["shot_type"] = p_ov[cid]["shot"]
+                    if cid in p_ov and isinstance(p_ov[cid], dict):
+                        ov = p_ov[cid]
+                        if "area" in ov:
+                            c["area"] = _normalize_box_area(ov["area"])
+                        if "shot_type" in ov:
+                            c["shot_type"] = ov["shot_type"]
+                        elif "shot" in ov:
+                            c["shot_type"] = ov["shot"]
+                        if "pose_preset" in ov:
+                            c["pose_preset"] = ov["pose_preset"]
+                        if "interaction" in ov:
+                            c["interaction"] = ov["interaction"]
         return copied
 
 

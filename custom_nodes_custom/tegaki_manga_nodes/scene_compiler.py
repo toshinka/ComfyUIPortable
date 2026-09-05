@@ -239,6 +239,17 @@ def compile_panel_data(
                         "metadata": lora_entry.get("metadata", {})
                     })
 
+            c_meta = dict(validated_b.get("metadata", {}))
+            shot_type = validated_b.get("shot_type") or c_meta.get("shot_type") or validated_b.get("shot")
+            pose_preset = validated_b.get("pose_preset") or c_meta.get("pose_preset")
+            interaction = validated_b.get("interaction") or c_meta.get("interaction")
+            if shot_type:
+                c_meta["shot_type"] = shot_type
+            if pose_preset:
+                c_meta["pose_preset"] = pose_preset
+            if interaction:
+                c_meta["interaction"] = interaction
+
             compiled_c = {
                 "character_id": cid,
                 "name": char_master.get("name", cid),
@@ -249,8 +260,11 @@ def compile_panel_data(
                 "override_negative_prompt": override_neg,
                 "combined_negative_prompt": combined_c_neg,
                 "area": validated_b.get("area"),  # None または KOMA-local 座標
+                "shot_type": shot_type,
+                "pose_preset": pose_preset,
+                "interaction": interaction,
                 "loras": total_c_loras,
-                "metadata": validated_b.get("metadata", {})
+                "metadata": c_meta
             }
             compiled_characters.append(compiled_c)
 
@@ -279,6 +293,7 @@ def compile_panel_data(
     compiled_negative_prompt = ", ".join(neg_parts)
 
     # 8. COMPILE_PLAN (v1) データ構造の構築
+    panel_camera_dist = target_koma.get("camera_distance") or (target_koma.get("metadata", {}).get("camera_distance") if isinstance(target_koma.get("metadata"), dict) else None) or "medium"
     compile_plan = {
         "version": SUPPORTED_COMPILE_PLAN_VERSION,
         "status": "active",
@@ -295,7 +310,8 @@ def compile_panel_data(
             },
             "prompt": clean_koma_prompt,
             "negative_prompt": panel_negative_prompt,
-            "local_regions": compiled_local_regions
+            "local_regions": compiled_local_regions,
+            "camera_distance": panel_camera_dist
         },
         "global_prompt": clean_global_prompt,
         "global_negative_prompt": global_negative_prompt,

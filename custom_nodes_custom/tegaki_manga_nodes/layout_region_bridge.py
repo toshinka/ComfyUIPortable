@@ -140,10 +140,16 @@ def build_panel_content_bridge(
             cid = c.get("character_id")
             cname = c.get("name", cid)
             area = c.get("area")
+            cam_dist = koma.get("panel", {}).get("camera_distance") or koma.get("camera_distance") or koma.get("metadata", {}).get("camera_distance", "medium")
 
             if area is None:
-                cx, cy, cw, ch = 0.0, 0.0, 1.0, 1.0
                 is_unconstrained = True
+                if cam_dist == "near":
+                    cx, cy, cw, ch = 0.20, 0.06, 0.60, 0.88
+                elif cam_dist == "far":
+                    cx, cy, cw, ch = 0.38, 0.35, 0.24, 0.48
+                else:  # medium / standard
+                    cx, cy, cw, ch = 0.30, 0.15, 0.40, 0.75
             else:
                 cx, cy, cw, ch = float(area["x"]), float(area["y"]), float(area["w"]), float(area["h"])
                 is_unconstrained = False
@@ -158,6 +164,15 @@ def build_panel_content_bridge(
             c_py0 = max(0, min(height, int(round(proj_y * height))))
             c_px1 = max(0, min(width, int(round((proj_x + proj_w) * width))))
             c_py1 = max(0, min(height, int(round((proj_y + proj_h) * height))))
+
+            c_meta = dict(c.get("metadata", {}))
+            shot_type = c.get("shot_type") or c_meta.get("shot_type") or "full_body"
+            pose_preset = c.get("pose_preset") or c_meta.get("pose_preset") or "standing_neutral"
+            interaction = c.get("interaction") or c_meta.get("interaction")
+            c_meta["shot_type"] = shot_type
+            c_meta["pose_preset"] = pose_preset
+            if interaction:
+                c_meta["interaction"] = interaction
 
             char_entry = {
                 "character_index": len(all_char_entries),
@@ -178,7 +193,10 @@ def build_panel_content_bridge(
                 },
                 "pixel_bounds": [c_px0, c_py0, c_px1, c_py1],
                 "panel_polygon_pixels": pixel_pts,
-                "shot_type": c.get("shot_type") or c.get("metadata", {}).get("shot_type", "full_body")
+                "shot_type": shot_type,
+                "pose_preset": pose_preset,
+                "interaction": interaction,
+                "metadata": c_meta
             }
             all_char_entries.append(char_entry)
 

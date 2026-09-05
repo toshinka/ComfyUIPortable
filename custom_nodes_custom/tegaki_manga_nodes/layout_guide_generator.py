@@ -80,7 +80,9 @@ def extract_staging_boxes(
                     "id": c.get("character_id", c.get("id", "char")),
                     "box": box,
                     "name": c.get("name", "Character"),
-                    "shot_type": c.get("shot_type") or c.get("shot") or "full_body"
+                    "shot_type": c.get("shot_type") or c.get("shot") or c.get("metadata", {}).get("shot_type", "full_body"),
+                    "pose_preset": c.get("pose_preset") or c.get("metadata", {}).get("pose_preset", "standing_neutral"),
+                    "interaction": c.get("interaction") or c.get("metadata", {}).get("interaction")
                 })
         return panel_box, char_boxes
 
@@ -97,7 +99,9 @@ def extract_staging_boxes(
                     "id": reg.get("id", "char"),
                     "box": box,
                     "name": reg.get("label", reg.get("id", "Character")),
-                    "shot_type": reg.get("shot_type") or reg.get("shot") or "full_body"
+                    "shot_type": reg.get("shot_type") or reg.get("shot") or reg.get("metadata", {}).get("shot_type", "full_body"),
+                    "pose_preset": reg.get("pose_preset") or reg.get("metadata", {}).get("pose_preset", "standing_neutral"),
+                    "interaction": reg.get("interaction") or reg.get("metadata", {}).get("interaction")
                 })
         return panel_box, char_boxes
 
@@ -125,7 +129,9 @@ def extract_staging_boxes(
                             "id": c.get("character_id", c.get("id", "char")),
                             "box": box,
                             "name": c.get("name", "Character"),
-                            "shot_type": c.get("shot_type") or c.get("shot") or "full_body"
+                            "shot_type": c.get("shot_type") or c.get("shot") or c.get("metadata", {}).get("shot_type", "full_body"),
+                            "pose_preset": c.get("pose_preset") or c.get("metadata", {}).get("pose_preset", "standing_neutral"),
+                            "interaction": c.get("interaction") or c.get("metadata", {}).get("interaction")
                         })
                 break
         return panel_box, char_boxes
@@ -149,7 +155,9 @@ def extract_staging_boxes(
                             "id": c.get("character_id", c.get("id", "char")),
                             "box": box,
                             "name": c.get("name", "Character"),
-                            "shot_type": c.get("shot_type") or c.get("shot") or "full_body"
+                            "shot_type": c.get("shot_type") or c.get("shot") or c.get("metadata", {}).get("shot_type", "full_body"),
+                            "pose_preset": c.get("pose_preset") or c.get("metadata", {}).get("pose_preset", "standing_neutral"),
+                            "interaction": c.get("interaction") or c.get("metadata", {}).get("interaction")
                         })
                 break
         return panel_box, char_boxes
@@ -166,7 +174,9 @@ def extract_staging_boxes(
                     "id": sb.get("id", sb.get("character", "char")),
                     "box": box,
                     "name": sb.get("name", sb.get("character", "Character")),
-                    "shot_type": sb.get("shot_type") or sb.get("shot") or "full_body"
+                    "shot_type": sb.get("shot_type") or sb.get("shot") or sb.get("metadata", {}).get("shot_type", "full_body"),
+                    "pose_preset": sb.get("pose_preset") or sb.get("metadata", {}).get("pose_preset", "standing_neutral"),
+                    "interaction": sb.get("interaction") or sb.get("metadata", {}).get("interaction")
                 })
         return panel_box, char_boxes
 
@@ -182,7 +192,8 @@ def draw_single_character_mannequin(
     fill_color: Tuple[int, int, int] = (0, 0, 0),
     line_thickness: int = 4,
     include_bbox_outline: bool = True,
-    shot_type: str = "full_body"
+    shot_type: str = "full_body",
+    pose_preset: str = "standing_neutral"
 ) -> None:
     cw = rx1 - rx0
     ch = ry1 - ry0
@@ -195,96 +206,241 @@ def draw_single_character_mannequin(
         draw.rectangle([rx0, ry0, rx1, ry1], outline=box_outline_color, width=max(1, line_thickness // 2))
 
     if guide_style == "mannequin_capsule":
-        if shot_type == "bust":
-            # Bust shot: Head, neck, shoulders, upper chest (lower 55% empty)
-            r_head_x = max(4, int(cw * 0.25))
-            r_head_y = max(4, int(ch * 0.15))
-            head_cy = ry0 + int(ch * 0.18)
-            draw.ellipse(
-                [cx - r_head_x, head_cy - r_head_y, cx + r_head_x, head_cy + r_head_y],
-                outline=fg_color,
-                width=line_thickness
-            )
-            neck_top = head_cy + r_head_y
-            neck_bot = ry0 + int(ch * 0.35)
-            if neck_bot > neck_top:
-                draw.line([(cx, neck_top), (cx, neck_bot)], fill=fg_color, width=line_thickness)
-            sh_w = max(4, int(cw * 0.40))
-            draw.line([(cx - sh_w, neck_bot), (cx + sh_w, neck_bot)], fill=fg_color, width=line_thickness)
-            chest_bot = ry0 + int(ch * 0.45)
-            draw.line([(cx - sh_w, neck_bot), (cx - int(cw * 0.32), chest_bot)], fill=fg_color, width=line_thickness)
-            draw.line([(cx + sh_w, neck_bot), (cx + int(cw * 0.32), chest_bot)], fill=fg_color, width=line_thickness)
-            draw.line([(cx - int(cw * 0.32), chest_bot), (cx + int(cw * 0.32), chest_bot)], fill=fg_color, width=line_thickness)
+        if pose_preset in ("facing_left", "facing_right"):
+            sub_img = Image.new("RGBA", (cw, ch), (0, 0, 0, 0))
+            sub_draw = ImageDraw.Draw(sub_img)
+            sub_cx = cw // 2
 
-        elif shot_type == "half_body":
-            # Half body shot: Head, torso, arms down to waist/hips, no legs (lower 40% empty)
-            r_head_x = max(4, int(cw * 0.22))
-            r_head_y = max(4, int(ch * 0.12))
-            head_cy = ry0 + int(ch * 0.15)
-            draw.ellipse(
-                [cx - r_head_x, head_cy - r_head_y, cx + r_head_x, head_cy + r_head_y],
-                outline=fg_color,
-                width=line_thickness
-            )
-            neck_top = head_cy + r_head_y
-            neck_bot = ry0 + int(ch * 0.28)
-            if neck_bot > neck_top:
-                draw.line([(cx, neck_top), (cx, neck_bot)], fill=fg_color, width=line_thickness)
-            sh_w = max(4, int(cw * 0.36))
-            draw.line([(cx - sh_w, neck_bot), (cx + sh_w, neck_bot)], fill=fg_color, width=line_thickness)
-            torso_bot = ry0 + int(ch * 0.60)
-            draw.rectangle(
-                [cx - int(cw * 0.22), neck_bot, cx + int(cw * 0.22), torso_bot],
-                outline=fg_color,
-                width=line_thickness
-            )
-            draw.line([(cx - int(cw * 0.25), torso_bot), (cx + int(cw * 0.25), torso_bot)], fill=fg_color, width=line_thickness)
-            elbow_y = ry0 + int(ch * 0.46)
-            hand_y = ry0 + int(ch * 0.60)
-            arm_l_elbow = cx - int(cw * 0.40)
-            arm_r_elbow = cx + int(cw * 0.40)
-            arm_l_hand = cx - int(cw * 0.35)
-            arm_r_hand = cx + int(cw * 0.35)
-            draw.line([(cx - sh_w, neck_bot), (arm_l_elbow, elbow_y), (arm_l_hand, hand_y)], fill=fg_color, width=line_thickness)
-            draw.line([(cx + sh_w, neck_bot), (arm_r_elbow, elbow_y), (arm_r_hand, hand_y)], fill=fg_color, width=line_thickness)
-            # Legs are omitted in half_body!
+            if shot_type == "bust":
+                r_head_x = max(4, int(cw * 0.23))
+                r_head_y = max(4, int(ch * 0.15))
+                head_cy = int(ch * 0.18)
+                head_cx = sub_cx - int(cw * 0.05)
+                sub_draw.ellipse([head_cx - r_head_x, head_cy - r_head_y, head_cx + r_head_x, head_cy + r_head_y], outline=fg_color, width=line_thickness)
+                # Profile nose contour pointing left
+                profile_pts = [
+                    (head_cx - r_head_x, head_cy - int(r_head_y * 0.2)),
+                    (head_cx - r_head_x - max(4, int(cw * 0.08)), head_cy + int(r_head_y * 0.1)),
+                    (head_cx - int(r_head_x * 0.7), head_cy + int(r_head_y * 0.6))
+                ]
+                sub_draw.line(profile_pts, fill=fg_color, width=line_thickness)
+                neck_top = head_cy + r_head_y
+                neck_bot = int(ch * 0.35)
+                sub_draw.line([(head_cx + int(cw * 0.02), neck_top), (head_cx + int(cw * 0.02), neck_bot)], fill=fg_color, width=line_thickness)
+                sh_l = sub_cx - int(cw * 0.38)
+                sh_r = sub_cx + int(cw * 0.25)
+                sub_draw.line([(sh_l, neck_bot), (sh_r, neck_bot - 1)], fill=fg_color, width=line_thickness)
+                chest_bot = int(ch * 0.45)
+                sub_draw.line([(sh_l, neck_bot), (sub_cx - int(cw * 0.30), chest_bot)], fill=fg_color, width=line_thickness)
+                sub_draw.line([(sh_r, neck_bot - 1), (sub_cx + int(cw * 0.20), chest_bot)], fill=fg_color, width=line_thickness)
+                sub_draw.line([(sub_cx - int(cw * 0.30), chest_bot), (sub_cx + int(cw * 0.20), chest_bot)], fill=fg_color, width=line_thickness)
+
+            elif shot_type == "half_body":
+                r_head_x = max(4, int(cw * 0.20))
+                r_head_y = max(4, int(ch * 0.12))
+                head_cy = int(ch * 0.15)
+                head_cx = sub_cx - int(cw * 0.05)
+                sub_draw.ellipse([head_cx - r_head_x, head_cy - r_head_y, head_cx + r_head_x, head_cy + r_head_y], outline=fg_color, width=line_thickness)
+                profile_pts = [
+                    (head_cx - r_head_x, head_cy - int(r_head_y * 0.2)),
+                    (head_cx - r_head_x - max(4, int(cw * 0.08)), head_cy + int(r_head_y * 0.1)),
+                    (head_cx - int(r_head_x * 0.7), head_cy + int(r_head_y * 0.6))
+                ]
+                sub_draw.line(profile_pts, fill=fg_color, width=line_thickness)
+                neck_top = head_cy + r_head_y
+                neck_bot = int(ch * 0.28)
+                sub_draw.line([(head_cx + int(cw * 0.02), neck_top), (head_cx + int(cw * 0.02), neck_bot)], fill=fg_color, width=line_thickness)
+                sh_l = sub_cx - int(cw * 0.34)
+                sh_r = sub_cx + int(cw * 0.22)
+                sub_draw.line([(sh_l, neck_bot), (sh_r, neck_bot - 1)], fill=fg_color, width=line_thickness)
+                torso_bot = int(ch * 0.60)
+                sub_draw.line([(sh_l, neck_bot), (sub_cx - int(cw * 0.22), torso_bot), (sub_cx + int(cw * 0.16), torso_bot), (sh_r, neck_bot - 1)], fill=fg_color, width=line_thickness)
+                sub_draw.line([(sub_cx - int(cw * 0.25), torso_bot), (sub_cx + int(cw * 0.20), torso_bot)], fill=fg_color, width=line_thickness)
+                elbow_l_y = int(ch * 0.44)
+                hand_l_y = int(ch * 0.60)
+                elbow_l = sub_cx - int(cw * 0.38)
+                hand_l = sub_cx - int(cw * 0.30)
+                sub_draw.line([(sh_l, neck_bot), (elbow_l, elbow_l_y), (hand_l, hand_l_y)], fill=fg_color, width=line_thickness)
+                elbow_r_y = int(ch * 0.46)
+                hand_r_y = int(ch * 0.60)
+                elbow_r = sub_cx + int(cw * 0.28)
+                hand_r = sub_cx + int(cw * 0.22)
+                sub_draw.line([(sh_r, neck_bot - 1), (elbow_r, elbow_r_y), (hand_r, hand_r_y)], fill=fg_color, width=line_thickness)
+
+            else:
+                # full_body directional
+                r_head_x = max(4, int(cw * 0.20))
+                r_head_y = max(4, int(ch * 0.11))
+                head_cy = int(ch * 0.12)
+                head_cx = sub_cx - int(cw * 0.05)
+                sub_draw.ellipse([head_cx - r_head_x, head_cy - r_head_y, head_cx + r_head_x, head_cy + r_head_y], outline=fg_color, width=line_thickness)
+                profile_pts = [
+                    (head_cx - r_head_x, head_cy - int(r_head_y * 0.2)),
+                    (head_cx - r_head_x - max(4, int(cw * 0.08)), head_cy + int(r_head_y * 0.1)),
+                    (head_cx - int(r_head_x * 0.7), head_cy + int(r_head_y * 0.6))
+                ]
+                sub_draw.line(profile_pts, fill=fg_color, width=line_thickness)
+                neck_top = head_cy + r_head_y
+                neck_bot = int(ch * 0.27)
+                sub_draw.line([(head_cx + int(cw * 0.02), neck_top), (head_cx + int(cw * 0.02), neck_bot)], fill=fg_color, width=line_thickness)
+                sh_l = sub_cx - int(cw * 0.32)
+                sh_r = sub_cx + int(cw * 0.22)
+                sub_draw.line([(sh_l, neck_bot), (sh_r, neck_bot - 1)], fill=fg_color, width=line_thickness)
+                torso_bot = int(ch * 0.58)
+                sub_draw.line([(sh_l, neck_bot), (sub_cx - int(cw * 0.22), torso_bot), (sub_cx + int(cw * 0.16), torso_bot), (sh_r, neck_bot - 1)], fill=fg_color, width=line_thickness)
+                sub_draw.line([(sub_cx - int(cw * 0.25), torso_bot), (sub_cx + int(cw * 0.20), torso_bot)], fill=fg_color, width=line_thickness)
+                elbow_l_y = int(ch * 0.44)
+                hand_l_y = int(ch * 0.62)
+                elbow_l = sub_cx - int(cw * 0.38)
+                hand_l = sub_cx - int(cw * 0.30)
+                sub_draw.line([(sh_l, neck_bot), (elbow_l, elbow_l_y), (hand_l, hand_l_y)], fill=fg_color, width=line_thickness)
+                elbow_r_y = int(ch * 0.46)
+                hand_r_y = int(ch * 0.62)
+                elbow_r = sub_cx + int(cw * 0.28)
+                hand_r = sub_cx + int(cw * 0.22)
+                sub_draw.line([(sh_r, neck_bot - 1), (elbow_r, elbow_r_y), (hand_r, hand_r_y)], fill=fg_color, width=line_thickness)
+                knee_l_y = int(ch * 0.77)
+                foot_l_y = ch - 2
+                sub_draw.line([(sub_cx - int(cw * 0.14), torso_bot), (sub_cx - int(cw * 0.18), knee_l_y), (sub_cx - int(cw * 0.16), foot_l_y)], fill=fg_color, width=line_thickness)
+                knee_r_y = int(ch * 0.78)
+                foot_r_y = ch - 2
+                sub_draw.line([(sub_cx + int(cw * 0.10), torso_bot), (sub_cx + int(cw * 0.10), knee_r_y), (sub_cx + int(cw * 0.08), foot_r_y)], fill=fg_color, width=line_thickness)
+
+            if pose_preset == "facing_right":
+                sub_img = sub_img.transpose(Image.FLIP_LEFT_RIGHT)
+
+            if hasattr(draw, "_image"):
+                draw._image.paste(sub_img, (rx0, ry0), sub_img)
+
+        elif pose_preset == "sitting":
+            if shot_type == "bust":
+                r_head_x = max(4, int(cw * 0.25))
+                r_head_y = max(4, int(ch * 0.15))
+                head_cy = ry0 + int(ch * 0.20)
+                draw.ellipse([cx - r_head_x, head_cy - r_head_y, cx + r_head_x, head_cy + r_head_y], outline=fg_color, width=line_thickness)
+                neck_bot = ry0 + int(ch * 0.37)
+                draw.line([(cx, head_cy + r_head_y), (cx, neck_bot)], fill=fg_color, width=line_thickness)
+                sh_w = max(4, int(cw * 0.40))
+                draw.line([(cx - sh_w, neck_bot), (cx + sh_w, neck_bot)], fill=fg_color, width=line_thickness)
+                chest_bot = ry0 + int(ch * 0.48)
+                draw.line([(cx - sh_w, neck_bot), (cx - int(cw * 0.32), chest_bot), (cx + int(cw * 0.32), chest_bot), (cx + sh_w, neck_bot)], fill=fg_color, width=line_thickness)
+            else:
+                r_head_x = max(4, int(cw * 0.22))
+                r_head_y = max(4, int(ch * 0.11))
+                head_cy = ry0 + int(ch * 0.13)
+                draw.ellipse([cx - r_head_x, head_cy - r_head_y, cx + r_head_x, head_cy + r_head_y], outline=fg_color, width=line_thickness)
+                neck_bot = ry0 + int(ch * 0.27)
+                draw.line([(cx, head_cy + r_head_y), (cx, neck_bot)], fill=fg_color, width=line_thickness)
+                sh_w = max(4, int(cw * 0.35))
+                draw.line([(cx - sh_w, neck_bot), (cx + sh_w, neck_bot)], fill=fg_color, width=line_thickness)
+                torso_bot = ry0 + int(ch * 0.54)
+                draw.rectangle([cx - int(cw * 0.22), neck_bot, cx + int(cw * 0.22), torso_bot], outline=fg_color, width=line_thickness)
+                draw.line([(cx - int(cw * 0.25), torso_bot), (cx + int(cw * 0.25), torso_bot)], fill=fg_color, width=line_thickness)
+                elbow_y = ry0 + int(ch * 0.43)
+                hand_y = ry0 + int(ch * 0.55)
+                draw.line([(cx - sh_w, neck_bot), (cx - int(cw * 0.34), elbow_y), (cx - int(cw * 0.16), hand_y)], fill=fg_color, width=line_thickness)
+                draw.line([(cx + sh_w, neck_bot), (cx + int(cw * 0.34), elbow_y), (cx + int(cw * 0.16), hand_y)], fill=fg_color, width=line_thickness)
+                if shot_type != "half_body":
+                    knee_y = ry0 + int(ch * 0.65)
+                    thigh_l_end = (cx - int(cw * 0.30), knee_y)
+                    thigh_r_end = (cx + int(cw * 0.30), knee_y)
+                    draw.line([(cx - int(cw * 0.16), torso_bot), thigh_l_end], fill=fg_color, width=line_thickness)
+                    draw.line([(cx + int(cw * 0.16), torso_bot), thigh_r_end], fill=fg_color, width=line_thickness)
+                    draw.line([thigh_l_end, thigh_r_end], fill=fg_color, width=line_thickness)
+                    draw.line([thigh_l_end, (cx - int(cw * 0.28), ry1 - 2)], fill=fg_color, width=line_thickness)
+                    draw.line([thigh_r_end, (cx + int(cw * 0.28), ry1 - 2)], fill=fg_color, width=line_thickness)
+                    draw.line([(cx - int(cw * 0.28), ry1 - 2), (cx - int(cw * 0.38), ry1 - 2)], fill=fg_color, width=line_thickness)
+                    draw.line([(cx + int(cw * 0.28), ry1 - 2), (cx + int(cw * 0.38), ry1 - 2)], fill=fg_color, width=line_thickness)
 
         else:
-            # full_body (standard full-height mannequin)
-            r_head_x = max(4, int(cw * 0.22))
-            r_head_y = max(4, int(ch * 0.11))
-            head_cy = ry0 + int(ch * 0.12)
-            draw.ellipse(
-                [cx - r_head_x, head_cy - r_head_y, cx + r_head_x, head_cy + r_head_y],
-                outline=fg_color,
-                width=line_thickness
-            )
-            neck_top = head_cy + r_head_y
-            neck_bot = ry0 + int(ch * 0.27)
-            if neck_bot > neck_top:
-                draw.line([(cx, neck_top), (cx, neck_bot)], fill=fg_color, width=line_thickness)
-            sh_w = max(4, int(cw * 0.35))
-            draw.line([(cx - sh_w, neck_bot), (cx + sh_w, neck_bot)], fill=fg_color, width=line_thickness)
-            torso_bot = ry0 + int(ch * 0.58)
-            draw.rectangle(
-                [cx - int(cw * 0.22), neck_bot, cx + int(cw * 0.22), torso_bot],
-                outline=fg_color,
-                width=line_thickness
-            )
-            draw.line([(cx - int(cw * 0.25), torso_bot), (cx + int(cw * 0.25), torso_bot)], fill=fg_color, width=line_thickness)
-            knee_y = ry0 + int(ch * 0.78)
-            leg_l = cx - int(cw * 0.12)
-            leg_r = cx + int(cw * 0.12)
-            draw.line([(leg_l, torso_bot), (leg_l, knee_y), (leg_l, ry1 - 2)], fill=fg_color, width=line_thickness)
-            draw.line([(leg_r, torso_bot), (leg_r, knee_y), (leg_r, ry1 - 2)], fill=fg_color, width=line_thickness)
-            elbow_y = ry0 + int(ch * 0.45)
-            hand_y = ry0 + int(ch * 0.62)
-            arm_l_elbow = cx - int(cw * 0.40)
-            arm_r_elbow = cx + int(cw * 0.40)
-            arm_l_hand = cx - int(cw * 0.35)
-            arm_r_hand = cx + int(cw * 0.35)
-            draw.line([(cx - sh_w, neck_bot), (arm_l_elbow, elbow_y), (arm_l_hand, hand_y)], fill=fg_color, width=line_thickness)
-            draw.line([(cx + sh_w, neck_bot), (arm_r_elbow, elbow_y), (arm_r_hand, hand_y)], fill=fg_color, width=line_thickness)
+            # standing_neutral (baseline full/half/bust)
+            if shot_type == "bust":
+                r_head_x = max(4, int(cw * 0.25))
+                r_head_y = max(4, int(ch * 0.15))
+                head_cy = ry0 + int(ch * 0.18)
+                draw.ellipse(
+                    [cx - r_head_x, head_cy - r_head_y, cx + r_head_x, head_cy + r_head_y],
+                    outline=fg_color,
+                    width=line_thickness
+                )
+                neck_top = head_cy + r_head_y
+                neck_bot = ry0 + int(ch * 0.35)
+                if neck_bot > neck_top:
+                    draw.line([(cx, neck_top), (cx, neck_bot)], fill=fg_color, width=line_thickness)
+                sh_w = max(4, int(cw * 0.40))
+                draw.line([(cx - sh_w, neck_bot), (cx + sh_w, neck_bot)], fill=fg_color, width=line_thickness)
+                chest_bot = ry0 + int(ch * 0.45)
+                draw.line([(cx - sh_w, neck_bot), (cx - int(cw * 0.32), chest_bot)], fill=fg_color, width=line_thickness)
+                draw.line([(cx + sh_w, neck_bot), (cx + int(cw * 0.32), chest_bot)], fill=fg_color, width=line_thickness)
+                draw.line([(cx - int(cw * 0.32), chest_bot), (cx + int(cw * 0.32), chest_bot)], fill=fg_color, width=line_thickness)
+
+            elif shot_type == "half_body":
+                r_head_x = max(4, int(cw * 0.22))
+                r_head_y = max(4, int(ch * 0.12))
+                head_cy = ry0 + int(ch * 0.15)
+                draw.ellipse(
+                    [cx - r_head_x, head_cy - r_head_y, cx + r_head_x, head_cy + r_head_y],
+                    outline=fg_color,
+                    width=line_thickness
+                )
+                neck_top = head_cy + r_head_y
+                neck_bot = ry0 + int(ch * 0.28)
+                if neck_bot > neck_top:
+                    draw.line([(cx, neck_top), (cx, neck_bot)], fill=fg_color, width=line_thickness)
+                sh_w = max(4, int(cw * 0.36))
+                draw.line([(cx - sh_w, neck_bot), (cx + sh_w, neck_bot)], fill=fg_color, width=line_thickness)
+                torso_bot = ry0 + int(ch * 0.60)
+                draw.rectangle(
+                    [cx - int(cw * 0.22), neck_bot, cx + int(cw * 0.22), torso_bot],
+                    outline=fg_color,
+                    width=line_thickness
+                )
+                draw.line([(cx - int(cw * 0.25), torso_bot), (cx + int(cw * 0.25), torso_bot)], fill=fg_color, width=line_thickness)
+                elbow_y = ry0 + int(ch * 0.46)
+                hand_y = ry0 + int(ch * 0.60)
+                arm_l_elbow = cx - int(cw * 0.40)
+                arm_r_elbow = cx + int(cw * 0.40)
+                arm_l_hand = cx - int(cw * 0.35)
+                arm_r_hand = cx + int(cw * 0.35)
+                draw.line([(cx - sh_w, neck_bot), (arm_l_elbow, elbow_y), (arm_l_hand, hand_y)], fill=fg_color, width=line_thickness)
+                draw.line([(cx + sh_w, neck_bot), (arm_r_elbow, elbow_y), (arm_r_hand, hand_y)], fill=fg_color, width=line_thickness)
+
+            else:
+                # full_body
+                r_head_x = max(4, int(cw * 0.22))
+                r_head_y = max(4, int(ch * 0.11))
+                head_cy = ry0 + int(ch * 0.12)
+                draw.ellipse(
+                    [cx - r_head_x, head_cy - r_head_y, cx + r_head_x, head_cy + r_head_y],
+                    outline=fg_color,
+                    width=line_thickness
+                )
+                neck_top = head_cy + r_head_y
+                neck_bot = ry0 + int(ch * 0.27)
+                if neck_bot > neck_top:
+                    draw.line([(cx, neck_top), (cx, neck_bot)], fill=fg_color, width=line_thickness)
+                sh_w = max(4, int(cw * 0.35))
+                draw.line([(cx - sh_w, neck_bot), (cx + sh_w, neck_bot)], fill=fg_color, width=line_thickness)
+                torso_bot = ry0 + int(ch * 0.58)
+                draw.rectangle(
+                    [cx - int(cw * 0.22), neck_bot, cx + int(cw * 0.22), torso_bot],
+                    outline=fg_color,
+                    width=line_thickness
+                )
+                draw.line([(cx - int(cw * 0.25), torso_bot), (cx + int(cw * 0.25), torso_bot)], fill=fg_color, width=line_thickness)
+                knee_y = ry0 + int(ch * 0.78)
+                leg_l = cx - int(cw * 0.12)
+                leg_r = cx + int(cw * 0.12)
+                draw.line([(leg_l, torso_bot), (leg_l, knee_y), (leg_l, ry1 - 2)], fill=fg_color, width=line_thickness)
+                draw.line([(leg_r, torso_bot), (leg_r, knee_y), (leg_r, ry1 - 2)], fill=fg_color, width=line_thickness)
+                elbow_y = ry0 + int(ch * 0.45)
+                hand_y = ry0 + int(ch * 0.62)
+                arm_l_elbow = cx - int(cw * 0.40)
+                arm_r_elbow = cx + int(cw * 0.40)
+                arm_l_hand = cx - int(cw * 0.35)
+                arm_r_hand = cx + int(cw * 0.35)
+                draw.line([(cx - sh_w, neck_bot), (arm_l_elbow, elbow_y), (arm_l_hand, hand_y)], fill=fg_color, width=line_thickness)
+                draw.line([(cx + sh_w, neck_bot), (arm_r_elbow, elbow_y), (arm_r_hand, hand_y)], fill=fg_color, width=line_thickness)
 
     elif guide_style == "box_wireframe":
         if include_bbox_outline:
@@ -326,7 +482,8 @@ def generate_single_character_guide_image(
     line_thickness: int = 4,
     color_mode: str = "Black on White",
     include_bbox_outline: bool = False,
-    shot_type: str = "full_body"
+    shot_type: str = "full_body",
+    pose_preset: str = "standing_neutral"
 ) -> torch.Tensor:
     """
     Generates a single character auxiliary guide image for per-region ControlNet hint injection.
@@ -361,7 +518,8 @@ def generate_single_character_guide_image(
         fill_color=fill_color,
         line_thickness=line_thickness,
         include_bbox_outline=include_bbox_outline,
-        shot_type=shot_type
+        shot_type=shot_type,
+        pose_preset=pose_preset
     )
 
     np_img = np.array(img).astype(np.float32) / 255.0
@@ -440,11 +598,11 @@ class TegakiMangaLayoutGuideGenerator:
             draw.rectangle([px0, py0, px1, py1], outline=fg_color, width=border_width)
 
         # 2. Draw Character Guides
+        screen_boxes = []
         for char_info in char_boxes:
             cbox = char_info["box"]
             shot_type = char_info.get("shot_type", "full_body")
-            # Coordinates are relative to panel box or canvas
-            # If coordinates are normalized to [0, 1], map relative to panel interior
+            pose_preset = char_info.get("pose_preset", "standing_neutral")
             rx0 = px0 + int(round(cbox[0] * pw))
             ry0 = py0 + int(round(cbox[1] * ph))
             rw = int(round(cbox[2] * pw))
@@ -458,6 +616,13 @@ class TegakiMangaLayoutGuideGenerator:
                 continue
 
             cx = rx0 + cw // 2
+            screen_boxes.append({
+                "char_info": char_info,
+                "screen_bounds": (rx0, ry0, rx1, ry1),
+                "cw": cw,
+                "ch": ch,
+                "cx": cx
+            })
 
             # Update layout mask
             mask_tensor[0, ry0:ry1, rx0:rx1] = 1.0
@@ -470,8 +635,44 @@ class TegakiMangaLayoutGuideGenerator:
                 fill_color=fill_color,
                 line_thickness=line_thickness,
                 include_bbox_outline=include_character_bbox_outline,
-                shot_type=shot_type
+                shot_type=shot_type,
+                pose_preset=pose_preset
             )
+
+        # 3. Draw Pair Interaction Guide (e.g. Handshake)
+        hs_items = []
+        for sb in screen_boxes:
+            inter = sb["char_info"].get("interaction")
+            if isinstance(inter, dict):
+                itype = inter.get("type") or inter.get("interaction_type")
+                if itype == "handshake":
+                    hs_items.append(sb)
+
+        if len(hs_items) >= 2:
+            hs_items.sort(key=lambda item: item["screen_bounds"][0])
+            left_item, right_item = hs_items[0], hs_items[1]
+            lx0, ly0, lx1, ly1 = left_item["screen_bounds"]
+            rx0, ry0, rx1, ry1 = right_item["screen_bounds"]
+
+            anchor_x = (lx1 + rx0) // 2
+            anchor_y = (ly0 + int((ly1 - ly0) * 0.48) + ry0 + int((ry1 - ry0) * 0.48)) // 2
+
+            # Left participant arm reaching to anchor
+            l_sh_x = lx0 + int((lx1 - lx0) * 0.70)
+            l_sh_y = ly0 + int((ly1 - ly0) * 0.27)
+            l_el_x = (l_sh_x + anchor_x) // 2
+            l_el_y = (l_sh_y + anchor_y) // 2 + 10
+            draw.line([(l_sh_x, l_sh_y), (l_el_x, l_el_y), (anchor_x, anchor_y)], fill=fg_color, width=line_thickness)
+
+            # Right participant arm reaching to anchor
+            r_sh_x = rx0 + int((rx1 - rx0) * 0.30)
+            r_sh_y = ry0 + int((ry1 - ry0) * 0.27)
+            r_el_x = (r_sh_x + anchor_x) // 2
+            r_el_y = (r_sh_y + anchor_y) // 2 + 10
+            draw.line([(r_sh_x, r_sh_y), (r_el_x, r_el_y), (anchor_x, anchor_y)], fill=fg_color, width=line_thickness)
+
+            # Handshake clasp node
+            draw.ellipse([anchor_x - 8, anchor_y - 6, anchor_x + 8, anchor_y + 6], fill=fg_color)
 
         # Convert PIL Image to PyTorch Tensor [1, H, W, 3] in range [0.0, 1.0]
         np_img = np.array(img).astype(np.float32) / 255.0

@@ -736,11 +736,65 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 
 ---
 
-## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3J.1)
+### 60_VERIFY_POSE_FACING_EACH_OTHER.json
+- **区分**: 2人物相互向き・内向き対話構図 (TWO-CHARACTER POSE FACING EACH OTHER)
+- **目的**: Alice を左側 [0.10, 0.15, 0.35, 0.75]・`pose_preset="facing_right"`、Bob を右側 [0.55, 0.15, 0.35, 0.75]・`pose_preset="facing_left"` に配置。互いに向き合う方向性マネキンガイドを生成し、内向きの対話シーンを成立させるワークフロー。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3K/canonical/Cond08_WF60_Facing_Each_Other.png`
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 61_VERIFY_POSE_FACING_OUTWARD.json
+- **区分**: 2人物相互向き・外向き背反構図 (TWO-CHARACTER POSE FACING OUTWARD)
+- **目的**: Alice を左側・`pose_preset="facing_left"`、Bob を右側・`pose_preset="facing_right"` に配置。両者が互いに背を向け外側を見る方向性マネキンガイドを生成し、緊張感のある背反シーンを成立させるワークフロー。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3K/canonical/Cond09_WF61_Facing_Outward.png`
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 62_VERIFY_POSE_SITTING_SINGLE.json
+- **区分**: 単一人物着席ポーズ・水平膝クロスバー (SINGLE CHARACTER SITTING POSE)
+- **目的**: Alice を中央着席領域 [0.25, 0.25, 0.50, 0.65]・`pose_preset="sitting"` に配置。低重心の頭部・水平大腿部・膝クロスバー・垂直下腿部からなる着席マネキンガイドにより、着席ポーズを安定生成するワークフロー。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3K/canonical/Cond16_WF62_Synergy_Sitting_On_Bench.png`
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 63_VERIFY_INTERACTION_HANDSHAKE.json
+- **区分**: 2人物接触演技・握手中間アンカーガイド (PAIR INTERACTION HANDSHAKE)
+- **目的**: Alice（左・右向き）と Bob（右・左向き）に `interaction="handshake"` を設定。両者の手首・肩から中央の共有握手アンカーノードへ腕線を接続する対話ガイドを生成し、物理的握手演技を空間誘導するワークフロー。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3K/canonical/Cond11_WF63_Interaction_Handshake.png`
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 64_VERIFY_CAMERA_DISTANCE_NEAR.json
+- **区分**: コマ被写界距離・近景バストショット構図 (SCENE CAMERA DISTANCE NEAR)
+- **目的**: コマ設定に `camera_distance="near"` を指定。人物領域未指定時における自動近景フォールバック幾何 [0.15, 0.05, 0.70, 0.90] を検証するワークフロー。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3K/canonical/Cond12_WF64_Camera_Distance_Near.png`
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 65_VERIFY_CAMERA_DISTANCE_FAR.json
+- **区分**: コマ被写界距離・遠景フルショット構図 (SCENE CAMERA DISTANCE FAR)
+- **目的**: コマ設定に `camera_distance="far"` を指定。人物領域未指定時における自動遠景フォールバック幾何 [0.35, 0.30, 0.30, 0.60] を検証するワークフロー。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3K/canonical/Cond14_WF65_Camera_Distance_Far.png`
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3K)
 - **Zero-Touch Smoke Test 検証済み**:
-  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、`21`〜`24`、正準空間検証セット `25`〜`28`、被写体排他・オーサリング因果セット `29`〜`34`、ControlNet スケール拘束セット `35`〜`39`、Phase 3I.1 検証セット `40`〜`43`、Phase 3I.2 因果・領域制御セット `44`〜`47`、Phase 3J 存在安定化・Shot Typeセット `48`〜`53`、および Phase 3J.1 プロンプト契約修復・領域単離セット `54`〜`59`（全59件、うちターゲット43件）は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
-- **Visual Semantic Status 分離 (Phase 3I.1 〜 3J.1)**:
-  実行完全性（Zero-Touch PASS）と画像意味的成否（Visual Semantic Status）を厳格に分離。Phase 3J.1 では CAST `prompt` および Binding `prompt_override` 契約の修復、`standalone` プロンプトモード、および `remainder_mask_mode` による背景マスクからの人物ボックス除外（Zero Overlap）を確立しました。
+  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、`21`〜`24`、正準空間検証セット `25`〜`28`、被写体排他・オーサリング因果セット `29`〜`34`、ControlNet スケール拘束セット `35`〜`39`、Phase 3I.1 検証セット `40`〜`43`、Phase 3I.2 因果・領域制御セット `44`〜`47`、Phase 3J 存在安定化・Shot Typeセット `48`〜`53`、Phase 3J.1 プロンプト契約修復・領域単離セット `54`〜`59`、および Phase 3K ポーズ・対話・被写界構図セット `60`〜`65`（全65件、うちターゲット49件）は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
+- **Visual Semantic Status 分離 (Phase 3I.1 〜 3K)**:
+  実行完全性（Zero-Touch PASS）と画像意味的成否（Visual Semantic Status）を厳格に分離。Phase 3K では人物方向性ポーズ（`facing_left`, `facing_right`）、着席ポーズ（`sitting`）、相互向き構図、対話握手ガイド、およびコマ被写界距離（`near`, `medium`, `far`）の end-to-end メタデータ伝播と幾何生成を確立しました。
 
 
 

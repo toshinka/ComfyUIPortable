@@ -126,6 +126,10 @@ def build_impact_region_plan(
         else:
             composed_prompt = char_prompt
 
+        char_shot = c.get("shot_type") or c.get("metadata", {}).get("shot_type", "full_body")
+        char_pose = c.get("pose_preset") or c.get("metadata", {}).get("pose_preset", "standing_neutral")
+        char_interaction = c.get("interaction") or c.get("metadata", {}).get("interaction")
+
         entry = {
             "scope_type": "character_instance",
             "source_panel_id": pid,
@@ -137,13 +141,18 @@ def build_impact_region_plan(
             "negative_prompt": char_neg,
             "mask": clipped_mask,
             "priority": 300 if ordering_mode == "scene_first" else 100,
+            "shot_type": char_shot,
+            "pose_preset": char_pose,
+            "interaction": char_interaction,
             "metadata": {
                 "character_index": c["character_index"],
                 "panel_index": c["panel_index"],
                 "koma_local_area": c["koma_local_area"],
                 "page_projected_area": c["page_projected_area"],
                 "pixel_bounds": c["pixel_bounds"],
-                "shot_type": c.get("shot_type") or c.get("metadata", {}).get("shot_type", "full_body")
+                "shot_type": char_shot,
+                "pose_preset": char_pose,
+                "interaction": char_interaction
             }
         }
         char_entries_built.append(entry)
@@ -225,6 +234,10 @@ def build_impact_region_plan(
                 else:
                     composed_c_prompt = c_prompt
 
+                sub_shot = b.get("shot_type") or b.get("metadata", {}).get("shot_type", "full_body")
+                sub_pose = b.get("pose_preset") or b.get("metadata", {}).get("pose_preset", "standing_neutral")
+                sub_interaction = b.get("interaction") or b.get("metadata", {}).get("interaction")
+
                 c_entry = {
                     "scope_type": "character_instance",
                     "source_panel_id": pid,
@@ -236,13 +249,18 @@ def build_impact_region_plan(
                     "negative_prompt": b.get("negative_prompt_override") or (m_char.get("base_negative_prompt", "") if m_char else "") or sub["negative_prompt"],
                     "mask": c_clipped_mask,
                     "priority": 300 if ordering_mode == "scene_first" else 100,
+                    "shot_type": sub_shot,
+                    "pose_preset": sub_pose,
+                    "interaction": sub_interaction,
                     "metadata": {
                         "subscene_id": sub_id,
                         "character_id": cid,
                         "binding_index": b_idx,
                         "area": b_area,
                         "pixel_bounds": c_bbox,
-                        "shot_type": b.get("shot_type") or b.get("metadata", {}).get("shot_type", "full_body")
+                        "shot_type": sub_shot,
+                        "pose_preset": sub_pose,
+                        "interaction": sub_interaction
                     }
                 }
                 char_entries_built.append(c_entry)

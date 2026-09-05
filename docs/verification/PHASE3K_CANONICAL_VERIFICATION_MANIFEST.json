@@ -1,0 +1,21 @@
+{
+  "version": "Phase 3K",
+  "generated_at": "2026-09-05 18:26:25",
+  "total_conditions": 16,
+  "all_passed": true,
+  "contact_sheets": {
+    "Z1_shot_type_causality": "D:\\GitHub\\tegaki\\ComfyUIPortable\\output\\Tegaki\\Phase3K\\canonical\\ContactSheet_Z1_Shot_Type_Causality.png",
+    "Z2_pose": "D:\\GitHub\\tegaki\\ComfyUIPortable\\output\\Tegaki\\Phase3K\\canonical\\ContactSheet_Z2_Pose.png",
+    "Z3_two_character_orientation": "D:\\GitHub\\tegaki\\ComfyUIPortable\\output\\Tegaki\\Phase3K\\canonical\\ContactSheet_Z3_Two_Character_Orientation.png",
+    "Z4_interaction": "D:\\GitHub\\tegaki\\ComfyUIPortable\\output\\Tegaki\\Phase3K\\canonical\\ContactSheet_Z4_Interaction.png",
+    "Z5_camera_distance": "D:\\GitHub\\tegaki\\ComfyUIPortable\\output\\Tegaki\\Phase3K\\canonical\\ContactSheet_Z5_Camera_Distance.png"
+  },
+  "workflows": [
+    "60_VERIFY_POSE_FACING_EACH_OTHER.json",
+    "61_VERIFY_POSE_FACING_OUTWARD.json",
+    "62_VERIFY_POSE_SITTING_SINGLE.json",
+    "63_VERIFY_INTERACTION_HANDSHAKE.json",
+    "64_VERIFY_CAMERA_DISTANCE_NEAR.json",
+    "65_VERIFY_CAMERA_DISTANCE_FAR.json"
+  ]
+}

@@ -149,6 +149,18 @@ app.registerExtension({
             }
         }, { multiline: true });
 
+        // Scene Camera Distance (Phase 3K)
+        const cameraDistanceWidget = node.addWidget("combo", "Camera Distance", "medium", (val) => {
+            const data = node.getContentData();
+            const panel = data.panels?.[node.selectedPanelIdx];
+            if (panel) {
+                panel.camera_distance = val;
+                panel.metadata = panel.metadata || {};
+                panel.metadata.camera_distance = val;
+                node.setContentData(data);
+            }
+        }, { values: ["near", "medium", "far"] });
+
         // Dynamic Character Selector (Dynamic Cast Selection)
         const charSelectorWidget = node.addWidget("combo", "Selected Character", "Alice (char_alice)", (val) => {
             const m = val.match(/\(([^)]+)\)/);
@@ -255,6 +267,7 @@ app.registerExtension({
                 panelSelectorWidget.value = `Panel ${node.selectedPanelIdx + 1} (P${node.selectedPanelIdx + 1})`;
                 scenePromptWidget.value = current.prompt || "";
                 sceneNegWidget.value = current.negative_prompt || "";
+                cameraDistanceWidget.value = current.camera_distance || current.metadata?.camera_distance || "medium";
 
                 node.updateCharacterFields();
 

@@ -375,6 +375,31 @@ def validate_character_binding(binding: Any, available_character_ids: Optional[S
         raise ValueError(f"[{context_name}] Character '{cid}': 'metadata' must be a dictionary, got {type(raw_meta).__name__}")
     metadata = dict(raw_meta) if isinstance(raw_meta, dict) else {}
 
+    # Phase 3K: Shot Type validation
+    VALID_SHOT_TYPES = {"full_body", "half_body", "bust"}
+    raw_shot = binding.get("shot_type") or binding.get("shot") or metadata.get("shot_type")
+    if raw_shot is not None:
+        if not isinstance(raw_shot, str) or raw_shot not in VALID_SHOT_TYPES:
+            raise ValueError(f"[{context_name}] Character '{cid}': Invalid shot_type '{raw_shot}'. Must be one of {sorted(list(VALID_SHOT_TYPES))}")
+        shot_type = raw_shot
+    else:
+        shot_type = None
+
+    # Phase 3K: Pose Preset validation
+    VALID_POSE_PRESETS = {"standing_neutral", "facing_left", "facing_right", "sitting"}
+    raw_pose = binding.get("pose_preset") or metadata.get("pose_preset")
+    if raw_pose is not None:
+        if not isinstance(raw_pose, str) or raw_pose not in VALID_POSE_PRESETS:
+            raise ValueError(f"[{context_name}] Character '{cid}': Invalid pose_preset '{raw_pose}'. Must be one of {sorted(list(VALID_POSE_PRESETS))}")
+        pose_preset = raw_pose
+    else:
+        pose_preset = None
+
+    # Phase 3K: Interaction validation (can be str identifier like 'handshake' or structured dict)
+    interaction = binding.get("interaction") or metadata.get("interaction")
+    if interaction is not None and not isinstance(interaction, (str, dict)):
+        raise ValueError(f"[{context_name}] Character '{cid}': 'interaction' must be a string or dictionary.")
+
     validated = dict(binding)
     validated["character_id"] = cid
     validated["enabled"] = enabled
@@ -382,6 +407,15 @@ def validate_character_binding(binding: Any, available_character_ids: Optional[S
     validated["negative_prompt_override"] = neg_override
     validated["area"] = norm_area
     validated["lora_override"] = lora_override
+    if shot_type is not None:
+        validated["shot_type"] = shot_type
+        metadata["shot_type"] = shot_type
+    if pose_preset is not None:
+        validated["pose_preset"] = pose_preset
+        metadata["pose_preset"] = pose_preset
+    if interaction is not None:
+        validated["interaction"] = interaction
+        metadata["interaction"] = interaction
     validated["metadata"] = metadata
     return validated
 
@@ -520,6 +554,12 @@ def validate_compile_plan(plan: Any) -> Dict[str, Any]:
         _validate_strict_string(panel.get("prompt"), "prompt", f"Panel {pid}")
         _validate_strict_string(panel.get("negative_prompt"), "negative_prompt", f"Panel {pid}")
 
+        # Phase 3K: camera_distance validation
+        VALID_CAMERA_DISTANCES = {"near", "medium", "far"}
+        cam_dist = panel.get("camera_distance") or (panel.get("metadata", {}).get("camera_distance") if isinstance(panel.get("metadata"), dict) else None)
+        if cam_dist is not None and (not isinstance(cam_dist, str) or cam_dist not in VALID_CAMERA_DISTANCES):
+            raise ValueError(f"[CompilePlanValidator] Panel {pid} invalid 'camera_distance': {cam_dist!r}. Must be one of {sorted(list(VALID_CAMERA_DISTANCES))}")
+
         # Phase 3B.1: local_regions (オプショナル)
         local_regs = panel.get("local_regions", [])
         if local_regs is not None:
@@ -580,6 +620,22 @@ def validate_compile_plan(plan: Any) -> Dict[str, Any]:
         raw_meta = c.get("metadata")
         if raw_meta is not None and not isinstance(raw_meta, dict):
             raise ValueError(f"[CompilePlanValidator] Character '{c.get('character_id')}' 'metadata' must be a dictionary.")
+
+        # Phase 3K: Character pose, shot type, interaction validation
+        VALID_SHOT_TYPES = {"full_body", "half_body", "bust"}
+        VALID_POSE_PRESETS = {"standing_neutral", "facing_left", "facing_right", "sitting"}
+
+        c_shot = c.get("shot_type") or (c.get("metadata", {}).get("shot_type") if isinstance(c.get("metadata"), dict) else None)
+        if c_shot is not None and (not isinstance(c_shot, str) or c_shot not in VALID_SHOT_TYPES):
+            raise ValueError(f"[CompilePlanValidator] Character '{c.get('character_id')}' invalid shot_type: {c_shot!r}. Must be one of {sorted(list(VALID_SHOT_TYPES))}")
+
+        c_pose = c.get("pose_preset") or (c.get("metadata", {}).get("pose_preset") if isinstance(c.get("metadata"), dict) else None)
+        if c_pose is not None and (not isinstance(c_pose, str) or c_pose not in VALID_POSE_PRESETS):
+            raise ValueError(f"[CompilePlanValidator] Character '{c.get('character_id')}' invalid pose_preset: {c_pose!r}. Must be one of {sorted(list(VALID_POSE_PRESETS))}")
+
+        c_interaction = c.get("interaction") or (c.get("metadata", {}).get("interaction") if isinstance(c.get("metadata"), dict) else None)
+        if c_interaction is not None and not isinstance(c_interaction, (str, dict)):
+            raise ValueError(f"[CompilePlanValidator] Character '{c.get('character_id')}' invalid interaction: must be str or dict")
 
         loras = c.get("loras", [])
         if not isinstance(loras, list):

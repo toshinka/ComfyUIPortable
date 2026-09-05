@@ -184,14 +184,16 @@ class TegakiMangaImpactRegionalAdapter:
                     if reg["scope_type"] == "character_instance":
                         meta = reg.get("metadata", {})
                         pixel_bounds = meta.get("pixel_bounds", [0, 0, width, height])
-                        shot_type = meta.get("shot_type") or meta.get("shot") or "full_body"
+                        shot_type = meta.get("shot_type") or meta.get("shot") or reg.get("shot_type") or "full_body"
+                        pose_preset = meta.get("pose_preset") or reg.get("pose_preset") or "standing_neutral"
                         char_hint_img = generate_single_character_guide_image(
                             width=width,
                             height=height,
                             pixel_bounds=pixel_bounds,
                             guide_style="mannequin_capsule",
                             include_bbox_outline=False,
-                            shot_type=shot_type
+                            shot_type=shot_type,
+                            pose_preset=pose_preset
                         )
                         if hasattr(char_hint_img, "movedim") and char_hint_img.ndim == 4 and char_hint_img.shape[-1] == 3:
                             char_hint = char_hint_img.movedim(-1, 1)
