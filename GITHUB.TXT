@@ -4,12 +4,12 @@ ComfyUI Portable 漫画制作環境 (Tegaki Manga Edition) - External AI Review 
 
 Project Name: Tegaki ComfyUI Portable Manga Edition
 Purpose: Windowsローカル環境にIllustrious/SDXLモデルとEasyReforge資産を統合した漫画制作研究環境
-Updated: 2026-09-05 17:00 (JST)
+Updated: 2026-09-05 17:35 (JST)
 Repository URL: https://github.com/toshinka/tegaki
 Branch: main
 
-Review Target Commit SHA: 450ee446d88d9f34579758792320381cb04b2f22
-Current Status: Phase 3J 完了 (Semantic Presence Stabilization & Adaptive Character Guide Foundation・Base / Scene / Character 意味論的責務分離・Background-only Base v2・Character × Side Bias Matrix [Alice/Bob L/R]・Region Ordering Sanity・Clean Per-Region Hint v2 [include_bbox_outline=False]・Attenuated Regional Control Schedule・Adaptive Shot Type [full_body, half_body, bust]・Canonical Workflows 48〜53・Contact Sheets P, Q, R, S, T・Fast Draft 12 を Conditional Hyper12 へ選定・Native20 を Architecture Reference へ維持)
+Review Target Commit SHA: c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b
+Current Status: Phase 3J.1 完了 (Character Prompt Contract Repair & Region Isolation Closure・CAST prompt / Binding prompt_override 契約修復・PAGE_COMPILE_PLAN & IMPACT_REGION_PLAN プロンプト正本 Gate・character_prompt_mode: standalone・remainder_mask_mode: True 背景穴あき減算・Global Guide 枠線交絡排除・単一人物左右配置 4/4 PASS・2人物左右分離 & 空間入替 2/2 PASS・Adaptive Shot Type 3/3 PASS・Workflows 54〜59・Contact Sheets U, V, W, X, Y・Hyper12 を正式オーサリングプロファイルへ昇格・Native20 普遍性実証・Phase 3K 進出 GO)
 
 Latest GITHUB.TXT Raw:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB.TXT
@@ -17,98 +17,100 @@ https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB.TX
 ※ 外部AIは以下の「Pinned URL (commit固定)」を参照してレビューを実施してください。
 
 --------------------------------------------------------------------------------
-1. Required First Reads (最優先確認資料 - Phase 3J 報告書・マニフェスト・視覚評価)
+1. Required First Reads (最優先確認資料 - Phase 3J.1 報告書・マニフェスト・視覚評価)
 --------------------------------------------------------------------------------
-1. PHASE3J_SEMANTIC_PRESENCE_AND_ADAPTIVE_GUIDE_REPORT.md (Phase 3J 完了報告書・全29項目完全網羅・存在マトリクス・運用プロファイル判定)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/reports/PHASE3J_SEMANTIC_PRESENCE_AND_ADAPTIVE_GUIDE_REPORT.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/docs/reports/PHASE3J_SEMANTIC_PRESENCE_AND_ADAPTIVE_GUIDE_REPORT.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/docs/reports/PHASE3J_SEMANTIC_PRESENCE_AND_ADAPTIVE_GUIDE_REPORT.md
+1. PHASE3J_1_CHARACTER_PROMPT_AND_REGION_ISOLATION_REPORT.md (Phase 3J.1 完了報告書・全26項目完全網羅・プロンプト正本/マスク単離/存在実証)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/reports/PHASE3J_1_CHARACTER_PROMPT_AND_REGION_ISOLATION_REPORT.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/docs/reports/PHASE3J_1_CHARACTER_PROMPT_AND_REGION_ISOLATION_REPORT.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/docs/reports/PHASE3J_1_CHARACTER_PROMPT_AND_REGION_ISOLATION_REPORT.md
 
-2. PHASE3J_CANONICAL_VERIFICATION_MANIFEST.json (Phase 3J 正準検証マニフェスト・全Sign-off項目)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/verification/PHASE3J_CANONICAL_VERIFICATION_MANIFEST.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/docs/verification/PHASE3J_CANONICAL_VERIFICATION_MANIFEST.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/docs/verification/PHASE3J_CANONICAL_VERIFICATION_MANIFEST.json
+2. PHASE3J_1_CANONICAL_VERIFICATION_MANIFEST.json (Phase 3J.1 正準検証マニフェスト・全Sign-off項目)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/verification/PHASE3J_1_CANONICAL_VERIFICATION_MANIFEST.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/docs/verification/PHASE3J_1_CANONICAL_VERIFICATION_MANIFEST.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/docs/verification/PHASE3J_1_CANONICAL_VERIFICATION_MANIFEST.json
 
-3. PHASE3J_PRESENCE_EVALUATION.json (Phase 3J 存在評価データ・来歴メタデータ付加・14条件完全記録)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/verification/PHASE3J_PRESENCE_EVALUATION.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/docs/verification/PHASE3J_PRESENCE_EVALUATION.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/docs/verification/PHASE3J_PRESENCE_EVALUATION.json
+3. PHASE3J_1_PRESENCE_EVALUATION.json (Phase 3J.1 存在評価データ・来歴メタデータ付加・14条件完全記録)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/verification/PHASE3J_1_PRESENCE_EVALUATION.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/docs/verification/PHASE3J_1_PRESENCE_EVALUATION.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/docs/verification/PHASE3J_1_PRESENCE_EVALUATION.json
 
-4. WORKFLOW_INDEX.md (全53ワークフロー解説・索引・Phase 3J Workflows 48〜53 追記)
+4. WORKFLOW_INDEX.md (全59ワークフロー解説・索引・Phase 3J.1 Workflows 54〜59 追記)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/WORKFLOW_INDEX.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/docs/WORKFLOW_INDEX.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/docs/WORKFLOW_INDEX.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/docs/WORKFLOW_INDEX.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/docs/WORKFLOW_INDEX.md
 
-5. README.md (リポジトリトップドキュメント・全53ワークフロー反映版)
+5. README.md (リポジトリトップドキュメント・全59ワークフロー反映版)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/README.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/README.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/README.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/README.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/README.md
 
 --------------------------------------------------------------------------------
-2. Track 1: Engine Implementation & Adaptive Guides
+2. Track 1: Engine Implementation & Contract Repairs
 --------------------------------------------------------------------------------
-1. layout_guide_generator.py (TegakiLayoutGuideGenerator・include_bbox_outline制御 & shot_type full/half/bust 実装)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/layout_guide_generator.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/layout_guide_generator.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/layout_guide_generator.py
+1. scene_spec.py (CAST_SPEC & Character Binding バリデーション修復・マイグレーションフォールバック)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_spec.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_spec.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_spec.py
 
-2. manga_impact_regional_adapter.py (TegakiMangaImpactRegionalAdapter・regional_control_end_percent & clean per-region hint 伝播)
+2. scene_compiler.py (TegakiMangaPageCompiler・Komaパネルプロンプト読出・combined_prompt合成)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_compiler.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_compiler.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/scene_compiler.py
+
+3. impact_region_plan.py (build_impact_region_plan・remainder_mask_mode 減算・standaloneプロンプト分離)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/impact_region_plan.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/impact_region_plan.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/impact_region_plan.py
+
+4. manga_impact_regional_adapter.py (TegakiMangaImpactRegionalAdapter・prompt_mode/character_prompt_nonempty デバッグ情報付加)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/manga_impact_regional_adapter.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/manga_impact_regional_adapter.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/manga_impact_regional_adapter.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/manga_impact_regional_adapter.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/manga_impact_regional_adapter.py
 
-3. character_staging_editor.py (TegakiCharacterStagingEditor・shot_type メタデータ伝播 & 堅牢な box area 抽出)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/character_staging_editor.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/character_staging_editor.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/character_staging_editor.py
+5. test_phase3j1_character_prompt_contract.py (CAST & Binding プロンプト契約単体テスト・5/5 PASS)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/scripts/test_phase3j1_character_prompt_contract.py
 
-4. test_phase3j_layout_guide_shot_types.py (Adaptive Shot Types [full_body, half_body, bust] ガイド生成単体テスト・3/3 PASS)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/scripts/test_phase3j_layout_guide_shot_types.py
-
-5. test_controlnet_conditioning_propagation.py (ControlNet Conditioning伝播構造 & Per-Region Hint 検査・5/5 PASS)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/scripts/test_controlnet_conditioning_propagation.py
+6. test_phase3j1_impact_character_prompt_truth.py (Impact Region Plan プロンプト正本・マスク単離単体テスト・3/3 PASS)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/scripts/test_phase3j1_impact_character_prompt_truth.py
 
 --------------------------------------------------------------------------------
-3. Track 2: Canonical Workflows 48-53 (Zero-Touch Verified)
+3. Track 2: Canonical Workflows 54-59 (Zero-Touch Verified)
 --------------------------------------------------------------------------------
-1. 48_VERIFY_BASE_BACKGROUND_ONLY_CHARACTER_PRESENCE.json (Base 背景限定プロンプトによるキャラクター存在性検証)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/48_VERIFY_BASE_BACKGROUND_ONLY_CHARACTER_PRESENCE.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/workflows/48_VERIFY_BASE_BACKGROUND_ONLY_CHARACTER_PRESENCE.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/workflows/48_VERIFY_BASE_BACKGROUND_ONLY_CHARACTER_PRESENCE.json
+1. 54_VERIFY_ALICE_LEFT_PROMPT_TRUTH_REMAINDER.json (Alice Left プロンプト正本・Remainder Mask検証)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/54_VERIFY_ALICE_LEFT_PROMPT_TRUTH_REMAINDER.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/workflows/54_VERIFY_ALICE_LEFT_PROMPT_TRUTH_REMAINDER.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/workflows/54_VERIFY_ALICE_LEFT_PROMPT_TRUTH_REMAINDER.json
 
-2. 49_VERIFY_ALICE_LEFT_ONLY_HYPER12.json (Alice Left 単独配置 Hyper12 存在検証)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/49_VERIFY_ALICE_LEFT_ONLY_HYPER12.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/workflows/49_VERIFY_ALICE_LEFT_ONLY_HYPER12.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/workflows/49_VERIFY_ALICE_LEFT_ONLY_HYPER12.json
+2. 55_VERIFY_ALICE_RIGHT_PROMPT_TRUTH_REMAINDER.json (Alice Right プロンプト正本・Remainder Mask検証)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/55_VERIFY_ALICE_RIGHT_PROMPT_TRUTH_REMAINDER.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/workflows/55_VERIFY_ALICE_RIGHT_PROMPT_TRUTH_REMAINDER.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/workflows/55_VERIFY_ALICE_RIGHT_PROMPT_TRUTH_REMAINDER.json
 
-3. 50_VERIFY_ALICE_RIGHT_ONLY_HYPER12.json (Alice Right 単独配置 Hyper12 存在検証)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/50_VERIFY_ALICE_RIGHT_ONLY_HYPER12.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/workflows/50_VERIFY_ALICE_RIGHT_ONLY_HYPER12.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/workflows/50_VERIFY_ALICE_RIGHT_ONLY_HYPER12.json
+3. 56_VERIFY_BOB_LEFT_PROMPT_TRUTH_REMAINDER.json (Bob Left プロンプト正本・Remainder Mask検証)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/56_VERIFY_BOB_LEFT_PROMPT_TRUTH_REMAINDER.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/workflows/56_VERIFY_BOB_LEFT_PROMPT_TRUTH_REMAINDER.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/workflows/56_VERIFY_BOB_LEFT_PROMPT_TRUTH_REMAINDER.json
 
-4. 51_VERIFY_BOB_LEFT_ONLY_HYPER12.json (Bob Left 単独配置 Hyper12 存在検証)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/51_VERIFY_BOB_LEFT_ONLY_HYPER12.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/workflows/51_VERIFY_BOB_LEFT_ONLY_HYPER12.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/workflows/51_VERIFY_BOB_LEFT_ONLY_HYPER12.json
+4. 57_VERIFY_BOB_RIGHT_PROMPT_TRUTH_REMAINDER.json (Bob Right プロンプト正本・Remainder Mask検証)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/57_VERIFY_BOB_RIGHT_PROMPT_TRUTH_REMAINDER.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/workflows/57_VERIFY_BOB_RIGHT_PROMPT_TRUTH_REMAINDER.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/workflows/57_VERIFY_BOB_RIGHT_PROMPT_TRUTH_REMAINDER.json
 
-5. 52_VERIFY_BOB_RIGHT_ONLY_HYPER12.json (Bob Right 単独配置 Hyper12 存在検証)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/52_VERIFY_BOB_RIGHT_ONLY_HYPER12.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/workflows/52_VERIFY_BOB_RIGHT_ONLY_HYPER12.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/workflows/52_VERIFY_BOB_RIGHT_ONLY_HYPER12.json
+5. 58_VERIFY_TWO_CHARACTER_PROMPT_TRUTH_LR.json (Alice Left / Bob Right プロンプト正本・Remainder Mask検証)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/58_VERIFY_TWO_CHARACTER_PROMPT_TRUTH_LR.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/workflows/58_VERIFY_TWO_CHARACTER_PROMPT_TRUTH_LR.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/workflows/58_VERIFY_TWO_CHARACTER_PROMPT_TRUTH_LR.json
 
-6. 53_VERIFY_HYPER12_PER_REGION_HINT_SWAP.json (Hyper12 + Clean Per-Region Hint v2 左右スワップ検証)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/53_VERIFY_HYPER12_PER_REGION_HINT_SWAP.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/workflows/53_VERIFY_HYPER12_PER_REGION_HINT_SWAP.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/workflows/53_VERIFY_HYPER12_PER_REGION_HINT_SWAP.json
+6. 59_VERIFY_TWO_CHARACTER_PROMPT_TRUTH_SWAP.json (Bob Left / Alice Right プロンプト正本・Remainder Mask空間入替検証)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/59_VERIFY_TWO_CHARACTER_PROMPT_TRUTH_SWAP.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/workflows/59_VERIFY_TWO_CHARACTER_PROMPT_TRUTH_SWAP.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/workflows/59_VERIFY_TWO_CHARACTER_PROMPT_TRUTH_SWAP.json
 
 --------------------------------------------------------------------------------
 4. Track 3: Verification Suites, Diagnostics & Contact Sheets
 --------------------------------------------------------------------------------
-1. run_phase3j_presence_matrix.py (14条件 存在マトリクス自動実行・RTX 4070実測スクリプト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/scripts/run_phase3j_presence_matrix.py
+1. run_phase3j1_character_presence_closure.py (14条件 存在・マスク単離自動実行・RTX 4070実測スクリプト)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/scripts/run_phase3j1_character_presence_closure.py
 
-2. generate_phase3j_verification_contact_sheet.py (コンタクトシート Sheet P, Q, R, S, T 自動生成スクリプト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/scripts/generate_phase3j_verification_contact_sheet.py
-
-3. generate_phase3j_workflows.py (Workflows 48-53 正準生成スクリプト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/450ee446d88d9f34579758792320381cb04b2f22/ComfyUIPortable/scripts/generate_phase3j_workflows.py
+2. generate_phase3j1_workflows.py (Workflows 54-59 正準生成スクリプト・ビルダーヘルパー完備)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/c627ffcc7cfc6ae09fe3c6db7510d6f6bd79fa9b/ComfyUIPortable/scripts/generate_phase3j1_workflows.py
