@@ -74,9 +74,11 @@ Scene-only Draft (M1) → CAST 複数出演 (M2) → Rough Guide (M3) → UX She
 
 ## 5. 次の一件 (Current Card Preview)
 
-- **次Card**: **M0 / 3M-0 — Versioned Authoring Contract & Scene / Frame Separation Foundation**
-- **Product意図**: 将来のMinimum-Hand UI（Resolution → Style → CAST → Scene → Character → Guide → Seed）が破綻なく動作するよう、Backend非依存のAuthoring Contract（新Scene/Frame分離、ID体系、座標系、旧フォーマットimport、fixtures）を先行固定する。
-- **担当**: Web GPT-SOL が bounded implementation card を発行し、Gemini が実装を担当する。
+- **完了Card**: **M0 / 3M-0 — Versioned Authoring Contract & Scene / Frame Separation Foundation** — COMPLETED
+  - `TEGAKI_AUTHORING_DOCUMENT` v1.0.0 スキーマ確立、Scene/Frame分離、安定ID、Page-normalized座標、Legacy Import/Export、13 Fixture全PASS、60テスト全PASS。
+  - 報告書: [M0_3M0_VERSIONED_AUTHORING_CONTRACT_REPORT.md](reports/M0_3M0_VERSIONED_AUTHORING_CONTRACT_REPORT.md)
+- **次Card**: **M1 / 3M-1 — Scene-only Minimum-Hand Draft**
+  - Resolution + Style + Scene rect + Prompt + optional frame guide + Seed → Generate。Simple modeのみ、CAST不要。最初のユーザー向けUI接続。
 
 ---
 

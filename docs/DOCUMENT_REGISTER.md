@@ -16,8 +16,9 @@
 ## 2. CURRENT CARD (現行作業カード)
 | カード | 状態 | 役割 |
 |---|---|---|
-| `3M-Prep` | IN PROGRESS | 本作業（Astra成果のGitHub正本化、Product Direction整理、前処理） |
-| `M0 / 3M-0` | NEXT CANDIDATE | 次回Web GPTが発行するBounded Implementation Card（Authoring Contract固定） |
+| `3M-Prep` | COMPLETED | Astra成果のGitHub正本化、Product Direction整理、前処理 |
+| `M0 / 3M-0` | COMPLETED | Versioned Authoring Contract固定、Scene/Frame分離、Legacy Import/Export基盤 |
+| `M1 / 3M-1` | NEXT CANDIDATE | Scene-only Minimum-Hand Draft（かんたんモード、粗領域・Scene Prompt・Seed生成導線） |
 
 ## 3. HISTORICAL / SUPERSEDED (過去の参照資料)
 過去のPhase指示書や中間計画書は歴史的経緯の参照用であり、次作業の直接指示とはみなさない。
