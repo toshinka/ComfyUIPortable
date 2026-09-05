@@ -68,8 +68,9 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ DEPENDENCIES.md                     # パッケージ・ハードウェア環境仕様
  │   ├─ RESEARCH_REFERENCES.md              # 参照リポジトリ・ライセンス
  │   ├─ CUSTOM_NODE_MANIFEST.md             # 外部Custom Nodeコミット追跡
- │   ├─ verification/                           # 正準検証マニフェスト (PHASE3G / PHASE3H)
+ │   ├─ verification/                           # 正準検証マニフェスト (PHASE3G / PHASE3H / PHASE3I)
  │   └─ reports/                            # 開発フェーズ完了報告書・検証記録集
+ │       ├─ PHASE3I_CONTROLNET_LAYOUT_ASSIST_REPORT.md
  │       ├─ PHASE3H_SUBJECT_EXCLUSIVITY_AND_AUTHORING_CAUSALITY_REPORT.md
  │       ├─ PHASE3G_CANONICAL_VERIFICATION_AND_FAST_MODE_REPORT.md
  │       ├─ PHASE3F_ZERO_TOUCH_AND_PROGRESSIVE_AUTHORING_REPORT.md
@@ -132,7 +133,7 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ test_i2i.py                         # 実機I2Iパイプライン検証スクリプト
  │   └─ test_wildcards.py                   # Wildcard/Dynamic Prompts検証
  ├─ patches/                                # 外部Custom Node向けローカルパッチ集
-  ├─ workflows/                              # 漫画制作向けワークフローJSON (34種)
+  ├─ workflows/                              # 漫画制作向けワークフローJSON (39種)
   ├─ python_embeded/                         # [Git除外] Python 3.13 組み込み環境
   └─ ComfyUI/                                # [Git除外] ComfyUI本体 & 外部Custom Nodes
 ```
@@ -177,6 +178,11 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
 - `32_VERIFY_TWO_REGION_DOG_CAT_SWAP_EXCLUSIVE_BASE.json`: 正準排他・空間スワップオラクル (犬右・猫左・背景人物ゼロ / Zero-Touch Verified)
 - `33_VERIFY_AUTHORING_ALICE_LEFT_BOB_RIGHT.json`: 本番オーサリング因果性オラクル (Alice左・Bob右・校庭1コマ・UI幾何駆動 / Zero-Touch Verified)
 - `34_VERIFY_AUTHORING_ALICE_RIGHT_BOB_LEFT.json`: 本番オーサリング因果スワップオラクル (Alice右・Bob左・UI幾何スワップ駆動 / Zero-Touch Verified)
+- `35_VERIFY_CONTROLNET_ANYTEST_BASELINE.json`: ControlNet 基礎検証オラクル (単一白犬・Wireframeガイド・AnyTest v4 / Zero-Touch Verified)
+- `36_VERIFY_CONTROLNET_SCALE_LOCK_SINGLE_CHARACTER.json`: 単一人物スケール拘束オラクル (Alice縦長肖像・Mannequin Capsuleガイド / Zero-Touch Verified)
+- `37_VERIFY_AUTHORING_ALICE_LEFT_BOB_RIGHT_CN_ASSIST.json`: 本番オーサリング ControlNet 補助オラクル (Alice左・Bob右・マネキン拘束 / Zero-Touch Verified)
+- `38_VERIFY_AUTHORING_ALICE_RIGHT_BOB_LEFT_CN_ASSIST.json`: 本番オーサリング ControlNet 補助スワップオラクル (Bob左・Alice右・空間反転拘束 / Zero-Touch Verified)
+- `39_VERIFY_FAST_DRAFT_12_CONTROLNET_REGRESSION.json`: 高速ドラフト ControlNet 回帰オラクル (Hyper-SDXL 12-Step・シルエット完全拘束・~30s生成 / Zero-Touch Verified)
 
 ### Tag Complete (Phase 3B.1.1 導入)
 - 全テキスト入力欄（Region Editor Prompt、CLIPTextEncode 等）で、Danbooru 14万タグ、LoRA名、Embeddingのリアルタイム自動補完（Tag Complete）が完全動作します（`ComfyUI-Custom-Scripts` 統合）。

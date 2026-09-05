@@ -14,6 +14,7 @@ from .manga_impact_regional_adapter import TegakiMangaImpactRegionalAdapter
 from .single_panel_multiscene_adapter import TegakiSinglePanelMultiSceneImpactAdapter
 from .panel_content_editor import TegakiMangaPanelContentEditor
 from .character_staging_editor import TegakiMangaCharacterStagingEditor
+from .layout_guide_generator import TegakiMangaLayoutGuideGenerator
 from . import panel_layout_api
 
 NODE_CLASS_MAPPINGS = {
@@ -36,6 +37,7 @@ NODE_CLASS_MAPPINGS = {
     "TegakiSinglePanelMultiSceneImpactAdapter": TegakiSinglePanelMultiSceneImpactAdapter,
     "TegakiMangaPanelContentEditor": TegakiMangaPanelContentEditor,
     "TegakiMangaCharacterStagingEditor": TegakiMangaCharacterStagingEditor,
+    "TegakiMangaLayoutGuideGenerator": TegakiMangaLayoutGuideGenerator,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -58,6 +60,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "TegakiSinglePanelMultiSceneImpactAdapter": "Tegaki Single Panel Multi-Scene Impact Adapter",
     "TegakiMangaPanelContentEditor": "Tegaki Manga Panel Content Editor",
     "TegakiMangaCharacterStagingEditor": "Tegaki Manga Character Staging Editor",
+    "TegakiMangaLayoutGuideGenerator": "Tegaki Manga Layout Guide Generator (ControlNet)",
 }
 
 WEB_DIRECTORY = "./web"

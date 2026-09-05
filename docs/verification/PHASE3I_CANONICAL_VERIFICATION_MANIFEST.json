@@ -1,0 +1,69 @@
+{
+  "phase": "Phase 3I",
+  "title": "ControlNet Character & Scene Layout Assist",
+  "baseline_checkpoint": "waiIllustriousSDXL_v170.safetensors",
+  "controlnet_model": "CN-anytest4_illustrious2_A.safetensors",
+  "artifacts": [
+    {
+      "id": "WF35",
+      "name": "35_VERIFY_CONTROLNET_ANYTEST_BASELINE",
+      "status": "PASS",
+      "elapsed_sec": 46.07,
+      "file_path": "output\\Tegaki\\Phase3I\\canonical\\WF35_Phase3I_ControlNet_35_AnyTest_Baseline_00003_.png",
+      "sha256": "681089d7faa0dddf695f046349173cb32c5f05d731aa6285c833660ae545f6bf",
+      "size_bytes": 1218447
+    },
+    {
+      "id": "WF36",
+      "name": "36_VERIFY_CONTROLNET_SCALE_LOCK_SINGLE_CHARACTER",
+      "status": "PASS",
+      "elapsed_sec": 36.37,
+      "file_path": "output\\Tegaki\\Phase3I\\canonical\\WF36_Phase3I_ControlNet_36_ScaleLock_Single_Alice_00003_.png",
+      "sha256": "7d286f4df2e8c50a080622cb734fb82002e53bd0d7cbe564997b9dd88b355597",
+      "size_bytes": 1242237
+    },
+    {
+      "id": "WF37",
+      "name": "37_VERIFY_AUTHORING_ALICE_LEFT_BOB_RIGHT_CN_ASSIST",
+      "status": "PASS",
+      "elapsed_sec": 46.31,
+      "file_path": "output\\Tegaki\\Phase3I\\canonical\\WF37_Phase3I_Authoring_37_AliceLeft_BobRight_CNAssist_00002_.png",
+      "sha256": "01a2c7cdffa416a0f2eb55818b8c941fb252769395f1ff381f4076cf129e70a0",
+      "size_bytes": 1018880
+    },
+    {
+      "id": "WF38",
+      "name": "38_VERIFY_AUTHORING_ALICE_RIGHT_BOB_LEFT_CN_ASSIST",
+      "status": "PASS",
+      "elapsed_sec": 48.08,
+      "file_path": "output\\Tegaki\\Phase3I\\canonical\\WF38_Phase3I_Authoring_38_AliceRight_BobLeft_CNAssist_00002_.png",
+      "sha256": "95e45793811661523599381f6c6d2aeca501df9df702e61ba159d59f59b23908",
+      "size_bytes": 1222920
+    },
+    {
+      "id": "WF39",
+      "name": "39_VERIFY_FAST_DRAFT_12_CONTROLNET_REGRESSION",
+      "status": "PASS",
+      "elapsed_sec": 30.08,
+      "file_path": "output\\Tegaki\\Phase3I\\canonical\\WF39_Phase3I_FastDraft12_39_AliceRight_BobLeft_CNAssist_00002_.png",
+      "sha256": "2e50cf3d4d527ee9181f5185b33fea905ab850a9a1a6cfaadedac320d342b6c3",
+      "size_bytes": 1404753
+    },
+    {
+      "id": "sheet_h_controlnet_scale_locking",
+      "name": "sheet_h_controlnet_scale_locking.png",
+      "status": "PASS",
+      "file_path": "output\\Tegaki\\Phase3I\\sheet_h_controlnet_scale_locking.png",
+      "sha256": "73c675576aad463ea59a563590278567508ba585ce1aba971537d152ffce64ec",
+      "size_bytes": 597671
+    },
+    {
+      "id": "sheet_i_authoring_staging_cn_assist_swap",
+      "name": "sheet_i_authoring_staging_cn_assist_swap.png",
+      "status": "PASS",
+      "file_path": "output\\Tegaki\\Phase3I\\sheet_i_authoring_staging_cn_assist_swap.png",
+      "sha256": "985e4d04c657fe3b5690479f82a4ecaabf0c5ed6bdad1926541835a56fb63f08",
+      "size_bytes": 754325
+    }
+  ]
+}

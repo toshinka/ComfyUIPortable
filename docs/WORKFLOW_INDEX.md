@@ -477,13 +477,77 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 - **出力**: 本番オーサリング反転画像 (`output/Tegaki/Phase3H/canonical/wf34_authoring_alice_right_bob_left.png`)
 - **Zero-Touch Smoke Test**: **PASS**
 
+### 35_VERIFY_CONTROLNET_ANYTEST_BASELINE.json
+- **区分**: ControlNet 基礎検証オラクル (CONTROLNET BASELINE: SINGLE NON-HUMAN)
+- **目的**: Illustrious 向け AnyTest v4 (`CN-anytest4_illustrious2_A.safetensors`) の素直な応答性を確認するための非人物被写体（白犬・左上 `[0.10, 0.10, 0.40, 0.40]`）による最小検証オラクル。`box_wireframe` 形式のガイド画像を ControlNet に供給し、Zero-Touch での幾何学的線画誘導を確認。
+- **必要Custom Node**:
+  - `TegakiMangaLayoutGuideGenerator` (独自 / AnyTest ガイド生成)
+  - `TegakiMangaPageCompiler` (独自)
+  - ComfyUI標準: ControlNetLoader, ControlNetApplyAdvanced, CheckpointLoaderSimple, EmptyLatentImage, SaveImage
+- **出力**: ControlNet 基礎画像 (`output/Tegaki/Phase3I/canonical/WF35_Phase3I_ControlNet_35_AnyTest_Baseline_00003_.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
 ---
 
-## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3H)
+### 36_VERIFY_CONTROLNET_SCALE_LOCK_SINGLE_CHARACTER.json
+- **区分**: 単一人物スケール拘束オラクル (CONTROLNET SCALE LOCK: SINGLE TALL CHARACTER)
+- **目的**: 縦長構図（Alice `[0.25, 0.15, 0.50, 0.75]`）における人物の遠近感縮小（Case B）を抑止するため、`mannequin_capsule`（頭部・胴体・手足カプセル）を投入し、人物スケールを縦幅 75% の指定ボックスへ物理固定することを実証するオラクル。
+- **必要Custom Node**:
+  - `TegakiMangaLayoutGuideGenerator` (独自)
+  - `TegakiMangaPageCompiler` (独自)
+  - `TegakiMangaImpactRegionalAdapter` (独自)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: ControlNetLoader, ControlNetApplyAdvanced, CheckpointLoaderSimple, EmptyLatentImage, SaveImage
+- **出力**: 単一人物スケール拘束画像 (`output/Tegaki/Phase3I/canonical/WF36_Phase3I_ControlNet_36_ScaleLock_Single_Alice_00003_.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 37_VERIFY_AUTHORING_ALICE_LEFT_BOB_RIGHT_CN_ASSIST.json
+- **区分**: 本番オーサリング ControlNet 補助オラクル (PRODUCTION AUTHORING CN ASSIST: ALICE LEFT, BOB RIGHT)
+- **目的**: 本番オーサリングチェーン（Cast → Panel Content → Panel Layout → Character Staging → Page Compiler → Layout Guide Generator → ControlNetApplyAdvanced → Impact Regional Adapter → RegionalSampler）において、2 人物（Alice 左 `[0.08, 0.16, 0.40, 0.68]`、Bob 右 `[0.52, 0.16, 0.40, 0.68]`）の配置・スケール拘束を ControlNet 補助つきで実行・検証するオラクル。
+- **必要Custom Node**:
+  - `TegakiMangaLayoutGuideGenerator` (独自)
+  - `TegakiMangaCastMaster`, `TegakiMangaPanelContentEditor`, `TegakiMangaPanelLayoutEditor`, `TegakiMangaCharacterStagingEditor`, `TegakiMangaPageCompiler`, `TegakiMangaImpactRegionalAdapter` (独自)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: ControlNetLoader, ControlNetApplyAdvanced, CheckpointLoaderSimple, EmptyLatentImage, SaveImage
+- **出力**: 本番オーサリング ControlNet 補助画像 (`output/Tegaki/Phase3I/canonical/WF37_Phase3I_Authoring_37_AliceLeft_BobRight_CNAssist_00002_.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 38_VERIFY_AUTHORING_ALICE_RIGHT_BOB_LEFT_CN_ASSIST.json
+- **区分**: 本番オーサリング ControlNet 補助スワップオラクル (PRODUCTION AUTHORING CN ASSIST: ALICE RIGHT, BOB LEFT SWAP)
+- **目的**: Workflow 37 と同一条件で Character Staging のみ左右反転（Bob: 左 `[0.08, 0.16, 0.40, 0.68]`、Alice: 右 `[0.52, 0.16, 0.40, 0.68]`）。ControlNet マネキンガイドも動的に反転生成され、空間因果性が逆転配置を駆動することを実証するオラクル。
+- **必要Custom Node**:
+  - `TegakiMangaLayoutGuideGenerator` (独自)
+  - `TegakiMangaCastMaster`, `TegakiMangaPanelContentEditor`, `TegakiMangaPanelLayoutEditor`, `TegakiMangaCharacterStagingEditor`, `TegakiMangaPageCompiler`, `TegakiMangaImpactRegionalAdapter` (独自)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: ControlNetLoader, ControlNetApplyAdvanced, CheckpointLoaderSimple, EmptyLatentImage, SaveImage
+- **出力**: 本番オーサリング ControlNet 反転画像 (`output/Tegaki/Phase3I/canonical/WF38_Phase3I_Authoring_38_AliceRight_BobLeft_CNAssist_00002_.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 39_VERIFY_FAST_DRAFT_12_CONTROLNET_REGRESSION.json
+- **区分**: 高速ドラフト ControlNet 回帰オラクル (FAST DRAFT 12 CONTROLNET REGRESSION: SWAPPED)
+- **目的**: Hyper-SDXL 12-Step LoRA（CFG 6.0）の高速プロファイル環境下で、Workflow 38（Bob 左、Alice 右）の ControlNet 補助つきオーサリングパイプラインを実行。生成時間を ~30 秒へ短縮しつつ、左右両人物のスケール固定・シルエット境界拘束がミリ単位で成立することを実証する決定打オラクル。
+- **必要Custom Node**:
+  - `TegakiMangaLayoutGuideGenerator` (独自)
+  - `TegakiMangaCastMaster`, `TegakiMangaPanelContentEditor`, `TegakiMangaPanelLayoutEditor`, `TegakiMangaCharacterStagingEditor`, `TegakiMangaPageCompiler`, `TegakiMangaImpactRegionalAdapter` (独自)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: ControlNetLoader, ControlNetApplyAdvanced, CheckpointLoaderSimple, EmptyLatentImage, SaveImage
+- **出力**: 高速ドラフト ControlNet 回帰画像 (`output/Tegaki/Phase3I/canonical/WF39_Phase3I_FastDraft12_39_AliceRight_BobLeft_CNAssist_00002_.png`)
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3I)
 - **Zero-Touch Smoke Test 検証済み**:
-  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、`21`〜`24`、正準空間検証セット `25`〜`28`、および最新の被写体排他・オーサリング因果セット `29`〜`34`（全34件）は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
-- **Subject Exclusivity & Authoring Causality (Phase 3H)**:
-  Base / Global プロンプトスコープ分離により、背景への意図しない人物発生（Figure Leakage）を 100% 抑止。さらに実験オラクルから本番オーサリングチェーン（Cast → Panel Content → Panel Layout → Character Staging → Page Compiler → Impact Regional Adapter）への因果的空間制御の完全移行を実証。Generation Profile（Reference 20-step / Fast Draft 12-step）による高速化契約を確立しました。
+  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、`21`〜`24`、正準空間検証セット `25`〜`28`、被写体排他・オーサリング因果セット `29`〜`34`、および ControlNet スケール拘束セット `35`〜`39`（全39件）は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
+- **ControlNet Layout Auxiliary Conditioning (Phase 3I)**:
+  AnyTest v4 Illustrious と自動マネキン／ワイヤーフレームガイド生成ノード（`TegakiMangaLayoutGuideGenerator`）の導入により、従来の純粋潜在マスク方式で発生していた「背景パースペクティブへの人物縮小・消失（Case B）」を物理拘束によって克服。Fast Draft 12 プロファイルとの併用下でも、左右人物の厳密なシルエット拘束およびスケール保持を実証しました。
+
 
 
 
