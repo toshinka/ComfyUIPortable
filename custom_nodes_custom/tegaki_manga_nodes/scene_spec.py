@@ -3,6 +3,8 @@ import re
 import math
 import logging
 from typing import Dict, Any, List, Optional, Set, Tuple
+from .interaction_resolver import normalize_interaction, generate_stable_instance_id
+from .subscene_contract import validate_panel_subscenes
 
 """
 scene_spec.py — Manga Scene Data Contract (Phase 3B Hardened)
@@ -395,10 +397,15 @@ def validate_character_binding(binding: Any, available_character_ids: Optional[S
     else:
         pose_preset = None
 
-    # Phase 3K: Interaction validation (can be str identifier like 'handshake' or structured dict)
-    interaction = binding.get("interaction") or metadata.get("interaction")
-    if interaction is not None and not isinstance(interaction, (str, dict)):
-        raise ValueError(f"[{context_name}] Character '{cid}': 'interaction' must be a string or dictionary.")
+    # Phase 3L: Stable Instance ID and Canonical Interaction validation
+    raw_iid = binding.get("instance_id") or binding.get("character_instance_id") or metadata.get("instance_id")
+    if raw_iid and isinstance(raw_iid, str) and raw_iid.strip():
+        instance_id = raw_iid.strip()
+    else:
+        instance_id = None
+
+    raw_interaction = binding.get("interaction") or metadata.get("interaction")
+    interaction = normalize_interaction(raw_interaction, source_instance_id=instance_id, context=context_name)
 
     validated = dict(binding)
     validated["character_id"] = cid
@@ -407,6 +414,9 @@ def validate_character_binding(binding: Any, available_character_ids: Optional[S
     validated["negative_prompt_override"] = neg_override
     validated["area"] = norm_area
     validated["lora_override"] = lora_override
+    if instance_id is not None:
+        validated["instance_id"] = instance_id
+        metadata["instance_id"] = instance_id
     if shot_type is not None:
         validated["shot_type"] = shot_type
         metadata["shot_type"] = shot_type
@@ -576,6 +586,16 @@ def validate_compile_plan(plan: Any) -> Dict[str, Any]:
             panel["local_regions"] = validated_lrs
         else:
             panel["local_regions"] = []
+
+        # Phase 3L: subscenes (オプショナル)
+        subscenes = panel.get("subscenes")
+        if subscenes is not None:
+            if not isinstance(subscenes, list):
+                raise ValueError(f"[CompilePlanValidator] Panel {pid} 'subscenes' must be a list, got {type(subscenes).__name__}")
+            validated_subs = validate_panel_subscenes(panel, panel_id=pid, context=f"Panel {pid}")
+            panel["subscenes"] = validated_subs
+        else:
+            panel["subscenes"] = []
     else:
         if panel is not None:
             raise ValueError("[CompilePlanValidator] 'panel' must be null when status is 'inactive'.")
@@ -634,8 +654,11 @@ def validate_compile_plan(plan: Any) -> Dict[str, Any]:
             raise ValueError(f"[CompilePlanValidator] Character '{c.get('character_id')}' invalid pose_preset: {c_pose!r}. Must be one of {sorted(list(VALID_POSE_PRESETS))}")
 
         c_interaction = c.get("interaction") or (c.get("metadata", {}).get("interaction") if isinstance(c.get("metadata"), dict) else None)
-        if c_interaction is not None and not isinstance(c_interaction, (str, dict)):
-            raise ValueError(f"[CompilePlanValidator] Character '{c.get('character_id')}' invalid interaction: must be str or dict")
+        if c_interaction is not None:
+            if not isinstance(c_interaction, dict):
+                raise ValueError(f"[CompilePlanValidator] Character '{c.get('character_id')}' invalid interaction: canonical dict required, got {type(c_interaction).__name__}")
+            if "interaction_id" not in c_interaction or "type" not in c_interaction:
+                raise ValueError(f"[CompilePlanValidator] Character '{c.get('character_id')}' invalid canonical interaction: missing interaction_id or type")
 
         loras = c.get("loras", [])
         if not isinstance(loras, list):

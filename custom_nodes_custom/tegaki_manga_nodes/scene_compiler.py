@@ -16,6 +16,8 @@ from .scene_spec import (
     validate_page_compile_plan,
     get_active_panel_ids
 )
+from .interaction_resolver import generate_stable_instance_id, normalize_interaction
+from .subscene_contract import has_active_subscenes, validate_panel_subscenes
 
 
 def compile_panel_data(
@@ -242,7 +244,15 @@ def compile_panel_data(
             c_meta = dict(validated_b.get("metadata", {}))
             shot_type = validated_b.get("shot_type") or c_meta.get("shot_type") or validated_b.get("shot")
             pose_preset = validated_b.get("pose_preset") or c_meta.get("pose_preset")
-            interaction = validated_b.get("interaction") or c_meta.get("interaction")
+            raw_inter = validated_b.get("interaction") or c_meta.get("interaction")
+            raw_iid = validated_b.get("instance_id") or c_meta.get("instance_id")
+            if not raw_iid:
+                raw_iid = generate_stable_instance_id(target_panel_id, cid, index=b_idx + 1)
+            instance_id = str(raw_iid).strip()
+            c_meta["instance_id"] = instance_id
+
+            interaction = normalize_interaction(raw_inter, source_instance_id=instance_id, context=f"KOMA {target_panel_id}.{instance_id}")
+
             if shot_type:
                 c_meta["shot_type"] = shot_type
             if pose_preset:
@@ -251,6 +261,7 @@ def compile_panel_data(
                 c_meta["interaction"] = interaction
 
             compiled_c = {
+                "instance_id": instance_id,
                 "character_id": cid,
                 "name": char_master.get("name", cid),
                 "base_prompt": clean_base_p,
@@ -267,6 +278,102 @@ def compile_panel_data(
                 "metadata": c_meta
             }
             compiled_characters.append(compiled_c)
+
+    # Phase 3L: SubScene Compilation (Mainline Compiler Integration)
+    compiled_subscenes = []
+    if has_active_subscenes(target_koma):
+        validated_subscenes = validate_panel_subscenes(target_koma, panel_id=target_panel_id, context=f"KOMA {target_panel_id}")
+        for s_idx, sub in enumerate(validated_subscenes):
+            if not sub.get("enabled", True):
+                continue
+            s_id = sub["id"]
+            raw_s_prompt = sub.get("prompt", "")
+            raw_s_neg = sub.get("negative_prompt", "")
+            clean_s_prompt, _ = parse_lora_tags(raw_s_prompt, f"subscene_{s_id}_prompt")
+            
+            sub_chars = []
+            for sb_idx, sb in enumerate(sub.get("character_bindings", [])):
+                if not sb.get("enabled", True):
+                    continue
+                s_cid = sb["character_id"]
+                s_char_master = cast_map.get(s_cid, {})
+                if not s_char_master.get("enabled", True):
+                    continue
+                
+                s_base_p = s_char_master.get("prompt", "")
+                s_override_p = sb.get("prompt_override", "")
+                clean_sb_base, sb_base_loras = parse_lora_tags(s_base_p, f"sub_{s_id}_char_base")
+                clean_sb_over, sb_over_loras = parse_lora_tags(s_override_p, f"sub_{s_id}_char_over")
+                
+                sb_pos_parts = [p.strip() for p in [clean_sb_base, clean_sb_over] if p and p.strip()]
+                combined_sb_prompt = ", ".join(sb_pos_parts)
+                
+                sb_base_neg = s_char_master.get("negative_prompt", "")
+                sb_over_neg = sb.get("negative_prompt_override", "")
+                sb_neg_parts = [p.strip() for p in [sb_base_neg, sb_over_neg] if p and p.strip()]
+                combined_sb_neg = ", ".join(sb_neg_parts)
+                
+                sb_loras = s_char_master.get("loras", [])
+                total_sb_loras = list(sb_loras) + sb_base_loras + sb_over_loras
+                for le in total_sb_loras:
+                    if le.get("enabled", True):
+                        character_loras_plan.append({
+                            "character_id": s_cid,
+                            "character_name": s_char_master.get("name", s_cid),
+                            "name": le["name"],
+                            "enabled": True,
+                            "model_weight": le.get("model_weight", 1.0),
+                            "clip_weight": le.get("clip_weight", 1.0),
+                            "source": f"subscene_{s_id}",
+                            "metadata": le.get("metadata", {})
+                        })
+                
+                sb_meta = dict(sb.get("metadata", {}))
+                sb_shot = sb.get("shot_type") or sb_meta.get("shot_type")
+                sb_pose = sb.get("pose_preset") or sb_meta.get("pose_preset")
+                sb_iid = sb.get("instance_id") or sb_meta.get("instance_id")
+                if not sb_iid:
+                    sb_iid = generate_stable_instance_id(target_panel_id, s_cid, subscene_id=s_id, index=sb_idx + 1)
+                sb_iid = str(sb_iid).strip()
+                sb_meta["instance_id"] = sb_iid
+
+                raw_sb_inter = sb.get("interaction") or sb_meta.get("interaction")
+                sb_inter = normalize_interaction(raw_sb_inter, source_instance_id=sb_iid, context=f"KOMA {target_panel_id}.{s_id}.{sb_iid}")
+
+                if sb_shot:
+                    sb_meta["shot_type"] = sb_shot
+                if sb_pose:
+                    sb_meta["pose_preset"] = sb_pose
+                if sb_inter:
+                    sb_meta["interaction"] = sb_inter
+                
+                sub_chars.append({
+                    "instance_id": sb_iid,
+                    "character_id": s_cid,
+                    "name": s_char_master.get("name", s_cid),
+                    "base_prompt": clean_sb_base,
+                    "override_prompt": clean_sb_over,
+                    "combined_prompt": combined_sb_prompt,
+                    "base_negative_prompt": sb_base_neg,
+                    "override_negative_prompt": sb_over_neg,
+                    "combined_negative_prompt": combined_sb_neg,
+                    "area": sb.get("area"),
+                    "shot_type": sb_shot,
+                    "pose_preset": sb_pose,
+                    "interaction": sb_inter,
+                    "loras": total_sb_loras,
+                    "metadata": sb_meta
+                })
+            
+            compiled_subscenes.append({
+                "id": s_id,
+                "enabled": True,
+                "prompt": clean_s_prompt,
+                "negative_prompt": raw_s_neg,
+                "area": sub.get("area", {"x": 0.0, "y": 0.0, "w": 1.0, "h": 1.0}),
+                "characters": sub_chars,
+                "metadata": dict(sub.get("metadata", {}))
+            })
 
     # 7. 自然結合プレビュー用 Positive / Negative Prompt の生成
     # 優先順位 (指示書第20項): Global -> Panel -> Local Region -> Character
@@ -311,6 +418,7 @@ def compile_panel_data(
             "prompt": clean_koma_prompt,
             "negative_prompt": panel_negative_prompt,
             "local_regions": compiled_local_regions,
+            "subscenes": compiled_subscenes,
             "camera_distance": panel_camera_dist
         },
         "global_prompt": clean_global_prompt,
@@ -329,7 +437,7 @@ def compile_panel_data(
     validated_plan = validate_compile_plan(compile_plan)
 
     plan_json = json.dumps(validated_plan, indent=2, ensure_ascii=False)
-    char_count = len(compiled_characters)
+    char_count = len(compiled_characters) + sum(len(s["characters"]) for s in compiled_subscenes)
 
     return (validated_plan, plan_json, compiled_prompt, char_count)
 

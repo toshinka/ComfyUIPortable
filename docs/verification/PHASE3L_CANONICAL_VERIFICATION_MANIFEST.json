@@ -1,0 +1,22 @@
+{
+  "version": "Phase 3L",
+  "generated_at": "2026-09-05 20:02:23",
+  "total_conditions": 14,
+  "all_passed": true,
+  "contact_sheets": {
+    "AA_pose_guide_only": "D:\\GitHub\\tegaki\\ComfyUIPortable\\output\\Tegaki\\Phase3L\\canonical\\ContactSheet_AA_Pose_Guide_Only.png",
+    "AB_orientation_in_out": "D:\\GitHub\\tegaki\\ComfyUIPortable\\output\\Tegaki\\Phase3L\\canonical\\ContactSheet_AB_Orientation_In_Out.png",
+    "AC_handshake_feathering": "D:\\GitHub\\tegaki\\ComfyUIPortable\\output\\Tegaki\\Phase3L\\canonical\\ContactSheet_AC_Handshake_Feathering.png",
+    "AD_subscene_conflict_friendship": "D:\\GitHub\\tegaki\\ComfyUIPortable\\output\\Tegaki\\Phase3L\\canonical\\ContactSheet_AD_SubScene_Conflict_Friendship.png",
+    "AE_subscene_geometry_swap": "D:\\GitHub\\tegaki\\ComfyUIPortable\\output\\Tegaki\\Phase3L\\canonical\\ContactSheet_AE_SubScene_Geometry_Swap.png",
+    "AF_backend_parity": "D:\\GitHub\\tegaki\\ComfyUIPortable\\output\\Tegaki\\Phase3L\\canonical\\ContactSheet_AF_Backend_Parity.png"
+  },
+  "workflows": [
+    "66_VERIFY_POSE_GUIDE_ONLY_INWARD.json",
+    "67_VERIFY_HANDSHAKE_CANONICAL_PAIR_AND_FEATHER.json",
+    "68_VERIFY_MAINLINE_SUBSCENE_CONFLICT_FRIENDSHIP.json",
+    "69_VERIFY_MAINLINE_SUBSCENE_GEOMETRY_SWAP.json",
+    "70_VERIFY_4PANEL_MIXED_SIMPLE_COMPLEX_PAGE.json",
+    "71_VERIFY_EXTERNAL_REGIONAL_BACKEND_PARITY.json"
+  ]
+}

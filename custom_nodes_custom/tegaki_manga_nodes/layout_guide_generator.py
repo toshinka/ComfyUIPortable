@@ -16,6 +16,7 @@ from typing import Dict, Any, List, Optional, Tuple, Union
 import torch
 import numpy as np
 from PIL import Image, ImageDraw
+from .interaction_resolver import normalize_interaction
 
 logger = logging.getLogger("tegaki.manga.layout_guide")
 
@@ -126,13 +127,36 @@ def extract_staging_boxes(
                     box = _normalize_box(area)
                     if box and box[2] > 0 and box[3] > 0:
                         char_boxes.append({
-                            "id": c.get("character_id", c.get("id", "char")),
+                            "id": c.get("instance_id") or c.get("character_id", c.get("id", "char")),
                             "box": box,
                             "name": c.get("name", "Character"),
                             "shot_type": c.get("shot_type") or c.get("shot") or c.get("metadata", {}).get("shot_type", "full_body"),
                             "pose_preset": c.get("pose_preset") or c.get("metadata", {}).get("pose_preset", "standing_neutral"),
                             "interaction": c.get("interaction") or c.get("metadata", {}).get("interaction")
                         })
+                # Support subscene characters
+                for sub in p.get("subscenes", []):
+                    if not sub.get("enabled", True):
+                        continue
+                    s_area = _normalize_box(sub.get("area")) or [0.0, 0.0, 1.0, 1.0]
+                    sx, sy, sw, sh = s_area
+                    sub_chars = sub.get("characters") or sub.get("character_bindings") or []
+                    for sc in sub_chars:
+                        if not sc.get("enabled", True):
+                            continue
+                        area = sc.get("area") or sc.get("bounding_box") or sc.get("box_area")
+                        lbox = _normalize_box(area)
+                        if lbox and lbox[2] > 0 and lbox[3] > 0:
+                            lx, ly, lw, lh = lbox
+                            gbox = [sx + lx * sw, sy + ly * sh, lw * sw, lh * sh]
+                            char_boxes.append({
+                                "id": sc.get("instance_id") or sc.get("character_id", sc.get("id", "char")),
+                                "box": gbox,
+                                "name": sc.get("name", "Character"),
+                                "shot_type": sc.get("shot_type") or sc.get("shot") or sc.get("metadata", {}).get("shot_type", "full_body"),
+                                "pose_preset": sc.get("pose_preset") or sc.get("metadata", {}).get("pose_preset", "standing_neutral"),
+                                "interaction": sc.get("interaction") or sc.get("metadata", {}).get("interaction")
+                            })
                 break
         return panel_box, char_boxes
 
@@ -152,13 +176,35 @@ def extract_staging_boxes(
                     box = _normalize_box(area)
                     if box and box[2] > 0 and box[3] > 0:
                         char_boxes.append({
-                            "id": c.get("character_id", c.get("id", "char")),
+                            "id": c.get("instance_id") or c.get("character_id", c.get("id", "char")),
                             "box": box,
                             "name": c.get("name", "Character"),
                             "shot_type": c.get("shot_type") or c.get("shot") or c.get("metadata", {}).get("shot_type", "full_body"),
                             "pose_preset": c.get("pose_preset") or c.get("metadata", {}).get("pose_preset", "standing_neutral"),
                             "interaction": c.get("interaction") or c.get("metadata", {}).get("interaction")
                         })
+                for sub in r.get("subscenes", []):
+                    if not sub.get("enabled", True):
+                        continue
+                    s_area = _normalize_box(sub.get("area")) or [0.0, 0.0, 1.0, 1.0]
+                    sx, sy, sw, sh = s_area
+                    sub_chars = sub.get("characters") or sub.get("character_bindings") or []
+                    for sc in sub_chars:
+                        if not sc.get("enabled", True):
+                            continue
+                        area = sc.get("area") or sc.get("bounding_box") or sc.get("box_area")
+                        lbox = _normalize_box(area)
+                        if lbox and lbox[2] > 0 and lbox[3] > 0:
+                            lx, ly, lw, lh = lbox
+                            gbox = [sx + lx * sw, sy + ly * sh, lw * sw, lh * sh]
+                            char_boxes.append({
+                                "id": sc.get("instance_id") or sc.get("character_id", sc.get("id", "char")),
+                                "box": gbox,
+                                "name": sc.get("name", "Character"),
+                                "shot_type": sc.get("shot_type") or sc.get("shot") or sc.get("metadata", {}).get("shot_type", "full_body"),
+                                "pose_preset": sc.get("pose_preset") or sc.get("metadata", {}).get("pose_preset", "standing_neutral"),
+                                "interaction": sc.get("interaction") or sc.get("metadata", {}).get("interaction")
+                            })
                 break
         return panel_box, char_boxes
 
@@ -641,16 +687,19 @@ class TegakiMangaLayoutGuideGenerator:
 
         # 3. Draw Pair Interaction Guide (e.g. Handshake)
         hs_items = []
+        interaction_debug = []
         for sb in screen_boxes:
             inter = sb["char_info"].get("interaction")
-            if isinstance(inter, dict):
-                itype = inter.get("type") or inter.get("interaction_type")
-                if itype == "handshake":
-                    hs_items.append(sb)
+            norm_inter = normalize_interaction(
+                inter,
+                source_instance_id=sb["char_info"].get("instance_id") or sb["char_info"].get("character_id")
+            )
+            if norm_inter and norm_inter.get("type") == "handshake":
+                hs_items.append((sb, norm_inter))
 
         if len(hs_items) >= 2:
-            hs_items.sort(key=lambda item: item["screen_bounds"][0])
-            left_item, right_item = hs_items[0], hs_items[1]
+            hs_items.sort(key=lambda item: item[0]["screen_bounds"][0])
+            (left_item, left_inter), (right_item, right_inter) = hs_items[0], hs_items[1]
             lx0, ly0, lx1, ly1 = left_item["screen_bounds"]
             rx0, ry0, rx1, ry1 = right_item["screen_bounds"]
 
@@ -674,6 +723,16 @@ class TegakiMangaLayoutGuideGenerator:
             # Handshake clasp node
             draw.ellipse([anchor_x - 8, anchor_y - 6, anchor_x + 8, anchor_y + 6], fill=fg_color)
 
+            p1_name = left_item["char_info"].get("instance_id") or left_item["char_info"].get("character_id", "left_char")
+            p2_name = right_item["char_info"].get("instance_id") or right_item["char_info"].get("character_id", "right_char")
+            int_id = left_inter.get("interaction_id") or right_inter.get("interaction_id") or "int_handshake"
+
+            interaction_debug.append({
+                "interaction_id": int_id,
+                "participants": [p1_name, p2_name],
+                "anchor_px": [int(anchor_x), int(anchor_y)]
+            })
+
         # Convert PIL Image to PyTorch Tensor [1, H, W, 3] in range [0.0, 1.0]
         np_img = np.array(img).astype(np.float32) / 255.0
         tensor_img = torch.from_numpy(np_img).unsqueeze(0)
@@ -686,6 +745,7 @@ class TegakiMangaLayoutGuideGenerator:
             "panel_box": panel_box,
             "extracted_characters": len(char_boxes),
             "characters": char_boxes,
+            "interactions": interaction_debug,
             "include_character_bbox_outline": include_character_bbox_outline
         }
 

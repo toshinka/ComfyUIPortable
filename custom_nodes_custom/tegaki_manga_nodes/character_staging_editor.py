@@ -21,6 +21,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from .region_editor import validate_region_spec
 from .panel_layout_spec import validate_panel_layout_spec
+from .interaction_resolver import normalize_interaction
 
 
 CHAR_PALETTE = {
@@ -269,10 +270,15 @@ class CharacterStagingStateManager:
                             c["shot_type"] = ov["shot_type"]
                         elif "shot" in ov:
                             c["shot_type"] = ov["shot"]
+                        if "instance_id" in ov:
+                            c["instance_id"] = ov["instance_id"]
                         if "pose_preset" in ov:
                             c["pose_preset"] = ov["pose_preset"]
                         if "interaction" in ov:
-                            c["interaction"] = ov["interaction"]
+                            c["interaction"] = normalize_interaction(
+                                ov["interaction"],
+                                source_instance_id=c.get("instance_id") or f"p{pid}_{cid}"
+                            )
         return copied
 
 

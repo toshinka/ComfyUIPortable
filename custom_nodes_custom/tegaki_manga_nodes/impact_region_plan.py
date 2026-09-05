@@ -25,6 +25,7 @@ from PIL import Image, ImageDraw, ImageFilter
 from .layout_region_bridge import build_panel_content_bridge
 from .layout_aware_mask_builder import render_polygon_mask, render_rect_mask
 from .subscene_contract import has_active_subscenes, validate_panel_subscenes
+from .interaction_resolver import normalize_interaction, generate_stable_instance_id
 
 
 def _apply_feather_single(mask: torch.Tensor, feather_radius: int) -> torch.Tensor:
@@ -128,7 +129,8 @@ def build_impact_region_plan(
 
         char_shot = c.get("shot_type") or c.get("metadata", {}).get("shot_type", "full_body")
         char_pose = c.get("pose_preset") or c.get("metadata", {}).get("pose_preset", "standing_neutral")
-        char_interaction = c.get("interaction") or c.get("metadata", {}).get("interaction")
+        raw_inter = c.get("interaction") or c.get("metadata", {}).get("interaction")
+        char_interaction = normalize_interaction(raw_inter, source_instance_id=instance_id, context=f"ImpactPlan.{instance_id}")
 
         entry = {
             "scope_type": "character_instance",
@@ -218,7 +220,10 @@ def build_impact_region_plan(
                 if mask_feather > 0:
                     c_clipped_mask = _apply_feather_single(c_clipped_mask, mask_feather)
 
-                instance_id = f"p{pid}_{sub_id}_{cid}_{b_idx:02d}"
+                raw_iid = b.get("instance_id") or b.get("character_instance_id") or b.get("metadata", {}).get("instance_id")
+                if not raw_iid:
+                    raw_iid = generate_stable_instance_id(pid, cid, subscene_id=sub_id, index=b_idx + 1)
+                instance_id = str(raw_iid)
                 c_override = b.get("prompt_override", "")
                 if not c_override and "acting" in b and isinstance(b["acting"], str):
                     c_override = b["acting"]
@@ -236,7 +241,8 @@ def build_impact_region_plan(
 
                 sub_shot = b.get("shot_type") or b.get("metadata", {}).get("shot_type", "full_body")
                 sub_pose = b.get("pose_preset") or b.get("metadata", {}).get("pose_preset", "standing_neutral")
-                sub_interaction = b.get("interaction") or b.get("metadata", {}).get("interaction")
+                raw_sub_inter = b.get("interaction") or b.get("metadata", {}).get("interaction")
+                sub_interaction = normalize_interaction(raw_sub_inter, source_instance_id=instance_id, context=f"ImpactPlan.{sub_id}.{instance_id}")
 
                 c_entry = {
                     "scope_type": "character_instance",
