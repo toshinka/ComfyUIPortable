@@ -1,0 +1,358 @@
+{
+  "metadata": {
+    "phase": "Phase 3J",
+    "title": "Semantic Presence Stabilization & Adaptive Character Guide Foundation",
+    "evaluation_source": "AI_VISUAL_ANNOTATION",
+    "measurement_method": "approximate_manual_bbox",
+    "machine_detector": false,
+    "visual_reviewer": "Antigravity AI (Gemini Vision Direct Empirical Inspection)",
+    "review_timestamp": "2026-09-05 16:55:00",
+    "confidence": "HIGH",
+    "runtime_environment": "RTX 4070 12GB | AnyTest v4 | waiIllustrious v1.7.0"
+  },
+  "conditions": {
+    "Cond01": {
+      "name": "Legacy Base (two students) Alice L / Bob R (Hyper12, seed 42)",
+      "image_file": "Cond01_LegacyBase_AliceL_BobR.png",
+      "runtime_status": "PASS",
+      "visual_semantic_status": "FAIL",
+      "elapsed_sec": 40.48,
+      "vram_mb": 9157,
+      "parameters": {
+        "steps": 12,
+        "cfg": 6.0,
+        "base_only_steps": 2,
+        "base_prompt": "legacy",
+        "regional_mode": "off"
+      },
+      "target": {
+        "alice_staging": [0.10, 0.15, 0.35, 0.75],
+        "bob_staging": [0.55, 0.15, 0.35, 0.75]
+      },
+      "observed": {
+        "alice_present": false,
+        "bob_present": false,
+        "artifacts": "Vertical banner with pseudo-kanji text between blank purple rectangular shutters",
+        "visual_description": "Legacy base prompt conflicts with regional characters; neither Alice nor Bob manifest; 0/2 subjects."
+      },
+      "finding": "Base prompt describing 'two students standing' causes identity confusion and text hallucination."
+    },
+    "Cond02": {
+      "name": "Background-Only Base Alice L / Bob R (WF48, Hyper12, seed 42)",
+      "workflow_file": "48_VERIFY_BASE_BACKGROUND_ONLY_CHARACTER_PRESENCE.json",
+      "image_file": "Cond02_BgOnlyBase_AliceL_BobR.png",
+      "runtime_status": "PASS",
+      "visual_semantic_status": "FAIL",
+      "elapsed_sec": 30.36,
+      "vram_mb": 9235,
+      "parameters": {
+        "steps": 12,
+        "cfg": 6.0,
+        "base_only_steps": 2,
+        "base_prompt": "background_only",
+        "regional_mode": "off"
+      },
+      "target": {
+        "alice_staging": [0.10, 0.15, 0.35, 0.75],
+        "bob_staging": [0.55, 0.15, 0.35, 0.75]
+      },
+      "observed": {
+        "alice_present": false,
+        "bob_present": false,
+        "artifacts": "Two sliding architectural shutters with vertical handles",
+        "visual_description": "Clean perspective courtyard. Pseudo-text eliminated, but base ControlNet box guides are interpreted as large sliding shutters."
+      },
+      "finding": "Background-only base prompt cleanly isolates environment from characters, eliminating pseudo-text."
+    },
+    "Cond03": {
+      "name": "Alice Left Only Hyper12 (WF49, seed 42)",
+      "workflow_file": "49_VERIFY_ALICE_LEFT_ONLY_HYPER12.json",
+      "image_file": "Cond03_AliceLeft_Hyper12.png",
+      "runtime_status": "PASS",
+      "visual_semantic_status": "PARTIAL",
+      "elapsed_sec": 24.06,
+      "vram_mb": 9311,
+      "parameters": {
+        "steps": 12,
+        "cfg": 6.0,
+        "base_only_steps": 2,
+        "base_prompt": "background_only",
+        "regional_mode": "off"
+      },
+      "target": {
+        "alice_staging": [0.10, 0.15, 0.35, 0.75]
+      },
+      "observed": {
+        "alice_present": true,
+        "alice_approx_bbox": [0.54, 0.48, 0.12, 0.37],
+        "displacement": "Displaced from target left [0.10] to center-right corridor [0.54]",
+        "visual_description": "Left target region rendered as opaque wall panel; female student walks in open right alleyway."
+      },
+      "finding": "Without regional ControlNet guidance, character escapes box constraint into unconstrained open space."
+    },
+    "Cond04": {
+      "name": "Alice Right Only Hyper12 (WF50, seed 42)",
+      "workflow_file": "50_VERIFY_ALICE_RIGHT_ONLY_HYPER12.json",
+      "image_file": "Cond04_AliceRight_Hyper12.png",
+      "runtime_status": "PASS",
+      "visual_semantic_status": "FAIL",
+      "elapsed_sec": 24.09,
+      "vram_mb": 9311,
+      "parameters": {
+        "steps": 12,
+        "cfg": 6.0,
+        "base_only_steps": 2,
+        "base_prompt": "background_only",
+        "regional_mode": "off"
+      },
+      "target": {
+        "alice_staging": [0.55, 0.15, 0.35, 0.75]
+      },
+      "observed": {
+        "alice_present": false,
+        "artifacts": "Right box rendered as blank shutter with faint top lettering",
+        "visual_description": "Right box completely suppressed into architectural shutter; no student manifested."
+      },
+      "finding": "Right-hand single character exhibits higher suppression under seed 42 courtyard geometry."
+    },
+    "Cond05": {
+      "name": "Bob Left Only Hyper12 (WF51, seed 42)",
+      "workflow_file": "51_VERIFY_BOB_LEFT_ONLY_HYPER12.json",
+      "image_file": "Cond05_BobLeft_Hyper12.png",
+      "runtime_status": "PASS",
+      "visual_semantic_status": "PARTIAL",
+      "elapsed_sec": 22.05,
+      "vram_mb": 8986,
+      "parameters": {
+        "steps": 12,
+        "cfg": 6.0,
+        "base_only_steps": 2,
+        "base_prompt": "background_only",
+        "regional_mode": "off"
+      },
+      "target": {
+        "bob_staging": [0.10, 0.15, 0.35, 0.75]
+      },
+      "observed": {
+        "bob_present": true,
+        "bob_approx_bbox": [0.54, 0.48, 0.12, 0.37],
+        "displacement": "Displaced from target left [0.10] to center-right corridor [0.54]",
+        "visual_description": "Left target region rendered as opaque wall panel; student manifested in alleyway."
+      },
+      "finding": "Matches Alice Left behavior; spatial displacement is position-dependent rather than character-dependent."
+    },
+    "Cond06": {
+      "name": "Bob Right Only Hyper12 (WF52, seed 42)",
+      "workflow_file": "52_VERIFY_BOB_RIGHT_ONLY_HYPER12.json",
+      "image_file": "Cond06_BobRight_Hyper12.png",
+      "runtime_status": "PASS",
+      "visual_semantic_status": "FAIL",
+      "elapsed_sec": 22.19,
+      "vram_mb": 8978,
+      "parameters": {
+        "steps": 12,
+        "cfg": 6.0,
+        "base_only_steps": 2,
+        "base_prompt": "background_only",
+        "regional_mode": "off"
+      },
+      "target": {
+        "bob_staging": [0.55, 0.15, 0.35, 0.75]
+      },
+      "observed": {
+        "bob_present": false,
+        "artifacts": "Right box rendered as blank shutter",
+        "visual_description": "Right box suppressed into architectural shutter."
+      },
+      "finding": "Mirrors Alice Right failure; right-side box acts as architectural occlusion in this perspective."
+    },
+    "Cond07": {
+      "name": "Two-Character Swap C2: Bob L / Alice R (Hyper12, seed 42, CN off)",
+      "image_file": "Cond07_TwoChar_BobL_AliceR_Hyper12.png",
+      "runtime_status": "PASS",
+      "visual_semantic_status": "FAIL",
+      "elapsed_sec": 28.08,
+      "vram_mb": 9054,
+      "parameters": {
+        "steps": 12,
+        "cfg": 6.0,
+        "base_only_steps": 2,
+        "base_prompt": "background_only",
+        "regional_mode": "off"
+      },
+      "target": {
+        "bob_staging": [0.10, 0.15, 0.35, 0.75],
+        "alice_staging": [0.55, 0.15, 0.35, 0.75]
+      },
+      "observed": {
+        "alice_present": false,
+        "bob_present": false,
+        "visual_description": "Identical twin sliding shutters to Cond02."
+      },
+      "finding": "Both swap directions fail identically under base-only CN, proving failure is due to guide architecture interpretation, not character swap direction."
+    },
+    "Cond08": {
+      "name": "Region Order Sanity: Bob then Alice attending order (Hyper12, seed 42)",
+      "image_file": "Cond08_RegionOrder_BobFirst_AliceL_BobR.png",
+      "runtime_status": "PASS",
+      "visual_semantic_status": "FAIL",
+      "elapsed_sec": 28.04,
+      "vram_mb": 9157,
+      "parameters": {
+        "steps": 12,
+        "cfg": 6.0,
+        "base_only_steps": 2,
+        "base_prompt": "background_only",
+        "regional_mode": "off"
+      },
+      "observed": {
+        "visual_description": "Bit-for-bit identical to Cond02."
+      },
+      "finding": "REGION_ORDER_EFFECT is strictly NONE. Execution order of regional prompts has zero impact on spatial binding."
+    },
+    "Cond09": {
+      "name": "PRH-v1: BBox Outline ON (Bob L / Alice R, Hyper12, seed 42)",
+      "image_file": "Cond09_PRH_v1_BBoxON_BobL_AliceR.png",
+      "runtime_status": "PASS",
+      "visual_semantic_status": "FAIL",
+      "elapsed_sec": 32.06,
+      "vram_mb": 9157,
+      "parameters": {
+        "steps": 12,
+        "cfg": 6.0,
+        "regional_mode": "per_region_hint",
+        "include_bbox_outline": true,
+        "regional_strength": 0.35
+      },
+      "observed": {
+        "artifacts": "Two shutter panels with barred windows; vertical kanji text on pillar",
+        "visual_description": "Bounding box outline causes ControlNet to hallucinate window bars and doorframes."
+      },
+      "finding": "PER-REGION BBOX OUTLINE is HARMFUL; must be removed."
+    },
+    "Cond10": {
+      "name": "PRH-v2: Clean Hint No-Box Bob L / Alice R (WF53, Hyper12, seed 42)",
+      "workflow_file": "53_VERIFY_HYPER12_PER_REGION_HINT_SWAP.json",
+      "image_file": "Cond10_PRH_v2_BBoxOFF_BobL_AliceR.png",
+      "runtime_status": "PASS",
+      "visual_semantic_status": "PARTIAL",
+      "elapsed_sec": 32.05,
+      "vram_mb": 9055,
+      "parameters": {
+        "steps": 12,
+        "cfg": 6.0,
+        "regional_mode": "per_region_hint",
+        "include_bbox_outline": false,
+        "regional_strength": 0.35,
+        "regional_end": 0.60
+      },
+      "observed": {
+        "alice_present": false,
+        "bob_present": false,
+        "other_subjects": "Silhouette figure entering doorway at bottom center [0.48, 0.67, 0.04, 0.21]",
+        "artifacts": "Clean grey panels without barred windows; doorframe hallucination eliminated",
+        "visual_description": "Clean silhouette guide eliminates barred window hallucination; human form emerges at doorway."
+      },
+      "finding": "PER-REGION HINT V2 (no-box) successfully eliminates window/doorframe artifacts."
+    },
+    "Cond11": {
+      "name": "PRH-v2: Clean Hint No-Box Alice L / Bob R (Hyper12, seed 42)",
+      "image_file": "Cond11_PRH_v2_BBoxOFF_AliceL_BobR.png",
+      "runtime_status": "PASS",
+      "visual_semantic_status": "PARTIAL",
+      "elapsed_sec": 32.09,
+      "vram_mb": 9127,
+      "parameters": {
+        "steps": 12,
+        "cfg": 6.0,
+        "regional_mode": "per_region_hint",
+        "include_bbox_outline": false,
+        "regional_strength": 0.35,
+        "regional_end": 0.60
+      },
+      "observed": {
+        "visual_description": "Identical clean panel rendering with doorway silhouette figure as Cond10."
+      },
+      "finding": "Confirms PRH-v2 behavior is symmetrical across character swap."
+    },
+    "Cond12": {
+      "name": "Seed Robustness: Seed 43 Bob L / Alice R PRH v2 (Hyper12, seed 43)",
+      "image_file": "Cond12_SeedRobustness_Seed43_WF53.png",
+      "runtime_status": "PASS",
+      "visual_semantic_status": "PASS",
+      "elapsed_sec": 32.10,
+      "vram_mb": 9127,
+      "parameters": {
+        "steps": 12,
+        "cfg": 6.0,
+        "seed": 43,
+        "regional_mode": "per_region_hint"
+      },
+      "observed": {
+        "visual_description": "Traditional school entrance facade with clean symmetrical courtyard and flanking walls. Zero wireframe or distortion artifacts."
+      },
+      "finding": "Seed 43 demonstrates stable architectural generation under Hyper12 + PRH v2."
+    },
+    "Cond13": {
+      "name": "Adaptive Shot Type: Alice Half Body (Hyper12, seed 42, PRH v2)",
+      "image_file": "Cond13_ShotType_HalfBody_Alice.png",
+      "runtime_status": "PASS",
+      "visual_semantic_status": "PASS",
+      "elapsed_sec": 24.25,
+      "vram_mb": 9041,
+      "parameters": {
+        "steps": 12,
+        "cfg": 6.0,
+        "shot_type": "half_body",
+        "regional_mode": "per_region_hint"
+      },
+      "observed": {
+        "visual_description": "Clean waist-up framing; upper courtyard arch and circular skylight; lower 40% clean open floor."
+      },
+      "finding": "SHOT TYPE HALF BODY successfully adapts guide density and clears lower staging area."
+    },
+    "Cond14": {
+      "name": "Adaptive Shot Type: Alice Bust Shot (Hyper12, seed 42, PRH v2)",
+      "image_file": "Cond14_ShotType_Bust_Alice.png",
+      "runtime_status": "PASS",
+      "visual_semantic_status": "PASS",
+      "elapsed_sec": 24.07,
+      "vram_mb": 9041,
+      "parameters": {
+        "steps": 12,
+        "cfg": 6.0,
+        "shot_type": "bust",
+        "regional_mode": "per_region_hint"
+      },
+      "observed": {
+        "visual_description": "Clean chest-up framing; focus concentrated on upper circular window and portal; lower 55% clean floor."
+      },
+      "finding": "SHOT TYPE BUST successfully contracts guide height to upper 45% of staging box."
+    }
+  },
+  "summary_decisions": {
+    "BASE_PROMPT_RESPONSIBILITY": "CLOSED",
+    "BACKGROUND_ONLY_BASE": "HELPFUL",
+    "ALICE_LEFT": "PARTIAL",
+    "ALICE_RIGHT": "FAIL",
+    "BOB_LEFT": "PARTIAL",
+    "BOB_RIGHT": "FAIL",
+    "TWO_CHARACTER_ALICE_L_BOB_R": "FAIL",
+    "TWO_CHARACTER_BOB_L_ALICE_R": "FAIL",
+    "SIDE_BIAS": "MIXED",
+    "REGION_ORDER_EFFECT": "NONE",
+    "PER_REGION_BBOX_OUTLINE": "REMOVE",
+    "PER_REGION_HINT_V2": "USABLE FOUNDATION",
+    "HYPER12_PER_REGION_HINT": "PARTIAL",
+    "ARCHITECTURE_REFERENCE": "NATIVE20",
+    "OPERATIONAL_AUTHORING_PROFILE": "CONDITIONAL HYPER12",
+    "SHOT_TYPE_FULL_BODY": "PASS",
+    "SHOT_TYPE_HALF_BODY": "PASS",
+    "SHOT_TYPE_BUST": "PASS",
+    "MINIMAL_POSE": "READY",
+    "POINTER_CONTRACT_SIMULATION": "PASS",
+    "LIVE_BROWSER_POINTER_E2E": "PENDING",
+    "USER_VISUAL_REVIEW_REQUIRED": "YES",
+    "NEXT_RECOMMENDED_PHASE": "Phase 3K: Pose & Interaction Authoring + Camera Distance / Scene Composition"
+  }
+}

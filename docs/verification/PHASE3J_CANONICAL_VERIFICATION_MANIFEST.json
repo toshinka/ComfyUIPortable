@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "phase": "Phase 3J",
+  "phase_name": "Semantic Presence Stabilization & Adaptive Character Guide Foundation",
+  "baseline_commit": "000a7a39b7ff0c8bc95d471719779663aefa258d",
+  "target_device": "NVIDIA GeForce RTX 4070 (12GB VRAM)",
+  "dependencies": {
+    "checkpoint": "waiIllustriousSDXL_v170.safetensors",
+    "controlnet": "CN-anytest4_illustrious2_A.safetensors",
+    "hyper_sdxl_lora": "Hyper-SDXL-12steps-CFG-lora.safetensors"
+  },
+  "sign_off": {
+    "PHASE3I.2 REVIEW CLOSURE": "PASS",
+    "BASE PROMPT RESPONSIBILITY": "CLOSED",
+    "BACKGROUND-ONLY BASE": "HELPFUL",
+    "ALICE LEFT": "PARTIAL",
+    "ALICE RIGHT": "FAIL",
+    "BOB LEFT": "PARTIAL",
+    "BOB RIGHT": "FAIL",
+    "TWO-CHARACTER ALICE-L / BOB-R": "FAIL",
+    "TWO-CHARACTER BOB-L / ALICE-R": "FAIL",
+    "SIDE BIAS": "MIXED",
+    "REGION ORDER EFFECT": "NONE",
+    "PER-REGION BBOX OUTLINE": "REMOVE",
+    "PER-REGION HINT V2": "USABLE FOUNDATION",
+    "HYPER12 + PER-REGION HINT": "PARTIAL",
+    "ARCHITECTURE REFERENCE": "NATIVE20",
+    "OPERATIONAL AUTHORING PROFILE": "CONDITIONAL HYPER12",
+    "SHOT TYPE FULL BODY": "PASS",
+    "SHOT TYPE HALF BODY": "PASS",
+    "SHOT TYPE BUST": "PASS",
+    "MINIMAL POSE": "READY",
+    "POINTER CONTRACT SIMULATION": "PASS",
+    "LIVE BROWSER POINTER E2E": "PENDING",
+    "USER VISUAL REVIEW REQUIRED": "YES",
+    "NEXT RECOMMENDED PHASE": "Phase 3K (Pose & Interaction Authoring + Camera Distance / Scene Composition)"
+  },
+  "tests": {
+    "shot_type_unit_test": {
+      "script": "scripts/test_phase3j_layout_guide_shot_types.py",
+      "test_count": 3,
+      "status": "PASS"
+    },
+    "conditioning_propagation_audit": {
+      "script": "scripts/test_controlnet_conditioning_propagation.py",
+      "test_count": 5,
+      "status": "PASS"
+    },
+    "pointer_contract_simulation": {
+      "script": "scripts/test_character_staging_pointer_contract.py",
+      "test_count": 2,
+      "status": "PASS"
+    },
+    "saved_workflow_compatibility": {
+      "script": "scripts/test_saved_workflow_live_compatibility.py",
+      "workflows_tested": 37,
+      "status": "PASS"
+    },
+    "workflow_json_integrity": {
+      "script": "scripts/test_workflow_json_integrity.py",
+      "workflows_tested": 37,
+      "status": "PASS"
+    }
+  },
+  "presence_matrix_results": {
+    "total_conditions": 14,
+    "runtime_all_passed": true,
+    "total_elapsed_sec": 398.07,
+    "conditions": [
+      {"cond_id": "Cond01", "name": "Legacy Base Alice L / Bob R", "runtime": "PASS", "elapsed_sec": 40.48},
+      {"cond_id": "Cond02", "name": "Background-Only Base Alice L / Bob R (WF48)", "runtime": "PASS", "elapsed_sec": 30.36},
+      {"cond_id": "Cond03", "name": "Alice Left Only Hyper12 (WF49)", "runtime": "PASS", "elapsed_sec": 24.06},
+      {"cond_id": "Cond04", "name": "Alice Right Only Hyper12 (WF50)", "runtime": "PASS", "elapsed_sec": 24.09},
+      {"cond_id": "Cond05", "name": "Bob Left Only Hyper12 (WF51)", "runtime": "PASS", "elapsed_sec": 22.05},
+      {"cond_id": "Cond06", "name": "Bob Right Only Hyper12 (WF52)", "runtime": "PASS", "elapsed_sec": 22.19},
+      {"cond_id": "Cond07", "name": "Two-Character Swap Bob L / Alice R", "runtime": "PASS", "elapsed_sec": 28.08},
+      {"cond_id": "Cond08", "name": "Region Order Sanity Bob First", "runtime": "PASS", "elapsed_sec": 28.04},
+      {"cond_id": "Cond09", "name": "PRH-v1 BBox Outline ON", "runtime": "PASS", "elapsed_sec": 32.06},
+      {"cond_id": "Cond10", "name": "PRH-v2 BBox Outline OFF (WF53)", "runtime": "PASS", "elapsed_sec": 32.05},
+      {"cond_id": "Cond11", "name": "PRH-v2 Swap Alice L / Bob R", "runtime": "PASS", "elapsed_sec": 32.09},
+      {"cond_id": "Cond12", "name": "Seed Robustness Seed 43 (WF53)", "runtime": "PASS", "elapsed_sec": 32.10},
+      {"cond_id": "Cond13", "name": "Adaptive Shot Type Alice Half Body", "runtime": "PASS", "elapsed_sec": 24.25},
+      {"cond_id": "Cond14", "name": "Adaptive Shot Type Alice Bust Shot", "runtime": "PASS", "elapsed_sec": 24.07}
+    ]
+  },
+  "contact_sheets": [
+    "output/Tegaki/Phase3J/Phase3J_Sheet_P_Base_Contract.png",
+    "output/Tegaki/Phase3J/Phase3J_Sheet_Q_Side_Bias_Matrix.png",
+    "output/Tegaki/Phase3J/Phase3J_Sheet_R_Swap_Matrix.png",
+    "output/Tegaki/Phase3J/Phase3J_Sheet_S_PerRegionHint_Evolution.png",
+    "output/Tegaki/Phase3J/Phase3J_Sheet_T_Shot_Types.png"
+  ],
+  "canonical_workflows": [
+    "workflows/48_VERIFY_BASE_BACKGROUND_ONLY_CHARACTER_PRESENCE.json",
+    "workflows/49_VERIFY_ALICE_LEFT_ONLY_HYPER12.json",
+    "workflows/50_VERIFY_ALICE_RIGHT_ONLY_HYPER12.json",
+    "workflows/51_VERIFY_BOB_LEFT_ONLY_HYPER12.json",
+    "workflows/52_VERIFY_BOB_RIGHT_ONLY_HYPER12.json",
+    "workflows/53_VERIFY_HYPER12_PER_REGION_HINT_SWAP.json"
+  ]
+}

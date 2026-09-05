@@ -89,7 +89,8 @@ def render_staging_preview_image(
                 continue
             cid = c.get("character_id", "")
             cfg = CHAR_PALETTE.get(cid, CHAR_PALETTE["default"])
-            area = c.get("area") or {"x": 0.1, "y": 0.15, "w": 0.4, "h": 0.8}
+            raw_area = c.get("area") or {"x": 0.1, "y": 0.15, "w": 0.4, "h": 0.8}
+            area = _normalize_box_area(raw_area)
 
             cx0 = p_min_x + area["x"] * p_w
             cy0 = p_min_y + area["y"] * p_h
@@ -116,11 +117,15 @@ def _normalize_box_area(val: Any, default_area: Optional[Dict[str, float]] = Non
             "h": round(float(val[3]), 3)
         }
     if isinstance(val, dict):
+        x = val.get("x", 0.1)
+        y = val.get("y", 0.15)
+        w = val.get("w", val.get("width", 0.4))
+        h = val.get("h", val.get("height", 0.75))
         return {
-            "x": round(float(val.get("x", 0.1)), 3),
-            "y": round(float(val.get("y", 0.15)), 3),
-            "w": round(float(val.get("w", 0.4)), 3),
-            "h": round(float(val.get("h", 0.75)), 3)
+            "x": round(float(x), 3),
+            "y": round(float(y), 3),
+            "w": round(float(w), 3),
+            "h": round(float(h), 3)
         }
     if default_area is not None:
         return _normalize_box_area(default_area)
@@ -230,8 +235,13 @@ class CharacterStagingStateManager:
                 p_ov = self.overrides[pid]
                 for c in r.get("characters", []):
                     cid = c.get("character_id")
-                    if cid in p_ov and "area" in p_ov[cid]:
-                        c["area"] = _normalize_box_area(p_ov[cid]["area"])
+                    if cid in p_ov:
+                        if "area" in p_ov[cid]:
+                            c["area"] = _normalize_box_area(p_ov[cid]["area"])
+                        if "shot_type" in p_ov[cid]:
+                            c["shot_type"] = p_ov[cid]["shot_type"]
+                        elif "shot" in p_ov[cid]:
+                            c["shot_type"] = p_ov[cid]["shot"]
         return copied
 
 

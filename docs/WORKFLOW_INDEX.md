@@ -622,11 +622,68 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 
 ---
 
-## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3I.2)
+### 48_VERIFY_BASE_BACKGROUND_ONLY_CHARACTER_PRESENCE.json
+- **区分**: Baseプロンプト背景専任化検証オラクル (BASE BACKGROUND-ONLY CHARACTER PRESENCE)
+- **目的**: Base Positive プロンプトから生徒・人物指定を完全に排除した Canonical Base v2 (`empty school courtyard...`) を検証。Base と Character Region の責務競合を解消し、背景 latent の正常初期化と疑似テキストの撲滅を実証する。
+- **必要Custom Node**:
+  - `TegakiMangaLayoutGuideGenerator`, `TegakiMangaCastMaster`, `TegakiMangaPanelContentEditor`, `TegakiMangaPanelLayoutEditor`, `TegakiMangaCharacterStagingEditor`, `TegakiMangaPageCompiler`, `TegakiMangaImpactRegionalAdapter` (独自)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: ControlNetLoader, ControlNetApplyAdvanced, CheckpointLoaderSimple, EmptyLatentImage, SaveImage, LoraLoader
+- **出力**: `output/Tegaki/Phase3J/canonical/Cond02_BgOnlyBase_AliceL_BobR.png`
+- **Zero-Touch Smoke Test**: **PASS** (Visual: Base Semantic PASS / Character Attendance FAIL)
+
+---
+
+### 49_VERIFY_ALICE_LEFT_ONLY_HYPER12.json
+- **区分**: 単一人物左右バイアス検証 A1 (ALICE LEFT ONLY HYPER12)
+- **目的**: Alice 単独を左側 [0.10, 0.15, 0.35, 0.75] に配置した条件下での出現挙動を単離検証。他キャラクターとの相互干渉を排除し、左側領域の基礎生成能力を測る。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3J/canonical/Cond03_AliceLeft_Hyper12.png`
+- **Zero-Touch Smoke Test**: **PASS** (Visual: PARTIAL / Displaced into walkway)
+
+---
+
+### 50_VERIFY_ALICE_RIGHT_ONLY_HYPER12.json
+- **区分**: 単一人物左右バイアス検証 A2 (ALICE RIGHT ONLY HYPER12)
+- **目的**: Alice 単独を右側 [0.55, 0.15, 0.35, 0.75] に配置した条件下での出現挙動を単離検証。左右対称性および右側領域の背景支配度を測定する。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3J/canonical/Cond04_AliceRight_Hyper12.png`
+- **Zero-Touch Smoke Test**: **PASS** (Visual: FAIL / Wall occlusion)
+
+---
+
+### 51_VERIFY_BOB_LEFT_ONLY_HYPER12.json
+- **区分**: 単一人物左右バイアス検証 B1 (BOB LEFT ONLY HYPER12)
+- **目的**: Bob 単独を左側 [0.10, 0.15, 0.35, 0.75] に配置した条件下での出現挙動を単離検証。Alice Left との比較により、挙動差が人物属性依存か幾何位置依存かを識別する。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3J/canonical/Cond05_BobLeft_Hyper12.png`
+- **Zero-Touch Smoke Test**: **PASS** (Visual: PARTIAL / Displaced into walkway)
+
+---
+
+### 52_VERIFY_BOB_RIGHT_ONLY_HYPER12.json
+- **区分**: 単一人物左右バイアス検証 B2 (BOB RIGHT ONLY HYPER12)
+- **目的**: Bob 単独を右側 [0.55, 0.15, 0.35, 0.75] に配置した条件下での出現挙動を単離検証。右側領域における被写体抑制の普遍性を確認する。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3J/canonical/Cond06_BobRight_Hyper12.png`
+- **Zero-Touch Smoke Test**: **PASS** (Visual: FAIL / Wall occlusion)
+
+---
+
+### 53_VERIFY_HYPER12_PER_REGION_HINT_SWAP.json
+- **区分**: Clean Per-Region Hint v2 統合オラクル (HYPER12 PER-REGION HINT SWAP ORACLE)
+- **目的**: Phase 3J 主要オラクル。外枠 outline を除去した `include_bbox_outline=False`、`regional_control_strength=0.35`、`regional_control_end_percent=0.60`、および Bob 左・Alice 右の配置で実行。ドア枠・格子窓の幻覚描画を根絶し、クリーンな局所シルエット誘導を実証する。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3J/canonical/Cond10_PRH_v2_BBoxOFF_BobL_AliceR.png`
+- **Zero-Touch Smoke Test**: **PASS** (Visual: Doorframe artifact eliminated / Usable Foundation)
+
+---
+
+## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3J)
 - **Zero-Touch Smoke Test 検証済み**:
-  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、`21`〜`24`、正準空間検証セット `25`〜`28`、被写体排他・オーサリング因果セット `29`〜`34`、ControlNet スケール拘束セット `35`〜`39`、Phase 3I.1 検証セット `40`〜`43`、および Phase 3I.2 因果・領域制御セット `44`〜`47`（全47件）は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
-- **Visual Semantic Status 分離 (Phase 3I.1 〜 3I.2)**:
-  実行完全性（Zero-Touch PASS）と画像意味的成否（Visual Semantic Status）を厳格に分離。Phase 3I.2 では因果アブレーション（Cond A〜G）により、`base_only_steps = 0` の有害性、Shared Global の過拘束、Per-Region Hint によるマネキン線画複写の解消を実機証明しました。
+  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、`21`〜`24`、正準空間検証セット `25`〜`28`、被写体排他・オーサリング因果セット `29`〜`34`、ControlNet スケール拘束セット `35`〜`39`、Phase 3I.1 検証セット `40`〜`43`、Phase 3I.2 因果・領域制御セット `44`〜`47`、および Phase 3J 存在安定化・Shot Typeセット `48`〜`53`（全53件、うちターゲット37件）は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
+- **Visual Semantic Status 分離 (Phase 3I.1 〜 3J)**:
+  実行完全性（Zero-Touch PASS）と画像意味的成否（Visual Semantic Status）を厳格に分離。Phase 3J では存在マトリクス（Cond 01〜14）により、Baseプロンプト背景専任化（Canonical Base v2）による疑似テキストの根絶、BBox外枠除去によるドア枠幻覚の解消、および Adaptive Shot Type（full/half/bust）の境界契約確立を実機証明しました。
 
 
 

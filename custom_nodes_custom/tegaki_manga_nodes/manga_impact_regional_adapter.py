@@ -60,6 +60,7 @@ class TegakiMangaImpactRegionalAdapter:
                 "propagate_controlnet_to_regions": ("BOOLEAN", {"default": False}),
                 "regional_control_mode": (["off", "shared_global", "per_region_hint"], {"default": "off"}),
                 "regional_control_strength": ("FLOAT", {"default": 0.35, "min": 0.0, "max": 1.0, "step": 0.01}),
+                "regional_control_end_percent": ("FLOAT", {"default": 0.60, "min": 0.05, "max": 1.0, "step": 0.05}),
             }
         }
 
@@ -90,7 +91,8 @@ class TegakiMangaImpactRegionalAdapter:
         variation_method: str = "linear",
         propagate_controlnet_to_regions: bool = False,
         regional_control_mode: str = "off",
-        regional_control_strength: float = 0.35
+        regional_control_strength: float = 0.35,
+        regional_control_end_percent: float = 0.60
     ) -> Tuple[List[Any], torch.Tensor, torch.Tensor, str]:
         # 1. Dynamic import of Impact Pack
         impact_core = None
@@ -172,17 +174,24 @@ class TegakiMangaImpactRegionalAdapter:
                         import copy
                         assigned_control_obj = copy.copy(base_control_obj)
                     assigned_control_obj.strength = regional_control_strength
+                    if regional_control_end_percent is not None and regional_control_end_percent > 0:
+                        cur_range = getattr(base_control_obj, "timestep_percent_range", (0.0, 1.0))
+                        start_pct = cur_range[0] if isinstance(cur_range, (tuple, list)) else 0.0
+                        assigned_control_obj.timestep_percent_range = (start_pct, min(float(regional_control_end_percent), 1.0))
 
                 elif effective_control_mode == "per_region_hint":
                     # Only inject per-region hint for character instances
                     if reg["scope_type"] == "character_instance":
                         meta = reg.get("metadata", {})
                         pixel_bounds = meta.get("pixel_bounds", [0, 0, width, height])
+                        shot_type = meta.get("shot_type") or meta.get("shot") or "full_body"
                         char_hint_img = generate_single_character_guide_image(
                             width=width,
                             height=height,
                             pixel_bounds=pixel_bounds,
-                            guide_style="mannequin_capsule"
+                            guide_style="mannequin_capsule",
+                            include_bbox_outline=False,
+                            shot_type=shot_type
                         )
                         if hasattr(char_hint_img, "movedim") and char_hint_img.ndim == 4 and char_hint_img.shape[-1] == 3:
                             char_hint = char_hint_img.movedim(-1, 1)
@@ -195,8 +204,12 @@ class TegakiMangaImpactRegionalAdapter:
                             import copy
                             assigned_control_obj = copy.copy(base_control_obj)
 
+                        t_range = getattr(base_control_obj, "timestep_percent_range", (0.0, 1.0))
+                        if regional_control_end_percent is not None and regional_control_end_percent > 0:
+                            start_pct = t_range[0] if isinstance(t_range, (tuple, list)) else 0.0
+                            t_range = (start_pct, min(float(regional_control_end_percent), 1.0))
+
                         if hasattr(assigned_control_obj, "set_cond_hint"):
-                            t_range = getattr(base_control_obj, "timestep_percent_range", (0.0, 1.0))
                             c_vae = getattr(base_control_obj, "vae", None)
                             try:
                                 assigned_control_obj.set_cond_hint(
@@ -211,9 +224,11 @@ class TegakiMangaImpactRegionalAdapter:
                                 except Exception:
                                     assigned_control_obj.cond_hint_original = char_hint
                                     assigned_control_obj.strength = regional_control_strength
+                                    assigned_control_obj.timestep_percent_range = t_range
                         else:
                             assigned_control_obj.strength = regional_control_strength
                             assigned_control_obj.cond_hint_original = char_hint
+                            assigned_control_obj.timestep_percent_range = t_range
 
             # Attach ControlNet metadata if assigned
             if assigned_control_obj is not None:

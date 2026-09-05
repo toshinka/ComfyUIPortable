@@ -142,7 +142,8 @@ def build_impact_region_plan(
                 "panel_index": c["panel_index"],
                 "koma_local_area": c["koma_local_area"],
                 "page_projected_area": c["page_projected_area"],
-                "pixel_bounds": c["pixel_bounds"]
+                "pixel_bounds": c["pixel_bounds"],
+                "shot_type": c.get("shot_type") or c.get("metadata", {}).get("shot_type", "full_body")
             }
         }
         char_entries_built.append(entry)
@@ -231,7 +232,8 @@ def build_impact_region_plan(
                         "character_id": cid,
                         "binding_index": b_idx,
                         "area": b_area,
-                        "pixel_bounds": c_bbox
+                        "pixel_bounds": c_bbox,
+                        "shot_type": b.get("shot_type") or b.get("metadata", {}).get("shot_type", "full_body")
                     }
                 }
                 char_entries_built.append(c_entry)

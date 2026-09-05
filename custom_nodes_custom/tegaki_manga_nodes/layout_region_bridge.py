@@ -177,7 +177,8 @@ def build_panel_content_bridge(
                     "h": round(proj_h, 4)
                 },
                 "pixel_bounds": [c_px0, c_py0, c_px1, c_py1],
-                "panel_polygon_pixels": pixel_pts
+                "panel_polygon_pixels": pixel_pts,
+                "shot_type": c.get("shot_type") or c.get("metadata", {}).get("shot_type", "full_body")
             }
             all_char_entries.append(char_entry)
 
