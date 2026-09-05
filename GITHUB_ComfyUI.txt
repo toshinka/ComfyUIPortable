@@ -6,8 +6,8 @@ Canonical path: ComfyUIPortable/GITHUB_ComfyUI.txt
 Latest Entry: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB_ComfyUI.txt
 
 Review Target Commit SHA: 5eee2d4f7fa342e40add6c48fcb1ae7e8f1867b8
-Planning Commit SHA: UNCOMMITTED_LOCAL
-Planning publication: Pending Owner commit/push. Links below are Latest Main destinations, not published/pinned guarantees.
+Planning Commit SHA: 261a3d7297455931d391e62f2d8a1335193d8d90
+Planning publication: Published in local repository (Commit A: 261a3d72). Push to remote is pending Owner execution.
 
 Current direction:
 Minimum-Hand / Scene-first. Simple Scene-only draft first, optional CAST with repeated appearances next, rough manga/dummy guide afterward. Scene regions and visible panel frames are independent. Pose / Interaction are later refinement.
