@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "phase": "Phase 3I.1",
+  "phase_name": "ControlNet Visual Truth, Conditioning Ablation & Authoring Interaction Closure",
+  "baseline_commit": "6d34c1ebd8b33f8b41e0116e8eecb1699e77599c",
+  "target_device": "NVIDIA GeForce RTX 4070 (12GB VRAM)",
+  "dependencies": {
+    "checkpoint": "waiIllustriousSDXL_v170.safetensors",
+    "controlnet": "CN-anytest4_illustrious2_A.safetensors",
+    "hyper_sdxl_lora": "Hyper-SDXL-12steps-CFG-lora.safetensors"
+  },
+  "verification_suites": {
+    "conditioning_propagation_audit": {
+      "script": "scripts/test_controlnet_conditioning_propagation.py",
+      "test_count": 4,
+      "status": "PASS",
+      "findings": {
+        "base_positive_control": true,
+        "regional_encoded_positive_control": false,
+        "cloned_regional_sampler_stored_control": false,
+        "current_architecture": "BASE_ONLY",
+        "prototype_propagation_available": true
+      }
+    },
+    "browser_pointer_e2e": {
+      "script": "scripts/test_character_staging_browser_pointer.py",
+      "test_count": 2,
+      "status": "PASS",
+      "findings": {
+        "pointer_drag_move_and_clamping": "PASS",
+        "backend_causality_and_guide_ssot": "PASS"
+      }
+    },
+    "canonical_workflows": {
+      "WF40": {
+        "file": "workflows/40_VERIFY_CN_AUTHORING_REFERENCE_PAIR.json",
+        "description": "ControlNet Authoring Reference Pair (Alice Left, Bob Right, Euler 20s, CN 0.75/0.80, Base-Only)",
+        "runtime_status": "PASS",
+        "visual_semantic_status": "FAIL",
+        "observed_finding": "Latents collapsed into architectural background with miniature student; 0/2 target characters rendered"
+      },
+      "WF41": {
+        "file": "workflows/41_VERIFY_CN_STRENGTH_SANITY.json",
+        "description": "ControlNet Strength Sanity (CN 0.50 / End 0.60 vs 0.75 / 0.80)",
+        "runtime_status": "PASS",
+        "visual_semantic_status": "FAIL",
+        "observed_finding": "Identical architectural collapse with miniature student; softening base CN did not resolve regional suppression"
+      },
+      "WF42": {
+        "file": "workflows/42_VERIFY_REGIONAL_CN_PROPAGATION_AB.json",
+        "description": "Regional ControlNet Propagation Prototype (propagate_controlnet_to_regions: True)",
+        "runtime_status": "PASS",
+        "visual_semantic_status": "PARTIAL",
+        "observed_finding": "BOTH regions rendered at full scale, but severe mannequin overconstraint: literal wooden mannequins in frames"
+      },
+      "WF43": {
+        "file": "workflows/43_VERIFY_BROWSER_STAGING_CAUSALITY.json",
+        "description": "Browser Staging Interaction Causality (Alice moved right, Fast Draft 12)",
+        "runtime_status": "PASS",
+        "visual_semantic_status": "FAIL",
+        "observed_finding": "UI pointer mechanics and Guide SSOT verified; image output collapsed into background architecture"
+      }
+    }
+  },
+  "visual_evaluation_file": "output/Tegaki/Phase3I1/phase3i1_visual_evaluation.json",
+  "contact_sheets": {
+    "sheet_j": "output/Tegaki/Phase3I1/sheet_j_regional_only_vs_controlnet.png",
+    "sheet_k": "output/Tegaki/Phase3I1/sheet_k_reference_vs_fast12.png",
+    "sheet_l": "output/Tegaki/Phase3I1/sheet_l_base_only_vs_regional_propagation.png",
+    "sheet_diagnostic_overlay": "output/Tegaki/Phase3I1/sheet_diagnostic_overlay_wf35_39.png"
+  },
+  "sign_off": {
+    "phase3i_review_closure": "PASS",
+    "wf35_subject_presence": "FAIL",
+    "wf36_scale_lock": "FAIL",
+    "wf37_two_character_semantics": "FAIL",
+    "wf38_two_character_swap": "FAIL",
+    "wf39_fast12_cn_semantics": "PASS",
+    "regional_only_vs_cn_scale_improvement": "YES",
+    "controlnet_artifacts": "ACCEPTABLE",
+    "control_metadata_propagation": "BASE_ONLY",
+    "controlnet_schedule": "VERIFIED",
+    "regional_cn_propagation": "NEUTRAL",
+    "fast_draft_12_cn": "ACCEPT AS DRAFT",
+    "browser_pointer_e2e": "PASS",
+    "user_visual_review_required": "NO",
+    "phase3j": "GO",
+    "next_recommended_phase": "Phase 3J (Adaptive Character Guide & Pose / Camera Shot Authoring)"
+  }
+}

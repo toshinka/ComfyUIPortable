@@ -56,6 +56,7 @@ class TegakiMangaImpactRegionalAdapter:
                 "variation_seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
                 "variation_strength": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.01}),
                 "variation_method": (["linear", "slerp"], {"default": "linear"}),
+                "propagate_controlnet_to_regions": ("BOOLEAN", {"default": False}),
             }
         }
 
@@ -83,7 +84,8 @@ class TegakiMangaImpactRegionalAdapter:
         mask_feather: int = 0,
         variation_seed: int = 0,
         variation_strength: float = 0.0,
-        variation_method: str = "linear"
+        variation_method: str = "linear",
+        propagate_controlnet_to_regions: bool = False
     ) -> Tuple[List[Any], torch.Tensor, torch.Tensor, str]:
         # 1. Dynamic import of Impact Pack
         impact_core = None
@@ -135,10 +137,31 @@ class TegakiMangaImpactRegionalAdapter:
         mask_list = []
         debug_regions = []
 
+        # Inspect base_sampler for ControlNet conditioning propagation (Phase 3I.1 A/B)
+        base_control_obj = None
+        base_control_uncond = False
+        if propagate_controlnet_to_regions and hasattr(base_sampler, "params") and len(base_sampler.params) >= 5:
+            base_pos = base_sampler.params[4]
+            if base_pos and isinstance(base_pos, list) and len(base_pos) > 0 and len(base_pos[0]) > 1:
+                base_dict = base_pos[0][1]
+                if isinstance(base_dict, dict) and "control" in base_dict:
+                    base_control_obj = base_dict["control"]
+                    base_control_uncond = base_dict.get("control_apply_to_uncond", False)
+
         # 3. Create regional samplers via base_sampler.clone_with_conditionings
         for reg in regions:
             pos_cond = self._encode_text(clip, reg["prompt"])
             neg_cond = self._encode_text(clip, reg["negative_prompt"])
+
+            # Attach ControlNet metadata if propagation enabled and present
+            if propagate_controlnet_to_regions and base_control_obj is not None:
+                new_pos_cond = []
+                for t, d in pos_cond:
+                    d_copy = d.copy()
+                    d_copy["control"] = base_control_obj
+                    d_copy["control_apply_to_uncond"] = base_control_uncond
+                    new_pos_cond.append([t, d_copy])
+                pos_cond = new_pos_cond
 
             # Clone base sampler with regional conditionings
             regional_sampler = base_sampler.clone_with_conditionings(pos_cond, neg_cond)
@@ -223,6 +246,8 @@ class TegakiMangaImpactRegionalAdapter:
             "summary": plan["summary"],
             "ordering_mode": ordering_mode,
             "character_prompt_mode": character_prompt_mode,
+            "propagate_controlnet_to_regions": propagate_controlnet_to_regions,
+            "controlnet_propagated": (base_control_obj is not None) if propagate_controlnet_to_regions else False,
             "total_regional_prompts": len(regional_prompts),
             "regions": debug_regions
         }

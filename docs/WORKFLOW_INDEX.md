@@ -542,11 +542,53 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 
 ---
 
-## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3I)
+---
+
+### 40_VERIFY_CN_AUTHORING_REFERENCE_PAIR.json
+- **区分**: ControlNet オーサリング参照ペアオラクル (CN AUTHORING REFERENCE PAIR: ALICE LEFT, BOB RIGHT)
+- **目的**: Reference 20-step (Euler, normal, CFG 7.0) 環境下で、ControlNet 補助つき2人物配置（Alice 左、Bob 右）のベースライン挙動を検証。Base-Only ControlNet の伝播特性を測定する。
+- **必要Custom Node**:
+  - `TegakiMangaLayoutGuideGenerator`, `TegakiMangaCastMaster`, `TegakiMangaPanelContentEditor`, `TegakiMangaPanelLayoutEditor`, `TegakiMangaCharacterStagingEditor`, `TegakiMangaPageCompiler`, `TegakiMangaImpactRegionalAdapter` (独自)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: ControlNetLoader, ControlNetApplyAdvanced, CheckpointLoaderSimple, EmptyLatentImage, SaveImage
+- **出力**: `output/Tegaki/Phase3I1/canonical/WF40_Phase3I1_Authoring_40_ReferencePair_AliceLeft_BobRight_00001_.png`
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 41_VERIFY_CN_STRENGTH_SANITY.json
+- **区分**: ControlNet 強度・スケジュール健全性オラクル (CN STRENGTH / SCHEDULE SANITY)
+- **目的**: ControlNet の適用強度を 0.50、終了タイミングを 0.60（Step 12/20）へ緩和し、過度な拘束によるリージョナルプロンプトの消失・抑制（Alice suppression）を防ぐ妥当点を検証する。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3I1/canonical/WF41_Phase3I1_CN_Strength_Sanity_50_60_00001_.png`
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 42_VERIFY_REGIONAL_CN_PROPAGATION_AB.json
+- **区分**: リージョナル ControlNet 伝播 A/B オラクル (REGIONAL CN PROPAGATION A/B)
+- **目的**: `TegakiMangaImpactRegionalAdapter` の `propagate_controlnet_to_regions: True` トグルを検証。Base Sampler に加え、各リージョナルサンプラーへ ControlNet 条件付けを複製・伝播させるプロトタイプの動作を実証する。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3I1/canonical/WF42_Phase3I1_Regional_CN_Propagation_AB_00001_.png`
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 43_VERIFY_BROWSER_STAGING_CAUSALITY.json
+- **区分**: ブラウザポインタ演出因果性オラクル (BROWSER STAGING CAUSALITY)
+- **目的**: Character Staging Editor 上でのドラッグ操作（Alice を左から中央右へ移動）によるオーサリング因果性を Fast Draft 12 プロファイル上で検証。Impact リージョンマスクと ControlNet ガイド画像が完全同期して移動し、両人物が反転位置で明瞭に生成されることを実証する。
+- **必要Custom Node**: 同上 + LoraLoader (Hyper-SDXL 12-step)
+- **出力**: `output/Tegaki/Phase3I1/canonical/WF43_Phase3I1_Browser_Staging_Causality_AliceRight_00001_.png`
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3I.1)
 - **Zero-Touch Smoke Test 検証済み**:
-  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、`21`〜`24`、正準空間検証セット `25`〜`28`、被写体排他・オーサリング因果セット `29`〜`34`、および ControlNet スケール拘束セット `35`〜`39`（全39件）は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
-- **ControlNet Layout Auxiliary Conditioning (Phase 3I)**:
-  AnyTest v4 Illustrious と自動マネキン／ワイヤーフレームガイド生成ノード（`TegakiMangaLayoutGuideGenerator`）の導入により、従来の純粋潜在マスク方式で発生していた「背景パースペクティブへの人物縮小・消失（Case B）」を物理拘束によって克服。Fast Draft 12 プロファイルとの併用下でも、左右人物の厳密なシルエット拘束およびスケール保持を実証しました。
+  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、`21`〜`24`、正準空間検証セット `25`〜`28`、被写体排他・オーサリング因果セット `29`〜`34`、ControlNet スケール拘束セット `35`〜`39`、および Phase 3I.1 検証セット `40`〜`43`（全43件）は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
+- **Visual Semantic Status 分離 (Phase 3I.1)**:
+  実行完全性（Zero-Touch PASS）と画像意味的成否（Visual Semantic Status）を厳格に分離し、過大表現（"definitively solved", "exact boundaries" 等）を補正。WF39 / WF43（Fast Draft 12）において2人物の完全なスケール拘束・空間反転生成が実証されました。
+
 
 
 

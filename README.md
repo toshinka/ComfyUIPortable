@@ -183,6 +183,10 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
 - `37_VERIFY_AUTHORING_ALICE_LEFT_BOB_RIGHT_CN_ASSIST.json`: 本番オーサリング ControlNet 補助オラクル (Alice左・Bob右・マネキン拘束 / Zero-Touch Verified)
 - `38_VERIFY_AUTHORING_ALICE_RIGHT_BOB_LEFT_CN_ASSIST.json`: 本番オーサリング ControlNet 補助スワップオラクル (Bob左・Alice右・空間反転拘束 / Zero-Touch Verified)
 - `39_VERIFY_FAST_DRAFT_12_CONTROLNET_REGRESSION.json`: 高速ドラフト ControlNet 回帰オラクル (Hyper-SDXL 12-Step・シルエット完全拘束・~30s生成 / Zero-Touch Verified)
+- `40_VERIFY_CN_AUTHORING_REFERENCE_PAIR.json`: ControlNet オーサリング参照ペアオラクル (Alice左・Bob右・Euler 20s・Base-only CN伝播 / Zero-Touch Verified)
+- `41_VERIFY_CN_STRENGTH_SANITY.json`: ControlNet 強度・スケジュール健全性オラクル (CN 0.50/0.60 緩和・過拘束抑制評価 / Zero-Touch Verified)
+- `42_VERIFY_REGIONAL_CN_PROPAGATION_AB.json`: リージョナル ControlNet 伝播 A/B オラクル (propagate_controlnet_to_regions: True プロトタイプ / Zero-Touch Verified)
+- `43_VERIFY_BROWSER_STAGING_CAUSALITY.json`: ブラウザポインタ演出因果性オラクル (Alice右ドラッグ移動・Fast Draft 12同期・Guide SSOT実証 / Zero-Touch Verified)
 
 ### Tag Complete (Phase 3B.1.1 導入)
 - 全テキスト入力欄（Region Editor Prompt、CLIPTextEncode 等）で、Danbooru 14万タグ、LoRA名、Embeddingのリアルタイム自動補完（Tag Complete）が完全動作します（`ComfyUI-Custom-Scripts` 統合）。
