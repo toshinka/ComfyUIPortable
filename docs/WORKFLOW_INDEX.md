@@ -679,11 +679,68 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 
 ---
 
-## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3J)
+### 54_VERIFY_ALICE_LEFT_PROMPT_TRUTH_REMAINDER.json
+- **区分**: 単一人物プロンプト正本・Remainder Mask検証 A1 (ALICE LEFT PROMPT TRUTH REMAINDER)
+- **目的**: Canonical CAST `prompt`（1girl, blonde twin tails...）と Binding `prompt_override`（standing calmly）を正本として Regional Sampler へ直接供給し、`character_prompt_mode: standalone` かつ `remainder_mask_mode: True` で Alice を左側 [0.10, 0.15, 0.35, 0.75] に配置した実証ワークフロー。背景 Scene Mask が人物領域を塗り潰さず、純粋な人物プロンプトで生成されることを保証する。
+- **必要Custom Node**:
+  - `TegakiMangaLayoutGuideGenerator`, `TegakiMangaCastMaster`, `TegakiMangaPanelContentEditor`, `TegakiMangaPanelLayoutEditor`, `TegakiMangaCharacterStagingEditor`, `TegakiMangaPageCompiler`, `TegakiMangaImpactRegionalAdapter` (独自)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: ControlNetLoader, ControlNetApplyAdvanced, CheckpointLoaderSimple, EmptyLatentImage, SaveImage, LoraLoader
+- **出力**: `output/Tegaki/Phase3J1/canonical/Cond05_WF54_Alice_Left_Only.png`
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 55_VERIFY_ALICE_RIGHT_PROMPT_TRUTH_REMAINDER.json
+- **区分**: 単一人物プロンプト正本・Remainder Mask検証 A2 (ALICE RIGHT PROMPT TRUTH REMAINDER)
+- **目的**: Alice 単独を右側 [0.55, 0.15, 0.35, 0.75] に配置し、プロンプト正本伝播と Remainder Mask 減算が右側領域でも機能することを検証するワークフロー。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3J1/canonical/Cond06_WF55_Alice_Right_Only.png`
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 56_VERIFY_BOB_LEFT_PROMPT_TRUTH_REMAINDER.json
+- **区分**: 単一人物プロンプト正本・Remainder Mask検証 B1 (BOB LEFT PROMPT TRUTH REMAINDER)
+- **目的**: Canonical CAST `prompt`（1boy, short black hair...）と Binding `prompt_override`（standing calmly）を正本として供給し、Bob 単独を左側 [0.10, 0.15, 0.35, 0.75] に配置した実証ワークフロー。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3J1/canonical/Cond07_WF56_Bob_Left_Only.png`
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 57_VERIFY_BOB_RIGHT_PROMPT_TRUTH_REMAINDER.json
+- **区分**: 単一人物プロンプト正本・Remainder Mask検証 B2 (BOB RIGHT PROMPT TRUTH REMAINDER)
+- **目的**: Bob 単独を右側 [0.55, 0.15, 0.35, 0.75] に配置し、右側配置におけるプロンプト正本伝播と Remainder Mask 減算の挙動を検証するワークフロー。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3J1/canonical/Cond08_WF57_Bob_Right_Only.png`
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 58_VERIFY_TWO_CHARACTER_PROMPT_TRUTH_LR.json
+- **区分**: 2人物プロンプト正本・Remainder Mask標準配置 (TWO-CHARACTER PROMPT TRUTH LR)
+- **目的**: Alice を左 [0.10, 0.15, 0.35, 0.75]、Bob を右 [0.55, 0.15, 0.35, 0.75] に配置。2人物双方の Identity プロンプトがそれぞれの Regional Sampler へ正しく到達し、コマ背景マスクから両人物領域が完全減算（Remainder Subtraction）された状態で描画される Canonical 統合ワークフロー。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3J1/canonical/Cond03_WF58_AliceL_BobR_Remainder_ON.png`
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+### 59_VERIFY_TWO_CHARACTER_PROMPT_TRUTH_SWAP.json
+- **区分**: 2人物プロンプト正本・Remainder Mask左右入替 (TWO-CHARACTER PROMPT TRUTH SWAP)
+- **目的**: Bob を左 [0.10, 0.15, 0.35, 0.75]、Alice を右 [0.55, 0.15, 0.35, 0.75] に空間入替配置。プロンプト内に位置語彙を含めず幾何情報のみで人物位置が決定され、各領域にそれぞれのプロンプトが忠実に適用されることを検証するワークフロー。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3J1/canonical/Cond09_WF59_TwoChar_BobL_AliceR.png`
+- **Zero-Touch Smoke Test**: **PASS**
+
+---
+
+## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3J.1)
 - **Zero-Touch Smoke Test 検証済み**:
-  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、`21`〜`24`、正準空間検証セット `25`〜`28`、被写体排他・オーサリング因果セット `29`〜`34`、ControlNet スケール拘束セット `35`〜`39`、Phase 3I.1 検証セット `40`〜`43`、Phase 3I.2 因果・領域制御セット `44`〜`47`、および Phase 3J 存在安定化・Shot Typeセット `48`〜`53`（全53件、うちターゲット37件）は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
-- **Visual Semantic Status 分離 (Phase 3I.1 〜 3J)**:
-  実行完全性（Zero-Touch PASS）と画像意味的成否（Visual Semantic Status）を厳格に分離。Phase 3J では存在マトリクス（Cond 01〜14）により、Baseプロンプト背景専任化（Canonical Base v2）による疑似テキストの根絶、BBox外枠除去によるドア枠幻覚の解消、および Adaptive Shot Type（full/half/bust）の境界契約確立を実機証明しました。
+  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、`21`〜`24`、正準空間検証セット `25`〜`28`、被写体排他・オーサリング因果セット `29`〜`34`、ControlNet スケール拘束セット `35`〜`39`、Phase 3I.1 検証セット `40`〜`43`、Phase 3I.2 因果・領域制御セット `44`〜`47`、Phase 3J 存在安定化・Shot Typeセット `48`〜`53`、および Phase 3J.1 プロンプト契約修復・領域単離セット `54`〜`59`（全59件、うちターゲット43件）は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
+- **Visual Semantic Status 分離 (Phase 3I.1 〜 3J.1)**:
+  実行完全性（Zero-Touch PASS）と画像意味的成否（Visual Semantic Status）を厳格に分離。Phase 3J.1 では CAST `prompt` および Binding `prompt_override` 契約の修復、`standalone` プロンプトモード、および `remainder_mask_mode` による背景マスクからの人物ボックス除外（Zero Overlap）を確立しました。
 
 
 

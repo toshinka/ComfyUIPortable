@@ -257,13 +257,18 @@ class TegakiMangaImpactRegionalAdapter:
             regional_prompts.append(rp)
             mask_list.append(mask_tensor[0])
 
+            reg_prompt = reg["prompt"] or ""
+            is_char = (reg["scope_type"] == "character_instance")
             debug_regions.append({
                 "region_index": reg["region_index"],
                 "scope_type": reg["scope_type"],
                 "source_panel_id": reg["source_panel_id"],
                 "character_instance_id": reg["character_instance_id"],
                 "master_character_id": reg["master_character_id"],
-                "prompt": reg["prompt"],
+                "prompt_mode": character_prompt_mode if is_char else None,
+                "character_prompt_nonempty": bool(reg_prompt.strip()) if is_char else None,
+                "prompt_preview": reg_prompt[:80] + ("..." if len(reg_prompt) > 80 else ""),
+                "prompt": reg_prompt,
                 "negative_prompt": reg["negative_prompt"],
                 "priority": reg["priority"]
             })

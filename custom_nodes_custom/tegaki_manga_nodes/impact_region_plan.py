@@ -210,7 +210,16 @@ def build_impact_region_plan(
                     c_clipped_mask = _apply_feather_single(c_clipped_mask, mask_feather)
 
                 instance_id = f"p{pid}_{sub_id}_{cid}_{b_idx:02d}"
-                c_prompt = b.get("prompt_override", "")
+                c_override = b.get("prompt_override", "")
+                if not c_override and "acting" in b and isinstance(b["acting"], str):
+                    c_override = b["acting"]
+
+                # Retrieve master character prompt if available
+                master_chars = page_compile_plan.get("characters", []) if isinstance(page_compile_plan, dict) else []
+                m_char = next((ch for ch in master_chars if ch.get("character_id") == cid), None)
+                m_base = m_char.get("base_prompt", "") if m_char else ""
+                c_prompt = f"{m_base}, {c_override}" if (m_base and c_override) else (c_override or m_base)
+
                 if character_prompt_mode == "scene_composed" and sub["prompt"]:
                     composed_c_prompt = f"{sub['prompt']}, {c_prompt}" if c_prompt else sub["prompt"]
                 else:
@@ -222,9 +231,9 @@ def build_impact_region_plan(
                     "source_scene_id": f"scene_p{pid}_{sub_id}",
                     "master_character_id": cid,
                     "character_instance_id": instance_id,
-                    "character_name": cid,
+                    "character_name": m_char.get("name", cid) if m_char else cid,
                     "prompt": composed_c_prompt,
-                    "negative_prompt": b.get("negative_prompt_override") or sub["negative_prompt"],
+                    "negative_prompt": b.get("negative_prompt_override") or (m_char.get("base_negative_prompt", "") if m_char else "") or sub["negative_prompt"],
                     "mask": c_clipped_mask,
                     "priority": 300 if ordering_mode == "scene_first" else 100,
                     "metadata": {
@@ -237,6 +246,15 @@ def build_impact_region_plan(
                     }
                 }
                 char_entries_built.append(c_entry)
+
+    # Apply remainder mask subtraction to subscenes if requested
+    if remainder_mask_mode and subscene_entries_built:
+        for s_entry in subscene_entries_built:
+            s_id = s_entry["metadata"]["subscene_id"]
+            p_id = s_entry["source_panel_id"]
+            for c in char_entries_built:
+                if c["source_panel_id"] == p_id and c.get("metadata", {}).get("subscene_id") == s_id:
+                    s_entry["mask"] = torch.clamp(s_entry["mask"] - c["mask"], 0.0, 1.0)
 
     # 3. Process Local Regions
     lr_entries_built = []

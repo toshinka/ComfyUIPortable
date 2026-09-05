@@ -1,0 +1,1197 @@
+{
+  "last_node_id": 45,
+  "last_link_id": 310,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "CheckpointLoaderSimple",
+      "pos": [
+        40,
+        80
+      ],
+      "size": [
+        320,
+        100
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            101
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            2,
+            3,
+            20,
+            24
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            4,
+            18
+          ],
+          "slot_index": 2
+        }
+      ],
+      "widgets_values": [
+        "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors"
+      ]
+    },
+    {
+      "id": 40,
+      "type": "LoraLoader",
+      "pos": [
+        40,
+        200
+      ],
+      "size": [
+        320,
+        100
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 101
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            1
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            102
+          ],
+          "slot_index": 1
+        }
+      ],
+      "widgets_values": [
+        "調整\\Hyper-SDXL-12steps-CFG-lora.safetensors",
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": 2,
+      "type": "EmptyLatentImage",
+      "pos": [
+        40,
+        320
+      ],
+      "size": [
+        320,
+        110
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            5
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": [
+        1024,
+        1024,
+        1
+      ]
+    },
+    {
+      "id": 3,
+      "type": "CLIPTextEncode",
+      "pos": [
+        400,
+        80
+      ],
+      "size": [
+        340,
+        140
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 102
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            6
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": [
+        "manga illustration, monochrome expressive linework, high quality, empty school courtyard, clear open foreground, simple architectural background"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "CLIPTextEncode",
+      "pos": [
+        400,
+        250
+      ],
+      "size": [
+        340,
+        140
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            7
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": [
+        "worst quality, low quality, bad anatomy, blurry, text, watermark"
+      ]
+    },
+    {
+      "id": 30,
+      "type": "ControlNetLoader",
+      "pos": [
+        400,
+        420
+      ],
+      "size": [
+        340,
+        80
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "CONTROL_NET",
+          "type": "CONTROL_NET",
+          "links": [
+            301
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": [
+        "CN-anytest4_illustrious2_A.safetensors"
+      ]
+    },
+    {
+      "id": 31,
+      "type": "TegakiMangaLayoutGuideGenerator",
+      "pos": [
+        780,
+        400
+      ],
+      "size": [
+        320,
+        180
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "scene_plan",
+          "type": "*",
+          "link": 16
+        }
+      ],
+      "outputs": [
+        {
+          "name": "guide_image",
+          "type": "IMAGE",
+          "links": [
+            302,
+            305
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "layout_mask",
+          "type": "MASK",
+          "links": [],
+          "slot_index": 1
+        },
+        {
+          "name": "debug_json",
+          "type": "STRING",
+          "links": [],
+          "slot_index": 2
+        }
+      ],
+      "widgets_values": [
+        1,
+        "mannequin_capsule",
+        "Black on White",
+        4,
+        false,
+        1024,
+        1024,
+        false
+      ]
+    },
+    {
+      "id": 32,
+      "type": "ControlNetApplyAdvanced",
+      "pos": [
+        780,
+        80
+      ],
+      "size": [
+        300,
+        180
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 6
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 7
+        },
+        {
+          "name": "control_net",
+          "type": "CONTROL_NET",
+          "link": 301
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 302
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": [
+            303
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": [
+            304
+          ],
+          "slot_index": 1
+        }
+      ],
+      "widgets_values": [
+        0.75,
+        0.0,
+        0.8
+      ]
+    },
+    {
+      "id": 5,
+      "type": "ToBasicPipe",
+      "pos": [
+        1120,
+        80
+      ],
+      "size": [
+        260,
+        140
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 1
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 20
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 4
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 303
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 304
+        }
+      ],
+      "outputs": [
+        {
+          "name": "basic_pipe",
+          "type": "BASIC_PIPE",
+          "links": [
+            8
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": []
+    },
+    {
+      "id": 6,
+      "type": "KSamplerAdvancedProvider",
+      "pos": [
+        1120,
+        260
+      ],
+      "size": [
+        260,
+        180
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "basic_pipe",
+          "type": "BASIC_PIPE",
+          "link": 8
+        },
+        {
+          "name": "sampler_opt",
+          "type": "SAMPLER",
+          "link": null
+        },
+        {
+          "name": "scheduler_func_opt",
+          "type": "SCHEDULER_FUNC",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "KSAMPLER_ADVANCED",
+          "type": "KSAMPLER_ADVANCED",
+          "links": [
+            9
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": [
+        6.0,
+        "euler",
+        "normal",
+        1.0
+      ]
+    },
+    {
+      "id": 7,
+      "type": "TegakiMangaCastMaster",
+      "pos": [
+        40,
+        480
+      ],
+      "size": [
+        360,
+        320
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "cast_spec",
+          "type": "CAST_SPEC",
+          "links": [
+            10
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "cast_spec_json",
+          "type": "STRING",
+          "links": [
+            11
+          ],
+          "slot_index": 1
+        }
+      ],
+      "widgets_values": [
+        "{\n  \"version\": 1,\n  \"characters\": [\n    {\n      \"id\": \"char_alice\",\n      \"name\": \"Alice\",\n      \"gender\": \"female\",\n      \"enabled\": true,\n      \"prompt\": \"1girl, blonde twin tails, blue eyes, school uniform, pleated skirt, full body\",\n      \"negative_prompt\": \"1boy, male, duplicate person, blurry\",\n      \"loras\": [],\n      \"metadata\": {}\n    },\n    {\n      \"id\": \"char_bob\",\n      \"name\": \"Bob\",\n      \"gender\": \"male\",\n      \"enabled\": true,\n      \"prompt\": \"1boy, short black hair, dark school uniform, male student, full body\",\n      \"negative_prompt\": \"1girl, female, duplicate person, blurry\",\n      \"loras\": [],\n      \"metadata\": {}\n    }\n  ]\n}"
+      ]
+    },
+    {
+      "id": 8,
+      "type": "TegakiMangaPanelContentEditor",
+      "pos": [
+        440,
+        480
+      ],
+      "size": [
+        380,
+        320
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "cast_spec",
+          "type": "CAST_SPEC",
+          "link": 10
+        }
+      ],
+      "outputs": [
+        {
+          "name": "region_spec",
+          "type": "REGION_SPEC",
+          "links": [
+            12
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "content_data_json",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 1
+        },
+        {
+          "name": "panel_count",
+          "type": "INT",
+          "links": null,
+          "slot_index": 2
+        }
+      ],
+      "widgets_values": [
+        "{\n  \"version\": 1,\n  \"canvas\": {\n    \"width\": 1024,\n    \"height\": 1024\n  },\n  \"panel_count\": 1,\n  \"global_prompt\": \"manga illustration, monochrome expressive linework, high quality, empty school courtyard, clear open foreground, simple architectural background\",\n  \"global_negative_prompt\": \"worst quality, low quality, bad anatomy, blurry, text, watermark\",\n  \"panels\": [\n    {\n      \"id\": 1,\n      \"name\": \"Panel 1\",\n      \"enabled\": true,\n      \"prompt\": \"school courtyard background, open walkway, afternoon\",\n      \"negative_prompt\": \"blurry\",\n      \"characters\": [\n        {\n          \"character_id\": \"char_bob\",\n          \"enabled\": true,\n          \"prompt_override\": \"standing calmly\",\n          \"negative_prompt_override\": \"\",\n          \"area\": {\n            \"x\": 0.1,\n            \"y\": 0.15,\n            \"w\": 0.35,\n            \"h\": 0.75,\n            \"width\": 0.35,\n            \"height\": 0.75\n          },\n          \"metadata\": {\n            \"semantic_role\": \"primary\"\n          }\n        },\n        {\n          \"character_id\": \"char_alice\",\n          \"enabled\": true,\n          \"prompt_override\": \"standing calmly\",\n          \"negative_prompt_override\": \"\",\n          \"area\": {\n            \"x\": 0.55,\n            \"y\": 0.15,\n            \"w\": 0.35,\n            \"h\": 0.75,\n            \"width\": 0.35,\n            \"height\": 0.75\n          },\n          \"metadata\": {\n            \"semantic_role\": \"primary\"\n          }\n        }\n      ],\n      \"subscenes\": []\n    }\n  ]\n}"
+      ]
+    },
+    {
+      "id": 9,
+      "type": "TegakiMangaPanelLayoutEditor",
+      "pos": [
+        900,
+        500
+      ],
+      "size": [
+        380,
+        440
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "outputs": [
+        {
+          "name": "layout_image",
+          "type": "IMAGE",
+          "links": null,
+          "slot_index": 0
+        },
+        {
+          "name": "panel_layout_spec",
+          "type": "PANEL_LAYOUT_SPEC",
+          "links": [
+            13,
+            14
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "debug_json",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 2
+        }
+      ],
+      "widgets_values": [
+        1024,
+        1024,
+        1,
+        "{\n  \"version\": 1,\n  \"canvas\": {\n    \"width\": 1024,\n    \"height\": 1024\n  },\n  \"frame\": {\n    \"x\": 0.05,\n    \"y\": 0.05,\n    \"w\": 0.9,\n    \"h\": 0.9\n  },\n  \"vertices\": [\n    {\n      \"id\": \"v1\",\n      \"x\": 0.05,\n      \"y\": 0.05\n    },\n    {\n      \"id\": \"v2\",\n      \"x\": 0.95,\n      \"y\": 0.05\n    },\n    {\n      \"id\": \"v3\",\n      \"x\": 0.95,\n      \"y\": 0.95\n    },\n    {\n      \"id\": \"v4\",\n      \"x\": 0.05,\n      \"y\": 0.95\n    }\n  ],\n  \"panels\": [\n    {\n      \"id\": \"p1\",\n      \"vertex_ids\": [\n        \"v1\",\n        \"v4\",\n        \"v3\",\n        \"v2\"\n      ]\n    }\n  ],\n  \"metadata\": {\n    \"preset\": \"1_full\"\n  }\n}"
+      ]
+    },
+    {
+      "id": 10,
+      "type": "TegakiMangaCharacterStagingEditor",
+      "pos": [
+        1260,
+        480
+      ],
+      "size": [
+        440,
+        380
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "region_spec",
+          "type": "REGION_SPEC",
+          "link": 12
+        },
+        {
+          "name": "panel_layout_spec",
+          "type": "PANEL_LAYOUT_SPEC",
+          "link": 13
+        }
+      ],
+      "outputs": [
+        {
+          "name": "region_spec",
+          "type": "REGION_SPEC",
+          "links": [
+            15
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "staging_preview",
+          "type": "IMAGE",
+          "links": null,
+          "slot_index": 1
+        },
+        {
+          "name": "staging_json",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 2
+        }
+      ],
+      "widgets_values": [
+        "{\n  \"char_bob\": {\n    \"area\": {\n      \"x\": 0.1,\n      \"y\": 0.15,\n      \"w\": 0.35,\n      \"h\": 0.75,\n      \"width\": 0.35,\n      \"height\": 0.75\n    },\n    \"pose_preset\": \"standing_neutral\"\n  },\n  \"char_alice\": {\n    \"area\": {\n      \"x\": 0.55,\n      \"y\": 0.15,\n      \"w\": 0.35,\n      \"h\": 0.75,\n      \"width\": 0.35,\n      \"height\": 0.75\n    },\n    \"pose_preset\": \"standing_neutral\"\n  }\n}"
+      ]
+    },
+    {
+      "id": 11,
+      "type": "TegakiMangaPageCompiler",
+      "pos": [
+        1740,
+        80
+      ],
+      "size": [
+        340,
+        240
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "region_spec",
+          "type": "REGION_SPEC",
+          "link": 15
+        },
+        {
+          "name": "cast_spec",
+          "type": "STRING",
+          "link": 11
+        }
+      ],
+      "outputs": [
+        {
+          "name": "page_compile_plan",
+          "type": "PAGE_COMPILE_PLAN",
+          "links": [
+            16,
+            22
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "debug_json",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 1
+        }
+      ],
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 12,
+      "type": "TegakiMangaImpactRegionalAdapter",
+      "pos": [
+        1760,
+        480
+      ],
+      "size": [
+        360,
+        400
+      ],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "page_compile_plan",
+          "type": "PAGE_COMPILE_PLAN",
+          "link": 22
+        },
+        {
+          "name": "panel_layout_spec",
+          "type": "PANEL_LAYOUT_SPEC",
+          "link": 14
+        },
+        {
+          "name": "base_sampler",
+          "type": "KSAMPLER_ADVANCED",
+          "link": 9
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 24
+        }
+      ],
+      "outputs": [
+        {
+          "name": "regional_prompts",
+          "type": "REGIONAL_PROMPTS",
+          "links": [
+            17
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "staging_image",
+          "type": "IMAGE",
+          "links": null,
+          "slot_index": 1
+        }
+      ],
+      "widgets_values": [
+        "scene_first",
+        "standalone",
+        true,
+        true,
+        0,
+        0,
+        0.0,
+        "linear",
+        false,
+        "off",
+        0.35,
+        0.6
+      ]
+    },
+    {
+      "id": 14,
+      "type": "RegionalSampler",
+      "pos": [
+        2140,
+        80
+      ],
+      "size": [
+        360,
+        360
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 5
+        },
+        {
+          "name": "base_sampler",
+          "type": "KSAMPLER_ADVANCED",
+          "link": 9
+        },
+        {
+          "name": "regional_prompts",
+          "type": "REGIONAL_PROMPTS",
+          "link": 17
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            19
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": [
+        42,
+        "fixed",
+        0,
+        "ignore",
+        12,
+        2,
+        1.0,
+        10,
+        true,
+        "ratio between",
+        "AUTO",
+        0.3
+      ]
+    },
+    {
+      "id": 16,
+      "type": "FromBasicPipe",
+      "pos": [
+        2140,
+        480
+      ],
+      "size": [
+        260,
+        180
+      ],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "basic_pipe",
+          "type": "BASIC_PIPE",
+          "link": 8
+        }
+      ],
+      "outputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "links": null,
+          "slot_index": 0
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "links": null,
+          "slot_index": 1
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "links": [
+            18
+          ],
+          "slot_index": 2
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": null,
+          "slot_index": 3
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": null,
+          "slot_index": 4
+        }
+      ],
+      "widgets_values": []
+    },
+    {
+      "id": 17,
+      "type": "VAEDecode",
+      "pos": [
+        2540,
+        80
+      ],
+      "size": [
+        220,
+        120
+      ],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 19
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 18
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            21
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": []
+    },
+    {
+      "id": 18,
+      "type": "SaveImage",
+      "pos": [
+        2800,
+        80
+      ],
+      "size": [
+        340,
+        280
+      ],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 21
+        }
+      ],
+      "widgets_values": [
+        "Tegaki/Phase3J1/WF59_TwoChar_BobL_AliceR_Prompt_Truth_Remainder"
+      ]
+    },
+    {
+      "id": 33,
+      "type": "SaveImage",
+      "pos": [
+        1120,
+        500
+      ],
+      "size": [
+        300,
+        120
+      ],
+      "flags": {},
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 305
+        }
+      ],
+      "widgets_values": [
+        "Tegaki/Phase3J1/WF59_TwoChar_BobL_AliceR_Prompt_Truth_Remainder_guide"
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      40,
+      0,
+      5,
+      0,
+      "MODEL"
+    ],
+    [
+      2,
+      1,
+      1,
+      40,
+      1,
+      "CLIP"
+    ],
+    [
+      3,
+      1,
+      1,
+      4,
+      0,
+      "CLIP"
+    ],
+    [
+      4,
+      1,
+      2,
+      5,
+      2,
+      "VAE"
+    ],
+    [
+      5,
+      2,
+      0,
+      14,
+      0,
+      "LATENT"
+    ],
+    [
+      6,
+      3,
+      0,
+      32,
+      0,
+      "CONDITIONING"
+    ],
+    [
+      7,
+      4,
+      0,
+      32,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      8,
+      5,
+      0,
+      6,
+      0,
+      "BASIC_PIPE"
+    ],
+    [
+      9,
+      6,
+      0,
+      12,
+      2,
+      "KSAMPLER_ADVANCED"
+    ],
+    [
+      10,
+      7,
+      0,
+      8,
+      0,
+      "CAST_SPEC"
+    ],
+    [
+      11,
+      7,
+      1,
+      11,
+      1,
+      "STRING"
+    ],
+    [
+      12,
+      8,
+      0,
+      10,
+      0,
+      "REGION_SPEC"
+    ],
+    [
+      13,
+      9,
+      1,
+      10,
+      1,
+      "PANEL_LAYOUT_SPEC"
+    ],
+    [
+      14,
+      9,
+      1,
+      12,
+      1,
+      "PANEL_LAYOUT_SPEC"
+    ],
+    [
+      15,
+      10,
+      0,
+      11,
+      0,
+      "REGION_SPEC"
+    ],
+    [
+      16,
+      11,
+      0,
+      31,
+      0,
+      "*"
+    ],
+    [
+      17,
+      12,
+      0,
+      14,
+      2,
+      "REGIONAL_PROMPTS"
+    ],
+    [
+      18,
+      16,
+      2,
+      17,
+      1,
+      "VAE"
+    ],
+    [
+      19,
+      14,
+      0,
+      17,
+      0,
+      "LATENT"
+    ],
+    [
+      20,
+      1,
+      1,
+      5,
+      1,
+      "CLIP"
+    ],
+    [
+      21,
+      17,
+      0,
+      18,
+      0,
+      "IMAGE"
+    ],
+    [
+      22,
+      11,
+      0,
+      12,
+      0,
+      "PAGE_COMPILE_PLAN"
+    ],
+    [
+      24,
+      1,
+      1,
+      12,
+      3,
+      "CLIP"
+    ],
+    [
+      301,
+      30,
+      0,
+      32,
+      2,
+      "CONTROL_NET"
+    ],
+    [
+      302,
+      31,
+      0,
+      32,
+      3,
+      "IMAGE"
+    ],
+    [
+      303,
+      32,
+      0,
+      5,
+      3,
+      "CONDITIONING"
+    ],
+    [
+      304,
+      32,
+      1,
+      5,
+      4,
+      "CONDITIONING"
+    ],
+    [
+      305,
+      31,
+      0,
+      33,
+      0,
+      "IMAGE"
+    ],
+    [
+      101,
+      1,
+      0,
+      40,
+      0,
+      "MODEL"
+    ],
+    [
+      102,
+      40,
+      1,
+      3,
+      0,
+      "CLIP"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 1.0,
+      "offset": [
+        0,
+        0
+      ]
+    },
+    "title": "Verify Two-Character Prompt Truth Swap (Workflow 59)"
+  },
+  "version": 0.4
+}

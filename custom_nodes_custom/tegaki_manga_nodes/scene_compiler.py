@@ -121,8 +121,8 @@ def compile_panel_data(
         return (validated_empty_plan, empty_json, "", 0)
 
     # 5. KOMA Prompt の LoRA 解析
-    koma_prompt = target_koma.get("prompt", "")
-    panel_negative_prompt = target_koma.get("negative_prompt", "")
+    koma_prompt = target_koma.get("prompt") or (target_koma.get("panel", {}).get("prompt") if isinstance(target_koma.get("panel"), dict) else "") or ""
+    panel_negative_prompt = target_koma.get("negative_prompt") or (target_koma.get("panel", {}).get("negative_prompt") if isinstance(target_koma.get("panel"), dict) else "") or ""
     clean_koma_prompt, koma_prompt_loras = parse_lora_tags(koma_prompt, "koma_prompt_tag")
 
     koma_loras_plan = []

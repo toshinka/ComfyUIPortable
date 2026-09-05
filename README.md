@@ -68,8 +68,9 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ DEPENDENCIES.md                     # パッケージ・ハードウェア環境仕様
  │   ├─ RESEARCH_REFERENCES.md              # 参照リポジトリ・ライセンス
  │   ├─ CUSTOM_NODE_MANIFEST.md             # 外部Custom Nodeコミット追跡
- │   ├─ verification/                           # 正準検証マニフェスト (PHASE3G / PHASE3H / PHASE3I / PHASE3J)
+ │   ├─ verification/                           # 正準検証マニフェスト (PHASE3G / PHASE3H / PHASE3I / PHASE3J / PHASE3J.1)
  │   └─ reports/                            # 開発フェーズ完了報告書・検証記録集
+ │       ├─ PHASE3J_1_CHARACTER_PROMPT_AND_REGION_ISOLATION_REPORT.md
  │       ├─ PHASE3J_SEMANTIC_PRESENCE_AND_ADAPTIVE_GUIDE_REPORT.md
  │       ├─ PHASE3I_2_REFERENCE_FAST_CAUSAL_AND_PER_REGION_CONTROL_REPORT.md
  │       ├─ PHASE3I_1_CONTROLNET_VISUAL_TRUTH_AND_INTERACTION_REPORT.md
@@ -268,6 +269,25 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
   - `custom_nodes_custom/tegaki_manga_nodes/generation_profile.py` を整備し、品質基準正本（Reference 20-step）と高速下描き（Fast Draft 12-step）の切り替え契約を確立。
 - **ControlNet Assist Decision Gate**:
   - Case B 判定（領域による左右位置誘導は成立するが、厳格なスケール内包・シルエット拘束には補助が必要）が確定し、次期 Phase 3I での ControlNet 構図・ポーズ補助導入を決定。
+
+### Character Prompt Contract Repair & Region Isolation Closure (Phase 3J.1 成果)
+- **Canonical CAST / Binding プロンプト正本契約の修復**:
+  - キャラクターマスター正本を `prompt` / `negative_prompt`、バインディングを `prompt_override` / `negative_prompt_override` へ厳格化。
+  - マイグレーションフォールバックおよび `make_canonical_character` / `make_character_binding` ヘルパーを新設し、空文字プロンプトによる背景テキストフォールバックを完全根絶。
+- **Compile & Impact キャラクタープロンプト正本 Gate**:
+  - `PAGE_COMPILE_PLAN` および `IMPACT_REGION_PLAN` へのプロンプト伝播を自動テストで保証（8/8 PASS）。
+  - `character_prompt_mode: standalone` を採用し、キャラクター領域への背景テキスト混入を遮断。
+- **コマ背景マスクの穴あき減算 (Remainder Mask Mode)**:
+  - `remainder_mask_mode = True` により、コマ背景サンプラーがキャラクター配置矩形を上書き・塗り潰す問題を完全解決。
+  - マスク診断（`Phase3J1_Mask_Diagnostic.png`）により、背景とキャラクターの重なり（Intersection = 0）を幾何学的に証明。
+- **Global ガイドの枠線交絡排除**:
+  - `include_panel_border = False`、`include_character_bbox_outline = False` により、ControlNet による窓・格子・ドア枠幻覚を根絶。
+- **単一人物左右配置 & 2人物空間入替の実証 (Workflows 54〜59)**:
+  - 単一人物 4/4 PASS（Alice L, Alice R, Bob L, Bob R）。
+  - 2人物左右分離および空間入替 2/2 PASS（WF58, WF59）。プロンプト内に位置語彙を含めず BBox 幾何のみで Alice / Bob の配置が決定論的に反転。
+- **Operational Authoring Profile 昇格**:
+  - Hyper12（12 steps, CFG 6.0, 22〜30s）を正式オーサリングプロファイルへ昇格。Native20 との等価性を実証。
+
 
 
 

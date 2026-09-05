@@ -1,0 +1,138 @@
+{
+  "schema_version": "1.0",
+  "evaluation_type": "AI_VISUAL_ANNOTATION",
+  "phase": "Phase 3J.1",
+  "provenance": {
+    "annotator": "Gemini Antigravity Agent",
+    "timestamp": "2026-09-05 17:33:45",
+    "target_commit_baseline": "450ee446d88d9f34579758792320381cb04b2f22"
+  },
+  "conditions": [
+    {
+      "cond_id": "Cond01",
+      "name": "Legacy Broken Baseline",
+      "visual_status": "FAIL",
+      "subject_present": false,
+      "identity_preserved": false,
+      "observed_side": "none",
+      "notes": "Empty gray boxes with miniature figures at floor level. Positive prompt failed to reach regional sampler."
+    },
+    {
+      "cond_id": "Cond02",
+      "name": "Remainder Mask OFF",
+      "visual_status": "FAIL",
+      "subject_present": false,
+      "identity_preserved": false,
+      "observed_side": "none",
+      "notes": "Empty gray boxes. Panel scene sampler overpainted character staging area due to remainder_mask_mode=False."
+    },
+    {
+      "cond_id": "Cond03",
+      "name": "Canonical Contract-Fixed WF58",
+      "visual_status": "PASS",
+      "subject_present": true,
+      "identity_preserved": true,
+      "observed_side": "alice_left_bob_right",
+      "notes": "Alice (blonde twintails, sailor skirt) on left, Bob (black hair, male uniform) on right. Zero cross-contamination."
+    },
+    {
+      "cond_id": "Cond04",
+      "name": "No Panel Region Diagnostic",
+      "visual_status": "PARTIAL_PASS",
+      "subject_present": true,
+      "identity_preserved": true,
+      "observed_side": "alice_left_bob_right",
+      "notes": "Both characters present, but unintended extra student appears in middle walkway due to lack of panel scene prompt."
+    },
+    {
+      "cond_id": "Cond05",
+      "name": "Alice Left Only WF54",
+      "visual_status": "PASS",
+      "subject_present": true,
+      "identity_preserved": true,
+      "observed_side": "left",
+      "notes": "Alice clearly rendered on left side [0.10, 0.15, 0.35, 0.75]."
+    },
+    {
+      "cond_id": "Cond06",
+      "name": "Alice Right Only WF55",
+      "visual_status": "PASS",
+      "subject_present": true,
+      "identity_preserved": true,
+      "observed_side": "right",
+      "notes": "Alice clearly rendered on right side [0.55, 0.15, 0.35, 0.75]. Resolves Phase 3J right-side occlusion."
+    },
+    {
+      "cond_id": "Cond07",
+      "name": "Bob Left Only WF56",
+      "visual_status": "PASS",
+      "subject_present": true,
+      "identity_preserved": true,
+      "observed_side": "left",
+      "notes": "Male student in uniform present on left side."
+    },
+    {
+      "cond_id": "Cond08",
+      "name": "Bob Right Only WF57",
+      "visual_status": "PASS",
+      "subject_present": true,
+      "identity_preserved": true,
+      "observed_side": "right",
+      "notes": "Bob clearly rendered on right side [0.55, 0.15, 0.35, 0.75] in dark uniform."
+    },
+    {
+      "cond_id": "Cond09",
+      "name": "Two-Character Swap WF59",
+      "visual_status": "PASS",
+      "subject_present": true,
+      "identity_preserved": true,
+      "observed_side": "bob_left_alice_right",
+      "notes": "Spatial swap completely successful. Bob is on the left, Alice is on the right."
+    },
+    {
+      "cond_id": "Cond10",
+      "name": "Region Order Recheck",
+      "visual_status": "PASS",
+      "subject_present": true,
+      "identity_preserved": true,
+      "observed_side": "bob_left_alice_right",
+      "notes": "No degradation observed when character region order is changed."
+    },
+    {
+      "cond_id": "Cond11",
+      "name": "Native20 Representative",
+      "visual_status": "PASS",
+      "subject_present": true,
+      "identity_preserved": true,
+      "observed_side": "alice_left_bob_right",
+      "notes": "High-fidelity separation in Native SDXL (20 steps, CFG 7.0)."
+    },
+    {
+      "cond_id": "Cond12",
+      "name": "Adaptive Shot Type Full Body",
+      "visual_status": "PASS",
+      "subject_present": true,
+      "identity_preserved": true,
+      "observed_side": "left",
+      "notes": "Full body framing head-to-toe."
+    },
+    {
+      "cond_id": "Cond13",
+      "name": "Adaptive Shot Type Half Body",
+      "visual_status": "PASS",
+      "subject_present": true,
+      "identity_preserved": true,
+      "observed_side": "left",
+      "notes": "Half body framing waist-up."
+    },
+    {
+      "cond_id": "Cond14",
+      "name": "Adaptive Shot Type Bust Shot",
+      "visual_status": "PASS",
+      "subject_present": true,
+      "identity_preserved": true,
+      "observed_side": "left",
+      "notes": "Bust shot framing chest-up with high detail."
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "schema_version": "1.0",
+  "phase": "Phase 3J.1",
+  "phase_name": "Character Prompt Contract Repair & Region Isolation Closure",
+  "baseline_commit": "450ee446d88d9f34579758792320381cb04b2f22",
+  "target_device": "NVIDIA GeForce RTX 4070 (12GB VRAM)",
+  "dependencies": {
+    "checkpoint": "waiIllustriousSDXL_v170.safetensors",
+    "controlnet": "CN-anytest4_illustrious2_A.safetensors",
+    "hyper_sdxl_lora": "Hyper-SDXL-12steps-CFG-lora.safetensors"
+  },
+  "sign_off": {
+    "PHASE3J REVIEW CLOSURE": "PASS WITH FIXTURE CORRECTION",
+    "CAST PROMPT CONTRACT": "PASS",
+    "BINDING PROMPT CONTRACT": "PASS",
+    "COMPILE CHARACTER PROMPT TRUTH": "PASS",
+    "IMPACT CHARACTER PROMPT TRUTH": "PASS",
+    "CANONICAL CHARACTER PROMPT MODE": "STANDALONE",
+    "SCENE REMAINDER MASK": "HELPFUL",
+    "NO PANEL REGIONAL DIAGNOSTIC": "HELPFUL",
+    "GLOBAL GUIDE BBOX OUTLINE": "OFF",
+    "GLOBAL GUIDE PANEL BORDER": "OFF",
+    "ALICE LEFT V2": "PASS",
+    "ALICE RIGHT V2": "PASS",
+    "BOB LEFT V2": "PASS",
+    "BOB RIGHT V2": "PASS",
+    "TWO CHARACTER LR V2": "PASS",
+    "TWO CHARACTER SWAP V2": "PASS",
+    "SIDE BIAS V2": "NONE",
+    "REGION ORDER EFFECT V2": "NONE",
+    "PER-REGION HINT GEOMETRY": "USABLE",
+    "PER-REGION HINT CHARACTER SEMANTICS": "PASS",
+    "SHOT TYPE GUIDE CONTRACT": "PASS",
+    "SHOT TYPE FINAL CHARACTER SEMANTICS": "PASS",
+    "ARCHITECTURE REFERENCE": "NATIVE20",
+    "OPERATIONAL AUTHORING PROFILE": "HYPER12",
+    "POINTER CONTRACT SIMULATION": "PASS",
+    "LIVE BROWSER POINTER E2E": "PENDING",
+    "USER VISUAL REVIEW REQUIRED": "YES",
+    "PHASE3K": "GO",
+    "NEXT RECOMMENDED PHASE": "Phase 3K (Pose & Interaction Authoring + Camera Distance / Scene Composition)"
+  },
+  "tests": {
+    "character_prompt_contract_test": {
+      "script": "scripts/test_phase3j1_character_prompt_contract.py",
+      "test_count": 5,
+      "status": "PASS"
+    },
+    "impact_character_prompt_truth_test": {
+      "script": "scripts/test_phase3j1_impact_character_prompt_truth.py",
+      "test_count": 3,
+      "status": "PASS"
+    },
+    "saved_workflow_compatibility": {
+      "script": "scripts/test_saved_workflow_live_compatibility.py",
+      "workflows_tested": 43,
+      "status": "PASS"
+    },
+    "workflow_json_integrity": {
+      "script": "scripts/test_workflow_json_integrity.py",
+      "workflows_tested": 43,
+      "status": "PASS"
+    }
+  },
+  "presence_results": {
+    "total_conditions": 14,
+    "runtime_all_passed": true,
+    "total_elapsed_sec": 393.5,
+    "conditions": [
+      {"cond_id": "Cond01", "name": "Legacy Broken Fixture Baseline", "runtime": "PASS", "visual": "FAIL_EMPTY_WALL", "elapsed_sec": 38.82},
+      {"cond_id": "Cond02", "name": "Remainder Mask OFF", "runtime": "PASS", "visual": "FAIL_OVERPAINTED", "elapsed_sec": 28.04},
+      {"cond_id": "Cond03", "name": "Canonical Contract-Fixed WF58 (Alice L / Bob R)", "runtime": "PASS", "visual": "PASS_BOTH_PRESENT", "elapsed_sec": 28.13},
+      {"cond_id": "Cond04", "name": "No Panel Region Diagnostic", "runtime": "PASS", "visual": "PASS_BOTH_WITH_CROWD", "elapsed_sec": 22.45},
+      {"cond_id": "Cond05", "name": "Alice Left Only WF54", "runtime": "PASS", "visual": "PASS_ALICE_LEFT", "elapsed_sec": 22.22},
+      {"cond_id": "Cond06", "name": "Alice Right Only WF55", "runtime": "PASS", "visual": "PASS_ALICE_RIGHT", "elapsed_sec": 24.07},
+      {"cond_id": "Cond07", "name": "Bob Left Only WF56", "runtime": "PASS", "visual": "PASS_BOB_LEFT", "elapsed_sec": 24.06},
+      {"cond_id": "Cond08", "name": "Bob Right Only WF57", "runtime": "PASS", "visual": "PASS_BOB_RIGHT", "elapsed_sec": 24.04},
+      {"cond_id": "Cond09", "name": "Two-Character Swap WF59 (Bob L / Alice R)", "runtime": "PASS", "visual": "PASS_SPATIAL_SWAP", "elapsed_sec": 30.06},
+      {"cond_id": "Cond10", "name": "Region Order Recheck Bob First", "runtime": "PASS", "visual": "PASS_MAINTAINED", "elapsed_sec": 28.41},
+      {"cond_id": "Cond11", "name": "Native20 Representative (Alice L / Bob R)", "runtime": "PASS", "visual": "PASS_HIGH_QUALITY", "elapsed_sec": 49.10},
+      {"cond_id": "Cond12", "name": "Adaptive Shot Type Alice Full Body", "runtime": "PASS", "visual": "PASS_FULL_BODY", "elapsed_sec": 24.73},
+      {"cond_id": "Cond13", "name": "Adaptive Shot Type Alice Half Body", "runtime": "PASS", "visual": "PASS_HALF_BODY", "elapsed_sec": 22.77},
+      {"cond_id": "Cond14", "name": "Adaptive Shot Type Alice Bust Shot", "runtime": "PASS", "visual": "PASS_BUST_SHOT", "elapsed_sec": 24.21}
+    ]
+  },
+  "contact_sheets": [
+    "output/Tegaki/Phase3J1/canonical/ContactSheet_U_Legacy_vs_Fixed.png",
+    "output/Tegaki/Phase3J1/canonical/ContactSheet_V_Remainder_AB.png",
+    "output/Tegaki/Phase3J1/canonical/ContactSheet_W_Single_2x2.png",
+    "output/Tegaki/Phase3J1/canonical/ContactSheet_X_TwoChar_Swap.png",
+    "output/Tegaki/Phase3J1/canonical/ContactSheet_Y_ShotType.png",
+    "output/Tegaki/Phase3J1/canonical/Phase3J1_Mask_Diagnostic.png"
+  ],
+  "canonical_workflows": [
+    "workflows/54_VERIFY_ALICE_LEFT_PROMPT_TRUTH_REMAINDER.json",
+    "workflows/55_VERIFY_ALICE_RIGHT_PROMPT_TRUTH_REMAINDER.json",
+    "workflows/56_VERIFY_BOB_LEFT_PROMPT_TRUTH_REMAINDER.json",
+    "workflows/57_VERIFY_BOB_RIGHT_PROMPT_TRUTH_REMAINDER.json",
+    "workflows/58_VERIFY_TWO_CHARACTER_PROMPT_TRUTH_LR.json",
+    "workflows/59_VERIFY_TWO_CHARACTER_PROMPT_TRUTH_SWAP.json"
+  ]
+}

@@ -283,7 +283,10 @@ def validate_cast_spec(spec: Any) -> Dict[str, Any]:
                 f"got {type(enabled).__name__} ({enabled!r})"
             )
 
-        prompt = _validate_strict_string(c.get("prompt"), "prompt", f"Character '{cid}'")
+        raw_prompt = c.get("prompt")
+        if raw_prompt is None and "appearance" in c and isinstance(c["appearance"], str):
+            raw_prompt = c["appearance"]
+        prompt = _validate_strict_string(raw_prompt, "prompt", f"Character '{cid}'")
         negative_prompt = _validate_strict_string(c.get("negative_prompt"), "negative_prompt", f"Character '{cid}'")
 
         loras_raw = c.get("loras", [])
@@ -342,7 +345,10 @@ def validate_character_binding(binding: Any, available_character_ids: Optional[S
             f"got {type(enabled).__name__} ({enabled!r})"
         )
 
-    prompt_override = _validate_strict_string(binding.get("prompt_override"), "prompt_override", f"Character '{cid}' binding")
+    raw_prompt_override = binding.get("prompt_override")
+    if raw_prompt_override is None and "acting" in binding and isinstance(binding["acting"], str):
+        raw_prompt_override = binding["acting"]
+    prompt_override = _validate_strict_string(raw_prompt_override, "prompt_override", f"Character '{cid}' binding")
     neg_override = _validate_strict_string(binding.get("negative_prompt_override"), "negative_prompt_override", f"Character '{cid}' binding")
 
     area = binding.get("area")
