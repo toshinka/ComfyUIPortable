@@ -1,0 +1,22 @@
+[
+  {
+    "source": "GITHUB.TXT",
+    "archive": "Archive/2026-09-06_pre_astra_replan/GITHUB.TXT",
+    "sha256": "92DEE766B2E1D6916B734114DFE14B969260B1250EA85443D0AA11DED658FA8B"
+  },
+  {
+    "source": "GITHUB_ComfyUI.txt",
+    "archive": "Archive/2026-09-06_pre_astra_replan/GITHUB_ComfyUI.txt",
+    "sha256": "05CCC9973B29FB3055B21F2B6FDC4DB06624B6B22854C11812FC18FF4A837B49"
+  },
+  {
+    "source": "GPTからの指示書/Tegaki_ComfyUI_Manga_Authoring_Intermediate_Plan_PriorArt_Integration.md",
+    "archive": "Archive/2026-09-06_pre_astra_replan/Tegaki_ComfyUI_Manga_Authoring_Intermediate_Plan_PriorArt_Integration.md",
+    "sha256": "127572AFC86AB41F3204A308666EE6624EF37F131AB9A67CDA0D473B7BB6BEB4"
+  },
+  {
+    "source": "GPTからの指示書/中間構想計画書_Tegaki_ComfyUI_Manga_Authoring_System_Intermediate_Plan.md",
+    "archive": "Archive/2026-09-06_pre_astra_replan/中間構想計画書_Tegaki_ComfyUI_Manga_Authoring_System_Intermediate_Plan.md",
+    "sha256": "07C929B86AEDB40A621CAE53AAAF919D33394AA13AE746B06EE111A7E2A5AB7F"
+  }
+]

@@ -1,5 +1,9 @@
 # ComfyUI Portable 漫画制作環境 (Tegaki Manga Edition)
 
+現在の外部AI入口は [GITHUB_ComfyUI.txt](GITHUB_ComfyUI.txt)、現在地は [docs/STATUS.md](docs/STATUS.md)。
+2026-09-06の [Astra Master Plan](docs/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md) が新しい戦略正本です。
+以下は既存環境の説明を含み、新計画のScene-first UIが実装済みという意味ではありません。
+
 Windowsローカル環境に、漫画・イラスト制作向けに特化して構築された **ComfyUI Portable環境** です。
 Illustrious / SDXL系モデルを主力とし、構図・ポーズ探索、複数LoRAブレンド、コマ・Region単位のPrompt/LoRA制御、I2I修正、ControlNet構図制御、Wildcards/Dynamic Promptsによるアイデア出し、および最大6コマの視覚的Region Editorを支援します。
 
@@ -55,7 +59,7 @@ D:\GitHub\tegaki\ComfyUIPortable\
  ├─ run_nvidia_gpu.bat                      # 起動バッチ
  ├─ .gitignore                              # Git除外設定
  ├─ README.md                               # 本ドキュメント
- ├─ GITHUB.TXT / GITHUB_ComfyUI.txt         # 外部AIレビュー用リンク集
+ ├─ GITHUB_ComfyUI.txt                    # 外部AI入口の正本（GITHUB.TXTは誘導のみ）
  ├─ configs/
  │   └─ extra_model_paths.yaml              # 外部モデルパス定義テンプレート
  ├─ docs/                                   # 漫画制作データ契約・仕様書・設計資料集
@@ -305,7 +309,6 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
   - パネル属性として `near`、`medium`、`far` を定義し、`explicit staging > camera default` 契約のもとで未指定人物の自動フレーミングを制御（Contact Sheet Z5）。
 - **Zero-Touch 互換性**:
   - Workflows 60〜65（全6件）を新規策定し、対象全49ワークフローのライブスキーマ適合性 100% PASS を達成。
-
 
 
 
