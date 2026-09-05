@@ -1,0 +1,487 @@
+{
+  "last_node_id": 8,
+  "last_link_id": 13,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "TegakiMinimumHandSceneEditor",
+      "pos": [
+        60,
+        100
+      ],
+      "size": [
+        540,
+        840
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "page_compile_plan",
+          "type": "PAGE_COMPILE_PLAN",
+          "links": [
+            1
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "scene_regions_preview",
+          "type": "IMAGE",
+          "links": [
+            2
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "links": null,
+          "slot_index": 2
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "links": null,
+          "slot_index": 3
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": null,
+          "slot_index": 4
+        },
+        {
+          "name": "debug_json",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 5
+        },
+        {
+          "name": "authoring_document_json",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 6
+        }
+      ],
+      "widgets_values": [
+        "{\n  \"schema_id\": \"TEGAKI_AUTHORING_DOCUMENT\",\n  \"schema_version\": \"1.0.0\",\n  \"document_id\": \"doc_canonical_m1\",\n  \"pages\": [\n    {\n      \"page_id\": \"page_1\",\n      \"order\": 1,\n      \"dimensions\": {\n        \"width_px\": 832,\n        \"height_px\": 1216\n      },\n      \"style_prompt\": \"manga page, monochrome, expressive linework, high contrast, screentone shading\",\n      \"style_negative_prompt\": \"bad anatomy, blurry, photo, color, 3d render, watermark, text\",\n      \"scenes\": [\n        {\n          \"scene_id\": \"scene_top\",\n          \"name\": \"Scene 1\",\n          \"prompt\": \"school classroom, desks and chairs, a student reading quietly by the window, warm sunlight\",\n          \"negative_prompt\": \"\",\n          \"input_mode\": \"simple\",\n          \"area\": {\n            \"shape_type\": \"rect\",\n            \"x\": 0.08,\n            \"y\": 0.06,\n            \"w\": 0.84,\n            \"h\": 0.42\n          },\n          \"order\": 1,\n          \"metadata\": {}\n        },\n        {\n          \"scene_id\": \"scene_bottom\",\n          \"name\": \"Scene 2\",\n          \"prompt\": \"outdoor train station platform, railway tracks, a commuter waiting with bicycle, afternoon sky\",\n          \"negative_prompt\": \"\",\n          \"input_mode\": \"simple\",\n          \"area\": {\n            \"shape_type\": \"rect\",\n            \"x\": 0.08,\n            \"y\": 0.52,\n            \"w\": 0.84,\n            \"h\": 0.42\n          },\n          \"order\": 2,\n          \"metadata\": {}\n        }\n      ],\n      \"visual_frames\": [],\n      \"cast\": [],\n      \"character_instances\": [],\n      \"guides\": [],\n      \"metadata\": {\n        \"style_template\": \"Manga Monochrome\"\n      },\n      \"generation\": {\n        \"seed\": 42\n      }\n    }\n  ],\n  \"metadata\": {}\n}",
+        42,
+        "Manga Monochrome",
+        "Portrait 832x1216"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "PreviewImage",
+      "pos": [
+        640,
+        100
+      ],
+      "size": [
+        340,
+        500
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 2
+        }
+      ],
+      "outputs": [],
+      "widgets_values": []
+    },
+    {
+      "id": 3,
+      "type": "CheckpointLoaderSimple",
+      "pos": [
+        1040,
+        100
+      ],
+      "size": [
+        340,
+        100
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            6
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            7
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            8
+          ],
+          "slot_index": 2
+        }
+      ],
+      "widgets_values": [
+        "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "TegakiMangaConditioningBuilder",
+      "pos": [
+        1040,
+        250
+      ],
+      "size": [
+        340,
+        260
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 7
+        },
+        {
+          "name": "page_compile_plan",
+          "type": "PAGE_COMPILE_PLAN",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": [
+            9
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": [
+            10
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "panel_mask_batch",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 2
+        },
+        {
+          "name": "character_mask_batch",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 3
+        },
+        {
+          "name": "debug_json",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 4
+        },
+        {
+          "name": "local_region_masks",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 5
+        }
+      ],
+      "widgets_values": [
+        1.0,
+        1.0,
+        "default",
+        1.0,
+        0
+      ]
+    },
+    {
+      "id": 5,
+      "type": "EmptyLatentImage",
+      "pos": [
+        1040,
+        560
+      ],
+      "size": [
+        300,
+        110
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            11
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": [
+        832,
+        1216,
+        1
+      ]
+    },
+    {
+      "id": 6,
+      "type": "KSampler",
+      "pos": [
+        1420,
+        100
+      ],
+      "size": [
+        300,
+        360
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 6
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 9
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 10
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 11
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            12
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": [
+        42,
+        "fixed",
+        20,
+        7.0,
+        "euler",
+        "normal",
+        1.0
+      ]
+    },
+    {
+      "id": 7,
+      "type": "VAEDecode",
+      "pos": [
+        1760,
+        100
+      ],
+      "size": [
+        220,
+        100
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 12
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 8
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            13
+          ],
+          "slot_index": 0
+        }
+      ],
+      "widgets_values": []
+    },
+    {
+      "id": 8,
+      "type": "SaveImage",
+      "pos": [
+        2020,
+        100
+      ],
+      "size": [
+        480,
+        680
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 13
+        }
+      ],
+      "outputs": [],
+      "widgets_values": [
+        "MangaDraft_M1"
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      0,
+      4,
+      1,
+      "PAGE_COMPILE_PLAN"
+    ],
+    [
+      2,
+      1,
+      1,
+      2,
+      0,
+      "IMAGE"
+    ],
+    [
+      6,
+      3,
+      0,
+      6,
+      0,
+      "MODEL"
+    ],
+    [
+      7,
+      3,
+      1,
+      4,
+      0,
+      "CLIP"
+    ],
+    [
+      8,
+      3,
+      2,
+      7,
+      1,
+      "VAE"
+    ],
+    [
+      9,
+      4,
+      0,
+      6,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      10,
+      4,
+      1,
+      6,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      11,
+      5,
+      0,
+      6,
+      3,
+      "LATENT"
+    ],
+    [
+      12,
+      6,
+      0,
+      7,
+      0,
+      "LATENT"
+    ],
+    [
+      13,
+      7,
+      0,
+      8,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "groups": [
+    {
+      "title": "USER WORKSPACE — MINIMUM-HAND SCENE DRAFT",
+      "bounding": [
+        40,
+        40,
+        960,
+        940
+      ],
+      "color": "#2e7d32"
+    },
+    {
+      "title": "INTERNAL PIPELINE — DO NOT TOUCH",
+      "bounding": [
+        1020,
+        40,
+        980,
+        940
+      ],
+      "color": "#37474f"
+    },
+    {
+      "title": "OUTPUT DRAFT IMAGE",
+      "bounding": [
+        2010,
+        40,
+        510,
+        780
+      ],
+      "color": "#1565c0"
+    }
+  ],
+  "version": 0.4
+}

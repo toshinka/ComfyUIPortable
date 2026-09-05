@@ -74,11 +74,15 @@ Scene-only Draft (M1) → CAST 複数出演 (M2) → Rough Guide (M3) → UX She
 
 ## 5. 次の一件 (Current Card Preview)
 
-- **完了Card**: **M0.1 / 3M-0.1 — Contract Hardening & Legacy Boundary Truth Fix** — COMPLETED
-  - FK空集合バグ修正、Legacy Import検証強制・孤立Binding遮断、Scene/Frame乖離時のFail-Closed、厳格逆座標変換（はみ出し検出）、境界Moveの共通実効Delta化、Resizeの厳格検証化、duplicate page_id検出。全78テスト（元60 + 新18）PASS。
-  - 報告書: [M0_1_CONTRACT_HARDENING_REPORT.md](reports/M0_1_CONTRACT_HARDENING_REPORT.md) / [M0_3M0_VERSIONED_AUTHORING_CONTRACT_REPORT.md](reports/M0_3M0_VERSIONED_AUTHORING_CONTRACT_REPORT.md)
-- **次Card**: **M1 / 3M-1 — Scene-only Minimum-Hand Draft**
-  - Resolution + Style + Scene rect + Prompt + optional frame guide + Seed → Generate。Simple modeのみ、CAST不要。最初のユーザー向けUI接続。
+- **完了Card**: **M1 / 3M-1 — Scene-only Minimum-Hand Draft** — COMPLETED
+  - Resolution Preset + Style Template + Scene Rectangles + Scene Prompts + Seed → 実機生成導線を完工。
+  - `TegakiMinimumHandSceneEditor` ノード、`authoring_execution_bridge.py`、Web UI拡張 `minimum_hand_scene_editor.js`、正本ワークフロー `workflows/M1_MINIMUM_HAND_SCENE_DRAFT.json` 実装。
+  - 98件自動テスト（旧78件 + 新規20件）全PASS。
+  - Live ComfyUI（SDXL Illustrious v1.7）による実機画像生成 5条件（A: 1 Scene, B: 2 Scenes, C: Geometry Swap Oracle, D1/D2: Seed Brainstorm）全完走・全目視確認（平均生成時間 16.5秒）。
+  - Contact Sheet・Manifest を `docs/verification/m1/` に配置完了。
+  - 報告書: [M1_3M1_SCENE_ONLY_MINIMUM_HAND_DRAFT_REPORT.md](reports/M1_3M1_SCENE_ONLY_MINIMUM_HAND_DRAFT_REPORT.md)
+- **次Card**: **M2 / 3M-2 — Minimum Character & CAST Staging**
+  - CAST Master登録（1〜2名）、Sceneへの簡易CAST出演、Character Rough Region配置、LoRA適用。Simple modeとの共存。
 
 ---
 

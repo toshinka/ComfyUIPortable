@@ -1,0 +1,322 @@
+"""
+authoring_execution_bridge.py — M1 Authoring Execution Bridge
+=============================================================
+Bridges TEGAKI_AUTHORING_DOCUMENT (v1.0.0) to executable backend plans.
+In M1, compiles simple scene documents to PAGE_COMPILE_PLAN v1 for
+consumption by TegakiMangaConditioningBuilder and ComfyUI Core KSampler.
+
+Core principles:
+- TEGAKI_AUTHORING_DOCUMENT is the single source of truth.
+- Visual Panel Frames are NOT represented in semantic scene conditioning.
+- Simple-only mode: all scenes must have input_mode == "simple".
+- Fail-closed on 0 scenes or scenes exceeding backend limit (max 6).
+- Renders color-coded scene regions preview tensor [1, H, W, 3].
+- Emits structured debug JSON for verification provenance.
+"""
+import copy
+import json
+import logging
+from typing import Dict, Any, List, Optional, Tuple
+
+import numpy as np
+from PIL import Image, ImageDraw, ImageFont
+
+try:
+    import torch
+    HAS_TORCH = True
+except ImportError:
+    HAS_TORCH = False
+
+from .authoring_contract import (
+    SCHEMA_ID,
+    SCHEMA_VERSION,
+    validate_document,
+    ValidationResult,
+)
+from .scene_spec import (
+    validate_page_compile_plan,
+    validate_compile_plan,
+    SUPPORTED_COMPILE_PLAN_VERSION,
+    SUPPORTED_PAGE_COMPILE_PLAN_VERSION,
+)
+
+logger = logging.getLogger(__name__)
+
+BACKEND_PANEL_LIMIT = 6
+
+# Color palette for scene region previews (high contrast, distinct hues)
+SCENE_PREVIEW_PALETTE = [
+    {"name": "Scene 1", "hex": "#3b82f6", "rgb": (59, 130, 246), "fill": (59, 130, 246, 60)},
+    {"name": "Scene 2", "hex": "#f97316", "rgb": (249, 115, 22), "fill": (249, 115, 22, 60)},
+    {"name": "Scene 3", "hex": "#10b981", "rgb": (16, 185, 129), "fill": (16, 185, 129, 60)},
+    {"name": "Scene 4", "hex": "#8b5cf6", "rgb": (139, 92, 246), "fill": (139, 92, 246, 60)},
+    {"name": "Scene 5", "hex": "#f43f5e", "rgb": (244, 63, 94), "fill": (244, 63, 94, 60)},
+    {"name": "Scene 6", "hex": "#14b8a6", "rgb": (20, 184, 166), "fill": (20, 184, 166, 60)},
+]
+
+
+def validate_m1_execution_document(doc: Dict[str, Any], page_index: int = 0) -> Tuple[Dict[str, Any], List[str]]:
+    """
+    Validate document against TEGAKI_AUTHORING_DOCUMENT schema and M1 constraints.
+    Returns (page, warnings). Raises ValueError on hard validation failure.
+    """
+    v_res = validate_document(doc)
+    if not v_res.valid:
+        raise ValueError(
+            f"Invalid authoring document: {'; '.join(v_res.errors)}"
+        )
+
+    pages = doc.get("pages", [])
+    if not pages or page_index >= len(pages):
+        raise ValueError(f"Page index {page_index} out of range (have {len(pages)} pages)")
+
+    page = pages[page_index]
+    scenes = page.get("scenes", [])
+
+    # Constraint: at least 1 scene
+    if not scenes:
+        raise ValueError("No scenes to generate. Please add at least one scene.")
+
+    # Constraint: max 6 scenes for backend bridge
+    if len(scenes) > BACKEND_PANEL_LIMIT:
+        raise ValueError(
+            f"Document has {len(scenes)} scenes, exceeding backend execution limit of {BACKEND_PANEL_LIMIT} panels. "
+            f"Fail closed."
+        )
+
+    # Constraint: simple mode only in M1
+    for s_idx, scene in enumerate(scenes):
+        mode = scene.get("input_mode", "simple")
+        if mode != "simple":
+            raise ValueError(
+                f"Scene '{scene.get('scene_id', s_idx)}' has input_mode='{mode}'. "
+                f"M1 only supports 'simple' scene mode. CAST mode is deferred to M2."
+            )
+
+    # Check for instances (M1 does not use CAST instances)
+    instances = page.get("character_instances", [])
+    if instances:
+        logger.warning(
+            "[M1 Bridge] Document has character_instances, but M1 simple mode executes scenes only. "
+            "Instances are preserved in document but ignored for M1 execution."
+        )
+
+    warnings = list(v_res.warnings)
+    warnings.append(
+        "Semantic Scene conditioning bridge active: Visual Panel Frames are not represented."
+    )
+
+    return page, warnings
+
+
+def compile_document_to_page_plan(doc: Dict[str, Any], page_index: int = 0) -> Dict[str, Any]:
+    """
+    Compile TEGAKI_AUTHORING_DOCUMENT into a validated PAGE_COMPILE_PLAN v1 dict.
+    Fails closed if document is invalid or does not meet M1 simple-mode requirements.
+    """
+    page, warnings = validate_m1_execution_document(doc, page_index)
+
+    width = int(page.get("width_px", 832))
+    height = int(page.get("height_px", 1216))
+    style_prompt = page.get("style_prompt", "")
+    style_neg = page.get("style_negative_prompt", "")
+
+    scenes = sorted(page.get("scenes", []), key=lambda s: s.get("order", 0))
+
+    panels = []
+    active_pids = []
+
+    for slot_idx, scene in enumerate(scenes):
+        pid = slot_idx + 1
+        active_pids.append(pid)
+
+        area = scene.get("area", {})
+        px = float(area.get("x", 0.05))
+        py = float(area.get("y", 0.05))
+        pw = float(area.get("w", 0.9))
+        ph = float(area.get("h", 0.9))
+
+        scene_prompt = scene.get("prompt", "")
+        scene_neg = scene.get("negative_prompt", "")
+        prompt_parts = [p for p in [style_prompt, scene_prompt] if p]
+        compiled_prompt = ", ".join(prompt_parts)
+        neg_parts = [p for p in [style_neg, scene_neg] if p]
+        compiled_neg = ", ".join(neg_parts)
+
+        panel_plan = {
+            "version": SUPPORTED_COMPILE_PLAN_VERSION,
+            "status": "active",
+            "target_panel_id": pid,
+            "canvas": {"width": width, "height": height},
+            "panel": {
+                "id": pid,
+                "enabled": True,
+                "geometry": {
+                    "x": round(px, 4),
+                    "y": round(py, 4),
+                    "w": round(pw, 4),
+                    "h": round(ph, 4),
+                },
+                "prompt": scene_prompt,
+                "negative_prompt": scene_neg,
+                "local_regions": [],
+                "subscenes": [],
+                "camera_distance": "medium",
+            },
+            "global_prompt": style_prompt,
+            "global_negative_prompt": style_neg,
+            "compiled_prompt": compiled_prompt,
+            "compiled_negative_prompt": compiled_neg,
+            "characters": [],
+            "lora_plan": {
+                "global_loras": [],
+                "koma_loras": [],
+                "character_loras": [],
+            },
+        }
+        panels.append(validate_compile_plan(panel_plan))
+
+    page_compile_plan = {
+        "version": SUPPORTED_PAGE_COMPILE_PLAN_VERSION,
+        "canvas": {"width": width, "height": height},
+        "active_panel_ids": active_pids,
+        "global_prompt": style_prompt,
+        "global_negative_prompt": style_neg,
+        "global_loras": [],
+        "panels": panels,
+    }
+
+    # Validate against existing PAGE_COMPILE_PLAN contract
+    validated_plan = validate_page_compile_plan(page_compile_plan)
+    return validated_plan
+
+
+def generate_scene_regions_preview_image(
+    doc: Dict[str, Any],
+    page_index: int = 0,
+    width: Optional[int] = None,
+    height: Optional[int] = None,
+) -> Image.Image:
+    """
+    Generate a visual PIL.Image previewing scene regions with colors, labels, and borders.
+    """
+    page, _ = validate_m1_execution_document(doc, page_index)
+    canvas_w = int(page.get("width_px", 832))
+    canvas_h = int(page.get("height_px", 1216))
+
+    target_w = width if width is not None and width > 0 else canvas_w
+    target_h = height if height is not None and height > 0 else canvas_h
+
+    # Create dark gray blueprint base
+    base = Image.new("RGBA", (target_w, target_h), (30, 32, 40, 255))
+    overlay = Image.new("RGBA", (target_w, target_h), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+
+    # Grid background lines (light gray, subtle)
+    grid_spacing = max(32, min(target_w, target_h) // 16)
+    for x in range(0, target_w, grid_spacing):
+        draw.line([(x, 0), (x, target_h)], fill=(45, 48, 60, 255), width=1)
+    for y in range(0, target_h, grid_spacing):
+        draw.line([(0, y), (target_w, y)], fill=(45, 48, 60, 255), width=1)
+
+    scenes = sorted(page.get("scenes", []), key=lambda s: s.get("order", 0))
+
+    try:
+        font = ImageFont.load_default()
+    except Exception:
+        font = None
+
+    for idx, scene in enumerate(scenes):
+        pal = SCENE_PREVIEW_PALETTE[idx % len(SCENE_PREVIEW_PALETTE)]
+        area = scene.get("area", {})
+        x0 = int(round(float(area.get("x", 0)) * target_w))
+        y0 = int(round(float(area.get("y", 0)) * target_h))
+        x1 = int(round((float(area.get("x", 0)) + float(area.get("w", 1))) * target_w))
+        y1 = int(round((float(area.get("y", 0)) + float(area.get("h", 1))) * target_h))
+
+        # Clamp to canvas
+        x0, y0 = max(0, x0), max(0, y0)
+        x1, y1 = min(target_w, x1), min(target_h, y1)
+
+        if x1 > x0 and y1 > y0:
+            # Translucent fill
+            draw.rectangle([x0, y0, x1, y1], fill=pal["fill"])
+            # Border
+            draw.rectangle([x0, y0, x1, y1], outline=pal["rgb"], width=3)
+
+            # Header badge
+            name = scene.get("name", f"Scene {idx + 1}")
+            prompt_snip = scene.get("prompt", "").strip().replace("\n", " ")
+            if len(prompt_snip) > 35:
+                prompt_snip = prompt_snip[:32] + "..."
+            label = f"[{name}] {prompt_snip}" if prompt_snip else f"[{name}]"
+
+            badge_h = 24
+            badge_w = min(x1 - x0, max(120, len(label) * 8 + 16))
+            draw.rectangle([x0, y0, x0 + badge_w, y0 + badge_h], fill=pal["rgb"] + (220,))
+            draw.text((x0 + 6, y0 + 5), label, fill=(255, 255, 255, 255), font=font)
+
+    # Composite overlay onto base
+    composite = Image.alpha_composite(base, overlay).convert("RGB")
+    return composite
+
+
+def generate_scene_regions_preview_tensor(
+    doc: Dict[str, Any],
+    page_index: int = 0,
+    width: Optional[int] = None,
+    height: Optional[int] = None,
+) -> Any:
+    """
+    Generate ComfyUI compatible IMAGE tensor [1, H, W, 3] (float32 in [0, 1]).
+    If torch is not available, returns numpy array [1, H, W, 3].
+    """
+    pil_img = generate_scene_regions_preview_image(doc, page_index, width=width, height=height)
+    np_arr = np.array(pil_img).astype(np.float32) / 255.0  # [H, W, 3]
+    np_arr = np.expand_dims(np_arr, axis=0)                # [1, H, W, 3]
+
+    if HAS_TORCH:
+        return torch.from_numpy(np_arr)
+    return np_arr
+
+
+def get_execution_debug_info(
+    doc: Dict[str, Any],
+    page_index: int = 0,
+    seed: Optional[int] = None,
+) -> Dict[str, Any]:
+    """
+    Generate structured debug info per Card §76.
+    """
+    page, warnings = validate_m1_execution_document(doc, page_index)
+    scenes = page.get("scenes", [])
+    gen = page.get("generation", {})
+
+    effective_seed = seed if seed is not None else int(gen.get("seed", 42))
+
+    return {
+        "schema_id": doc.get("schema_id", SCHEMA_ID),
+        "schema_version": doc.get("schema_version", SCHEMA_VERSION),
+        "page_resolution": {
+            "width": int(page.get("width_px", 832)),
+            "height": int(page.get("height_px", 1216)),
+        },
+        "scene_count": len(scenes),
+        "scene_ids": [s.get("scene_id") for s in scenes],
+        "scene_areas": [s.get("area") for s in scenes],
+        "scenes": [
+            {
+                "scene_id": s.get("scene_id"),
+                "name": s.get("name"),
+                "prompt": s.get("prompt"),
+                "area": s.get("area"),
+                "order": s.get("order"),
+            }
+            for s in scenes
+        ],
+        "style_template": page.get("metadata", {}).get("style_template", "Manga Monochrome"),
+        "seed": effective_seed,
+        "backend_path": "ComfyUI Core Masked Conditioning (PAGE_COMPILE_PLAN -> TegakiMangaConditioningBuilder -> KSampler)",
+        "profile": "fast_draft_12 / reference",
+        "warnings": warnings,
+    }

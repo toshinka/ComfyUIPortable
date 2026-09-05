@@ -15,6 +15,7 @@ from .single_panel_multiscene_adapter import TegakiSinglePanelMultiSceneImpactAd
 from .panel_content_editor import TegakiMangaPanelContentEditor
 from .character_staging_editor import TegakiMangaCharacterStagingEditor
 from .layout_guide_generator import TegakiMangaLayoutGuideGenerator
+from .minimum_hand_scene_editor import TegakiMinimumHandSceneEditor
 from . import panel_layout_api
 
 NODE_CLASS_MAPPINGS = {
@@ -38,6 +39,7 @@ NODE_CLASS_MAPPINGS = {
     "TegakiMangaPanelContentEditor": TegakiMangaPanelContentEditor,
     "TegakiMangaCharacterStagingEditor": TegakiMangaCharacterStagingEditor,
     "TegakiMangaLayoutGuideGenerator": TegakiMangaLayoutGuideGenerator,
+    "TegakiMinimumHandSceneEditor": TegakiMinimumHandSceneEditor,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -61,6 +63,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "TegakiMangaPanelContentEditor": "Tegaki Manga Panel Content Editor",
     "TegakiMangaCharacterStagingEditor": "Tegaki Manga Character Staging Editor",
     "TegakiMangaLayoutGuideGenerator": "Tegaki Manga Layout Guide Generator (ControlNet)",
+    "TegakiMinimumHandSceneEditor": "Tegaki Minimum-Hand Scene Editor (Draft)",
 }
 
 WEB_DIRECTORY = "./web"

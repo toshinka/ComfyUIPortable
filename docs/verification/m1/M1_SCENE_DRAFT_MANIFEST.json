@@ -1,0 +1,77 @@
+{
+  "milestone": "Phase 3M-1 / M1",
+  "title": "Minimum-Hand Scene Draft Empirical Verification Suite",
+  "timestamp": "2026-09-05T23:48:16Z",
+  "checkpoint": "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors",
+  "base_model": "Illustrious SDXL v1.7",
+  "resolution": "832x1216 (Portrait)",
+  "total_conditions": 5,
+  "contact_sheet": "D:\\GitHub\\tegaki\\ComfyUIPortable\\docs\\verification\\m1\\M1_SCENE_DRAFT_CONTACT_SHEET.png",
+  "conditions": [
+    {
+      "condition_id": "Condition_A",
+      "title": "1 Scene Full Draft",
+      "filename": "A_one_scene.png",
+      "file_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\docs\\verification\\m1\\A_one_scene.png",
+      "preview_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\docs\\verification\\m1\\A_one_scene_preview.png",
+      "seed": 42,
+      "resolution": "832x1216",
+      "elapsed_seconds": 18.04,
+      "notes": "Validates single scene baseline draft generation.",
+      "status": "PASS",
+      "provenance": "LIVE_COMFYUI_GENERATION"
+    },
+    {
+      "condition_id": "Condition_B",
+      "title": "2 Distinct Scenes (Top Classroom / Bottom Train)",
+      "filename": "B_two_scene_seed42.png",
+      "file_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\docs\\verification\\m1\\B_two_scene_seed42.png",
+      "preview_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\docs\\verification\\m1\\B_two_scene_seed42_preview.png",
+      "seed": 42,
+      "resolution": "832x1216",
+      "elapsed_seconds": 16.02,
+      "notes": "Canonical 2-scene draft. Verifies spatial separation between top classroom and bottom train.",
+      "status": "PASS",
+      "provenance": "LIVE_COMFYUI_GENERATION"
+    },
+    {
+      "condition_id": "Condition_C",
+      "title": "Geometry Swap Oracle (Top Train / Bottom Classroom)",
+      "filename": "C_swap_same_seed42.png",
+      "file_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\docs\\verification\\m1\\C_swap_same_seed42.png",
+      "preview_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\docs\\verification\\m1\\C_swap_same_seed42_preview.png",
+      "seed": 42,
+      "resolution": "832x1216",
+      "elapsed_seconds": 16.02,
+      "notes": "Geometry swap oracle with identical seed 42. Verifies semantic locality causality.",
+      "status": "PASS",
+      "provenance": "LIVE_COMFYUI_GENERATION"
+    },
+    {
+      "condition_id": "Condition_D1",
+      "title": "Seed Brainstorm Variation 1",
+      "filename": "D_seed101.png",
+      "file_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\docs\\verification\\m1\\D_seed101.png",
+      "preview_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\docs\\verification\\m1\\D_seed101_preview.png",
+      "seed": 101,
+      "resolution": "832x1216",
+      "elapsed_seconds": 16.25,
+      "notes": "Seed 101 variation on canonical 2-scene layout.",
+      "status": "PASS",
+      "provenance": "LIVE_COMFYUI_GENERATION"
+    },
+    {
+      "condition_id": "Condition_D2",
+      "title": "Seed Brainstorm Variation 2",
+      "filename": "E_seed202.png",
+      "file_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\docs\\verification\\m1\\E_seed202.png",
+      "preview_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\docs\\verification\\m1\\E_seed202_preview.png",
+      "seed": 202,
+      "resolution": "832x1216",
+      "elapsed_seconds": 16.02,
+      "notes": "Seed 202 variation on canonical 2-scene layout.",
+      "status": "PASS",
+      "provenance": "LIVE_COMFYUI_GENERATION"
+    }
+  ]
+}
