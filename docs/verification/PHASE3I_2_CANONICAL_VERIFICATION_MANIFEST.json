@@ -1,0 +1,143 @@
+﻿{
+  "schema_version": "1.0",
+  "phase": "Phase 3I.2",
+  "phase_name": "Reference / Fast Causal Isolation, Per-Region Control Hint & True Browser Gate",
+  "baseline_commit": "cfe6a4fa38eedb199b8230bba85a2000331e7e5a",
+  "target_device": "NVIDIA GeForce RTX 4070 (12GB VRAM)",
+  "dependencies": {
+    "checkpoint": "waiIllustriousSDXL_v170.safetensors",
+    "controlnet": "CN-anytest4_illustrious2_A.safetensors",
+    "hyper_sdxl_lora": "Hyper-SDXL-12steps-CFG-lora.safetensors"
+  },
+  "sign_off": {
+    "PHASE3I.1 REVIEW CLOSURE": "PASS",
+    "POINTER CONTRACT SIMULATION": "PASS",
+    "LIVE BROWSER POINTER E2E": "PENDING",
+    "VISUAL EVALUATION PROVENANCE": "VERIFIED",
+    "NATIVE20 BASE-ONLY CN": "FAIL",
+    "NATIVE12 BASE-ONLY CN": "FAIL",
+    "NATIVE20 CFG6": "FAIL",
+    "HYPER12 BASE-ONLY CN": "FAIL",
+    "SEMANTIC SURVIVAL DRIVER": "MIXED",
+    "BASE_ONLY_STEPS 0": "HARMFUL",
+    "SHARED GLOBAL REGIONAL CN": "OVERCONSTRAINED",
+    "PER-REGION HINT CN": "PROMISING",
+    "REFERENCE PROFILE ROLE": "ARCHITECTURE_REFERENCE",
+    "OPERATIONAL AUTHORING PROFILE": "HYPER12",
+    "FAST_DRAFT_12": "PROMOTE CANDIDATE",
+    "USER VISUAL REVIEW REQUIRED": "NO",
+    "PHASE3J": "GO",
+    "NEXT RECOMMENDED PHASE": "Phase 3J (Adaptive Character Guide & Pose/Camera Shot Authoring on Hyper12 Operational Profile)"
+  },
+  "tests": {
+    "pointer_contract_simulation": {
+      "script": "scripts/test_character_staging_pointer_contract.py",
+      "test_count": 2,
+      "status": "PASS",
+      "findings": {
+        "pointer_contract_simulation": "PASS",
+        "backend_guide_ssot": "PASS",
+        "live_browser_pointer_e2e": "PENDING"
+      }
+    },
+    "conditioning_propagation_audit": {
+      "script": "scripts/test_controlnet_conditioning_propagation.py",
+      "test_count": 5,
+      "status": "PASS",
+      "findings": {
+        "base_positive_control": true,
+        "regional_encoded_positive_control": false,
+        "cloned_regional_sampler_stored_control": false,
+        "shared_global_propagation": true,
+        "per_region_hint_propagation": true
+      }
+    },
+    "saved_workflow_compatibility": {
+      "script": "scripts/test_saved_workflow_live_compatibility.py",
+      "workflows_tested": 31,
+      "status": "PASS"
+    },
+    "workflow_json_integrity": {
+      "script": "scripts/test_workflow_json_integrity.py",
+      "workflows_tested": 31,
+      "status": "PASS"
+    }
+  },
+  "causal_ablation_matrix": {
+    "CondA": {
+      "id": "CondA",
+      "name": "Native Reference 20s (Euler 20s, CFG 7.0, base_only=2, no LoRA)",
+      "workflow": "workflows/40_VERIFY_CN_AUTHORING_REFERENCE_PAIR.json",
+      "elapsed_sec": 52.09,
+      "vram_mb": 9285,
+      "runtime_status": "PASS",
+      "visual_semantic_status": "FAIL",
+      "key_finding": "Alice 0/1 missing, Bob 0/1 missing; courtyard wall prior dominates"
+    },
+    "CondB": {
+      "id": "CondB",
+      "name": "Native Short 12s (Euler 12s, CFG 6.0, base_only=2, no LoRA)",
+      "workflow": "workflows/45_VERIFY_NATIVE12_CONTROL.json",
+      "elapsed_sec": 28.05,
+      "vram_mb": 9285,
+      "runtime_status": "PASS",
+      "visual_semantic_status": "FAIL",
+      "key_finding": "Identical character suppression to CondA; step reduction alone does not recover subjects"
+    },
+    "CondC": {
+      "id": "CondC",
+      "name": "Native CFG 6.0 Control 20s (Euler 20s, CFG 6.0, base_only=2, no LoRA)",
+      "workflow": "CondC_NATIVE20_CFG6.json",
+      "elapsed_sec": 46.15,
+      "vram_mb": 9250,
+      "runtime_status": "PASS",
+      "visual_semantic_status": "FAIL",
+      "key_finding": "Identical character suppression to CondA; CFG reduction has zero impact"
+    },
+    "CondD": {
+      "id": "CondD",
+      "name": "Hyper 12s Control (Euler 12s, CFG 6.0, base_only=2, Hyper-SDXL LoRA)",
+      "workflow": "workflows/46_VERIFY_HYPER12_CAUSAL_CONTROL.json",
+      "elapsed_sec": 34.58,
+      "vram_mb": 9250,
+      "runtime_status": "PASS",
+      "visual_semantic_status": "FAIL",
+      "key_finding": "Empty wall with text; proves Hyper-12 alone does not force characters without favorable staging geometry"
+    },
+    "CondE": {
+      "id": "CondE",
+      "name": "Native 20s Base-Only 0 (Euler 20s, CFG 7.0, base_only=0, no LoRA)",
+      "workflow": "workflows/44_VERIFY_NATIVE20_BASEONLY_ZERO.json",
+      "elapsed_sec": 50.23,
+      "vram_mb": 9152,
+      "runtime_status": "PASS",
+      "visual_semantic_status": "FAIL",
+      "key_finding": "Pure multicolor noise; base_only_steps=0 is fatal/harmful"
+    },
+    "CondF": {
+      "id": "CondF",
+      "name": "Regional Control - Shared Global 0.35 (Euler 20s, CFG 7.0, shared_global 0.35)",
+      "workflow": "CondF_SHARED_GLOBAL_035.json",
+      "elapsed_sec": 54.28,
+      "vram_mb": 9014,
+      "runtime_status": "PASS",
+      "visual_semantic_status": "FAIL",
+      "key_finding": "Literal wireframe mannequins in frames; shared global guide overconstrains regional samplers"
+    },
+    "CondG": {
+      "id": "CondG",
+      "name": "Regional Control - Per-Region Hint 0.35 (Euler 20s, CFG 7.0, per_region_hint 0.35)",
+      "workflow": "workflows/47_VERIFY_PER_REGION_HINT_ATTENUATED.json",
+      "elapsed_sec": 72.54,
+      "vram_mb": 9186,
+      "runtime_status": "PASS",
+      "visual_semantic_status": "PARTIAL_PROGRESS",
+      "key_finding": "Wireframe mannequin artifacts completely eliminated; per-region hint architecture validated"
+    }
+  },
+  "contact_sheets": {
+    "Sheet_M": "output/Tegaki/Phase3I2/Phase3I2_Sheet_M_Causal_Ablation.png",
+    "Sheet_N": "output/Tegaki/Phase3I2/Phase3I2_Sheet_N_BaseOnlySteps_Ablation.png",
+    "Sheet_O": "output/Tegaki/Phase3I2/Phase3I2_Sheet_O_Regional_Control_Evolution.png"
+  }
+}

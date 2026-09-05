@@ -22,6 +22,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 from .impact_region_plan import build_impact_region_plan
+from .layout_guide_generator import generate_single_character_guide_image
 
 
 CHAR_PREVIEW_COLORS = [
@@ -57,6 +58,8 @@ class TegakiMangaImpactRegionalAdapter:
                 "variation_strength": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step": 0.01}),
                 "variation_method": (["linear", "slerp"], {"default": "linear"}),
                 "propagate_controlnet_to_regions": ("BOOLEAN", {"default": False}),
+                "regional_control_mode": (["off", "shared_global", "per_region_hint"], {"default": "off"}),
+                "regional_control_strength": ("FLOAT", {"default": 0.35, "min": 0.0, "max": 1.0, "step": 0.01}),
             }
         }
 
@@ -85,7 +88,9 @@ class TegakiMangaImpactRegionalAdapter:
         variation_seed: int = 0,
         variation_strength: float = 0.0,
         variation_method: str = "linear",
-        propagate_controlnet_to_regions: bool = False
+        propagate_controlnet_to_regions: bool = False,
+        regional_control_mode: str = "off",
+        regional_control_strength: float = 0.35
     ) -> Tuple[List[Any], torch.Tensor, torch.Tensor, str]:
         # 1. Dynamic import of Impact Pack
         impact_core = None
@@ -137,10 +142,15 @@ class TegakiMangaImpactRegionalAdapter:
         mask_list = []
         debug_regions = []
 
-        # Inspect base_sampler for ControlNet conditioning propagation (Phase 3I.1 A/B)
+        # Determine effective regional control mode (backward compatible with propagate_controlnet_to_regions)
+        effective_control_mode = regional_control_mode
+        if effective_control_mode == "off" and propagate_controlnet_to_regions:
+            effective_control_mode = "shared_global"
+
+        # Inspect base_sampler for ControlNet conditioning propagation (Phase 3I.2)
         base_control_obj = None
         base_control_uncond = False
-        if propagate_controlnet_to_regions and hasattr(base_sampler, "params") and len(base_sampler.params) >= 5:
+        if effective_control_mode != "off" and hasattr(base_sampler, "params") and len(base_sampler.params) >= 5:
             base_pos = base_sampler.params[4]
             if base_pos and isinstance(base_pos, list) and len(base_pos) > 0 and len(base_pos[0]) > 1:
                 base_dict = base_pos[0][1]
@@ -153,12 +163,64 @@ class TegakiMangaImpactRegionalAdapter:
             pos_cond = self._encode_text(clip, reg["prompt"])
             neg_cond = self._encode_text(clip, reg["negative_prompt"])
 
-            # Attach ControlNet metadata if propagation enabled and present
-            if propagate_controlnet_to_regions and base_control_obj is not None:
+            assigned_control_obj = None
+            if effective_control_mode != "off" and base_control_obj is not None:
+                if effective_control_mode == "shared_global":
+                    if hasattr(base_control_obj, "copy"):
+                        assigned_control_obj = base_control_obj.copy()
+                    else:
+                        import copy
+                        assigned_control_obj = copy.copy(base_control_obj)
+                    assigned_control_obj.strength = regional_control_strength
+
+                elif effective_control_mode == "per_region_hint":
+                    # Only inject per-region hint for character instances
+                    if reg["scope_type"] == "character_instance":
+                        meta = reg.get("metadata", {})
+                        pixel_bounds = meta.get("pixel_bounds", [0, 0, width, height])
+                        char_hint_img = generate_single_character_guide_image(
+                            width=width,
+                            height=height,
+                            pixel_bounds=pixel_bounds,
+                            guide_style="mannequin_capsule"
+                        )
+                        if hasattr(char_hint_img, "movedim") and char_hint_img.ndim == 4 and char_hint_img.shape[-1] == 3:
+                            char_hint = char_hint_img.movedim(-1, 1)
+                        else:
+                            char_hint = char_hint_img
+
+                        if hasattr(base_control_obj, "copy"):
+                            assigned_control_obj = base_control_obj.copy()
+                        else:
+                            import copy
+                            assigned_control_obj = copy.copy(base_control_obj)
+
+                        if hasattr(assigned_control_obj, "set_cond_hint"):
+                            t_range = getattr(base_control_obj, "timestep_percent_range", (0.0, 1.0))
+                            c_vae = getattr(base_control_obj, "vae", None)
+                            try:
+                                assigned_control_obj.set_cond_hint(
+                                    cond_hint=char_hint,
+                                    strength=regional_control_strength,
+                                    timestep_percent_range=t_range,
+                                    vae=c_vae
+                                )
+                            except TypeError:
+                                try:
+                                    assigned_control_obj.set_cond_hint(char_hint, regional_control_strength, t_range, c_vae)
+                                except Exception:
+                                    assigned_control_obj.cond_hint_original = char_hint
+                                    assigned_control_obj.strength = regional_control_strength
+                        else:
+                            assigned_control_obj.strength = regional_control_strength
+                            assigned_control_obj.cond_hint_original = char_hint
+
+            # Attach ControlNet metadata if assigned
+            if assigned_control_obj is not None:
                 new_pos_cond = []
                 for t, d in pos_cond:
                     d_copy = d.copy()
-                    d_copy["control"] = base_control_obj
+                    d_copy["control"] = assigned_control_obj
                     d_copy["control_apply_to_uncond"] = base_control_uncond
                     new_pos_cond.append([t, d_copy])
                 pos_cond = new_pos_cond
@@ -247,7 +309,9 @@ class TegakiMangaImpactRegionalAdapter:
             "ordering_mode": ordering_mode,
             "character_prompt_mode": character_prompt_mode,
             "propagate_controlnet_to_regions": propagate_controlnet_to_regions,
-            "controlnet_propagated": (base_control_obj is not None) if propagate_controlnet_to_regions else False,
+            "regional_control_mode": effective_control_mode,
+            "regional_control_strength": regional_control_strength,
+            "controlnet_propagated": (base_control_obj is not None) if effective_control_mode != "off" else False,
             "total_regional_prompts": len(regional_prompts),
             "regions": debug_regions
         }

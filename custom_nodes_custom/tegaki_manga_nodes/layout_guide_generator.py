@@ -165,7 +165,121 @@ def extract_staging_boxes(
                 })
         return panel_box, char_boxes
 
-    return [0.05, 0.05, 0.90, 0.90], []
+def draw_single_character_mannequin(
+    draw: ImageDraw.ImageDraw,
+    rx0: int,
+    ry0: int,
+    rx1: int,
+    ry1: int,
+    guide_style: str = "mannequin_capsule",
+    fg_color: Tuple[int, int, int] = (0, 0, 0),
+    box_outline_color: Tuple[int, int, int] = (190, 190, 190),
+    fill_color: Tuple[int, int, int] = (0, 0, 0),
+    line_thickness: int = 4
+) -> None:
+    cw = rx1 - rx0
+    ch = ry1 - ry0
+    if cw <= 4 or ch <= 4:
+        return
+    cx = rx0 + cw // 2
+
+    if guide_style == "mannequin_capsule":
+        draw.rectangle([rx0, ry0, rx1, ry1], outline=box_outline_color, width=max(1, line_thickness // 2))
+        r_head_x = max(4, int(cw * 0.22))
+        r_head_y = max(4, int(ch * 0.11))
+        head_cy = ry0 + int(ch * 0.12)
+        draw.ellipse(
+            [cx - r_head_x, head_cy - r_head_y, cx + r_head_x, head_cy + r_head_y],
+            outline=fg_color,
+            width=line_thickness
+        )
+        neck_top = head_cy + r_head_y
+        neck_bot = ry0 + int(ch * 0.27)
+        if neck_bot > neck_top:
+            draw.line([(cx, neck_top), (cx, neck_bot)], fill=fg_color, width=line_thickness)
+        sh_w = max(4, int(cw * 0.35))
+        draw.line([(cx - sh_w, neck_bot), (cx + sh_w, neck_bot)], fill=fg_color, width=line_thickness)
+        torso_bot = ry0 + int(ch * 0.58)
+        draw.rectangle(
+            [cx - int(cw * 0.22), neck_bot, cx + int(cw * 0.22), torso_bot],
+            outline=fg_color,
+            width=line_thickness
+        )
+        draw.line([(cx - int(cw * 0.25), torso_bot), (cx + int(cw * 0.25), torso_bot)], fill=fg_color, width=line_thickness)
+        knee_y = ry0 + int(ch * 0.78)
+        leg_l = cx - int(cw * 0.12)
+        leg_r = cx + int(cw * 0.12)
+        draw.line([(leg_l, torso_bot), (leg_l, knee_y), (leg_l, ry1 - 2)], fill=fg_color, width=line_thickness)
+        draw.line([(leg_r, torso_bot), (leg_r, knee_y), (leg_r, ry1 - 2)], fill=fg_color, width=line_thickness)
+        elbow_y = ry0 + int(ch * 0.45)
+        hand_y = ry0 + int(ch * 0.62)
+        arm_l_elbow = cx - int(cw * 0.40)
+        arm_r_elbow = cx + int(cw * 0.40)
+        arm_l_hand = cx - int(cw * 0.35)
+        arm_r_hand = cx + int(cw * 0.35)
+        draw.line([(cx - sh_w, neck_bot), (arm_l_elbow, elbow_y), (arm_l_hand, hand_y)], fill=fg_color, width=line_thickness)
+        draw.line([(cx + sh_w, neck_bot), (arm_r_elbow, elbow_y), (arm_r_hand, hand_y)], fill=fg_color, width=line_thickness)
+
+    elif guide_style == "box_wireframe":
+        draw.rectangle([rx0, ry0, rx1, ry1], outline=fg_color, width=line_thickness)
+        draw.line([(rx0, ry0), (rx1, ry1)], fill=box_outline_color, width=max(1, line_thickness // 2))
+        draw.line([(rx0, ry1), (rx1, ry0)], fill=box_outline_color, width=max(1, line_thickness // 2))
+        r_head = min(cw, ch) // 5
+        draw.ellipse([cx - r_head, ry0 + 4, cx + r_head, ry0 + 4 + 2 * r_head], outline=fg_color, width=line_thickness)
+
+    elif guide_style == "flat_silhouette":
+        r_head_x = max(4, int(cw * 0.22))
+        r_head_y = max(4, int(ch * 0.11))
+        head_cy = ry0 + int(ch * 0.12)
+        draw.ellipse([cx - r_head_x, head_cy - r_head_y, cx + r_head_x, head_cy + r_head_y], fill=fill_color)
+        body_y0 = ry0 + int(ch * 0.24)
+        draw.rounded_rectangle([cx - int(cw * 0.30), body_y0, cx + int(cw * 0.30), ry1 - 2], radius=int(cw * 0.10), fill=fill_color)
+
+
+def generate_single_character_guide_image(
+    width: int,
+    height: int,
+    pixel_bounds: List[int],
+    guide_style: str = "mannequin_capsule",
+    line_thickness: int = 4,
+    color_mode: str = "Black on White"
+) -> torch.Tensor:
+    """
+    Generates a single character auxiliary guide image for per-region ControlNet hint injection.
+    Canvas contains ONLY the specified character's silhouette/capsule on a clean background.
+    No panel border or other characters are drawn.
+    """
+    W, H = int(width), int(height)
+    if color_mode == "White on Black":
+        bg_color = (0, 0, 0)
+        fg_color = (255, 255, 255)
+        box_outline_color = (100, 100, 100)
+        fill_color = (255, 255, 255)
+    else:
+        bg_color = (255, 255, 255)
+        fg_color = (0, 0, 0)
+        box_outline_color = (190, 190, 190)
+        fill_color = (0, 0, 0)
+
+    img = Image.new("RGB", (W, H), bg_color)
+    draw = ImageDraw.Draw(img)
+    rx0, ry0, rx1, ry1 = pixel_bounds
+    rx0 = max(0, min(W - 1, int(rx0)))
+    ry0 = max(0, min(H - 1, int(ry0)))
+    rx1 = max(0, min(W - 1, int(rx1)))
+    ry1 = max(0, min(H - 1, int(ry1)))
+
+    draw_single_character_mannequin(
+        draw, rx0, ry0, rx1, ry1,
+        guide_style=guide_style,
+        fg_color=fg_color,
+        box_outline_color=box_outline_color,
+        fill_color=fill_color,
+        line_thickness=line_thickness
+    )
+
+    np_img = np.array(img).astype(np.float32) / 255.0
+    return torch.from_numpy(np_img).unsqueeze(0)
 
 
 class TegakiMangaLayoutGuideGenerator:
@@ -257,78 +371,14 @@ class TegakiMangaLayoutGuideGenerator:
             # Update layout mask
             mask_tensor[0, ry0:ry1, rx0:rx1] = 1.0
 
-            if guide_style == "mannequin_capsule":
-                # Subtly mark the bounding box bounds
-                draw.rectangle([rx0, ry0, rx1, ry1], outline=box_outline_color, width=max(1, line_thickness // 2))
-
-                # Head oval
-                r_head_x = max(4, int(cw * 0.22))
-                r_head_y = max(4, int(ch * 0.11))
-                head_cy = ry0 + int(ch * 0.12)
-                draw.ellipse(
-                    [cx - r_head_x, head_cy - r_head_y, cx + r_head_x, head_cy + r_head_y],
-                    outline=fg_color,
-                    width=line_thickness
-                )
-
-                # Neck
-                neck_top = head_cy + r_head_y
-                neck_bot = ry0 + int(ch * 0.27)
-                if neck_bot > neck_top:
-                    draw.line([(cx, neck_top), (cx, neck_bot)], fill=fg_color, width=line_thickness)
-
-                # Shoulders
-                sh_w = max(4, int(cw * 0.35))
-                draw.line([(cx - sh_w, neck_bot), (cx + sh_w, neck_bot)], fill=fg_color, width=line_thickness)
-
-                # Torso
-                torso_bot = ry0 + int(ch * 0.58)
-                draw.rectangle(
-                    [cx - int(cw * 0.22), neck_bot, cx + int(cw * 0.22), torso_bot],
-                    outline=fg_color,
-                    width=line_thickness
-                )
-
-                # Pelvis
-                draw.line([(cx - int(cw * 0.25), torso_bot), (cx + int(cw * 0.25), torso_bot)], fill=fg_color, width=line_thickness)
-
-                # Legs
-                knee_y = ry0 + int(ch * 0.78)
-                leg_l = cx - int(cw * 0.12)
-                leg_r = cx + int(cw * 0.12)
-                draw.line([(leg_l, torso_bot), (leg_l, knee_y), (leg_l, ry1 - 2)], fill=fg_color, width=line_thickness)
-                draw.line([(leg_r, torso_bot), (leg_r, knee_y), (leg_r, ry1 - 2)], fill=fg_color, width=line_thickness)
-
-                # Arms
-                elbow_y = ry0 + int(ch * 0.45)
-                hand_y = ry0 + int(ch * 0.62)
-                arm_l_elbow = cx - int(cw * 0.40)
-                arm_r_elbow = cx + int(cw * 0.40)
-                arm_l_hand = cx - int(cw * 0.35)
-                arm_r_hand = cx + int(cw * 0.35)
-                draw.line([(cx - sh_w, neck_bot), (arm_l_elbow, elbow_y), (arm_l_hand, hand_y)], fill=fg_color, width=line_thickness)
-                draw.line([(cx + sh_w, neck_bot), (arm_r_elbow, elbow_y), (arm_r_hand, hand_y)], fill=fg_color, width=line_thickness)
-
-            elif guide_style == "box_wireframe":
-                # Outer rectangle
-                draw.rectangle([rx0, ry0, rx1, ry1], outline=fg_color, width=line_thickness)
-                # Diagonal cross
-                draw.line([(rx0, ry0), (rx1, ry1)], fill=box_outline_color, width=max(1, line_thickness // 2))
-                draw.line([(rx0, ry1), (rx1, ry0)], fill=box_outline_color, width=max(1, line_thickness // 2))
-                # Head indicator circle
-                r_head = min(cw, ch) // 5
-                draw.ellipse([cx - r_head, ry0 + 4, cx + r_head, ry0 + 4 + 2 * r_head], outline=fg_color, width=line_thickness)
-
-            elif guide_style == "flat_silhouette":
-                # Head circle fill
-                r_head_x = max(4, int(cw * 0.22))
-                r_head_y = max(4, int(ch * 0.11))
-                head_cy = ry0 + int(ch * 0.12)
-                draw.ellipse([cx - r_head_x, head_cy - r_head_y, cx + r_head_x, head_cy + r_head_y], fill=fill_color)
-
-                # Body rounded rectangle fill
-                body_y0 = ry0 + int(ch * 0.24)
-                draw.rounded_rectangle([cx - int(cw * 0.30), body_y0, cx + int(cw * 0.30), ry1 - 2], radius=int(cw * 0.10), fill=fill_color)
+            draw_single_character_mannequin(
+                draw, rx0, ry0, rx1, ry1,
+                guide_style=guide_style,
+                fg_color=fg_color,
+                box_outline_color=box_outline_color,
+                fill_color=fill_color,
+                line_thickness=line_thickness
+            )
 
         # Convert PIL Image to PyTorch Tensor [1, H, W, 3] in range [0.0, 1.0]
         np_img = np.array(img).astype(np.float32) / 255.0

@@ -38,12 +38,16 @@ class MockControlNet:
         self.name = name
 
     def copy(self):
-        return MockControlNet(self.name)
+        c = MockControlNet(self.name)
+        c.cond_hint_original = getattr(self, "cond_hint_original", None)
+        c.strength = getattr(self, "strength", 1.0)
+        c.timestep_percent_range = getattr(self, "timestep_percent_range", (0.0, 1.0))
+        return c
 
-    def set_cond_hint(self, hint, strength, timestep_range, vae=None, extra_concat=[]):
-        self.hint = hint
+    def set_cond_hint(self, cond_hint, strength=1.0, timestep_percent_range=(0.0, 1.0), vae=None, extra_concat=[]):
+        self.cond_hint_original = cond_hint
         self.strength = strength
-        self.timestep_range = timestep_range
+        self.timestep_percent_range = timestep_percent_range
         return self
 
     def set_previous_controlnet(self, prev):
@@ -196,6 +200,51 @@ class TestControlNetConditioningPropagation(unittest.TestCase):
         self.assertIn("control", stored_prop_pos[0][1])
         self.assertIsInstance(stored_prop_pos[0][1]["control"], MockControlNet)
         print("[Audit Item 5] Prototype propagate_controlnet_to_regions: Successfully attached to regional conditionings! YES")
+
+    def test_05_per_region_hint_prototype(self):
+        """Verify that regional_control_mode='per_region_hint' applies isolated hints only to character instances."""
+        from tegaki_manga_nodes.scene_compiler import TegakiMangaPageCompiler
+        from tegaki_manga_nodes.cast_master import get_default_cast_spec
+        from tegaki_manga_nodes.panel_layout_spec import get_default_panel_layout_spec
+        from tegaki_manga_nodes.region_editor import default_region_spec
+
+        cast_data = get_default_cast_spec()
+        layout_data = get_default_panel_layout_spec(512, 512, preset="1_full")
+        reg_spec = default_region_spec(512, 512, panel_count=1)
+        reg_spec["regions"][0]["characters"] = [
+            {"character_id": "char_alice", "name": "Alice", "enabled": True, "area": {"x": 0.1, "y": 0.15, "w": 0.4, "h": 0.75}},
+            {"character_id": "char_bob", "name": "Bob", "enabled": True, "area": {"x": 0.55, "y": 0.15, "w": 0.35, "h": 0.75}}
+        ]
+        page_compiler = TegakiMangaPageCompiler()
+        compile_plan, _, _, _ = page_compiler.compile_page(
+            region_spec=reg_spec,
+            cast_spec=cast_data
+        )
+
+        res_per_region = self.adapter.build_regional_prompts(
+            page_compile_plan=compile_plan,
+            panel_layout_spec=layout_data,
+            base_sampler=self.base_sampler,
+            clip=self.clip,
+            regional_control_mode="per_region_hint",
+            regional_control_strength=0.35
+        )
+        rps = res_per_region[0]
+        # First region is panel_scene
+        panel_rp = rps[0]
+        panel_pos = panel_rp.sampler.params[4]
+        self.assertNotIn("control", panel_pos[0][1], "Panel scene must NOT receive character ControlNet in per_region_hint mode.")
+
+        # Next regions are character instances
+        char_rps = rps[1:]
+        self.assertEqual(len(char_rps), 2)
+        for c_rp in char_rps:
+            c_pos = c_rp.sampler.params[4]
+            self.assertIn("control", c_pos[0][1], "Character instance must receive ControlNet in per_region_hint mode.")
+            c_ctrl = c_pos[0][1]["control"]
+            self.assertEqual(c_ctrl.strength, 0.35, "Per-region control strength must be attenuated to 0.35.")
+            self.assertIsNotNone(getattr(c_ctrl, "cond_hint_original", None), "Character hint must be attached.")
+        print("[Audit Item 6] Prototype per_region_hint: Isolated character hints with attenuated strength 0.35 verified! YES")
 
 
 def run_audit():

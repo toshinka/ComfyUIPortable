@@ -475,7 +475,7 @@
         }
       ],
       "widgets_values": [
-        "{\n  \"version\": 1,\n  \"characters\": [\n    {\n      \"id\": \"char_bob\",\n      \"name\": \"Bob\",\n      \"enabled\": true,\n      \"prompt\": \"1boy, short black hair, dark eyes, school uniform, black gakuran jacket, male student\",\n      \"negative_prompt\": \"worst quality, low quality, bad anatomy, duplicate boy\",\n      \"loras\": []\n    },\n    {\n      \"id\": \"char_alice\",\n      \"name\": \"Alice\",\n      \"enabled\": true,\n      \"prompt\": \"1girl, blonde hair, twin tails, blue eyes, school uniform, white shirt, red necktie, pleated skirt\",\n      \"negative_prompt\": \"worst quality, low quality, bad anatomy, duplicate girl\",\n      \"loras\": []\n    }\n  ]\n}"
+        "{\n  \"version\": 1,\n  \"characters\": [\n    {\n      \"id\": \"char_alice\",\n      \"name\": \"Alice\",\n      \"enabled\": true,\n      \"prompt\": \"1girl, blonde hair, twin tails, blue eyes, school uniform, white shirt, red necktie, pleated skirt\",\n      \"negative_prompt\": \"worst quality, low quality, bad anatomy, duplicate girl\",\n      \"loras\": []\n    },\n    {\n      \"id\": \"char_bob\",\n      \"name\": \"Bob\",\n      \"enabled\": true,\n      \"prompt\": \"1boy, short black hair, dark eyes, school uniform, black gakuran jacket, male student\",\n      \"negative_prompt\": \"worst quality, low quality, bad anatomy, duplicate boy\",\n      \"loras\": []\n    }\n  ]\n}"
       ]
     },
     {
@@ -522,7 +522,7 @@
         }
       ],
       "widgets_values": [
-        "{\n  \"version\": 1,\n  \"canvas\": {\n    \"width\": 1024,\n    \"height\": 1024\n  },\n  \"panel_count\": 1,\n  \"global_prompt\": \"manga illustration, monochrome expressive linework, high quality\",\n  \"global_negative_prompt\": \"worst quality, low quality, bad anatomy, blurry\",\n  \"panels\": [\n    {\n      \"id\": 1,\n      \"name\": \"Panel 1\",\n      \"enabled\": true,\n      \"prompt\": \"manga illustration, monochrome expressive linework, high quality, simple school courtyard, two students standing\",\n      \"negative_prompt\": \"blurry\",\n      \"characters\": [\n        {\n          \"character_id\": \"char_bob\",\n          \"enabled\": true,\n          \"prompt_override\": \"standing calmly\",\n          \"negative_prompt_override\": \"\",\n          \"area\": {\n            \"x\": 0.1,\n            \"y\": 0.15,\n            \"w\": 0.35,\n            \"h\": 0.75\n          }\n        },\n        {\n          \"character_id\": \"char_alice\",\n          \"enabled\": true,\n          \"prompt_override\": \"standing calmly\",\n          \"negative_prompt_override\": \"\",\n          \"area\": {\n            \"x\": 0.55,\n            \"y\": 0.15,\n            \"w\": 0.35,\n            \"h\": 0.75\n          }\n        }\n      ],\n      \"subscenes\": []\n    }\n  ]\n}"
+        "{\n  \"version\": 1,\n  \"canvas\": {\n    \"width\": 1024,\n    \"height\": 1024\n  },\n  \"panel_count\": 1,\n  \"global_prompt\": \"manga illustration, monochrome expressive linework, high quality\",\n  \"global_negative_prompt\": \"worst quality, low quality, bad anatomy, blurry\",\n  \"panels\": [\n    {\n      \"id\": 1,\n      \"name\": \"Panel 1\",\n      \"enabled\": true,\n      \"prompt\": \"manga illustration, monochrome expressive linework, high quality, simple school courtyard, two students standing\",\n      \"negative_prompt\": \"blurry\",\n      \"characters\": [\n        {\n          \"character_id\": \"char_alice\",\n          \"enabled\": true,\n          \"prompt_override\": \"standing calmly\",\n          \"negative_prompt_override\": \"\",\n          \"area\": {\n            \"x\": 0.1,\n            \"y\": 0.15,\n            \"w\": 0.35,\n            \"h\": 0.75\n          }\n        },\n        {\n          \"character_id\": \"char_bob\",\n          \"enabled\": true,\n          \"prompt_override\": \"standing calmly\",\n          \"negative_prompt_override\": \"\",\n          \"area\": {\n            \"x\": 0.55,\n            \"y\": 0.15,\n            \"w\": 0.35,\n            \"h\": 0.75\n          }\n        }\n      ],\n      \"subscenes\": []\n    }\n  ]\n}"
       ]
     },
     {
@@ -618,7 +618,7 @@
         }
       ],
       "widgets_values": [
-        "{\n  \"1\": {\n    \"char_bob\": {\n      \"area\": {\n        \"x\": 0.1,\n        \"y\": 0.15,\n        \"w\": 0.35,\n        \"h\": 0.75\n      }\n    },\n    \"char_alice\": {\n      \"area\": {\n        \"x\": 0.55,\n        \"y\": 0.15,\n        \"w\": 0.35,\n        \"h\": 0.75\n      }\n    }\n  }\n}"
+        "{\n  \"1\": {\n    \"char_alice\": {\n      \"area\": {\n        \"x\": 0.1,\n        \"y\": 0.15,\n        \"w\": 0.35,\n        \"h\": 0.75\n      }\n    },\n    \"char_bob\": {\n      \"area\": {\n        \"x\": 0.55,\n        \"y\": 0.15,\n        \"w\": 0.35,\n        \"h\": 0.75\n      }\n    }\n  }\n}"
       ]
     },
     {
@@ -729,7 +729,9 @@
         0,
         0.0,
         "linear",
-        false
+        false,
+        "off",
+        0.35
       ]
     },
     {
@@ -905,7 +907,7 @@
         }
       ],
       "widgets_values": [
-        "WF43_Phase3I1_Browser_Staging_Causality_AliceRight"
+        "Phase3I2_46_Hyper12_Causal_Control"
       ]
     }
   ],
@@ -1146,7 +1148,7 @@
   "groups": [],
   "config": {},
   "extra": {
-    "title": "WF43: Browser Staging Interaction Causality (Alice Center-Right Dragged, Fast Draft 12)"
+    "title": "WF46: Hyper12 Causal Control (Euler 12s, CFG 6.0, Hyper LoRA, base_only=2)"
   },
   "version": 0.4
 }

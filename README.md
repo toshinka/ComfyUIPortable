@@ -133,9 +133,9 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ test_i2i.py                         # 実機I2Iパイプライン検証スクリプト
  │   └─ test_wildcards.py                   # Wildcard/Dynamic Prompts検証
  ├─ patches/                                # 外部Custom Node向けローカルパッチ集
-  ├─ workflows/                              # 漫画制作向けワークフローJSON (39種)
-  ├─ python_embeded/                         # [Git除外] Python 3.13 組み込み環境
-  └─ ComfyUI/                                # [Git除外] ComfyUI本体 & 外部Custom Nodes
+ ├─ workflows/                              # 漫画制作向けワークフローJSON (47種)
+ ├─ python_embeded/                         # [Git除外] Python 3.13 組み込み環境
+ └─ ComfyUI/                                # [Git除外] ComfyUI本体 & 外部Custom Nodes
 ```
 
 ---
@@ -187,6 +187,10 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
 - `41_VERIFY_CN_STRENGTH_SANITY.json`: ControlNet 強度・スケジュール健全性オラクル (CN 0.50/0.60 緩和・過拘束抑制評価 / Zero-Touch Verified)
 - `42_VERIFY_REGIONAL_CN_PROPAGATION_AB.json`: リージョナル ControlNet 伝播 A/B オラクル (propagate_controlnet_to_regions: True プロトタイプ / Zero-Touch Verified)
 - `43_VERIFY_BROWSER_STAGING_CAUSALITY.json`: ブラウザポインタ演出因果性オラクル (Alice右ドラッグ移動・Fast Draft 12同期・Guide SSOT実証 / Zero-Touch Verified)
+- `44_VERIFY_NATIVE20_BASEONLY_ZERO.json`: 初期ベースステップ切り分けオラクル (base_only_steps=0 有害性実証・純粋ノイズ化 / Zero-Touch Verified)
+- `45_VERIFY_NATIVE12_CONTROL.json`: Native 短ステップ因果対照オラクル (Native 12s・CFG 6.0・ステップ短縮単独の効果単離 / Zero-Touch Verified)
+- `46_VERIFY_HYPER12_CAUSAL_CONTROL.json`: Hyper-12 因果対照オラクル (Hyper-SDXL 12s・Alice左/Bob右・配置幾何との相互作用実証 / Zero-Touch Verified)
+- `47_VERIFY_PER_REGION_HINT_ATTENUATED.json`: キャラクター個別 Hint 減衰オラクル (per_region_hint 0.35・マネキン線画複写の根絶実証 / Zero-Touch Verified)
 
 ### Tag Complete (Phase 3B.1.1 導入)
 - 全テキスト入力欄（Region Editor Prompt、CLIPTextEncode 等）で、Danbooru 14万タグ、LoRA名、Embeddingのリアルタイム自動補完（Tag Complete）が完全動作します（`ComfyUI-Custom-Scripts` 統合）。

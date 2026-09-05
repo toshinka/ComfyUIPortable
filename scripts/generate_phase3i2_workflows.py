@@ -1,15 +1,15 @@
 """
-Generate Phase 3I.1 Canonical Workflows (40, 41, 42, 43)
+Generate Phase 3I.2 Canonical Workflows (44, 45, 46, 47)
 =========================================================
 Generates:
-- 40_VERIFY_CN_AUTHORING_REFERENCE_PAIR.json:
-    Alice Left, Bob Right reference pair under ControlNet assist (Euler 20-step, CFG 7.0, CN strength 0.75/end 0.80, Base-only CN).
-- 41_VERIFY_CN_STRENGTH_SANITY.json:
-    ControlNet strength sanity (CN strength 0.50 / end 0.60 vs current 0.75/0.80).
-- 42_VERIFY_REGIONAL_CN_PROPAGATION_AB.json:
-    Regional ControlNet Propagation prototype (propagate_controlnet_to_regions: True in TegakiMangaImpactRegionalAdapter).
-- 43_VERIFY_BROWSER_STAGING_CAUSALITY.json:
-    Browser Staging Interaction Causality (Alice moved to center-right [0.55, 0.15, 0.35, 0.75] via staging_overrides, Bob at left [0.10, 0.15, 0.35, 0.75], Fast Draft 12).
+- 44_VERIFY_NATIVE20_BASEONLY_ZERO.json:
+    Native 20-step with base_only_steps=0 (Euler 20s, CFG 7.0, CN 0.75/0.80, base_only=0)
+- 45_VERIFY_NATIVE12_CONTROL.json:
+    Native 12-step Control (Euler 12s, CFG 6.0, No LoRA, base_only=2)
+- 46_VERIFY_HYPER12_CAUSAL_CONTROL.json:
+    Hyper12 Causal Control (Euler 12s, CFG 6.0, Hyper-SDXL LoRA, base_only=2)
+- 47_VERIFY_PER_REGION_HINT_ATTENUATED.json:
+    Per-Region Hint Attenuated (Euler 20s, CFG 7.0, per_region_hint 0.35, base_only=2)
 """
 
 import json
@@ -33,7 +33,7 @@ COURTYARD_SCENE = f"{GLOBAL_STYLE}, simple school courtyard, two students standi
 GLOBAL_NEGATIVE = "worst quality, low quality, bad anatomy, blurry"
 
 
-def build_phase3i1_workflow(
+def build_phase3i2_workflow(
     wf_filename: str,
     title: str,
     save_prefix: str,
@@ -41,11 +41,16 @@ def build_phase3i1_workflow(
     attending_chars: list,
     staging_overrides: dict,
     fast_draft_12: bool = False,
+    steps: int = 20,
+    cfg: float = 7.0,
+    base_only_steps: int = 2,
     guide_style: str = "mannequin_capsule",
     controlnet_strength: float = 0.75,
     controlnet_start: float = 0.0,
     controlnet_end: float = 0.80,
     propagate_controlnet_to_regions: bool = False,
+    regional_control_mode: str = "off",
+    regional_control_strength: float = 0.35,
     panel_scene_prompt: str = None,
     seed: int = 42
 ):
@@ -75,9 +80,6 @@ def build_phase3i1_workflow(
     layout_data = get_default_panel_layout_spec(1024, 1024, preset="1_full")
     layout_json = json.dumps(layout_data, indent=2, ensure_ascii=False)
     staging_overrides_json = json.dumps(staging_overrides, indent=2, ensure_ascii=False)
-
-    steps = 12 if fast_draft_12 else 20
-    cfg = 6.0 if fast_draft_12 else 7.0
 
     nodes = [
         # 1. CheckpointLoaderSimple
@@ -352,7 +354,9 @@ def build_phase3i1_workflow(
             ],
             "widgets_values": [
                 "scene_first", "scene_composed", True, False, 0, 0, 0.0, "linear",
-                propagate_controlnet_to_regions
+                propagate_controlnet_to_regions,
+                regional_control_mode,
+                regional_control_strength
             ]
         },
         # 14. RegionalSampler
@@ -371,7 +375,7 @@ def build_phase3i1_workflow(
             ],
             "outputs": [{"name": "LATENT", "type": "LATENT", "links": [19], "slot_index": 0}],
             "widgets_values": [
-                seed, "fixed", 0, "ignore", steps, 2, 1.0, 10, True, "ratio between", "AUTO", 0.3
+                seed, "fixed", 0, "ignore", steps, base_only_steps, 1.0, 10, True, "ratio between", "AUTO", 0.3
             ]
         },
         # 16. FromBasicPipe
@@ -471,7 +475,7 @@ def build_phase3i1_workflow(
     }
 
 
-def generate_all_phase3i1_workflows():
+def generate_all_phase3i2_workflows():
     os.makedirs(WORKFLOWS_DIR, exist_ok=True)
 
     char_alice = {
@@ -491,166 +495,130 @@ def generate_all_phase3i1_workflows():
         "loras": []
     }
 
-    # 1. WF40: Reference Pair (Alice Left, Bob Right) under CN Assist (Euler 20s, CN 0.75 / 0.80)
-    wf40 = build_phase3i1_workflow(
-        wf_filename="40_VERIFY_CN_AUTHORING_REFERENCE_PAIR.json",
-        title="WF40: ControlNet Authoring Reference Pair (Euler 20s, CN 0.75/0.80)",
-        save_prefix="WF40_Phase3I1_Authoring_40_ReferencePair_AliceLeft_BobRight",
-        characters=[char_alice, char_bob],
-        attending_chars=[
-            {
-                "character_id": "char_alice",
-                "enabled": True,
-                "prompt_override": "standing calmly",
-                "negative_prompt_override": "",
-                "area": {"x": 0.10, "y": 0.15, "w": 0.35, "h": 0.75}
-            },
-            {
-                "character_id": "char_bob",
-                "enabled": True,
-                "prompt_override": "standing calmly",
-                "negative_prompt_override": "",
-                "area": {"x": 0.55, "y": 0.15, "w": 0.35, "h": 0.75}
-            }
-        ],
-        staging_overrides={
-            "1": {
-                "char_alice": {"area": {"x": 0.10, "y": 0.15, "w": 0.35, "h": 0.75}},
-                "char_bob": {"area": {"x": 0.55, "y": 0.15, "w": 0.35, "h": 0.75}}
-            }
+    standard_attending = [
+        {
+            "character_id": "char_alice",
+            "enabled": True,
+            "prompt_override": "standing calmly",
+            "negative_prompt_override": "",
+            "area": {"x": 0.10, "y": 0.15, "w": 0.35, "h": 0.75}
         },
+        {
+            "character_id": "char_bob",
+            "enabled": True,
+            "prompt_override": "standing calmly",
+            "negative_prompt_override": "",
+            "area": {"x": 0.55, "y": 0.15, "w": 0.35, "h": 0.75}
+        }
+    ]
+
+    standard_overrides = {
+        "1": {
+            "char_alice": {"area": {"x": 0.10, "y": 0.15, "w": 0.35, "h": 0.75}},
+            "char_bob": {"area": {"x": 0.55, "y": 0.15, "w": 0.35, "h": 0.75}}
+        }
+    }
+
+    # 1. WF44: Native 20s with base_only_steps=0
+    wf44 = build_phase3i2_workflow(
+        wf_filename="44_VERIFY_NATIVE20_BASEONLY_ZERO.json",
+        title="WF44: Native 20-step with base_only_steps=0 (Euler 20s, CFG 7.0, base_only=0)",
+        save_prefix="Phase3I2_44_Native20_BaseOnly_Zero",
+        characters=[char_alice, char_bob],
+        attending_chars=standard_attending,
+        staging_overrides=standard_overrides,
         fast_draft_12=False,
+        steps=20,
+        cfg=7.0,
+        base_only_steps=0,
         guide_style="mannequin_capsule",
         controlnet_strength=0.75,
         controlnet_start=0.0,
         controlnet_end=0.80,
-        propagate_controlnet_to_regions=False
+        propagate_controlnet_to_regions=False,
+        regional_control_mode="off",
+        regional_control_strength=0.35
     )
-    p40 = os.path.join(WORKFLOWS_DIR, "40_VERIFY_CN_AUTHORING_REFERENCE_PAIR.json")
-    with open(p40, "w", encoding="utf-8") as f:
-        json.dump(wf40, f, indent=2, ensure_ascii=False)
-    print(f"Generated: {p40}")
+    p44 = os.path.join(WORKFLOWS_DIR, "44_VERIFY_NATIVE20_BASEONLY_ZERO.json")
+    with open(p44, "w", encoding="utf-8") as f:
+        json.dump(wf44, f, indent=2, ensure_ascii=False)
+    print(f"Generated: {p44}")
 
-    # 2. WF41: ControlNet Strength Sanity (0.50 Strength / 0.60 End)
-    wf41 = build_phase3i1_workflow(
-        wf_filename="41_VERIFY_CN_STRENGTH_SANITY.json",
-        title="WF41: ControlNet Strength Sanity (Euler 20s, CN 0.50/0.60)",
-        save_prefix="WF41_Phase3I1_CN_Strength_Sanity_50_60",
+    # 2. WF45: Native 12s Control (Euler 12s, CFG 6.0, No LoRA, base_only=2)
+    wf45 = build_phase3i2_workflow(
+        wf_filename="45_VERIFY_NATIVE12_CONTROL.json",
+        title="WF45: Native 12-step Control (Euler 12s, CFG 6.0, No LoRA, base_only=2)",
+        save_prefix="Phase3I2_45_Native12_Control",
         characters=[char_alice, char_bob],
-        attending_chars=[
-            {
-                "character_id": "char_alice",
-                "enabled": True,
-                "prompt_override": "standing calmly",
-                "negative_prompt_override": "",
-                "area": {"x": 0.10, "y": 0.15, "w": 0.35, "h": 0.75}
-            },
-            {
-                "character_id": "char_bob",
-                "enabled": True,
-                "prompt_override": "standing calmly",
-                "negative_prompt_override": "",
-                "area": {"x": 0.55, "y": 0.15, "w": 0.35, "h": 0.75}
-            }
-        ],
-        staging_overrides={
-            "1": {
-                "char_alice": {"area": {"x": 0.10, "y": 0.15, "w": 0.35, "h": 0.75}},
-                "char_bob": {"area": {"x": 0.55, "y": 0.15, "w": 0.35, "h": 0.75}}
-            }
-        },
+        attending_chars=standard_attending,
+        staging_overrides=standard_overrides,
         fast_draft_12=False,
-        guide_style="mannequin_capsule",
-        controlnet_strength=0.50,
-        controlnet_start=0.0,
-        controlnet_end=0.60,
-        propagate_controlnet_to_regions=False
-    )
-    p41 = os.path.join(WORKFLOWS_DIR, "41_VERIFY_CN_STRENGTH_SANITY.json")
-    with open(p41, "w", encoding="utf-8") as f:
-        json.dump(wf41, f, indent=2, ensure_ascii=False)
-    print(f"Generated: {p41}")
-
-    # 3. WF42: Regional ControlNet Propagation A/B (propagate_controlnet_to_regions: True)
-    wf42 = build_phase3i1_workflow(
-        wf_filename="42_VERIFY_REGIONAL_CN_PROPAGATION_AB.json",
-        title="WF42: Regional ControlNet Propagation A/B (Propagated)",
-        save_prefix="WF42_Phase3I1_Regional_CN_Propagation_AB",
-        characters=[char_alice, char_bob],
-        attending_chars=[
-            {
-                "character_id": "char_alice",
-                "enabled": True,
-                "prompt_override": "standing calmly",
-                "negative_prompt_override": "",
-                "area": {"x": 0.10, "y": 0.15, "w": 0.35, "h": 0.75}
-            },
-            {
-                "character_id": "char_bob",
-                "enabled": True,
-                "prompt_override": "standing calmly",
-                "negative_prompt_override": "",
-                "area": {"x": 0.55, "y": 0.15, "w": 0.35, "h": 0.75}
-            }
-        ],
-        staging_overrides={
-            "1": {
-                "char_alice": {"area": {"x": 0.10, "y": 0.15, "w": 0.35, "h": 0.75}},
-                "char_bob": {"area": {"x": 0.55, "y": 0.15, "w": 0.35, "h": 0.75}}
-            }
-        },
-        fast_draft_12=False,
+        steps=12,
+        cfg=6.0,
+        base_only_steps=2,
         guide_style="mannequin_capsule",
         controlnet_strength=0.75,
         controlnet_start=0.0,
         controlnet_end=0.80,
-        propagate_controlnet_to_regions=True
+        propagate_controlnet_to_regions=False,
+        regional_control_mode="off",
+        regional_control_strength=0.35
     )
-    p42 = os.path.join(WORKFLOWS_DIR, "42_VERIFY_REGIONAL_CN_PROPAGATION_AB.json")
-    with open(p42, "w", encoding="utf-8") as f:
-        json.dump(wf42, f, indent=2, ensure_ascii=False)
-    print(f"Generated: {p42}")
+    p45 = os.path.join(WORKFLOWS_DIR, "45_VERIFY_NATIVE12_CONTROL.json")
+    with open(p45, "w", encoding="utf-8") as f:
+        json.dump(wf45, f, indent=2, ensure_ascii=False)
+    print(f"Generated: {p45}")
 
-    # 4. WF43: Browser Staging Interaction Causality (Alice moved to center-right, Fast Draft 12)
-    wf43 = build_phase3i1_workflow(
-        wf_filename="43_VERIFY_BROWSER_STAGING_CAUSALITY.json",
-        title="WF43: Browser Staging Interaction Causality (Alice Center-Right Dragged, Fast Draft 12)",
-        save_prefix="WF43_Phase3I1_Browser_Staging_Causality_AliceRight",
-        characters=[char_bob, char_alice],
-        attending_chars=[
-            {
-                "character_id": "char_bob",
-                "enabled": True,
-                "prompt_override": "standing calmly",
-                "negative_prompt_override": "",
-                "area": {"x": 0.10, "y": 0.15, "w": 0.35, "h": 0.75}
-            },
-            {
-                "character_id": "char_alice",
-                "enabled": True,
-                "prompt_override": "standing calmly",
-                "negative_prompt_override": "",
-                "area": {"x": 0.55, "y": 0.15, "w": 0.35, "h": 0.75}
-            }
-        ],
-        staging_overrides={
-            "1": {
-                "char_bob": {"area": {"x": 0.10, "y": 0.15, "w": 0.35, "h": 0.75}},
-                "char_alice": {"area": {"x": 0.55, "y": 0.15, "w": 0.35, "h": 0.75}}
-            }
-        },
+    # 3. WF46: Hyper12 Causal Control (Euler 12s, CFG 6.0, Hyper LoRA, base_only=2)
+    wf46 = build_phase3i2_workflow(
+        wf_filename="46_VERIFY_HYPER12_CAUSAL_CONTROL.json",
+        title="WF46: Hyper12 Causal Control (Euler 12s, CFG 6.0, Hyper LoRA, base_only=2)",
+        save_prefix="Phase3I2_46_Hyper12_Causal_Control",
+        characters=[char_alice, char_bob],
+        attending_chars=standard_attending,
+        staging_overrides=standard_overrides,
         fast_draft_12=True,
+        steps=12,
+        cfg=6.0,
+        base_only_steps=2,
         guide_style="mannequin_capsule",
         controlnet_strength=0.75,
         controlnet_start=0.0,
         controlnet_end=0.80,
-        propagate_controlnet_to_regions=False
+        propagate_controlnet_to_regions=False,
+        regional_control_mode="off",
+        regional_control_strength=0.35
     )
-    p43 = os.path.join(WORKFLOWS_DIR, "43_VERIFY_BROWSER_STAGING_CAUSALITY.json")
-    with open(p43, "w", encoding="utf-8") as f:
-        json.dump(wf43, f, indent=2, ensure_ascii=False)
-    print(f"Generated: {p43}")
+    p46 = os.path.join(WORKFLOWS_DIR, "46_VERIFY_HYPER12_CAUSAL_CONTROL.json")
+    with open(p46, "w", encoding="utf-8") as f:
+        json.dump(wf46, f, indent=2, ensure_ascii=False)
+    print(f"Generated: {p46}")
+
+    # 4. WF47: Per-Region Hint Attenuated (Euler 20s, CFG 7.0, per_region_hint 0.35, base_only=2)
+    wf47 = build_phase3i2_workflow(
+        wf_filename="47_VERIFY_PER_REGION_HINT_ATTENUATED.json",
+        title="WF47: Per-Region Hint Attenuated (Euler 20s, CFG 7.0, per_region_hint 0.35, base_only=2)",
+        save_prefix="Phase3I2_47_Per_Region_Hint_Attenuated",
+        characters=[char_alice, char_bob],
+        attending_chars=standard_attending,
+        staging_overrides=standard_overrides,
+        fast_draft_12=False,
+        steps=20,
+        cfg=7.0,
+        base_only_steps=2,
+        guide_style="mannequin_capsule",
+        controlnet_strength=0.75,
+        controlnet_start=0.0,
+        controlnet_end=0.80,
+        propagate_controlnet_to_regions=False,
+        regional_control_mode="per_region_hint",
+        regional_control_strength=0.35
+    )
+    p47 = os.path.join(WORKFLOWS_DIR, "47_VERIFY_PER_REGION_HINT_ATTENUATED.json")
+    with open(p47, "w", encoding="utf-8") as f:
+        json.dump(wf47, f, indent=2, ensure_ascii=False)
+    print(f"Generated: {p47}")
 
 
 if __name__ == "__main__":
-    generate_all_phase3i1_workflows()
+    generate_all_phase3i2_workflows()

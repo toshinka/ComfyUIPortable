@@ -583,11 +583,51 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
 
 ---
 
-## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3I.1)
+### 44_VERIFY_NATIVE20_BASEONLY_ZERO.json
+- **区分**: 初期ベースステップ切り分けオラクル (NATIVE20 BASE-ONLY STEPS ZERO)
+- **目的**: RegionalSampler の `base_only_steps = 0` を検証。初期ベースサンプリング期間をゼロにすることで、背景 latent の固定が解除されるか、あるいは未初期化ノイズとなるかを切り分ける決定打ハーネス。
+- **必要Custom Node**:
+  - `TegakiMangaLayoutGuideGenerator`, `TegakiMangaCastMaster`, `TegakiMangaPanelContentEditor`, `TegakiMangaPanelLayoutEditor`, `TegakiMangaCharacterStagingEditor`, `TegakiMangaPageCompiler`, `TegakiMangaImpactRegionalAdapter` (独自)
+  - `ComfyUI-Impact-Pack` (ToBasicPipe, KSamplerAdvancedProvider, RegionalSampler)
+  - ComfyUI標準: ControlNetLoader, ControlNetApplyAdvanced, CheckpointLoaderSimple, EmptyLatentImage, SaveImage
+- **出力**: `output/Tegaki/Phase3I2/canonical/CondE_Native20_CFG7_BaseOnly0.png`
+- **Zero-Touch Smoke Test**: **PASS** (Visual: FAIL / Pure Noise)
+
+---
+
+### 45_VERIFY_NATIVE12_CONTROL.json
+- **区分**: Native 短ステップ対照オラクル (NATIVE 12-STEP CAUSAL CONTROL)
+- **目的**: LoRA を使用しない Native Illustrious SDXL のまま、ステップ数を 12、CFG を 6.0 に短縮した条件（Cond B）を検証。Fast Draft 12 の成功がステップ数短縮によるものかを因果的に単離する。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3I2/canonical/CondB_Native12_CFG6_BaseOnly2.png`
+- **Zero-Touch Smoke Test**: **PASS** (Visual: FAIL / Identical to 20s)
+
+---
+
+### 46_VERIFY_HYPER12_CAUSAL_CONTROL.json
+- **区分**: Hyper-12 因果対照オラクル (HYPER-12 CAUSAL CONTROL: ALICE LEFT, BOB RIGHT)
+- **目的**: Hyper-SDXL 12-step LoRA 環境下で、WF40 と全く同一の Alice 左、Bob 右配置を実行。Hyper LoRA 単独で人物が出現するのか、配置幾何との相互作用かを実証する。
+- **必要Custom Node**: 同上 + LoraLoader (Hyper-SDXL 12-step)
+- **出力**: `output/Tegaki/Phase3I2/canonical/CondD_Hyper12_CFG6_BaseOnly2.png`
+- **Zero-Touch Smoke Test**: **PASS** (Visual: FAIL / Empty Wall)
+
+---
+
+### 47_VERIFY_PER_REGION_HINT_ATTENUATED.json
+- **区分**: キャラクター個別 Hint 減衰オラクル (PER-REGION HINT ATTENUATED)
+- **目的**: `regional_control_mode: "per_region_hint"`, `regional_control_strength: 0.35` を検証。キャラクター個別インスタンスにのみ背景・他者を含まない単体ガイドヒントを生成・伝播し、Shared Global によるマネキン線画の誤描画（ワイヤーフレーム化）を根絶する。
+- **必要Custom Node**: 同上
+- **出力**: `output/Tegaki/Phase3I2/canonical/CondG_PerRegionHint_035.png`
+- **Zero-Touch Smoke Test**: **PASS** (Visual: PARTIAL PROGRESS / Wireframe Eliminated)
+
+---
+
+## 5. 互換性保証について (Phase 3B.1.1 〜 Phase 3I.2)
 - **Zero-Touch Smoke Test 検証済み**:
-  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、`21`〜`24`、正準空間検証セット `25`〜`28`、被写体排他・オーサリング因果セット `29`〜`34`、ControlNet スケール拘束セット `35`〜`39`、および Phase 3I.1 検証セット `40`〜`43`（全43件）は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
-- **Visual Semantic Status 分離 (Phase 3I.1)**:
-  実行完全性（Zero-Touch PASS）と画像意味的成否（Visual Semantic Status）を厳格に分離し、過大表現（"definitively solved", "exact boundaries" 等）を補正。WF39 / WF43（Fast Draft 12）において2人物の完全なスケール拘束・空間反転生成が実証されました。
+  `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、`21`〜`24`、正準空間検証セット `25`〜`28`、被写体排他・オーサリング因果セット `29`〜`34`、ControlNet スケール拘束セット `35`〜`39`、Phase 3I.1 検証セット `40`〜`43`、および Phase 3I.2 因果・領域制御セット `44`〜`47`（全47件）は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
+- **Visual Semantic Status 分離 (Phase 3I.1 〜 3I.2)**:
+  実行完全性（Zero-Touch PASS）と画像意味的成否（Visual Semantic Status）を厳格に分離。Phase 3I.2 では因果アブレーション（Cond A〜G）により、`base_only_steps = 0` の有害性、Shared Global の過拘束、Per-Region Hint によるマネキン線画複写の解消を実機証明しました。
+
 
 
 
