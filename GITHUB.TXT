@@ -4,12 +4,12 @@ ComfyUI Portable 漫画制作環境 (Tegaki Manga Edition) - External AI Review 
 
 Project Name: Tegaki ComfyUI Portable Manga Edition
 Purpose: Windowsローカル環境にIllustrious/SDXLモデルとEasyReforge資産を統合した漫画制作研究環境
-Updated: 2026-09-05 10:50 (JST)
+Updated: 2026-09-05 16:00 (JST)
 Repository URL: https://github.com/toshinka/tegaki
 Branch: main
 
-Review Target Commit SHA: cfe6a4fa38eedb199b8230bba85a2000331e7e5a
-Current Status: Phase 3I.1 完了 (ControlNet Visual Truth, Conditioning Ablation & Authoring Interaction Closure・ランタイムPASSと視覚意味論的真実の厳格分離・RegionalSampler Conditioning伝播構造解明・Base-Only vs Regional Propagation プロトタイプA/B・ブラウザPointer E2E & Guide SSOT自動検証・Canonical Workflows 40-43・4パネル診断 Contact Sheets J, K, L & Diagnostic Overlay・Fast Draft 12 高速回帰 1.60x)
+Review Target Commit SHA: 000a7a39b7ff0c8bc95d471719779663aefa258d
+Current Status: Phase 3I.2 完了 (Reference / Fast Causal Isolation, Per-Region Control Hint Prototype & True Browser Interaction Gate・Pointer Contract SimulationとLive Browser E2Eの厳格分離・視覚評価アノテーション来歴メタデータ明記・Conditions A〜G因果アブレーション走破・Single Character Guide Hint生成・Regional Control Mode [off, shared_global, per_region_hint] 実装・Canonical Workflows 44-47・Contact Sheets M, N, O・Fast Draft 12 を Operational Authoring Profile へ選定)
 
 Latest GITHUB.TXT Raw:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB.TXT
@@ -17,76 +17,86 @@ https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB.TX
 ※ 外部AIは以下の「Pinned URL (commit固定)」を参照してレビューを実施してください。
 
 --------------------------------------------------------------------------------
-1. Required First Reads (最優先確認資料 - Phase 3I.1 報告書・マニフェスト・視覚評価)
+1. Required First Reads (最優先確認資料 - Phase 3I.2 報告書・マニフェスト・視覚評価)
 --------------------------------------------------------------------------------
-1. PHASE3I_1_CONTROLNET_VISUAL_TRUTH_AND_INTERACTION_REPORT.md (Phase 3I.1 完了報告書・全21セクション完全網羅)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/reports/PHASE3I_1_CONTROLNET_VISUAL_TRUTH_AND_INTERACTION_REPORT.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/docs/reports/PHASE3I_1_CONTROLNET_VISUAL_TRUTH_AND_INTERACTION_REPORT.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/docs/reports/PHASE3I_1_CONTROLNET_VISUAL_TRUTH_AND_INTERACTION_REPORT.md
+1. PHASE3I_2_REFERENCE_FAST_CAUSAL_AND_PER_REGION_CONTROL_REPORT.md (Phase 3I.2 完了報告書・全因果アブレーション・知見・運用プロファイル判定)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/reports/PHASE3I_2_REFERENCE_FAST_CAUSAL_AND_PER_REGION_CONTROL_REPORT.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/docs/reports/PHASE3I_2_REFERENCE_FAST_CAUSAL_AND_PER_REGION_CONTROL_REPORT.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/docs/reports/PHASE3I_2_REFERENCE_FAST_CAUSAL_AND_PER_REGION_CONTROL_REPORT.md
 
-2. PHASE3I_1_CANONICAL_VERIFICATION_MANIFEST.json (Phase 3I.1 正準検証マニフェスト・全Sign-off項目)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/verification/PHASE3I_1_CANONICAL_VERIFICATION_MANIFEST.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/docs/verification/PHASE3I_1_CANONICAL_VERIFICATION_MANIFEST.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/docs/verification/PHASE3I_1_CANONICAL_VERIFICATION_MANIFEST.json
+2. PHASE3I_2_CANONICAL_VERIFICATION_MANIFEST.json (Phase 3I.2 正準検証マニフェスト・全Sign-off項目)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/verification/PHASE3I_2_CANONICAL_VERIFICATION_MANIFEST.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/docs/verification/PHASE3I_2_CANONICAL_VERIFICATION_MANIFEST.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/docs/verification/PHASE3I_2_CANONICAL_VERIFICATION_MANIFEST.json
 
-3. WORKFLOW_INDEX.md (全43ワークフロー解説・索引・Phase 3I.1 Workflows 40〜43 追記)
+3. PHASE3I_2_VISUAL_EVALUATION.json (Phase 3I.2 視覚評価データ・来歴メタデータ付加・Conditions A〜G完全記録)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/verification/PHASE3I_2_VISUAL_EVALUATION.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/docs/verification/PHASE3I_2_VISUAL_EVALUATION.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/docs/verification/PHASE3I_2_VISUAL_EVALUATION.json
+
+4. WORKFLOW_INDEX.md (全47ワークフロー解説・索引・Phase 3I.2 Workflows 44〜47 追記)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/WORKFLOW_INDEX.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/docs/WORKFLOW_INDEX.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/docs/WORKFLOW_INDEX.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/docs/WORKFLOW_INDEX.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/docs/WORKFLOW_INDEX.md
 
-4. README.md (リポジトリトップドキュメント・全43ワークフロー反映版)
+5. README.md (リポジトリトップドキュメント・全47ワークフロー反映版)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/README.md
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/README.md
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/README.md
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/README.md
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/README.md
 
 --------------------------------------------------------------------------------
-2. Track 1: Regional Conditioning Propagation & Interaction Implementation
+2. Track 1: Regional Control Hint & Engine Implementation
 --------------------------------------------------------------------------------
-1. manga_impact_regional_adapter.py (TegakiMangaImpactRegionalAdapter・propagate_controlnet_to_regions プロトタイプ実装)
+1. layout_guide_generator.py (TegakiLayoutGuideGenerator・draw_single_character_mannequin / generate_single_character_guide_image 実装)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/layout_guide_generator.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/layout_guide_generator.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/layout_guide_generator.py
+
+2. manga_impact_regional_adapter.py (TegakiMangaImpactRegionalAdapter・regional_control_mode [off, shared_global, per_region_hint] & ControlBase テンソル形状修正)
    Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/manga_impact_regional_adapter.py
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/manga_impact_regional_adapter.py
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/manga_impact_regional_adapter.py
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/manga_impact_regional_adapter.py
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/custom_nodes_custom/tegaki_manga_nodes/manga_impact_regional_adapter.py
 
-2. test_controlnet_conditioning_propagation.py (ControlNet Conditioning伝播構造検査・4/4 PASS)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/scripts/test_controlnet_conditioning_propagation.py
+3. test_character_staging_pointer_contract.py (Pointer Contract Simulation・SSOT同期契約検証・2/2 PASS)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/scripts/test_character_staging_pointer_contract.py
 
-3. test_character_staging_browser_pointer.py (ブラウザPointer E2E・Guide SSOT同期検証・2/2 PASS)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/scripts/test_character_staging_browser_pointer.py
+4. test_controlnet_conditioning_propagation.py (ControlNet Conditioning伝播構造 & Per-Region Hint 検査・5/5 PASS)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/scripts/test_controlnet_conditioning_propagation.py
 
 --------------------------------------------------------------------------------
-3. Track 2: Canonical Workflows 40-43 (Zero-Touch Verified)
+3. Track 2: Canonical Workflows 44-47 (Zero-Touch Verified)
 --------------------------------------------------------------------------------
-1. 40_VERIFY_CN_AUTHORING_REFERENCE_PAIR.json (本番オーサリング参照ペア・Alice左/Bob右・Euler 20s・CN 0.75/0.80・Base-Only)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/40_VERIFY_CN_AUTHORING_REFERENCE_PAIR.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/workflows/40_VERIFY_CN_AUTHORING_REFERENCE_PAIR.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/workflows/40_VERIFY_CN_AUTHORING_REFERENCE_PAIR.json
+1. 44_VERIFY_NATIVE20_BASEONLY_ZERO.json (base_only_steps=0 切断検証・完全ノイズ破壊実証)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/44_VERIFY_NATIVE20_BASEONLY_ZERO.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/workflows/44_VERIFY_NATIVE20_BASEONLY_ZERO.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/workflows/44_VERIFY_NATIVE20_BASEONLY_ZERO.json
 
-2. 41_VERIFY_CN_STRENGTH_SANITY.json (ControlNet強度サニティ・CN 0.50 / End 0.60 vs 0.75 / 0.80)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/41_VERIFY_CN_STRENGTH_SANITY.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/workflows/41_VERIFY_CN_STRENGTH_SANITY.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/workflows/41_VERIFY_CN_STRENGTH_SANITY.json
+2. 45_VERIFY_NATIVE12_CONTROL.json (Native 12-step 対照実験・20stepと同等破綻実証)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/45_VERIFY_NATIVE12_CONTROL.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/workflows/45_VERIFY_NATIVE12_CONTROL.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/workflows/45_VERIFY_NATIVE12_CONTROL.json
 
-3. 42_VERIFY_REGIONAL_CN_PROPAGATION_AB.json (Regional ControlNet Propagation プロトタイプ・全領域実寸描画 & マネキン拘束発見)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/42_VERIFY_REGIONAL_CN_PROPAGATION_AB.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/workflows/42_VERIFY_REGIONAL_CN_PROPAGATION_AB.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/workflows/42_VERIFY_REGIONAL_CN_PROPAGATION_AB.json
+3. 46_VERIFY_HYPER12_CAUSAL_CONTROL.json (Hyper-12 因果対照・同一Staging下での振る舞い検証)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/46_VERIFY_HYPER12_CAUSAL_CONTROL.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/workflows/46_VERIFY_HYPER12_CAUSAL_CONTROL.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/workflows/46_VERIFY_HYPER12_CAUSAL_CONTROL.json
 
-4. 43_VERIFY_BROWSER_STAGING_CAUSALITY.json (ブラウザStaging操作因果性・Alice右移動・Fast Draft 12)
-   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/43_VERIFY_BROWSER_STAGING_CAUSALITY.json
-   Pinned URL:  https://github.com/toshinka/tegaki/blob/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/workflows/43_VERIFY_BROWSER_STAGING_CAUSALITY.json
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/workflows/43_VERIFY_BROWSER_STAGING_CAUSALITY.json
+4. 47_VERIFY_PER_REGION_HINT_ATTENUATED.json (Per-Region Hint 減衰検証・マネキン過拘束完全解消実証)
+   Latest Main: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/workflows/47_VERIFY_PER_REGION_HINT_ATTENUATED.json
+   Pinned URL:  https://github.com/toshinka/tegaki/blob/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/workflows/47_VERIFY_PER_REGION_HINT_ATTENUATED.json
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/workflows/47_VERIFY_PER_REGION_HINT_ATTENUATED.json
 
 --------------------------------------------------------------------------------
 4. Track 3: Verification Suites, Diagnostics & Contact Sheets
 --------------------------------------------------------------------------------
-1. run_phase3i1_verification_suite.py (Phase 3I.1 全4件実機バッチ実行・タイムアウトブレーカー・結果記録)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/scripts/run_phase3i1_verification_suite.py
+1. run_phase3i2_causal_ablation.py (Conditions A〜G 因果アブレーション実行スクリプト)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/scripts/run_phase3i2_causal_ablation.py
 
-2. generate_phase3i1_verification_contact_sheet.py (4パネル診断 Sheet J, K, L & Diagnostic Overlay 自動生成)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/scripts/generate_phase3i1_verification_contact_sheet.py
+2. generate_phase3i2_verification_contact_sheet.py (コンタクトシート Sheet M, N, O 自動生成スクリプト)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/scripts/generate_phase3i2_verification_contact_sheet.py
 
-3. generate_phase3i1_visual_evaluation.py (視覚評価データ JSON 生成・WF35〜WF43 視覚アノテーション)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/scripts/generate_phase3i1_visual_evaluation.py
+3. generate_phase3i2_visual_evaluation.py (視覚評価データ JSON 生成・来歴メタデータ付加スクリプト)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/scripts/generate_phase3i2_visual_evaluation.py
 
-4. generate_phase3i1_workflows.py (Workflows 40-43 正準生成スクリプト)
-   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/cfe6a4fa38eedb199b8230bba85a2000331e7e5a/ComfyUIPortable/scripts/generate_phase3i1_workflows.py
+4. generate_phase3i2_workflows.py (Workflows 44-47 正準生成スクリプト)
+   Pinned Raw:  https://raw.githubusercontent.com/toshinka/tegaki/000a7a39b7ff0c8bc95d471719779663aefa258d/ComfyUIPortable/scripts/generate_phase3i2_workflows.py
