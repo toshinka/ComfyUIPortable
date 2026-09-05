@@ -5,14 +5,14 @@ Branch: main
 Canonical path: ComfyUIPortable/GITHUB_ComfyUI.txt
 Latest Entry: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB_ComfyUI.txt
 
-Review Target Commit SHA: 0a1ccd46fe8160b487ab748b0dfae19092ff7ac3
+Review Target Commit SHA: c9a8dc1b937b97866a49ff41affc929a1fb8f9a3
 Planning Commit SHA: 261a3d7297455931d391e62f2d8a1335193d8d90
-Planning publication: Published on remote main (Planning: 261a3d72, M0: 5e57ae2f). Local M0.1 Review Target: 0a1ccd46.
+Planning publication: Published on remote main (Planning: 261a3d72, M0: 5e57ae2f). Local M1 Review Target: c9a8dc1b937b97866a49ff41affc929a1fb8f9a3.
 
 Current direction:
 Minimum-Hand / Scene-first. Simple Scene-only draft first, optional CAST with repeated appearances next, rough manga/dummy guide afterward. Scene regions and visible panel frames are independent. Pose / Interaction are later refinement.
-Current card: M0.1 / 3M-0.1 — COMPLETED (Contract Hardening & Legacy Boundary Truth Fix, 78/78 tests pass).
-Next card candidate: M1 / 3M-1 — Scene-only Minimum-Hand Draft (Resolution + Style + Scene rect + Prompt + optional frame guide + Seed -> Generate).
+Current card: M1 / 3M-1 — COMPLETED (Scene-only Minimum-Hand Draft, 98/98 tests pass, 5 live empirical image verifications completed).
+Next card candidate: M2 / 3M-2 — Minimum Character & CAST Staging (CAST Master, Scene character assignment, Character Rough Region, LoRA).
 
 Evidence correction:
 Phase 3L was reported complete. Its presence evaluation JSON has 14 visual_status=PENDING entries. Owner acceptance is not established by that report.
@@ -37,7 +37,10 @@ Document authority: docs/DOCUMENT_REGISTER.md
 Old intermediate plans and Phase requests are historical, not next-work instructions.
 
 Implementation evidence (pinned to implementation Review Target)
-M0.1 Report (Current Review Target):
+M1 Report (Current Review Target):
+https://raw.githubusercontent.com/toshinka/tegaki/c9a8dc1b937b97866a49ff41affc929a1fb8f9a3/ComfyUIPortable/docs/reports/M1_3M1_SCENE_ONLY_MINIMUM_HAND_DRAFT_REPORT.md
+
+M0.1 Report:
 https://raw.githubusercontent.com/toshinka/tegaki/0a1ccd46fe8160b487ab748b0dfae19092ff7ac3/ComfyUIPortable/docs/reports/M0_1_CONTRACT_HARDENING_REPORT.md
 
 M0 Report:
