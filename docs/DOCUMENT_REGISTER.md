@@ -18,6 +18,7 @@
 |---|---|---|
 | `3M-Prep` | COMPLETED | Astra成果のGitHub正本化、Product Direction整理、前処理 |
 | `M0 / 3M-0` | COMPLETED | Versioned Authoring Contract固定、Scene/Frame分離、Legacy Import/Export基盤 |
+| `M0.1 / 3M-0.1` | COMPLETED | 契約境界Hardening（FK空集合、孤立binding遮断、Scene/Frame乖離検出、厳格座標逆変換、境界move等） |
 | `M1 / 3M-1` | NEXT CANDIDATE | Scene-only Minimum-Hand Draft（かんたんモード、粗領域・Scene Prompt・Seed生成導線） |
 
 ## 3. HISTORICAL / SUPERSEDED (過去の参照資料)

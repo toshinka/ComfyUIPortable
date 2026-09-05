@@ -47,16 +47,20 @@ logger = logging.getLogger(__name__)
 class MigrationResult:
     """Result of a legacy import."""
 
-    __slots__ = ("document", "warnings", "field_mapping_table")
+    __slots__ = ("document", "errors", "warnings", "valid", "field_mapping_table")
 
     def __init__(
         self,
         document: Dict[str, Any],
+        errors: Optional[List[str]] = None,
         warnings: Optional[List[str]] = None,
+        valid: bool = True,
         field_mapping_table: Optional[List[Dict[str, str]]] = None,
     ):
         self.document = document
+        self.errors: List[str] = errors or []
         self.warnings: List[str] = warnings or []
+        self.valid: bool = (len(self.errors) == 0 and valid)
         self.field_mapping_table: List[Dict[str, str]] = field_mapping_table or []
 
 
@@ -127,10 +131,13 @@ def koma_local_to_page_normalized(
 
 
 def page_normalized_to_koma_local(
-    page_area: Dict, panel_geometry: Dict
+    page_area: Dict, panel_geometry: Dict, strict: bool = False
 ) -> Dict[str, float]:
     """
     Inverse transform: page-normalized → KOMA-local character area.
+
+    If strict=True, raises ValueError if page_area extends outside panel_geometry
+    (no silent clamping).
     """
     px = float(panel_geometry.get("x", 0))
     py = float(panel_geometry.get("y", 0))
@@ -143,7 +150,18 @@ def page_normalized_to_koma_local(
     ah = float(page_area.get("h", 0.6))
 
     if pw <= 0 or ph <= 0:
+        if strict:
+            raise ValueError(f"Invalid panel dimensions: {pw}x{ph}")
         return {"x": 0.0, "y": 0.0, "w": 0.3, "h": 0.6}
+
+    TOL = 0.0001
+    if strict:
+        if (ax < px - TOL or ay < py - TOL or
+            (ax + aw) > px + pw + TOL or (ay + ah) > py + ph + TOL):
+            raise ValueError(
+                f"Area [x={ax}, y={ay}, w={aw}, h={ah}] extends outside panel "
+                f"[x={px}, y={py}, w={pw}, h={ph}]. Lossless reverse conversion not possible."
+            )
 
     return {
         "x": round(max(0.0, min(1.0, (ax - px) / pw)), GEOMETRY_ROUND_DIGITS),
@@ -172,6 +190,7 @@ def import_from_legacy(
     Character binding areas are transformed from KOMA-local to page-normalized.
     shot_type, pose_preset, interaction are preserved in instance metadata.
     """
+    errors: List[str] = []
     warnings: List[str] = []
     field_mapping: List[Dict[str, str]] = []
 
@@ -269,8 +288,9 @@ def import_from_legacy(
         has_cast_bindings = len(characters) > 0
         input_mode = "cast" if has_cast_bindings else "simple"
 
-        # Create Scene
+        # Create Scene with paired frame metadata
         scene_id = f"legacy_scene_{rid}"
+        frame_id = f"legacy_frame_{rid}"
         scene = create_scene(
             name=f"Scene {rid}",
             prompt=region.get("prompt", ""),
@@ -280,16 +300,17 @@ def import_from_legacy(
                           panel_geom["w"], panel_geom["h"]),
             order=rid_int,
             scene_id=scene_id,
+            metadata={"legacy_slot_id": rid_int, "paired_frame_id": frame_id},
         )
         page["scenes"].append(scene)
 
-        # Create VisualFrame (same geometry, different ID)
-        frame_id = f"legacy_frame_{rid}"
+        # Create VisualFrame with paired scene metadata
         frame = create_visual_frame(
             area=make_area(panel_geom["x"], panel_geom["y"],
                           panel_geom["w"], panel_geom["h"]),
             order=rid_int,
             frame_id=frame_id,
+            metadata={"legacy_slot_id": rid_int, "paired_scene_id": scene_id},
         )
         page["visual_frames"].append(frame)
 
@@ -306,6 +327,12 @@ def import_from_legacy(
             if not char_id:
                 warnings.append(f"Panel {rid}: skipping binding with empty character_id")
                 continue
+
+            if char_id not in cast_id_map:
+                errors.append(
+                    f"Panel {rid}: character binding references unknown character_id '{char_id}' "
+                    f"not found in CAST_SPEC. Fail closed."
+                )
 
             # Transform KOMA-local area to page-normalized
             local_area = binding.get("area")
@@ -366,9 +393,17 @@ def import_from_legacy(
     # --- Build document ---
     doc = create_document(pages=[page])
 
+    # Validate document at import boundary
+    validation_res = validate_document(doc)
+    errors.extend(validation_res.errors)
+    warnings.extend(validation_res.warnings)
+    valid = (len(errors) == 0)
+
     return MigrationResult(
         document=doc,
+        errors=errors,
         warnings=warnings,
+        valid=valid,
         field_mapping_table=field_mapping,
     )
 
@@ -377,18 +412,20 @@ def import_from_legacy(
 # Legacy Export
 # ===================================================================
 
-def export_to_legacy(
+def export_regions_to_legacy(
     doc: Dict[str, Any],
     page_index: int = 0,
 ) -> ExportResult:
     """
-    Export new authoring document back to legacy REGION_SPEC + CAST_SPEC.
+    Export semantic regions (Scenes, CAST, Instances) to legacy REGION_SPEC + CAST_SPEC.
 
-    Fails closed for unsupported features:
-    - Overlapping independent scenes (more scenes than can map to 6 slots)
-    - Multiple scenes sharing one frame
-    - Non-rect shapes
+    Note: Visual Frames are NOT represented by REGION_SPEC (semantic-only bridge).
+    Uses strict coordinate conversion; fails closed if instances extend outside their scene.
+
+    Fails closed for:
     - More than 6 scenes
+    - Non-rect shapes
+    - Instances extending outside their scene area (no silent clamping)
     """
     warnings: List[str] = []
     unsupported: List[str] = []
@@ -476,11 +513,18 @@ def export_to_legacy(
             i for i in instances if i.get("scene_id") == scene_id
         ]
 
-        # Build character bindings with reverse coordinate transform
+        # Build character bindings with strict reverse coordinate transform
         char_bindings = []
         for inst in scene_instances:
             page_area = inst.get("area", {})
-            local_area = page_normalized_to_koma_local(page_area, panel_geom)
+            try:
+                local_area = page_normalized_to_koma_local(page_area, panel_geom, strict=True)
+            except ValueError as e:
+                unsupported.append(
+                    f"Instance '{inst.get('instance_id')}' area extends outside Scene '{scene_id}' "
+                    f"geometry; cannot convert to legacy KOMA-local without lossy clamping. Fail closed."
+                )
+                continue
 
             binding: Dict[str, Any] = {
                 "character_id": inst.get("cast_id", ""),
@@ -513,6 +557,14 @@ def export_to_legacy(
         }
         region_spec["regions"].append(region)
 
+    if unsupported:
+        return ExportResult(
+            region_spec={},
+            cast_spec={},
+            warnings=warnings,
+            unsupported=unsupported,
+        )
+
     # Pad remaining slots to 6 (disabled)
     for pad_id in range(len(sorted_scenes) + 1, 7):
         region_spec["regions"].append({
@@ -538,3 +590,87 @@ def export_to_legacy(
         warnings=warnings,
         unsupported=unsupported,
     )
+
+
+def export_to_legacy(
+    doc: Dict[str, Any],
+    page_index: int = 0,
+) -> ExportResult:
+    """
+    Export new authoring document back to legacy REGION_SPEC + CAST_SPEC (full round-trip).
+
+    Requires 1:1 pairing between Scenes and VisualFrames and identical geometry.
+    If Scenes and VisualFrames have diverged (e.g. independently moved or resized),
+    this function fails closed with unsupported errors rather than silently conflating them.
+
+    For semantic-only region export (ignoring visual frames), use export_regions_to_legacy().
+    """
+    pages = doc.get("pages", [])
+    if page_index >= len(pages):
+        raise ValueError(f"Page index {page_index} out of range (have {len(pages)} pages)")
+
+    page = pages[page_index]
+    scenes = page.get("scenes", [])
+    visual_frames = page.get("visual_frames", [])
+
+    unsupported: List[str] = []
+
+    # Check 1:1 scene-to-frame count
+    if len(scenes) != len(visual_frames):
+        unsupported.append(
+            f"Scene count ({len(scenes)}) differs from visual frame count ({len(visual_frames)}); "
+            f"full legacy export requires 1:1 Scene/Frame pairing. Fail closed."
+        )
+
+    # Check pairing and geometry equivalence
+    for scene in scenes:
+        scene_id = scene.get("scene_id", "")
+        scene_area = scene.get("area", {})
+        paired_frame_id = scene.get("metadata", {}).get("paired_frame_id")
+
+        paired_frame = None
+        if paired_frame_id:
+            for f in visual_frames:
+                if f.get("frame_id") == paired_frame_id:
+                    paired_frame = f
+                    break
+        if paired_frame is None:
+            for f in visual_frames:
+                if f.get("metadata", {}).get("paired_scene_id") == scene_id:
+                    paired_frame = f
+                    break
+        if paired_frame is None:
+            # Try to match by order if unambiguous
+            s_order = scene.get("order")
+            matching = [f for f in visual_frames if f.get("order") == s_order]
+            if len(matching) == 1:
+                paired_frame = matching[0]
+
+        if paired_frame is None:
+            unsupported.append(
+                f"Scene '{scene_id}' has no paired visual frame; "
+                f"full legacy export requires 1:1 Scene/Frame pairing. Fail closed."
+            )
+            continue
+
+        fa = paired_frame.get("shape", {})
+        TOL = 0.001
+        if (abs(float(scene_area.get("x", 0)) - float(fa.get("x", 0))) > TOL or
+            abs(float(scene_area.get("y", 0)) - float(fa.get("y", 0))) > TOL or
+            abs(float(scene_area.get("w", 0)) - float(fa.get("w", 0))) > TOL or
+            abs(float(scene_area.get("h", 0)) - float(fa.get("h", 0))) > TOL):
+            unsupported.append(
+                f"Scene '{scene_id}' geometry diverged from paired VisualFrame '{paired_frame.get('frame_id')}' "
+                f"geometry. Full legacy export requires Scene and Frame geometry to be identical. Fail closed."
+            )
+
+    if unsupported:
+        return ExportResult(
+            region_spec={},
+            cast_spec={},
+            warnings=[],
+            unsupported=unsupported,
+        )
+
+    # Delegate to semantic region export for building specs and strict instance checks
+    return export_regions_to_legacy(doc, page_index=page_index)

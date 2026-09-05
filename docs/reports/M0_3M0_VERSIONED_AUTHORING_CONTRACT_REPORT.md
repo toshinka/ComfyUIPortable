@@ -316,3 +316,17 @@ UI CHANGED:                               NO
 BACKEND CHANGED:                          NO
 POSE / INTERACTION EXPANDED:              NO
 ```
+
+---
+
+## M0.1 Review Correction & Hardening (2026-09-06)
+
+Following Web GPT review of M0, M0.1 hardened specific boundary conditions:
+1. **FK Validation**: Fixed empty collection hole where missing CAST/Scene was not detected. Unconditional check enforced.
+2. **Legacy Import**: `MigrationResult` now has `errors: List[str]` and `valid: bool`. Runs `validate_document()` and fails closed on orphan bindings.
+3. **Legacy Export**: Separated `export_regions_to_legacy()` (semantic only) from `export_to_legacy()` (full round-trip with strict Scene/Frame divergence fail-closed checks).
+4. **Coordinate Export**: `page_normalized_to_koma_local(strict=True)` strictly rejects instances extending outside scene geometry instead of silently clamping.
+5. **Group Operations**: `move_scene()` uses common effective delta preserving relative offsets; `resize_scene()` atomically rejects out-of-bounds candidates without individual clamping.
+6. **Page ID Uniqueness**: Document-global uniqueness enforced for `page_id`.
+7. **Test Suite**: Original 60 tests retained and passing; 18 new M0.1 tests added (78/78 total).
+See full details in [M0_1_CONTRACT_HARDENING_REPORT.md](M0_1_CONTRACT_HARDENING_REPORT.md).

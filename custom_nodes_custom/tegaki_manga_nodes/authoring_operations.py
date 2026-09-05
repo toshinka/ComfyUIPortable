@@ -74,12 +74,14 @@ def _clamp_area(area: Dict) -> Dict:
     return result
 
 
-def _translate_area(area: Dict, dx: float, dy: float) -> Dict:
-    """Translate an area by (dx, dy) and clamp to bounds."""
+def _translate_exact(area: Dict, dx: float, dy: float) -> Dict:
+    """Translate an area by (dx, dy) and round, preserving extra fields."""
     result = dict(area)
-    result["x"] = float(area["x"]) + dx
-    result["y"] = float(area["y"]) + dy
-    return _clamp_area(result)
+    result["x"] = round(float(area["x"]) + dx, GEOMETRY_ROUND_DIGITS)
+    result["y"] = round(float(area["y"]) + dy, GEOMETRY_ROUND_DIGITS)
+    result["w"] = round(float(area["w"]), GEOMETRY_ROUND_DIGITS)
+    result["h"] = round(float(area["h"]), GEOMETRY_ROUND_DIGITS)
+    return result
 
 
 # ===================================================================
@@ -91,6 +93,11 @@ def move_scene(doc: Dict, page_id: str, scene_id: str,
     """
     Move a scene and all its belonging character instances by (dx, dy).
 
+    Uses a common effective delta across the scene and all belonging instances so:
+    1. scene actual delta == every belonging instance actual delta
+    2. relative offsets between scene and instances are strictly preserved
+    3. neither scene nor any instance moves out of page bounds [0, 1]
+
     Visual frames are NOT moved (scene-frame independence).
     Other scenes are NOT moved.
 
@@ -99,13 +106,24 @@ def move_scene(doc: Dict, page_id: str, scene_id: str,
     doc = copy.deepcopy(doc)
     page = _find_page(doc, page_id)
     scene = _find_scene(page, scene_id)
+    instances = _get_instances_for_scene(page, scene_id)
 
-    # Move scene area
-    scene["area"] = _translate_area(scene["area"], dx, dy)
+    # Collect all group rects (scene + belonging instances)
+    all_rects = [scene["area"]] + [inst["area"] for inst in instances]
 
-    # Move belonging instances by the same delta
-    for inst in _get_instances_for_scene(page, scene_id):
-        inst["area"] = _translate_area(inst["area"], dx, dy)
+    # Calculate common effective delta bounded by [0, 1] across all rects
+    min_dx = max(-float(r["x"]) for r in all_rects)
+    max_dx = min(1.0 - (float(r["x"]) + float(r["w"])) for r in all_rects)
+    effective_dx = max(min_dx, min(max_dx, dx)) if min_dx <= max_dx else 0.0
+
+    min_dy = max(-float(r["y"]) for r in all_rects)
+    max_dy = min(1.0 - (float(r["y"]) + float(r["h"])) for r in all_rects)
+    effective_dy = max(min_dy, min(max_dy, dy)) if min_dy <= max_dy else 0.0
+
+    # Apply the exact same effective delta to scene and all instances
+    scene["area"] = _translate_exact(scene["area"], effective_dx, effective_dy)
+    for inst in instances:
+        inst["area"] = _translate_exact(inst["area"], effective_dx, effective_dy)
 
     return doc
 
@@ -116,13 +134,23 @@ def resize_scene(doc: Dict, page_id: str, scene_id: str,
     Resize a scene to new_area. Belonging character instances are
     proportionally transformed relative to the scene origin.
 
+    Fails closed (ValueError) if new_area is invalid or if any
+    proportional instance area would fall outside page bounds [0, 1].
+    No silent individual clamping is performed.
+
     Visual frames are NOT affected.
 
     Returns a new document (deep copy).
     """
+    # 1. Validate new area first
+    area_errors = validate_area(new_area, f"resize_scene({scene_id})")
+    if area_errors:
+        raise ValueError(f"Invalid new_area: {'; '.join(area_errors)}")
+
     doc = copy.deepcopy(doc)
     page = _find_page(doc, page_id)
     scene = _find_scene(page, scene_id)
+    instances = _get_instances_for_scene(page, scene_id)
 
     old_area = scene["area"]
     old_x, old_y = float(old_area["x"]), float(old_area["y"])
@@ -130,33 +158,38 @@ def resize_scene(doc: Dict, page_id: str, scene_id: str,
     new_x, new_y = float(new_area["x"]), float(new_area["y"])
     new_w, new_h = float(new_area["w"]), float(new_area["h"])
 
-    # Proportional transform for instances
-    if old_w > 0 and old_h > 0:
-        scale_x = new_w / old_w
-        scale_y = new_h / old_h
+    if old_w <= 0 or old_h <= 0:
+        raise ValueError(f"Cannot resize scene with non-positive dimensions: {old_w}x{old_h}")
 
-        for inst in _get_instances_for_scene(page, scene_id):
-            ia = inst["area"]
-            # Instance position relative to old scene origin
-            rel_x = (float(ia["x"]) - old_x) / old_w
-            rel_y = (float(ia["y"]) - old_y) / old_h
-            rel_w = float(ia["w"]) / old_w
-            rel_h = float(ia["h"]) / old_h
+    # 2. Pre-compute proportional results for all belonging instances
+    candidate_instance_areas = []
+    for inst in instances:
+        ia = inst["area"]
+        rel_x = (float(ia["x"]) - old_x) / old_w
+        rel_y = (float(ia["y"]) - old_y) / old_h
+        rel_w = float(ia["w"]) / old_w
+        rel_h = float(ia["h"]) / old_h
 
-            # Map to new scene space
-            inst["area"] = _clamp_area({
-                **ia,  # preserve extra keys
-                "x": new_x + rel_x * new_w,
-                "y": new_y + rel_y * new_h,
-                "w": rel_w * new_w,
-                "h": rel_h * new_h,
-            })
+        cand = make_area(
+            x=new_x + rel_x * new_w,
+            y=new_y + rel_y * new_h,
+            w=rel_w * new_w,
+            h=rel_h * new_h,
+            shape_type=ia.get("shape_type", "rect"),
+        )
+        # 3 & 4. Validate candidate area against page bounds [0, 1]
+        cand_errors = validate_area(cand, f"instance '{inst.get('instance_id')}' after resize")
+        if cand_errors:
+            raise ValueError(
+                f"Resizing scene '{scene_id}' pushes instance '{inst.get('instance_id')}' "
+                f"out of page bounds: {'; '.join(cand_errors)}"
+            )
+        candidate_instance_areas.append((inst, cand))
 
-    # Update scene area
-    area_errors = validate_area(new_area, f"resize_scene({scene_id})")
-    if area_errors:
-        raise ValueError(f"Invalid new_area: {'; '.join(area_errors)}")
-    scene["area"] = _clamp_area({**old_area, **new_area})
+    # 5. All valid: commit changes atomically
+    scene["area"] = _translate_exact(new_area, 0.0, 0.0)
+    for inst, cand in candidate_instance_areas:
+        inst["area"] = {**inst["area"], **cand}
 
     return doc
 
@@ -170,6 +203,9 @@ def move_frame(doc: Dict, page_id: str, frame_id: str,
     """
     Move a visual frame by (dx, dy).
 
+    Requested delta is bounded by [0, 1] via effective delta so the frame
+    never moves out of page bounds.
+
     Scenes and character instances are NOT moved (independence).
 
     Returns a new document (deep copy).
@@ -178,7 +214,16 @@ def move_frame(doc: Dict, page_id: str, frame_id: str,
     page = _find_page(doc, page_id)
     frame = _find_frame(page, frame_id)
 
-    frame["shape"] = _translate_area(frame["shape"], dx, dy)
+    shape = frame["shape"]
+    min_dx = -float(shape["x"])
+    max_dx = 1.0 - (float(shape["x"]) + float(shape["w"]))
+    effective_dx = max(min_dx, min(max_dx, dx)) if min_dx <= max_dx else 0.0
+
+    min_dy = -float(shape["y"])
+    max_dy = 1.0 - (float(shape["y"]) + float(shape["h"]))
+    effective_dy = max(min_dy, min(max_dy, dy)) if min_dy <= max_dy else 0.0
+
+    frame["shape"] = _translate_exact(shape, effective_dx, effective_dy)
 
     return doc
 

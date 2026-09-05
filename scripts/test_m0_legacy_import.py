@@ -403,7 +403,7 @@ class TestWorkflowStructuralRegression(unittest.TestCase):
         if not os.path.isdir(workflows_dir):
             self.skipTest(f"Workflows directory not found: {workflows_dir}")
 
-        json_files = glob.glob(os.path.join(workflows_dir, "*.json"))
+        json_files = glob.glob(os.path.join(workflows_dir, "**", "*.json"), recursive=True)
         if not json_files:
             self.skipTest("No workflow JSON files found")
 

@@ -144,7 +144,7 @@ def validate_area(area: Dict[str, Any], context: str = "") -> List[str]:
 
 def make_area(x: float, y: float, w: float, h: float,
               shape_type: str = "rect") -> Dict[str, Any]:
-    """Create a validated area dict with rounded coordinates."""
+    """Create an area dict with rounded coordinates (does not validate bounds; use validate_area for validation)."""
     return {
         "shape_type": shape_type,
         "x": round(float(x), GEOMETRY_ROUND_DIGITS),
@@ -370,7 +370,15 @@ def validate_document(doc: Dict[str, Any]) -> ValidationResult:
         errors.append("'pages' must be a list")
         return ValidationResult(errors=errors, warnings=warnings)
 
+    seen_page_ids: set = set()
     for pi, page in enumerate(pages):
+        if isinstance(page, dict):
+            pid = page.get("page_id")
+            if isinstance(pid, str) and pid:
+                if pid in seen_page_ids:
+                    errors.append(f"duplicate page_id '{pid}' in document")
+                else:
+                    seen_page_ids.add(pid)
         page_errors, page_warnings = _validate_page(page, pi)
         errors.extend(page_errors)
         warnings.extend(page_warnings)
@@ -502,7 +510,7 @@ def _validate_page(page: Dict[str, Any], page_index: int) -> Tuple[List[str], Li
         ref_cast = inst.get("cast_id")
         if not isinstance(ref_cast, str) or not ref_cast:
             errors.append(f"{i_ctx}: cast_id must be non-empty string")
-        elif cast_ids and ref_cast not in cast_ids:
+        elif ref_cast not in cast_ids:
             errors.append(
                 f"{i_ctx}: cast_id '{ref_cast}' not found in page cast"
             )
@@ -511,7 +519,7 @@ def _validate_page(page: Dict[str, Any], page_index: int) -> Tuple[List[str], Li
         ref_scene = inst.get("scene_id")
         if not isinstance(ref_scene, str) or not ref_scene:
             errors.append(f"{i_ctx}: scene_id must be non-empty string")
-        elif scene_ids and ref_scene not in scene_ids:
+        elif ref_scene not in scene_ids:
             errors.append(
                 f"{i_ctx}: scene_id '{ref_scene}' not found in page scenes"
             )
