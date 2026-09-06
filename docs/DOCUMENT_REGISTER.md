@@ -24,7 +24,8 @@
 | `M2A / 3M-2A` | COMPLETED | Character Spatial Capability Ladder & Control Escalation Gate（左右スワップ因果性実証、Prompt深度実証、3人混成実証、ControlNet不要判定） |
 | `M2A.1 / 3M-2A.1` | COMPLETED | Prompt-Region Calibration & Conditional ControlNet Escalation Gate（8-seed実証、Spatial Hint Compiler、Option A+採択） |
 | `M2B / 3M-2B` | COMPLETED | Minimum-Hand CAST & Character Staging Product UI (Option A+: Rough Region + Free Text + Hidden Spatial Helper) |
-| `M2B.1 / 3M-2B.1` | COMPLETED | CAST Placement Semantics & Live Browser Closure (選択CAST配置因果性修正、E2E分類厳格化、純粋操作分離、実機閉域検証) |
+| `M2B.1 / 3M-2B.1` | COMPLETED / FAIL (Browser) | CAST Placement Semantics & Live Browser Closure (選択CAST配置因果性修正、純粋操作分離、実機閉域検証; Owner Browser check FAIL) |
+| `M2B.2 / 3M-2B.2` | PASS / OWNER PENDING | Live UI Bootstrap, Widget Serialization & Workflow Repair (app.js import修正、seed control_after_generate停止、raw json隠蔽、シリアライズ確定) |
 | `M3 / 3M-3` | NEXT CANDIDATE | Rough Manga / Visual Panel Guide Integration (漫画コマ枠 Visual Panel Frame とラフ漫画 / 白ハゲ / 人物シルエット構図拘束の直交統合) |
 
 ## 3. HISTORICAL / SUPERSEDED (過去の参照資料)

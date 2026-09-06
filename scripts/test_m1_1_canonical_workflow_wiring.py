@@ -154,6 +154,32 @@ class TestM1_1CanonicalWorkflowWiring(unittest.TestCase):
         self.assertIsNotNone(h_input, "EmptyLatentImage does not have input 'height'")
         self.assertEqual(h_input.get("link"), h_link_id)
 
+    def test_07_editor_widget_values_exact_schema(self):
+        """M2B.2 Root Cause B & C: Editor node must serialize exactly 4 widgets in correct order and type."""
+        nodes = {n["id"]: n for n in self.wf.get("nodes", [])}
+        editor_node = nodes[1]
+        widgets_values = editor_node.get("widgets_values", [])
+
+        # Must have exactly 4 values: [document_json, seed, style_template, resolution]
+        self.assertEqual(len(widgets_values), 4,
+                         f"Editor widgets_values shifted! Expected 4 values, got {len(widgets_values)}: {widgets_values}")
+
+        # Index 0: document_json
+        doc = json.loads(widgets_values[0])
+        self.assertEqual(doc.get("schema_id"), "TEGAKI_AUTHORING_DOCUMENT")
+
+        # Index 1: seed (int)
+        self.assertIsInstance(widgets_values[1], int)
+        self.assertEqual(widgets_values[1], 42)
+
+        # Index 2: style_template (string in STYLE_TEMPLATES)
+        self.assertIn(widgets_values[2], ["Manga Monochrome", "Manga Color"])
+        self.assertEqual(widgets_values[2], "Manga Monochrome")
+
+        # Index 3: resolution (string in RESOLUTION_PRESETS)
+        self.assertIn(widgets_values[3], ["Portrait 832x1216", "Landscape 1216x832", "Square 1024x1024"])
+        self.assertEqual(widgets_values[3], "Portrait 832x1216")
+
 
 if __name__ == "__main__":
     unittest.main()

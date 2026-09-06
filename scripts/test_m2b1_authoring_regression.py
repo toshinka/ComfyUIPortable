@@ -156,6 +156,45 @@ class TestM2B1AuthoringRegression(unittest.TestCase):
         self.assertEqual(doc_recovered["pages"][0]["cast"][0]["display_name"], """Character <"A & B'>""")
         self.assertEqual(doc_recovered["pages"][0]["character_instances"][0]["acting_prompt"], 'saying "hello & goodbye" <smile>')
 
+    def test_05_seed_control_after_generate_disabled(self):
+        """Root Cause B Guard: TegakiMinimumHandSceneEditor INPUT_TYPES must set control_after_generate=False."""
+        _editor_mod = _import_submodule("minimum_hand_scene_editor", "minimum_hand_scene_editor.py")
+        input_types = _editor_mod.TegakiMinimumHandSceneEditor.INPUT_TYPES()
+        seed_spec = input_types["required"]["seed"]
+        self.assertEqual(seed_spec[0], "INT")
+        options = seed_spec[1]
+        self.assertIn("control_after_generate", options)
+        self.assertIs(options["control_after_generate"], False,
+                      "seed option control_after_generate must be explicitly False to prevent extra auto-control widget")
+
+    def test_06_canonical_workflow_widget_order_and_values(self):
+        """Root Cause B & C Guard: Canonical workflow editor node must have exactly 4 serialized widgets in correct order."""
+        wf_path = os.path.join(_ROOT, "workflows", "MINIMUM_HAND_MANGA_DRAFT.json")
+        with open(wf_path, "r", encoding="utf-8") as f:
+            wf = json.load(f)
+        editor_node = next((n for n in wf.get("nodes", []) if n.get("type") == "TegakiMinimumHandSceneEditor"), None)
+        self.assertIsNotNone(editor_node, "TegakiMinimumHandSceneEditor node not found in canonical workflow")
+        widgets_values = editor_node.get("widgets_values", [])
+        self.assertEqual(len(widgets_values), 4, f"Expected exactly 4 serialized widget values, got {len(widgets_values)}: {widgets_values}")
+
+        # Index 0: valid document_json
+        parsed_doc = json.loads(widgets_values[0])
+        v = validate_document(parsed_doc)
+        self.assertTrue(v.valid, f"Workflow embedded document_json failed validation: {v.errors}")
+
+        # Index 1: integer seed
+        self.assertEqual(widgets_values[1], 42)
+        self.assertIsInstance(widgets_values[1], int)
+
+        # Index 2: style_template in STYLE_TEMPLATES
+        _editor_mod = _import_submodule("minimum_hand_scene_editor", "minimum_hand_scene_editor.py")
+        self.assertIn(widgets_values[2], _editor_mod.STYLE_TEMPLATES)
+        self.assertEqual(widgets_values[2], "Manga Monochrome")
+
+        # Index 3: resolution in RESOLUTION_PRESETS
+        self.assertIn(widgets_values[3], _editor_mod.RESOLUTION_PRESETS)
+        self.assertEqual(widgets_values[3], "Portrait 832x1216")
+
 
 if __name__ == "__main__":
     unittest.main()

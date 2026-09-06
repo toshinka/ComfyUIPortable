@@ -227,4 +227,32 @@ console.log("--- Testing M2B and M2B.1 Minimum-Hand Editor Logic Invariants ---"
     console.log("✓ Test 13 Passed: Character geometry placed safely inside parent scene");
 }
 
-console.log("\nALL JS FRONTEND CONTRACT TESTS PASSED (13/13)!");
+// Test 14: M2B.2 Frontend extension import path contract (Root Cause A regression guard)
+{
+    import("node:fs").then(fs => {
+        import("node:path").then(path => {
+            import("node:url").then(url => {
+                const __filename = url.fileURLToPath(import.meta.url);
+                const __dirname = path.dirname(__filename);
+                const editorJsPath = path.resolve(__dirname, "../custom_nodes_custom/tegaki_manga_nodes/web/js/minimum_hand_scene_editor.js");
+                const content = fs.readFileSync(editorJsPath, "utf-8");
+
+                // Must use "../../../scripts/app.js" matching package sibling extensions
+                assert.ok(content.includes('import { app } from "../../../scripts/app.js";'),
+                    "minimum_hand_scene_editor.js must import app from '../../../scripts/app.js'");
+                assert.ok(!content.includes('import { app } from "../../scripts/app.js";'),
+                    "Legacy broken import path '../../scripts/app.js' must NOT be present");
+                console.log("✓ Test 14 Passed: Frontend extension app.js import path contract verified");
+
+                // Test 15: M2B.2 Raw document_json hidden state contract (Root Cause C regression guard)
+                assert.ok(content.includes('docWidget.type = "hidden";'),
+                    "document_json widget must be set to type 'hidden' to prevent raw JSON occupying UI");
+                assert.ok(content.includes('docWidget.computeSize = () => [0, -4];'),
+                    "document_json widget height must be collapsed to [0, -4]");
+                console.log("✓ Test 15 Passed: Raw document_json hidden state contract verified");
+
+                console.log("\nALL JS FRONTEND CONTRACT TESTS PASSED (15/15)!");
+            });
+        });
+    });
+}

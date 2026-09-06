@@ -1,7 +1,7 @@
 # ComfyUIPortable 現在地 (Status & Direction)
 
 更新: 2026-09-06 JST
-Review Target Commit SHA: `72e032c71d97eed2712552062a75fde5d29c2360` (Phase 3M-2A M2A 実装正本)
+Review Target Commit SHA: `1b3bd2246c6a2f440d7a7f810a8a75a798fb9bc2` (Phase 3M-2B.1 M2B.1 実装正本)
 正本入口: [GITHUB_ComfyUI.txt](../GITHUB_ComfyUI.txt)
 
 ---
@@ -96,17 +96,25 @@ Scene-only Draft (M1) → CAST 複数出演 (M2) → Rough Guide (M3) → UX She
   - **Option A+ Product UI統合**: `TegakiMinimumHandSceneEditor`（表示名: `Tegaki Minimum-Hand Manga Authoring (Draft)`）の単一ノード内に、GLOBAL設定、CAST Master登録、Character Rough Region直接操作、自由記述Acting Prompt、3+/4+警告バッジを統合。
   - **Canonical Workflow 安定名化**: `workflows/MINIMUM_HAND_MANGA_DRAFT.json` をroot 1本化。
 
-- **完了Card**: **M2B.1 — CAST Placement Semantics & Live Browser Closure** — COMPLETED & VERIFIED
+- **完了Card**: **M2B.1 — CAST Placement Semantics & Live Browser Closure** — COMPLETED (Backend/Headless) / FAIL (Owner Live Browser Check)
   - **Finding A（選択CAST配置の因果性）解消**: `minimum_hand_scene_editor.js` の剰余サイクリング（modulo arithmetic）を廃止し、選択されたCAST（`selectedCastId`）を厳格に配置するセマンティクスへ修正。単一CAST登録時は自動選択、複数CAST登録かつ未選択時は非サイレントに選択を促すブロックを実施。
   - **純粋操作関数の分離**: `custom_nodes_custom/tegaki_manga_nodes/web/js/minimum_hand_authoring_ops.js` へ純粋ロジック（CAST選定、一意instance_id生成、幾何配置、last instance削除時のinput_modeリセット等）を抽出。
   - **Last Instance Removal Policy**: シーン内の全キャラクターインスタンスが削除された際、`scene.input_mode` を `"simple"` へ復帰させつつ、背景プロンプト（`scene.prompt`）を厳格に非破壊保持。
   - **DOM Injection 防止**: `< > & " '` を含む表示名・プロンプトに対する安全な DOM 構築・プロパティ設定を徹底。
-  - **Finding B（検証分類の厳格化）**: E2E分類を `HEADLESS_TEST`（JS 13件 / Python 165件 100% PASS）、`LIVE_RUNTIME`（実機GPU 3条件完走 PASS）、`LIVE_BROWSER`（ホスト環境の制約により PENDING / Owner手動チェック要件）の3層へ厳格分離。
-  - **実機検証 & 目視検査**: Bob単独配置（Finding A オラクル修正）、Alice左・Bob右配置、Alice複数シーン跨ぎ配置の3条件を実機生成し目視確認完了。
+  - **Finding B（検証分類の厳格化 & Owner検証結果）**: E2E分類を `HEADLESS_TEST`（JS 13件 / Python 165件 100% PASS）、`LIVE_RUNTIME`（実機GPU 3条件完走 PASS）、`LIVE_BROWSER`（Owner実機確認によりFAIL判定）へ整理。
   - **報告書**: [M2B1_CAST_PLACEMENT_AND_BROWSER_CLOSURE_REPORT.md](reports/M2B1_CAST_PLACEMENT_AND_BROWSER_CLOSURE_REPORT.md)
   - **Manifest**: `docs/verification/m2b1/M2B1_PRODUCT_E2E_MANIFEST.json`
 
-- **次Card候補**: **M3 — Rough Manga / Visual Panel Guide Integration**
+- **現行Card**: **M2B.2 — Live UI Bootstrap, Widget Serialization & Workflow Repair** — PASS / OWNER ACCEPTANCE PENDING
+  - **Root Cause A（app.js import path）解消**: `minimum_hand_scene_editor.js` の `../../scripts/app.js`（HTTP 404）を他extensionと一致する `../../../scripts/app.js` へ修正し、Custom DOM拡張の起動を確立。
+  - **Root Cause B（seed control_after_generate）解消**: `minimum_hand_scene_editor.py` の `seed` widget 定義へ `"control_after_generate": False` を明示追加。ComfyUI frontendによる自動コントロールwidget挿入を阻止し、`widgets_values` の1スロットズレ（`style_template` への解像度文字列誤代入・Invalid Input）を根本解決。
+  - **Root Cause C（raw document_json主面占有）解消**: LiteGraphノード上の `document_json` widget を `hidden`（`computeSize = () => [0, -4]`）化し、Product Custom DOMが主面となるUIへ是正。
+  - **Canonical Workflow 健全性担保**: `workflows/MINIMUM_HAND_MANGA_DRAFT.json` のウィジェットシリアライズを厳格に4要素（`document_json`, `seed=42`, `style_template="Manga Monochrome"`, `resolution="Portrait 832x1216"`）で確定。
+  - **自動テスト強化**: JSフロントエンド契約テスト（15/15 PASS）、Python回帰テスト（167件全PASS）を完備。
+  - **報告書**: [M2B2_LIVE_UI_BOOTSTRAP_AND_WORKFLOW_REPAIR_REPORT.md](reports/M2B2_LIVE_UI_BOOTSTRAP_AND_WORKFLOW_REPAIR_REPORT.md)
+  - **Manifest**: `docs/verification/m2b2/M2B2_LIVE_UI_SMOKE_MANIFEST.json`
+
+- **次Card候補**: **M3 — Rough Manga / Visual Panel Guide Integration** (Owner Browser受入完了後に着手)
   - Semantic Scene / CAST staging に対し、実際の漫画コマ枠（Visual Panel Frames）とラフ漫画 / 白ハゲ / 人物シルエット構図拘束を直交して統合。
 
 ---

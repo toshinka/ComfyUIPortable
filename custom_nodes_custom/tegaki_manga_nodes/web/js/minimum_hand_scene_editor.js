@@ -11,7 +11,7 @@
  * 
  * Strict SSOT: TEGAKI_AUTHORING_DOCUMENT in document_json widget.
  */
-import { app } from "../../scripts/app.js";
+import { app } from "../../../scripts/app.js";
 import {
     chooseCastForPlacement,
     getNextInstanceId,
@@ -143,6 +143,11 @@ app.registerExtension({
         const onConfigure = nodeType.prototype.onConfigure;
         nodeType.prototype.onConfigure = function (info) {
             const r = onConfigure ? onConfigure.apply(this, arguments) : undefined;
+            const docWidget = this.widgets?.find(w => w.name === "document_json");
+            if (docWidget) {
+                docWidget.type = "hidden";
+                docWidget.computeSize = () => [0, -4];
+            }
             if (this._tegakiRestoreFromWidgets) {
                 this._tegakiRestoreFromWidgets();
             }
@@ -155,6 +160,13 @@ app.registerExtension({
 
             const node = this;
             node.setSize([560, 960]);
+
+            // Hide raw document_json widget from primary surface (Root Cause C fix)
+            const docWidget = node.widgets?.find(w => w.name === "document_json");
+            if (docWidget) {
+                docWidget.type = "hidden";
+                docWidget.computeSize = () => [0, -4];
+            }
 
             let doc = createDefaultDoc();
             let selectedSceneIndex = 0;

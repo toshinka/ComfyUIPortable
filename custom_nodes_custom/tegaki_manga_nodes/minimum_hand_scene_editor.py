@@ -109,6 +109,7 @@ class TegakiMinimumHandSceneEditor:
                     "min": 0,
                     "max": 0xffffffffffffffff,
                     "step": 1,
+                    "control_after_generate": False,
                 }),
             },
             "optional": {
