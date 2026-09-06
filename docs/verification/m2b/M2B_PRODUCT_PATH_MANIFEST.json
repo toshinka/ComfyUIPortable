@@ -1,0 +1,96 @@
+{
+  "milestone": "M2B",
+  "description": "Minimum-Hand CAST and Character Staging Product UI Verification",
+  "timestamp": "2026-09-06T03:24:28Z",
+  "checkpoint": "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors",
+  "controlnet_core": "OFF",
+  "tasks": [
+    {
+      "task_id": "M2B_single_char",
+      "filename": "M2B_single_char.png",
+      "seed": 42,
+      "runtime_status": "PASS",
+      "visual_status": "DIRECT_IMAGE_INSPECTION",
+      "scene_count": 1,
+      "cast_count": 1,
+      "instance_count": 1,
+      "resolved_hints": {
+        "inst_1": {
+          "derived_spatial_hint": "",
+          "effective_character_prompt": "1girl, blonde hair, twin tails, blue eyes, sailor uniform, school skirt, standing casually, looking at viewer",
+          "resolved_mode": "off"
+        }
+      },
+      "auto_spatial_policy": "auto"
+    },
+    {
+      "task_id": "M2B_two_char_seed202",
+      "filename": "M2B_two_char_seed202.png",
+      "seed": 202,
+      "runtime_status": "PASS",
+      "visual_status": "DIRECT_IMAGE_INSPECTION",
+      "scene_count": 1,
+      "cast_count": 2,
+      "instance_count": 2,
+      "resolved_hints": {
+        "inst_1": {
+          "derived_spatial_hint": "on the left side",
+          "effective_character_prompt": "1girl, blonde hair, twin tails, blue eyes, sailor uniform, school skirt, standing casually, looking at viewer, on the left side",
+          "resolved_mode": "horizontal"
+        },
+        "inst_2": {
+          "derived_spatial_hint": "on the right side",
+          "effective_character_prompt": "1boy, short black hair, school uniform, necktie, blazer, reading a book at desk, on the right side",
+          "resolved_mode": "horizontal"
+        }
+      },
+      "auto_spatial_policy": "auto"
+    },
+    {
+      "task_id": "M2B_depth_seed404",
+      "filename": "M2B_depth_seed404.png",
+      "seed": 404,
+      "runtime_status": "PASS",
+      "visual_status": "DIRECT_IMAGE_INSPECTION",
+      "scene_count": 1,
+      "cast_count": 2,
+      "instance_count": 2,
+      "resolved_hints": {
+        "inst_1": {
+          "derived_spatial_hint": "large in the foreground",
+          "effective_character_prompt": "1girl, blonde hair, twin tails, blue eyes, sailor uniform, school skirt, standing in corridor, large in the foreground",
+          "resolved_mode": "spatial_depth"
+        },
+        "inst_2": {
+          "derived_spatial_hint": "smaller in the background",
+          "effective_character_prompt": "1boy, short black hair, school uniform, necktie, blazer, walking away down the corridor, smaller in the background",
+          "resolved_mode": "spatial_depth"
+        }
+      },
+      "auto_spatial_policy": "auto"
+    },
+    {
+      "task_id": "M2B_same_cast_multi_scene",
+      "filename": "M2B_same_cast_multi_scene.png",
+      "seed": 42,
+      "runtime_status": "PASS",
+      "visual_status": "DIRECT_IMAGE_INSPECTION",
+      "scene_count": 2,
+      "cast_count": 1,
+      "instance_count": 2,
+      "resolved_hints": {
+        "inst_s1": {
+          "derived_spatial_hint": "",
+          "effective_character_prompt": "1girl, blonde hair, twin tails, blue eyes, sailor uniform, school skirt, reading a book quietly",
+          "resolved_mode": "off"
+        },
+        "inst_s2": {
+          "derived_spatial_hint": "",
+          "effective_character_prompt": "1girl, blonde hair, twin tails, blue eyes, sailor uniform, school skirt, walking under trees, smiling",
+          "resolved_mode": "off"
+        }
+      },
+      "auto_spatial_policy": "auto"
+    }
+  ]
+}

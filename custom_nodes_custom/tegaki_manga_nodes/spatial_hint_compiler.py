@@ -15,6 +15,7 @@ import copy
 
 
 SUPPORTED_HINT_MODES = [
+    "auto",
     "off",
     "horizontal",
     "horizontal_presence",
@@ -182,11 +183,41 @@ def detect_arrangement_hint(
     return ""
 
 
+def resolve_auto_spatial_mode(
+    instances: List[Dict[str, Any]],
+    area_ratio_threshold: float = 1.8,
+) -> str:
+    """
+    M2B Production AUTO Spatial Policy:
+    - 0 or 1 character: "off" (single-character area tracking is already strong)
+    - 2 characters:
+        if max(area) / min(area) >= area_ratio_threshold:
+            "spatial_depth"
+        else:
+            "horizontal"
+    - 3+ characters: "off" (Production default; 3+ is seed-sensitive / advanced)
+    """
+    n = len(instances)
+    if n <= 1:
+        return "off"
+    if n == 2:
+        areas = []
+        for inst in instances:
+            _, _, _, _, a = _get_area_val(inst.get("area", {}))
+            areas.append(a)
+        max_a = max(areas)
+        min_a = max(min(areas), 1e-6)
+        if max_a / min_a >= area_ratio_threshold:
+            return "spatial_depth"
+        return "horizontal"
+    return "off"
+
+
 def compile_scene_spatial_hints(
     scene: Dict[str, Any],
     instances: List[Dict[str, Any]],
     cast_by_id: Dict[str, Any],
-    mode: str = "off",
+    mode: str = "auto",
 ) -> Tuple[Dict[str, Dict[str, Any]], str]:
     """
     Main entry point for Spatial Prompt Hint compilation for a single scene.
@@ -195,7 +226,7 @@ def compile_scene_spatial_hints(
         scene: Scene dictionary with 'area' {x, y, w, h}.
         instances: List of character instance dictionaries belonging to this scene.
         cast_by_id: Mapping of cast_id to CAST master dictionary.
-        mode: Compilation mode in ('off', 'horizontal', 'horizontal_presence', 'spatial_depth', 'full').
+        mode: Compilation mode in ('auto', 'off', 'horizontal', 'horizontal_presence', 'spatial_depth', 'full').
         
     Returns:
         (instance_hints_map, scene_presence_hint)
@@ -212,6 +243,8 @@ def compile_scene_spatial_hints(
     if mode not in SUPPORTED_HINT_MODES:
         raise ValueError(f"Unsupported spatial_hint_mode '{mode}'. Supported: {SUPPORTED_HINT_MODES}")
 
+    resolved_mode = resolve_auto_spatial_mode(instances) if mode == "auto" else mode
+
     scene_area = scene.get("area", {})
     sx, sy, sw, sh, s_area = _get_area_val(scene_area)
     sw = max(sw, 1e-6)
@@ -220,7 +253,7 @@ def compile_scene_spatial_hints(
     # 1. Scene presence hint
     char_count = len(instances)
     raw_presence_hint = PRESENCE_HINTS.get(char_count, "")
-    include_presence = mode in ("horizontal_presence", "full")
+    include_presence = resolved_mode in ("horizontal_presence", "full")
     scene_presence_hint = raw_presence_hint if include_presence else ""
 
     # 2. Horizontal ambiguity and depth
@@ -246,22 +279,22 @@ def compile_scene_spatial_hints(
         h_slot, h_hint = classify_horizontal_slot(cx, is_ambiguous=is_ambig)
         d_slot, d_hint = depth_hints.get(iid, ("none", ""))
 
-        # Assemble derived spatial hint based on mode
+        # Assemble derived spatial hint based on resolved mode
         hint_parts = []
-        if mode == "off":
+        if resolved_mode == "off":
             pass
-        elif mode == "horizontal":
+        elif resolved_mode == "horizontal":
             if h_hint:
                 hint_parts.append(h_hint)
-        elif mode == "horizontal_presence":
+        elif resolved_mode == "horizontal_presence":
             if h_hint:
                 hint_parts.append(h_hint)
-        elif mode == "spatial_depth":
+        elif resolved_mode == "spatial_depth":
             if d_hint:
                 hint_parts.append(d_hint)
             elif h_hint:
                 hint_parts.append(h_hint)
-        elif mode == "full":
+        elif resolved_mode == "full":
             if d_hint:
                 hint_parts.append(d_hint)
             if h_hint:
@@ -290,9 +323,12 @@ def compile_scene_spatial_hints(
                 "horizontal_slot": h_slot,
                 "depth_slot": d_slot,
                 "is_ambiguous": is_ambig,
-                "arrangement_hint": arrangement_hint if mode == "full" else "",
+                "arrangement_hint": arrangement_hint if resolved_mode == "full" else "",
                 "mode": mode,
+                "resolved_mode": resolved_mode,
             }
         }
+
+    return result_map, scene_presence_hint
 
     return result_map, scene_presence_hint

@@ -186,7 +186,7 @@ def compile_document_to_page_plan(
     doc: Dict[str, Any],
     page_index: int = 0,
     allow_cast: bool = True,
-    spatial_hint_mode: str = "off",
+    spatial_hint_mode: str = "auto",
 ) -> Dict[str, Any]:
     """
     Compile TEGAKI_AUTHORING_DOCUMENT into a validated PAGE_COMPILE_PLAN v1 dict.
@@ -463,7 +463,7 @@ def get_execution_debug_info(
     doc: Dict[str, Any],
     page_index: int = 0,
     seed: Optional[int] = None,
-    spatial_hint_mode: str = "off",
+    spatial_hint_mode: str = "auto",
 ) -> Dict[str, Any]:
     """
     Extract execution debug info dictionary for verification manifest.

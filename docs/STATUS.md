@@ -92,9 +92,18 @@ Scene-only Draft (M1) → CAST 複数出演 (M2) → Rough Guide (M3) → UX She
   - **報告書**: [M2A1_PROMPT_REGION_CALIBRATION_AND_CONTROL_GATE_REPORT.md](reports/M2A1_PROMPT_REGION_CALIBRATION_AND_CONTROL_GATE_REPORT.md)
   - **製品UI推奨**: **OPTION A+（Rough Region + Free Text Acting Prompt + 隠しAutomatic Spatial Helper）**
 
-- **次Card**: **M2B / 3M-2B — Minimum Character & CAST Staging Product UI (Option A+: Rough Region + Free Text + Hidden Spatial Helper)**
-  - CAST Master登録、キャンバス上でのCharacter Rough Region矩形操作、Acting Prompt自由文入力UIの実装。
-  - ユーザー向けの方位セレクター（Left/Right）や深度スライダー（Near/Far）は作らず、内部Compilerが透過的に支援。最小手の直感操作導線を確立する。
+- **完了Card**: **M2B / 3M-2B — Minimum-Hand CAST & Character Staging Product UI (Option A+)** — COMPLETED & VERIFIED
+  - **Option A+ Product UI統合**: `TegakiMinimumHandSceneEditor`（表示名: `Tegaki Minimum-Hand Manga Authoring (Draft)`）の単一ノード内に、GLOBAL設定（Resolution, Style, Seed + `[🎲 Randomize Seed]`）、CAST Master登録、キャンバス上のCharacter Rough Region直接操作、自由記述Acting Prompt、3+/4+警告バッジを統合。
+  - **契約パリティ（M0準拠）**: シーン移動時に属するキャラクター矩形を同一ベクトル移動、シーンリサイズ時にキャラクター矩形を比例拡大縮小。参照中CASTの削除抑止、シーン削除時の関連キャラクター自動破棄（孤立参照防止）。
+  - **Hidden AUTO Spatial Policy**: 研究用手動パラメータをUIから隠蔽し、シーン内のキャラクター数および面積比（$\ge 1.8$）から自動判定する `auto` ポリシーを導入（1人=off, 2人通常=horizontal, 2人深度=spatial_depth, 3+人=off）。
+  - **Canonical Workflow 安定名化**: `workflows/M1_MINIMUM_HAND_SCENE_DRAFT.json` を `workflows/MINIMUM_HAND_MANGA_DRAFT.json` へ `git mv` し、root 1本体制を確立。
+  - **自動テスト**: 全161件 Python テスト（既存139件＋M2B新規22件）および 7件 JS headless contract テストが100% PASS。
+  - **実機検証 & 目視検査**: ComfyUI スタンドアローン実機環境で単一人物・2人物・深度・複数シーン出演の4条件を生成し直接目視確認完了。
+  - **報告書**: [M2B_MINIMUM_HAND_CAST_STAGING_PRODUCT_UI_REPORT.md](reports/M2B_MINIMUM_HAND_CAST_STAGING_PRODUCT_UI_REPORT.md)
+  - **Manifest**: `docs/verification/m2b/M2B_PRODUCT_PATH_MANIFEST.json`
+
+- **次Card候補**: **M3 — Rough Manga / Visual Panel Guide Integration**
+  - Semantic Scene / CAST staging に対し、実際の漫画コマ枠（Visual Panel Frames）とラフ漫画 / 白ハゲ / 人物シルエット構図拘束を直交して統合。
 
 ---
 

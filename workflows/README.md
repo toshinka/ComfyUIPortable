@@ -4,10 +4,10 @@ This directory contains the ComfyUI workflows for Tegaki Manga Authoring and Gen
 
 ## Canonical Active Workflow
 
-- **`M1_MINIMUM_HAND_SCENE_DRAFT.json`**
-  - **Status**: Active (Phase 3M-1 / M1 Canonical)
-  - **Purpose**: Minimum-Hand Scene Draft pipeline. Provides interactive scene rectangle authoring, resolution presets, style templates, and seed control without requiring CAST or manual masks.
-  - **SSOT**: Powered by `TEGAKI_AUTHORING_DOCUMENT` v1.0.0 backed by `TegakiMinimumHandSceneEditor` and `TegakiMangaConditioningBuilder`.
+- **`MINIMUM_HAND_MANGA_DRAFT.json`**
+  - **Status**: Active (Phase 3M-2B / M2B Canonical)
+  - **Purpose**: Minimum-Hand Manga Draft pipeline. Provides interactive scene rectangle authoring, recurrent CAST Master registration, character rough region staging, free-text acting prompts, and seed control without requiring manual masks or ControlNet.
+  - **SSOT**: Powered by `TEGAKI_AUTHORING_DOCUMENT` v1.0.0 backed by `TegakiMinimumHandSceneEditor` (displayed as `Tegaki Minimum-Hand Manga Authoring (Draft)`) and `TegakiMangaConditioningBuilder`.
   - **Architecture Boundary**:
     - **User Workspace**: `TegakiMinimumHandSceneEditor` + `PreviewImage` (region layout preview) + `SaveImage` (draft output).
     - **Internal Pipeline**: `CheckpointLoaderSimple` -> `TegakiMangaConditioningBuilder` -> `KSampler` -> `VAEDecode`.

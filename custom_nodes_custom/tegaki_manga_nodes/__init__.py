@@ -63,7 +63,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "TegakiMangaPanelContentEditor": "Tegaki Manga Panel Content Editor",
     "TegakiMangaCharacterStagingEditor": "Tegaki Manga Character Staging Editor",
     "TegakiMangaLayoutGuideGenerator": "Tegaki Manga Layout Guide Generator (ControlNet)",
-    "TegakiMinimumHandSceneEditor": "Tegaki Minimum-Hand Scene Editor (Draft)",
+    "TegakiMinimumHandSceneEditor": "Tegaki Minimum-Hand Manga Authoring (Draft)",
 }
 
 WEB_DIRECTORY = "./web"

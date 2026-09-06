@@ -32,7 +32,7 @@ class TestM1_1CanonicalWorkflowWiring(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.workflows_dir = os.path.join(ROOT_DIR, "workflows")
-        cls.canonical_wf_path = os.path.join(cls.workflows_dir, "M1_MINIMUM_HAND_SCENE_DRAFT.json")
+        cls.canonical_wf_path = os.path.join(cls.workflows_dir, "MINIMUM_HAND_MANGA_DRAFT.json")
         with open(cls.canonical_wf_path, "r", encoding="utf-8") as f:
             cls.raw_text = f.read()
             cls.wf = json.loads(cls.raw_text)
@@ -41,7 +41,7 @@ class TestM1_1CanonicalWorkflowWiring(unittest.TestCase):
         """Root active workflow count in workflows/ must be exactly 1."""
         entries = os.listdir(self.workflows_dir)
         json_files = [e for e in entries if e.endswith(".json") and os.path.isfile(os.path.join(self.workflows_dir, e))]
-        self.assertEqual(json_files, ["M1_MINIMUM_HAND_SCENE_DRAFT.json"],
+        self.assertEqual(json_files, ["MINIMUM_HAND_MANGA_DRAFT.json"],
                          f"Expected exactly 1 root active workflow, found: {json_files}")
 
     def test_02_legacy_dimensions_completely_absent(self):

@@ -1,3 +1,16 @@
+/**
+ * minimum_hand_scene_editor.js — Minimum-Hand Manga Authoring (Draft) Product UI (M2B)
+ * ======================================================================================
+ * Product-facing unified authoring canvas and inspector for:
+ * - GLOBAL: Resolution, Style, Seed + [Randomize Seed]
+ * - CAST: CAST Master Registration (Name, Identity Prompt, Negative Prompt), Delete Protection
+ * - CANVAS: Scene Regions + Character Rough Regions with Visual Hierarchy & Direct Manipulation
+ * - SCENE: Scene Label, Scene Prompt (Common Context), Character Presence, Warning Badges (3+, 4+)
+ * - CHARACTER: Free-Text Acting Prompt, Direct Drag/Resize within Scene, Remove Character
+ * - CONTRACT PARITY: Scene Move carries child instances; Scene Resize scales child instances.
+ * 
+ * Strict SSOT: TEGAKI_AUTHORING_DOCUMENT in document_json widget.
+ */
 import { app } from "../../scripts/app.js";
 
 const SCENE_PALETTE = [
@@ -7,6 +20,15 @@ const SCENE_PALETTE = [
     { name: "Scene 4", hex: "#fb8c00", rgb: [251, 140, 0] },
     { name: "Scene 5", hex: "#8e24aa", rgb: [142, 36, 170] },
     { name: "Scene 6", hex: "#00acc1", rgb: [0, 172, 193] },
+];
+
+const CAST_PALETTE = [
+    { name: "Cast 1", hex: "#06b6d4", rgb: [6, 182, 212] },
+    { name: "Cast 2", hex: "#eab308", rgb: [234, 179, 8] },
+    { name: "Cast 3", hex: "#ec4899", rgb: [236, 72, 153] },
+    { name: "Cast 4", hex: "#a855f7", rgb: [168, 85, 247] },
+    { name: "Cast 5", hex: "#22c55e", rgb: [34, 197, 94] },
+    { name: "Cast 6", hex: "#f97316", rgb: [249, 115, 22] },
 ];
 
 const RESOLUTION_MAP = {
@@ -121,15 +143,22 @@ app.registerExtension({
             const r = onNodeCreated ? onNodeCreated.apply(this, arguments) : undefined;
 
             const node = this;
-            node.setSize([540, 840]);
+            node.setSize([560, 960]);
 
             let doc = createDefaultDoc();
             let selectedSceneIndex = 0;
+            let selectedInstanceId = null;
+            let selectedCastId = null;
+
+            // Drag state
             let isDragging = false;
-            let dragMode = "none"; // 'move' | 'nw' | 'ne' | 'se' | 'sw'
+            let dragTarget = "none"; // 'scene' | 'character'
+            let dragMode = "none";   // 'move' | 'nw' | 'ne' | 'se' | 'sw'
             let dragStartX = 0;
             let dragStartY = 0;
-            let dragStartArea = null;
+            let dragStartSceneArea = null;
+            let dragStartInstArea = null;
+            let dragStartChildAreas = []; // [{ id, area }]
 
             function getPage() {
                 if (!doc.pages || doc.pages.length === 0) {
@@ -142,6 +171,29 @@ app.registerExtension({
                 const p = getPage();
                 if (!p.scenes) p.scenes = [];
                 return p.scenes;
+            }
+
+            function getCast() {
+                const p = getPage();
+                if (!p.cast) p.cast = [];
+                return p.cast;
+            }
+
+            function getCharacterInstances() {
+                const p = getPage();
+                if (!p.character_instances) p.character_instances = [];
+                return p.character_instances;
+            }
+
+            function getCastColor(castId) {
+                const castList = getCast();
+                const idx = castList.findIndex(c => c.cast_id === castId);
+                if (idx === -1) return CAST_PALETTE[0];
+                return CAST_PALETTE[idx % CAST_PALETTE.length];
+            }
+
+            function getSceneColor(idx) {
+                return SCENE_PALETTE[idx % SCENE_PALETTE.length];
             }
 
             // DOM Container
@@ -166,12 +218,79 @@ app.registerExtension({
             header.style.cssText = "display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3f3f46; padding-bottom: 6px;";
             header.innerHTML = `
                 <div style="font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 6px;">
-                    <span style="background: #3b82f6; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px;">M1</span>
-                    <span>Scene-Only Minimum-Hand Editor</span>
+                    <span style="background: #3b82f6; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700;">DRAFT</span>
+                    <span>Tegaki Minimum-Hand Manga Authoring</span>
                 </div>
-                <div id="scene-counter" style="color: #a1a1aa; font-size: 11px;">Scenes: 2 / 6</div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button id="btn-random-seed" title="Randomize seed for rapid brainstorming" style="
+                        background: #27272a;
+                        color: #fafafa;
+                        border: 1px solid #3f3f46;
+                        border-radius: 4px;
+                        padding: 3px 8px;
+                        font-size: 11px;
+                        font-weight: 600;
+                        cursor: pointer;
+                    ">🎲 Randomize Seed</button>
+                    <div id="scene-counter" style="color: #a1a1aa; font-size: 11px;">Scenes: 2 / 6</div>
+                </div>
             `;
             container.appendChild(header);
+
+            // Wire Randomize Seed
+            const btnRandomSeed = header.querySelector("#btn-random-seed");
+            btnRandomSeed.onclick = (e) => {
+                e.preventDefault();
+                const newSeed = Math.floor(Math.random() * 2147483647);
+                const page = getPage();
+                if (!page.generation) page.generation = {};
+                page.generation.seed = newSeed;
+                const seedWidget = node.widgets.find(w => w.name === "seed");
+                if (seedWidget) {
+                    seedWidget.value = newSeed;
+                }
+                syncToWidgets();
+            };
+
+            // CAST Section Bar
+            const castSection = document.createElement("div");
+            castSection.style.cssText = `
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                background: #202024;
+                padding: 8px;
+                border-radius: 6px;
+                border: 1px solid #2f2f35;
+            `;
+
+            const castHeader = document.createElement("div");
+            castHeader.style.cssText = "display: flex; justify-content: space-between; align-items: center;";
+            castHeader.innerHTML = `
+                <div style="font-weight: 600; font-size: 11px; color: #a1a1aa; display: flex; align-items: center; gap: 4px;">
+                    <span>CAST MASTER (RECURRENT CHARACTERS)</span>
+                </div>
+            `;
+            castSection.appendChild(castHeader);
+
+            const castChipsRow = document.createElement("div");
+            castChipsRow.style.cssText = "display: flex; gap: 6px; align-items: center; flex-wrap: wrap;";
+            castSection.appendChild(castChipsRow);
+
+            const castInspector = document.createElement("div");
+            castInspector.style.cssText = `
+                display: none;
+                flex-direction: column;
+                gap: 6px;
+                background: #18181b;
+                padding: 8px;
+                border-radius: 4px;
+                border: 1px solid #3f3f46;
+                margin-top: 4px;
+            `;
+            castSection.appendChild(castInspector);
+
+            container.appendChild(castSection);
 
             // Canvas wrapper
             const canvasWrapper = document.createElement("div");
@@ -218,7 +337,6 @@ app.registerExtension({
                 const scenes = getScenes();
                 if (scenes.length >= 6) return;
 
-                // Stable unique ID generation (Finding G)
                 let nextNum = 1;
                 const existingNums = scenes.map(s => {
                     const m = s.scene_id && s.scene_id.match(/scene_(\d+)/);
@@ -239,7 +357,7 @@ app.registerExtension({
                     scene_id: newId,
                     order: orderNum,
                     name: `Scene ${orderNum}`,
-                    prompt: `scene ${orderNum} content prompt`,
+                    prompt: `scene ${orderNum} context prompt`,
                     negative_prompt: "",
                     input_mode: "simple",
                     area: {
@@ -252,25 +370,33 @@ app.registerExtension({
                     metadata: {}
                 });
                 selectedSceneIndex = scenes.length - 1;
+                selectedInstanceId = null;
                 syncToWidgets();
                 renderAll();
             });
 
-            const btnDeleteScene = createButton("- Remove Scene", "Remove selected scene rectangle (min 1)", () => {
+            const btnDeleteScene = createButton("- Remove Scene", "Remove selected scene and its characters", () => {
                 const scenes = getScenes();
                 if (scenes.length <= 1) return;
+                const deadScene = scenes[selectedSceneIndex];
+                if (deadScene) {
+                    const p = getPage();
+                    p.character_instances = (p.character_instances || []).filter(inst => inst.scene_id !== deadScene.scene_id);
+                }
                 scenes.splice(selectedSceneIndex, 1);
-                scenes.forEach((s, i) => {
-                    s.order = i + 1;
-                });
+                scenes.forEach((s, i) => { s.order = i + 1; });
                 if (selectedSceneIndex >= scenes.length) {
                     selectedSceneIndex = scenes.length - 1;
                 }
+                selectedInstanceId = null;
                 syncToWidgets();
                 renderAll();
             });
 
-            const btnResetLayout = createButton("Reset 2-Scene", "Reset to canonical 2-scene vertical layout", () => {
+            const btnResetLayout = createButton("Reset Draft", "Reset document to default 2-scene layout", () => {
+                const ok = confirm("Reset Draft will reset the entire document to default 2 scenes and clear all CAST and character instances. Proceed?");
+                if (!ok) return;
+
                 const resWidget = node.widgets.find(w => w.name === "resolution");
                 const styleWidget = node.widgets.find(w => w.name === "style_template");
                 const seedWidget = node.widgets.find(w => w.name === "seed");
@@ -280,6 +406,8 @@ app.registerExtension({
                     seedWidget ? seedWidget.value : 42
                 );
                 selectedSceneIndex = 0;
+                selectedInstanceId = null;
+                selectedCastId = null;
                 syncToWidgets();
                 renderAll();
             });
@@ -289,9 +417,9 @@ app.registerExtension({
             toolbar.appendChild(btnResetLayout);
             container.appendChild(toolbar);
 
-            // Scene Prompt Inspector
-            const inspector = document.createElement("div");
-            inspector.style.cssText = `
+            // Scene Inspector
+            const sceneInspector = document.createElement("div");
+            sceneInspector.style.cssText = `
                 display: flex;
                 flex-direction: column;
                 gap: 6px;
@@ -301,8 +429,8 @@ app.registerExtension({
                 border: 1px solid #3f3f46;
             `;
 
-            const inspectorHeader = document.createElement("div");
-            inspectorHeader.style.cssText = "display: flex; justify-content: space-between; align-items: center;";
+            const sceneInspectorHeader = document.createElement("div");
+            sceneInspectorHeader.style.cssText = "display: flex; justify-content: space-between; align-items: center;";
 
             const sceneBadge = document.createElement("div");
             sceneBadge.style.cssText = "display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 11px;";
@@ -328,13 +456,13 @@ app.registerExtension({
                 }
             };
 
-            inspectorHeader.appendChild(sceneBadge);
-            inspectorHeader.appendChild(sceneNameInput);
-            inspector.appendChild(inspectorHeader);
+            sceneInspectorHeader.appendChild(sceneBadge);
+            sceneInspectorHeader.appendChild(sceneNameInput);
+            sceneInspector.appendChild(sceneInspectorHeader);
 
             const promptTextarea = document.createElement("textarea");
-            promptTextarea.rows = 4;
-            promptTextarea.placeholder = "Enter scene visual prompt (e.g. 1boy in classroom, looking outside)...";
+            promptTextarea.rows = 3;
+            promptTextarea.placeholder = "Scene context prompt (e.g. school classroom, desks, sunlight through window)...";
             promptTextarea.style.cssText = `
                 background: #18181b;
                 color: #fafafa;
@@ -354,11 +482,223 @@ app.registerExtension({
                     syncToWidgets();
                 }
             };
-            inspector.appendChild(promptTextarea);
-            container.appendChild(inspector);
+            sceneInspector.appendChild(promptTextarea);
 
-            function getSceneColor(idx) {
-                return SCENE_PALETTE[idx % SCENE_PALETTE.length];
+            // Characters in Scene Row
+            const sceneCharactersRow = document.createElement("div");
+            sceneCharactersRow.style.cssText = "display: flex; flex-direction: column; gap: 4px;";
+            sceneInspector.appendChild(sceneCharactersRow);
+
+            // Warning badge container
+            const warningBadge = document.createElement("div");
+            warningBadge.style.cssText = "display: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;";
+            sceneInspector.appendChild(warningBadge);
+
+            container.appendChild(sceneInspector);
+
+            // Character Instance Inspector (visible when an instance is selected)
+            const charInspector = document.createElement("div");
+            charInspector.style.cssText = `
+                display: none;
+                flex-direction: column;
+                gap: 6px;
+                background: #232733;
+                padding: 8px;
+                border-radius: 6px;
+                border: 1px solid #3b82f6;
+            `;
+
+            const charInspectorHeader = document.createElement("div");
+            charInspectorHeader.style.cssText = "display: flex; justify-content: space-between; align-items: center;";
+
+            const charBadge = document.createElement("div");
+            charBadge.style.cssText = "display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 11px; color: #60a5fa;";
+
+            const btnRemoveChar = createButton("Remove Character", "Remove this character from the scene", () => {
+                if (!selectedInstanceId) return;
+                const p = getPage();
+                p.character_instances = (p.character_instances || []).filter(inst => inst.instance_id !== selectedInstanceId);
+                selectedInstanceId = null;
+                syncToWidgets();
+                renderAll();
+            }, "#b91c1c");
+            btnRemoveChar.style.padding = "2px 8px";
+
+            charInspectorHeader.appendChild(charBadge);
+            charInspectorHeader.appendChild(btnRemoveChar);
+            charInspector.appendChild(charInspectorHeader);
+
+            const charActingInput = document.createElement("textarea");
+            charActingInput.rows = 2;
+            charActingInput.placeholder = "Free-text acting prompt (e.g. standing casually, reading a book, looking away, sitting)...";
+            charActingInput.style.cssText = `
+                background: #18181b;
+                color: #fafafa;
+                border: 1px solid #3f3f46;
+                border-radius: 4px;
+                padding: 6px;
+                font-family: inherit;
+                font-size: 11px;
+                resize: vertical;
+                box-sizing: border-box;
+                width: 100%;
+            `;
+            charActingInput.oninput = () => {
+                const instances = getCharacterInstances();
+                const curInst = instances.find(i => i.instance_id === selectedInstanceId);
+                if (curInst) {
+                    curInst.acting_prompt = charActingInput.value;
+                    syncToWidgets();
+                    renderCanvas();
+                }
+            };
+            charInspector.appendChild(charActingInput);
+
+            container.appendChild(charInspector);
+
+            // Render CAST section
+            function renderCastSection() {
+                castChipsRow.innerHTML = "";
+                const castList = getCast();
+
+                castList.forEach((c, idx) => {
+                    const col = CAST_PALETTE[idx % CAST_PALETTE.length];
+                    const isSelected = (selectedCastId === c.cast_id);
+
+                    const chip = document.createElement("button");
+                    chip.style.cssText = `
+                        background: ${isSelected ? col.hex : "#27272a"};
+                        color: ${isSelected ? "#ffffff" : "#d4d4d8"};
+                        border: 1px solid ${col.hex};
+                        border-radius: 4px;
+                        padding: 3px 8px;
+                        font-size: 11px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        gap: 4px;
+                    `;
+                    chip.innerHTML = `
+                        <span style="width: 8px; height: 8px; border-radius: 50%; background: ${isSelected ? '#fff' : col.hex};"></span>
+                        <span>${c.display_name || c.cast_id}</span>
+                    `;
+                    chip.onclick = (e) => {
+                        e.preventDefault();
+                        selectedCastId = (selectedCastId === c.cast_id) ? null : c.cast_id;
+                        renderCastSection();
+                    };
+                    castChipsRow.appendChild(chip);
+                });
+
+                // Add CAST button
+                const btnAddCast = document.createElement("button");
+                btnAddCast.textContent = "+ Add CAST";
+                btnAddCast.style.cssText = `
+                    background: #27272a;
+                    color: #fafafa;
+                    border: 1px dashed #52525b;
+                    border-radius: 4px;
+                    padding: 3px 8px;
+                    font-size: 11px;
+                    font-weight: 500;
+                    cursor: pointer;
+                `;
+                btnAddCast.onclick = (e) => {
+                    e.preventDefault();
+                    let nextNum = 1;
+                    const existing = castList.map(c => {
+                        const m = c.cast_id && c.cast_id.match(/cast_(\d+)/);
+                        return m ? parseInt(m[1], 10) : 0;
+                    });
+                    if (existing.length > 0) {
+                        nextNum = Math.max(...existing, 0) + 1;
+                    }
+                    let newId = `cast_${nextNum}`;
+                    while (castList.some(c => c.cast_id === newId)) {
+                        nextNum++;
+                        newId = `cast_${nextNum}`;
+                    }
+
+                    const newCast = {
+                        cast_id: newId,
+                        display_name: `Character ${nextNum}`,
+                        identity_prompt: "distinct character features, detailed clothing",
+                        negative_prompt: "",
+                        metadata: {}
+                    };
+                    castList.push(newCast);
+                    selectedCastId = newId;
+                    syncToWidgets();
+                    renderCastSection();
+                    renderInspector();
+                    renderCanvas();
+                };
+                castChipsRow.appendChild(btnAddCast);
+
+                // Render CAST Inspector for selected CAST
+                const curCast = castList.find(c => c.cast_id === selectedCastId);
+                if (!curCast) {
+                    castInspector.style.display = "none";
+                    return;
+                }
+
+                castInspector.style.display = "flex";
+                castInspector.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="font-weight: 600; font-size: 11px; color: #38bdf8;">CAST Details (${curCast.cast_id})</div>
+                        <button id="btn-delete-cast" style="
+                            background: #b91c1c; color: #fff; border: 1px solid #dc2626; border-radius: 4px;
+                            padding: 2px 6px; font-size: 10px; cursor: pointer;
+                        ">Delete CAST</button>
+                    </div>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        <label style="color: #a1a1aa; font-size: 11px; width: 80px;">Name:</label>
+                        <input id="cast-name-input" type="text" value="${curCast.display_name || ''}" style="
+                            background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 4px;
+                            padding: 2px 6px; font-size: 11px; flex: 1;
+                        " />
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                        <label style="color: #a1a1aa; font-size: 11px;">Identity Prompt (features, hair, costume):</label>
+                        <textarea id="cast-id-prompt" rows="2" style="
+                            background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 4px;
+                            padding: 4px; font-size: 11px; resize: vertical;
+                        ">${curCast.identity_prompt || ''}</textarea>
+                    </div>
+                `;
+
+                const nameInput = castInspector.querySelector("#cast-name-input");
+                nameInput.oninput = () => {
+                    curCast.display_name = nameInput.value;
+                    syncToWidgets();
+                    renderCanvas();
+                    renderInspector();
+                };
+
+                const idPromptArea = castInspector.querySelector("#cast-id-prompt");
+                idPromptArea.oninput = () => {
+                    curCast.identity_prompt = idPromptArea.value;
+                    syncToWidgets();
+                };
+
+                const btnDeleteCast = castInspector.querySelector("#btn-delete-cast");
+                btnDeleteCast.onclick = (e) => {
+                    e.preventDefault();
+                    const allInstances = getCharacterInstances();
+                    const isReferenced = allInstances.some(inst => inst.cast_id === curCast.cast_id);
+                    if (isReferenced) {
+                        alert(`Cannot delete CAST '${curCast.display_name || curCast.cast_id}' because it is placed in scenes. Please remove appearances from scenes first.`);
+                        return;
+                    }
+                    const p = getPage();
+                    p.cast = p.cast.filter(c => c.cast_id !== curCast.cast_id);
+                    selectedCastId = null;
+                    syncToWidgets();
+                    renderCastSection();
+                    renderInspector();
+                    renderCanvas();
+                };
             }
 
             function renderInspector() {
@@ -374,6 +714,9 @@ app.registerExtension({
                     sceneBadge.innerHTML = `<span style="color: #71717a;">No scene selected</span>`;
                     sceneNameInput.value = "";
                     promptTextarea.value = "";
+                    sceneCharactersRow.innerHTML = "";
+                    warningBadge.style.display = "none";
+                    charInspector.style.display = "none";
                     return;
                 }
 
@@ -384,6 +727,146 @@ app.registerExtension({
                 `;
                 sceneNameInput.value = curScene.name || "";
                 promptTextarea.value = curScene.prompt || "";
+
+                // Characters in this scene
+                const allInstances = getCharacterInstances();
+                const sceneInstances = allInstances.filter(inst => inst.scene_id === curScene.scene_id);
+                const castList = getCast();
+
+                sceneCharactersRow.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                        <span style="font-size: 11px; font-weight: 600; color: #a1a1aa;">CHARACTERS IN SCENE (${sceneInstances.length})</span>
+                        <button id="btn-add-char-to-scene" style="
+                            background: #27272a; color: #fafafa; border: 1px dashed #52525b; border-radius: 4px;
+                            padding: 2px 6px; font-size: 10px; cursor: pointer;
+                        ">+ Add Character</button>
+                    </div>
+                    <div id="scene-chars-chips" style="display: flex; gap: 4px; align-items: center; flex-wrap: wrap;"></div>
+                `;
+
+                const chipsContainer = sceneCharactersRow.querySelector("#scene-chars-chips");
+                sceneInstances.forEach((inst, idx) => {
+                    const cInfo = castList.find(c => c.cast_id === inst.cast_id);
+                    const cName = cInfo ? cInfo.display_name : inst.cast_id;
+                    const cCol = getCastColor(inst.cast_id);
+                    const isSelected = (selectedInstanceId === inst.instance_id);
+
+                    const chip = document.createElement("button");
+                    chip.style.cssText = `
+                        background: ${isSelected ? cCol.hex : "#18181b"};
+                        color: ${isSelected ? "#fff" : "#e4e4e7"};
+                        border: 1px solid ${cCol.hex};
+                        border-radius: 4px;
+                        padding: 2px 6px;
+                        font-size: 10px;
+                        font-weight: 600;
+                        cursor: pointer;
+                    `;
+                    chip.textContent = `${cName} #${idx + 1}`;
+                    chip.onclick = (e) => {
+                        e.preventDefault();
+                        selectedInstanceId = (selectedInstanceId === inst.instance_id) ? null : inst.instance_id;
+                        renderInspector();
+                        renderCanvas();
+                    };
+                    chipsContainer.appendChild(chip);
+                });
+
+                // Wire Add Character to Scene
+                const btnAddChar = sceneCharactersRow.querySelector("#btn-add-char-to-scene");
+                btnAddChar.onclick = (e) => {
+                    e.preventDefault();
+                    if (castList.length === 0) {
+                        alert("Please register at least one CAST character above before placing them in a scene.");
+                        return;
+                    }
+
+                    // Choose cast
+                    const targetCast = castList[sceneInstances.length % castList.length];
+
+                    // Generate unique collision-free instance_id
+                    let nextInstNum = 1;
+                    const existingInstNums = allInstances.map(i => {
+                        const m = i.instance_id && i.instance_id.match(/inst_(\d+)/);
+                        return m ? parseInt(m[1], 10) : 0;
+                    });
+                    if (existingInstNums.length > 0) {
+                        nextInstNum = Math.max(...existingInstNums, 0) + 1;
+                    }
+                    let newInstId = `inst_${nextInstNum}`;
+                    while (allInstances.some(i => i.instance_id === newInstId)) {
+                        nextInstNum++;
+                        newInstId = `inst_${nextInstNum}`;
+                    }
+
+                    const sb = curScene.area || { x: 0.1, y: 0.1, w: 0.8, h: 0.4 };
+                    const count = sceneInstances.length;
+                    const charW = parseFloat((sb.w * 0.40).toFixed(4));
+                    const charH = parseFloat((sb.h * 0.80).toFixed(4));
+                    const charX = count === 0
+                        ? parseFloat((sb.x + sb.w * 0.08).toFixed(4))
+                        : parseFloat((sb.x + sb.w * 0.52).toFixed(4));
+                    const charY = parseFloat((sb.y + sb.h * 0.10).toFixed(4));
+
+                    const newInst = {
+                        instance_id: newInstId,
+                        cast_id: targetCast.cast_id,
+                        scene_id: curScene.scene_id,
+                        order: sceneInstances.length + 1,
+                        area: {
+                            shape_type: "rect",
+                            x: charX,
+                            y: charY,
+                            w: charW,
+                            h: charH
+                        },
+                        acting_prompt: "standing casually",
+                        negative_prompt_override: "",
+                        metadata: {}
+                    };
+
+                    allInstances.push(newInst);
+                    curScene.input_mode = "cast";
+                    selectedInstanceId = newInstId;
+
+                    syncToWidgets();
+                    renderInspector();
+                    renderCanvas();
+                };
+
+                // Warnings for Scene Complexity
+                const instCount = sceneInstances.length;
+                if (instCount === 3) {
+                    warningBadge.style.display = "block";
+                    warningBadge.style.background = "rgba(245, 158, 11, 0.2)";
+                    warningBadge.style.color = "#fbbf24";
+                    warningBadge.style.border = "1px solid #f59e0b";
+                    warningBadge.textContent = "3 characters — Advanced / Seed-Sensitive. Try new seeds or split scene if needed.";
+                } else if (instCount >= 4) {
+                    warningBadge.style.display = "block";
+                    warningBadge.style.background = "rgba(239, 68, 68, 0.2)";
+                    warningBadge.style.color = "#f87171";
+                    warningBadge.style.border = "1px solid #ef4444";
+                    warningBadge.textContent = "4+ characters — Experimental. Multi-cut / additional scenes are usually more reliable.";
+                } else {
+                    warningBadge.style.display = "none";
+                }
+
+                // Render Selected Character Inspector
+                const curInst = allInstances.find(i => i.instance_id === selectedInstanceId);
+                if (curInst && curInst.scene_id === curScene.scene_id) {
+                    charInspector.style.display = "flex";
+                    const cInfo = castList.find(c => c.cast_id === curInst.cast_id);
+                    const cName = cInfo ? cInfo.display_name : curInst.cast_id;
+                    const cCol = getCastColor(curInst.cast_id);
+                    charBadge.innerHTML = `
+                        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${cCol.hex};"></span>
+                        <span>Editing [${cName}] in Scene ${selectedSceneIndex + 1}</span>
+                    `;
+                    charActingInput.value = curInst.acting_prompt || "";
+                } else {
+                    charInspector.style.display = "none";
+                }
             }
 
             function renderCanvas() {
@@ -397,7 +880,7 @@ app.registerExtension({
                 ctx.fillRect(0, 0, cw, ch);
 
                 // Grid lines
-                ctx.strokeStyle = "#e5e7eb";
+                ctx.strokeStyle = "#f3f4f6";
                 ctx.lineWidth = 1;
                 for (let x = 0.25; x < 1.0; x += 0.25) {
                     ctx.beginPath();
@@ -413,10 +896,14 @@ app.registerExtension({
                 }
 
                 const scenes = getScenes();
+                const allInstances = getCharacterInstances();
+                const castList = getCast();
+
+                // 1. Draw Scenes (Translucent thin boxes)
                 scenes.forEach((sc, idx) => {
                     const b = sc.area || { x: 0, y: 0, w: 1, h: 1 };
                     const col = getSceneColor(idx);
-                    const isSelected = (idx === selectedSceneIndex);
+                    const isSelected = (idx === selectedSceneIndex && !selectedInstanceId);
 
                     const rx = b.x * cw;
                     const ry = b.y * ch;
@@ -424,7 +911,7 @@ app.registerExtension({
                     const rh = b.h * ch;
 
                     // Fill
-                    ctx.fillStyle = isSelected ? `rgba(${col.rgb.join(",")}, 0.35)` : `rgba(${col.rgb.join(",")}, 0.20)`;
+                    ctx.fillStyle = `rgba(${col.rgb.join(",")}, ${isSelected ? 0.20 : 0.10})`;
                     ctx.fillRect(rx, ry, rw, rh);
 
                     // Stroke
@@ -434,16 +921,69 @@ app.registerExtension({
 
                     // Label badge
                     const label = `Scene ${idx + 1}: ${sc.name || sc.scene_id}`;
-                    ctx.font = "bold 11px system-ui, sans-serif";
+                    ctx.font = "bold 10px system-ui, sans-serif";
                     const tw = ctx.measureText(label).width;
 
                     ctx.fillStyle = col.hex;
-                    ctx.fillRect(rx, ry, tw + 10, 18);
+                    ctx.fillRect(rx, ry, tw + 8, 16);
 
                     ctx.fillStyle = "#ffffff";
-                    ctx.fillText(label, rx + 5, ry + 13);
+                    ctx.fillText(label, rx + 4, ry + 12);
 
-                    // Handles
+                    // Scene Handles
+                    if (isSelected) {
+                        const hs = 8;
+                        ctx.fillStyle = "#ffffff";
+                        ctx.strokeStyle = col.hex;
+                        ctx.lineWidth = 2;
+
+                        const corners = [
+                            [rx, ry],
+                            [rx + rw, ry],
+                            [rx + rw, ry + rh],
+                            [rx, ry + rh]
+                        ];
+                        corners.forEach(([cx, cy]) => {
+                            ctx.fillRect(cx - hs / 2, cy - hs / 2, hs, hs);
+                            ctx.strokeRect(cx - hs / 2, cy - hs / 2, hs, hs);
+                        });
+                    }
+                });
+
+                // 2. Draw Character Instances (Strong saturated boxes)
+                allInstances.forEach(inst => {
+                    const b = inst.area || { x: 0, y: 0, w: 0.2, h: 0.2 };
+                    const col = getCastColor(inst.cast_id);
+                    const isSelected = (inst.instance_id === selectedInstanceId);
+                    const cInfo = castList.find(c => c.cast_id === inst.cast_id);
+                    const cName = cInfo ? cInfo.display_name : inst.cast_id;
+
+                    const rx = b.x * cw;
+                    const ry = b.y * ch;
+                    const rw = b.w * cw;
+                    const rh = b.h * ch;
+
+                    // Fill
+                    ctx.fillStyle = `rgba(${col.rgb.join(",")}, ${isSelected ? 0.35 : 0.20})`;
+                    ctx.fillRect(rx, ry, rw, rh);
+
+                    // Stroke
+                    ctx.strokeStyle = col.hex;
+                    ctx.lineWidth = isSelected ? 3 : 2;
+                    ctx.strokeRect(rx, ry, rw, rh);
+
+                    // Badge
+                    const badgeText = `${cName} (${inst.instance_id})`;
+                    ctx.font = "bold 10px system-ui, sans-serif";
+                    const tw = ctx.measureText(badgeText).width;
+
+                    ctx.fillStyle = col.hex;
+                    ctx.fillRect(rx, ry, tw + 8, 16);
+
+                    ctx.fillStyle = "#ffffff";
+                    ctx.fillText(badgeText, rx + 4, ry + 12);
+
+                    // Character Handles
                     if (isSelected) {
                         const hs = 8;
                         ctx.fillStyle = "#ffffff";
@@ -465,6 +1005,7 @@ app.registerExtension({
             }
 
             function renderAll() {
+                renderCastSection();
                 renderInspector();
                 renderCanvas();
             }
@@ -503,7 +1044,6 @@ app.registerExtension({
                     try {
                         const parsed = JSON.parse(docWidget.value);
                         if (parsed && parsed.schema_id === "TEGAKI_AUTHORING_DOCUMENT" && Array.isArray(parsed.pages)) {
-                            // Migrate any legacy dimensions if present
                             parsed.pages.forEach(p => {
                                 const legacy = p["dimensions"];
                                 if (legacy && (!p.width_px || !p.height_px)) {
@@ -537,8 +1077,8 @@ app.registerExtension({
                 };
             }
 
-            function hitTestHandle(scene, px, py) {
-                const b = scene.area || { x: 0, y: 0, w: 1, h: 1 };
+            function hitTestHandle(box, px, py) {
+                const b = box || { x: 0, y: 0, w: 1, h: 1 };
                 const cw = canvas.width;
                 const ch = canvas.height;
                 const rx = b.x * cw;
@@ -551,6 +1091,17 @@ app.registerExtension({
                 if (Math.abs(px - (rx + rw)) <= hs && Math.abs(py - ry) <= hs) return "ne";
                 if (Math.abs(px - (rx + rw)) <= hs && Math.abs(py - (ry + rh)) <= hs) return "se";
                 if (Math.abs(px - rx) <= hs && Math.abs(py - (ry + rh)) <= hs) return "sw";
+                return null;
+            }
+
+            function hitTestCharacter(x, y) {
+                const instances = getCharacterInstances();
+                for (let i = instances.length - 1; i >= 0; i--) {
+                    const b = instances[i].area || { x: 0, y: 0, w: 0, h: 0 };
+                    if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
+                        return instances[i];
+                    }
+                }
                 return null;
             }
 
@@ -568,87 +1119,217 @@ app.registerExtension({
             canvas.onmousedown = (e) => {
                 const pos = getCanvasNormPos(e);
                 const scenes = getScenes();
-                const curScene = scenes[selectedSceneIndex];
+                const allInstances = getCharacterInstances();
 
-                if (curScene) {
-                    const handle = hitTestHandle(curScene, pos.px, pos.py);
+                // 1. Check if clicking selected character handle
+                if (selectedInstanceId) {
+                    const curInst = allInstances.find(i => i.instance_id === selectedInstanceId);
+                    if (curInst) {
+                        const h = hitTestHandle(curInst.area, pos.px, pos.py);
+                        if (h) {
+                            isDragging = true;
+                            dragTarget = "character";
+                            dragMode = h;
+                            dragStartX = pos.x;
+                            dragStartY = pos.y;
+                            dragStartInstArea = { ...curInst.area };
+                            return;
+                        }
+                    }
+                }
+
+                // 2. Check if clicking any character box
+                const hitChar = hitTestCharacter(pos.x, pos.y);
+                if (hitChar) {
+                    selectedInstanceId = hitChar.instance_id;
+                    const pSceneIdx = scenes.findIndex(s => s.scene_id === hitChar.scene_id);
+                    if (pSceneIdx !== -1) selectedSceneIndex = pSceneIdx;
+
+                    isDragging = true;
+                    dragTarget = "character";
+                    dragMode = "move";
+                    dragStartX = pos.x;
+                    dragStartY = pos.y;
+                    dragStartInstArea = { ...hitChar.area };
+                    renderAll();
+                    return;
+                }
+
+                // 3. Check if clicking selected scene handle
+                const curScene = scenes[selectedSceneIndex];
+                if (curScene && !selectedInstanceId) {
+                    const handle = hitTestHandle(curScene.area, pos.px, pos.py);
                     if (handle) {
                         isDragging = true;
+                        dragTarget = "scene";
                         dragMode = handle;
                         dragStartX = pos.x;
                         dragStartY = pos.y;
-                        dragStartArea = { ...curScene.area };
+                        dragStartSceneArea = { ...curScene.area };
+                        dragStartChildAreas = allInstances
+                            .filter(i => i.scene_id === curScene.scene_id)
+                            .map(i => ({ id: i.instance_id, area: { ...i.area } }));
                         return;
                     }
                 }
 
+                // 4. Check if clicking any scene box
                 const hitIdx = hitTestScene(pos.x, pos.y);
                 if (hitIdx !== -1) {
                     selectedSceneIndex = hitIdx;
+                    selectedInstanceId = null;
                     isDragging = true;
+                    dragTarget = "scene";
                     dragMode = "move";
                     dragStartX = pos.x;
                     dragStartY = pos.y;
-                    dragStartArea = { ...scenes[hitIdx].area };
+                    dragStartSceneArea = { ...scenes[hitIdx].area };
+                    dragStartChildAreas = allInstances
+                        .filter(i => i.scene_id === scenes[hitIdx].scene_id)
+                        .map(i => ({ id: i.instance_id, area: { ...i.area } }));
                     renderAll();
                 } else {
-                    renderCanvas();
+                    selectedInstanceId = null;
+                    renderAll();
                 }
             };
 
             const onWindowMouseMove = (e) => {
-                const scenes = getScenes();
-                if (!isDragging || !dragStartArea || selectedSceneIndex < 0 || selectedSceneIndex >= scenes.length) return;
+                if (!isDragging) return;
                 const pos = getCanvasNormPos(e);
                 const dx = pos.x - dragStartX;
                 const dy = pos.y - dragStartY;
-                const b = scenes[selectedSceneIndex].area;
+                const scenes = getScenes();
+                const allInstances = getCharacterInstances();
 
-                if (dragMode === "move") {
-                    let newX = dragStartArea.x + dx;
-                    let newY = dragStartArea.y + dy;
-                    newX = Math.max(0, Math.min(1 - dragStartArea.w, newX));
-                    newY = Math.max(0, Math.min(1 - dragStartArea.h, newY));
-                    b.x = parseFloat(newX.toFixed(4));
-                    b.y = parseFloat(newY.toFixed(4));
-                } else if (dragMode === "se") {
-                    const newW = Math.max(0.1, Math.min(1 - dragStartArea.x, dragStartArea.w + dx));
-                    const newH = Math.max(0.08, Math.min(1 - dragStartArea.y, dragStartArea.h + dy));
-                    b.w = parseFloat(newW.toFixed(4));
-                    b.h = parseFloat(newH.toFixed(4));
-                } else if (dragMode === "nw") {
-                    const maxRight = dragStartArea.x + dragStartArea.w;
-                    const maxBottom = dragStartArea.y + dragStartArea.h;
-                    const newX = Math.max(0, Math.min(maxRight - 0.1, dragStartArea.x + dx));
-                    const newY = Math.max(0, Math.min(maxBottom - 0.08, dragStartArea.y + dy));
-                    b.x = parseFloat(newX.toFixed(4));
-                    b.y = parseFloat(newY.toFixed(4));
-                    b.w = parseFloat((maxRight - newX).toFixed(4));
-                    b.h = parseFloat((maxBottom - newY).toFixed(4));
-                } else if (dragMode === "ne") {
-                    const maxBottom = dragStartArea.y + dragStartArea.h;
-                    const newW = Math.max(0.1, Math.min(1 - dragStartArea.x, dragStartArea.w + dx));
-                    const newY = Math.max(0, Math.min(maxBottom - 0.08, dragStartArea.y + dy));
-                    b.y = parseFloat(newY.toFixed(4));
-                    b.w = parseFloat(newW.toFixed(4));
-                    b.h = parseFloat((maxBottom - newY).toFixed(4));
-                } else if (dragMode === "sw") {
-                    const maxRight = dragStartArea.x + dragStartArea.w;
-                    const newX = Math.max(0, Math.min(maxRight - 0.1, dragStartArea.x + dx));
-                    const newH = Math.max(0.08, Math.min(1 - dragStartArea.y, dragStartArea.h + dy));
-                    b.x = parseFloat(newX.toFixed(4));
-                    b.w = parseFloat((maxRight - newX).toFixed(4));
-                    b.h = parseFloat(newH.toFixed(4));
+                if (dragTarget === "character") {
+                    const curInst = allInstances.find(i => i.instance_id === selectedInstanceId);
+                    if (!curInst || !dragStartInstArea) return;
+                    const b = curInst.area;
+                    const parentScene = scenes.find(s => s.scene_id === curInst.scene_id);
+                    const sb = parentScene ? parentScene.area : { x: 0, y: 0, w: 1, h: 1 };
+
+                    if (dragMode === "move") {
+                        let nx = dragStartInstArea.x + dx;
+                        let ny = dragStartInstArea.y + dy;
+                        nx = Math.max(sb.x, Math.min(sb.x + sb.w - dragStartInstArea.w, nx));
+                        ny = Math.max(sb.y, Math.min(sb.y + sb.h - dragStartInstArea.h, ny));
+                        b.x = parseFloat(nx.toFixed(4));
+                        b.y = parseFloat(ny.toFixed(4));
+                    } else if (dragMode === "se") {
+                        const nw = Math.max(0.04, Math.min(sb.x + sb.w - dragStartInstArea.x, dragStartInstArea.w + dx));
+                        const nh = Math.max(0.04, Math.min(sb.y + sb.h - dragStartInstArea.y, dragStartInstArea.h + dy));
+                        b.w = parseFloat(nw.toFixed(4));
+                        b.h = parseFloat(nh.toFixed(4));
+                    } else if (dragMode === "nw") {
+                        const maxRight = dragStartInstArea.x + dragStartInstArea.w;
+                        const maxBottom = dragStartInstArea.y + dragStartInstArea.h;
+                        const nx = Math.max(sb.x, Math.min(maxRight - 0.04, dragStartInstArea.x + dx));
+                        const ny = Math.max(sb.y, Math.min(maxBottom - 0.04, dragStartInstArea.y + dy));
+                        b.x = parseFloat(nx.toFixed(4));
+                        b.y = parseFloat(ny.toFixed(4));
+                        b.w = parseFloat((maxRight - nx).toFixed(4));
+                        b.h = parseFloat((maxBottom - ny).toFixed(4));
+                    } else if (dragMode === "ne") {
+                        const maxBottom = dragStartInstArea.y + dragStartInstArea.h;
+                        const nw = Math.max(0.04, Math.min(sb.x + sb.w - dragStartInstArea.x, dragStartInstArea.w + dx));
+                        const ny = Math.max(sb.y, Math.min(maxBottom - 0.04, dragStartInstArea.y + dy));
+                        b.y = parseFloat(ny.toFixed(4));
+                        b.w = parseFloat(nw.toFixed(4));
+                        b.h = parseFloat((maxBottom - ny).toFixed(4));
+                    } else if (dragMode === "sw") {
+                        const maxRight = dragStartInstArea.x + dragStartInstArea.w;
+                        const nx = Math.max(sb.x, Math.min(maxRight - 0.04, dragStartInstArea.x + dx));
+                        const nh = Math.max(0.04, Math.min(sb.y + sb.h - dragStartInstArea.y, dragStartInstArea.h + dy));
+                        b.x = parseFloat(nx.toFixed(4));
+                        b.w = parseFloat((maxRight - nx).toFixed(4));
+                        b.h = parseFloat(nh.toFixed(4));
+                    }
+                    renderCanvas();
+                    return;
                 }
 
-                renderCanvas();
+                if (dragTarget === "scene") {
+                    if (!dragStartSceneArea || selectedSceneIndex < 0 || selectedSceneIndex >= scenes.length) return;
+                    const curScene = scenes[selectedSceneIndex];
+                    const sb = curScene.area;
+
+                    if (dragMode === "move") {
+                        let newX = dragStartSceneArea.x + dx;
+                        let newY = dragStartSceneArea.y + dy;
+                        newX = Math.max(0, Math.min(1 - dragStartSceneArea.w, newX));
+                        newY = Math.max(0, Math.min(1 - dragStartSceneArea.h, newY));
+                        const effectiveDx = newX - dragStartSceneArea.x;
+                        const effectiveDy = newY - dragStartSceneArea.y;
+
+                        sb.x = parseFloat(newX.toFixed(4));
+                        sb.y = parseFloat(newY.toFixed(4));
+
+                        dragStartChildAreas.forEach(cRecord => {
+                            const inst = allInstances.find(i => i.instance_id === cRecord.id);
+                            if (inst && inst.area) {
+                                inst.area.x = parseFloat((cRecord.area.x + effectiveDx).toFixed(4));
+                                inst.area.y = parseFloat((cRecord.area.y + effectiveDy).toFixed(4));
+                            }
+                        });
+                    } else {
+                        if (dragMode === "se") {
+                            const nw = Math.max(0.1, Math.min(1 - dragStartSceneArea.x, dragStartSceneArea.w + dx));
+                            const nh = Math.max(0.08, Math.min(1 - dragStartSceneArea.y, dragStartSceneArea.h + dy));
+                            sb.w = parseFloat(nw.toFixed(4));
+                            sb.h = parseFloat(nh.toFixed(4));
+                        } else if (dragMode === "nw") {
+                            const maxRight = dragStartSceneArea.x + dragStartSceneArea.w;
+                            const maxBottom = dragStartSceneArea.y + dragStartSceneArea.h;
+                            const nx = Math.max(0, Math.min(maxRight - 0.1, dragStartSceneArea.x + dx));
+                            const ny = Math.max(0, Math.min(maxBottom - 0.08, dragStartSceneArea.y + dy));
+                            sb.x = parseFloat(nx.toFixed(4));
+                            sb.y = parseFloat(ny.toFixed(4));
+                            sb.w = parseFloat((maxRight - nx).toFixed(4));
+                            sb.h = parseFloat((maxBottom - ny).toFixed(4));
+                        } else if (dragMode === "ne") {
+                            const maxBottom = dragStartSceneArea.y + dragStartSceneArea.h;
+                            const nw = Math.max(0.1, Math.min(1 - dragStartSceneArea.x, dragStartSceneArea.w + dx));
+                            const ny = Math.max(0.08, Math.min(maxBottom - 0.08, dragStartSceneArea.y + dy));
+                            sb.y = parseFloat(ny.toFixed(4));
+                            sb.w = parseFloat(nw.toFixed(4));
+                            sb.h = parseFloat((maxBottom - ny).toFixed(4));
+                        } else if (dragMode === "sw") {
+                            const maxRight = dragStartSceneArea.x + dragStartSceneArea.w;
+                            const nx = Math.max(0, Math.min(maxRight - 0.1, dragStartSceneArea.x + dx));
+                            const nh = Math.max(0.08, Math.min(1 - dragStartSceneArea.y, dragStartSceneArea.h + dy));
+                            sb.x = parseFloat(nx.toFixed(4));
+                            sb.w = parseFloat((maxRight - nx).toFixed(4));
+                            sb.h = parseFloat(nh.toFixed(4));
+                        }
+
+                        dragStartChildAreas.forEach(cRecord => {
+                            const inst = allInstances.find(i => i.instance_id === cRecord.id);
+                            if (inst && inst.area) {
+                                const relX = (cRecord.area.x - dragStartSceneArea.x) / Math.max(dragStartSceneArea.w, 1e-6);
+                                const relY = (cRecord.area.y - dragStartSceneArea.y) / Math.max(dragStartSceneArea.h, 1e-6);
+                                const relW = cRecord.area.w / Math.max(dragStartSceneArea.w, 1e-6);
+                                const relH = cRecord.area.h / Math.max(dragStartSceneArea.h, 1e-6);
+
+                                inst.area.x = parseFloat((sb.x + relX * sb.w).toFixed(4));
+                                inst.area.y = parseFloat((sb.y + relY * sb.h).toFixed(4));
+                                inst.area.w = parseFloat((relW * sb.w).toFixed(4));
+                                inst.area.h = parseFloat((relH * sb.h).toFixed(4));
+                            }
+                        });
+                    }
+                    renderCanvas();
+                }
             };
 
             const onWindowMouseUp = () => {
                 if (isDragging) {
                     isDragging = false;
+                    dragTarget = "none";
                     dragMode = "none";
-                    dragStartArea = null;
+                    dragStartSceneArea = null;
+                    dragStartInstArea = null;
+                    dragStartChildAreas = [];
                     syncToWidgets();
                     renderAll();
                 }

@@ -118,9 +118,6 @@ class TegakiMinimumHandSceneEditor:
                 "resolution": (["Portrait 832x1216", "Landscape 1216x832", "Square 1024x1024"], {
                     "default": "Portrait 832x1216"
                 }),
-                "spatial_hint_mode": (["off", "horizontal", "horizontal_presence", "spatial_depth", "full"], {
-                    "default": "off"
-                }),
             }
         }
 
@@ -151,7 +148,8 @@ class TegakiMinimumHandSceneEditor:
         seed: int = 42,
         style_template: str = None,
         resolution: str = None,
-        spatial_hint_mode: str = "off",
+        spatial_hint_mode: str = "auto",
+        **kwargs,
     ) -> Tuple[Any, Any, int, int, int, str, str]:
         # Parse document JSON
         raw_text = (document_json or "").strip()
@@ -214,14 +212,16 @@ class TegakiMinimumHandSceneEditor:
         page["generation"]["seed"] = int(seed)
         effective_seed = int(seed)
 
-        # Compile to PAGE_COMPILE_PLAN (validates M1 constraints: >=1 scene, <=6 scenes)
-        page_compile_plan = compile_document_to_page_plan(doc, spatial_hint_mode=spatial_hint_mode)
+        effective_hint_mode = kwargs.get("spatial_hint_mode", spatial_hint_mode) or "auto"
+        # Compile to PAGE_COMPILE_PLAN (validates M1/M2 constraints: >=1 scene, <=6 scenes)
+        page_compile_plan = compile_document_to_page_plan(doc, spatial_hint_mode=effective_hint_mode)
 
         # Generate preview image tensor [1, H, W, 3]
         preview_tensor = generate_scene_regions_preview_tensor(doc)
 
         # Generate debug json
-        debug_info = get_execution_debug_info(doc, seed=effective_seed, spatial_hint_mode=spatial_hint_mode)
+        debug_info = get_execution_debug_info(doc, seed=effective_seed, spatial_hint_mode=effective_hint_mode)
+        debug_info["spatial_policy"] = "auto"
         debug_info["widget_seed"] = int(seed)
         debug_str = json.dumps(debug_info, indent=2, ensure_ascii=False)
 
