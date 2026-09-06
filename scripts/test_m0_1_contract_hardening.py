@@ -36,7 +36,9 @@ _ac = _import_module(
     os.path.join(_NODES_DIR, "authoring_contract.py"),
 )
 
-sys.modules["tegaki_manga_nodes"] = type(sys)("tegaki_manga_nodes")
+pkg = type(sys)("tegaki_manga_nodes")
+pkg.__path__ = [_NODES_DIR]
+sys.modules["tegaki_manga_nodes"] = pkg
 sys.modules["tegaki_manga_nodes.authoring_contract"] = _ac
 
 _mig_spec = importlib.util.spec_from_file_location(

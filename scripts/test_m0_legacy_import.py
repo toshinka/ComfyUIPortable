@@ -30,7 +30,9 @@ _ac = _import_module(
 )
 
 # Patch for relative imports in authoring_migration
-sys.modules["tegaki_manga_nodes"] = type(sys)("tegaki_manga_nodes")
+pkg = type(sys)("tegaki_manga_nodes")
+pkg.__path__ = [_NODES_DIR]
+sys.modules["tegaki_manga_nodes"] = pkg
 sys.modules["tegaki_manga_nodes.authoring_contract"] = _ac
 
 # Import authoring_migration

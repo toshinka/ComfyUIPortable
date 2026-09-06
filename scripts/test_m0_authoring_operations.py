@@ -29,7 +29,9 @@ _ac = _import_module(
 )
 
 # Patch the relative import that authoring_operations expects
-sys.modules["tegaki_manga_nodes"] = type(sys)("tegaki_manga_nodes")
+pkg = type(sys)("tegaki_manga_nodes")
+pkg.__path__ = [_NODES_DIR]
+sys.modules["tegaki_manga_nodes"] = pkg
 sys.modules["tegaki_manga_nodes.authoring_contract"] = _ac
 
 # Now import authoring_operations with the patched parent
