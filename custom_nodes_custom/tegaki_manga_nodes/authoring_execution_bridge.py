@@ -40,6 +40,10 @@ from .scene_spec import (
     SUPPORTED_COMPILE_PLAN_VERSION,
     SUPPORTED_PAGE_COMPILE_PLAN_VERSION,
 )
+from .spatial_hint_compiler import (
+    compile_scene_spatial_hints,
+    SUPPORTED_HINT_MODES,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -182,10 +186,12 @@ def compile_document_to_page_plan(
     doc: Dict[str, Any],
     page_index: int = 0,
     allow_cast: bool = True,
+    spatial_hint_mode: str = "off",
 ) -> Dict[str, Any]:
     """
     Compile TEGAKI_AUTHORING_DOCUMENT into a validated PAGE_COMPILE_PLAN v1 dict.
     Supports both M1 simple scene documents and M2A CAST/Character Instance documents.
+    In M2A.1, supports transparent compile-time spatial prompt hints without mutating doc SSOT.
     """
     page, warnings = validate_authoring_execution_document(doc, page_index, allow_cast=allow_cast)
 
@@ -222,18 +228,32 @@ def compile_document_to_page_plan(
         scene_neg = scene.get("negative_prompt", "")
 
         compiled_characters = []
+        scene_presence_hint = ""
+
         if allow_cast and input_mode == "cast":
             scene_insts = sorted(
                 instances_by_scene.get(scene_id, []),
                 key=lambda i: i.get("order", 0)
             )
+            hint_map, scene_presence_hint = compile_scene_spatial_hints(
+                scene=scene,
+                instances=scene_insts,
+                cast_by_id=cast_by_id,
+                mode=spatial_hint_mode,
+            )
+
             for inst in scene_insts:
                 cast_master = cast_by_id[inst["cast_id"]]
                 c_display_name = cast_master.get("display_name") or inst["cast_id"]
-                c_id_prompt = cast_master.get("identity_prompt", "").strip()
-                c_act_prompt = inst.get("acting_prompt", "").strip()
-                c_pos_parts = [p for p in [c_id_prompt, c_act_prompt] if p]
-                combined_c_prompt = ", ".join(c_pos_parts)
+                hint_data = hint_map.get(inst.get("instance_id"), {})
+
+                c_id_prompt = hint_data.get("raw_identity_prompt", cast_master.get("identity_prompt", "").strip())
+                c_act_prompt = hint_data.get("raw_acting_prompt", inst.get("acting_prompt", "").strip())
+                derived_spatial_hint = hint_data.get("derived_spatial_hint", "")
+                effective_c_prompt = hint_data.get("effective_character_prompt")
+                if effective_c_prompt is None:
+                    c_pos_parts = [p for p in [c_id_prompt, c_act_prompt] if p]
+                    effective_c_prompt = ", ".join(c_pos_parts)
 
                 c_id_neg = cast_master.get("negative_prompt", "").strip()
                 c_act_neg = inst.get("negative_prompt_override", "").strip()
@@ -247,7 +267,13 @@ def compile_document_to_page_plan(
                     "name": c_display_name,
                     "base_prompt": c_id_prompt,
                     "override_prompt": c_act_prompt,
-                    "combined_prompt": combined_c_prompt,
+                    "combined_prompt": effective_c_prompt,
+                    "raw_identity_prompt": c_id_prompt,
+                    "raw_acting_prompt": c_act_prompt,
+                    "derived_spatial_hint": derived_spatial_hint,
+                    "scene_presence_hint": scene_presence_hint,
+                    "effective_character_prompt": effective_c_prompt,
+                    "derived_hints_metadata": hint_data.get("derived_hints_metadata", {}),
                     "base_negative_prompt": c_id_neg,
                     "override_negative_prompt": c_act_neg,
                     "combined_negative_prompt": combined_c_neg,
@@ -260,11 +286,14 @@ def compile_document_to_page_plan(
                         "scene_id": scene_id,
                         "order": inst.get("order", 0),
                         "display_name": c_display_name,
+                        "spatial_hint_mode": spatial_hint_mode,
                     },
                 }
                 compiled_characters.append(compiled_c)
 
         prompt_parts = [p for p in [style_prompt, scene_prompt] if p]
+        if scene_presence_hint:
+            prompt_parts.append(scene_presence_hint)
         compiled_prompt = ", ".join(prompt_parts)
         neg_parts = [p for p in [style_neg, scene_neg] if p]
         compiled_neg = ", ".join(neg_parts)
@@ -434,9 +463,11 @@ def get_execution_debug_info(
     doc: Dict[str, Any],
     page_index: int = 0,
     seed: Optional[int] = None,
+    spatial_hint_mode: str = "off",
 ) -> Dict[str, Any]:
     """
-    Generate structured debug info per Card §76.
+    Extract execution debug info dictionary for verification manifest.
+    In M2A.1, includes transparent provenance for derived spatial hints.
     """
     page, warnings = validate_authoring_execution_document(doc, page_index, allow_cast=True)
     scenes = page.get("scenes", [])
@@ -448,6 +479,21 @@ def get_execution_debug_info(
     h_px = int(page.get("height_px", 1216))
     doc_seed = int(gen.get("seed", 42))
     effective_seed = seed if seed is not None else doc_seed
+
+    plan = compile_document_to_page_plan(doc, page_index=page_index, allow_cast=True, spatial_hint_mode=spatial_hint_mode)
+    compiled_characters_debug = []
+    for p in plan.get("panels", []):
+        for c in p.get("characters", []):
+            compiled_characters_debug.append({
+                "instance_id": c.get("instance_id"),
+                "character_id": c.get("character_id"),
+                "raw_identity_prompt": c.get("raw_identity_prompt"),
+                "raw_acting_prompt": c.get("raw_acting_prompt"),
+                "derived_spatial_hint": c.get("derived_spatial_hint"),
+                "scene_presence_hint": c.get("scene_presence_hint"),
+                "effective_character_prompt": c.get("effective_character_prompt"),
+                "derived_hints_metadata": c.get("derived_hints_metadata", {}),
+            })
 
     return {
         "schema_id": doc.get("schema_id", SCHEMA_ID),
@@ -498,6 +544,8 @@ def get_execution_debug_info(
             for i in instances
         ],
         "style_template": page.get("metadata", {}).get("style_template", "Manga Monochrome"),
+        "spatial_hint_mode": spatial_hint_mode,
+        "compiled_characters": compiled_characters_debug,
         "seed": effective_seed,
         "backend_path": "ComfyUI Core Masked Conditioning (PAGE_COMPILE_PLAN -> TegakiMangaConditioningBuilder -> KSampler)",
         "profile": "fast_draft_12 / reference",

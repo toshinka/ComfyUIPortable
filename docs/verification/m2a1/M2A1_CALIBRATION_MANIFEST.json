@@ -1,0 +1,3521 @@
+{
+  "milestone": "M2A.1",
+  "title": "M2A.1 Prompt Region Calibration & ControlNet Gate Manifest",
+  "timestamp": "2026-09-06 11:48:42",
+  "checkpoint": "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors",
+  "seeds": [
+    42,
+    77,
+    101,
+    133,
+    202,
+    303,
+    404,
+    505
+  ],
+  "conditions_total": 101,
+  "conditions_completed": 101,
+  "entries": [
+    {
+      "condition_id": "B0_baseline_s42",
+      "suite": "B",
+      "seed": 42,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        }
+      ],
+      "elapsed_seconds": 28.04,
+      "output_path": "docs/verification/m2a1/B0_baseline_s42.png"
+    },
+    {
+      "condition_id": "B1_horiz_s42",
+      "suite": "B",
+      "seed": 42,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.25,
+      "output_path": "docs/verification/m2a1/B1_horiz_s42.png"
+    },
+    {
+      "condition_id": "B2_presence_s42",
+      "suite": "B",
+      "seed": 42,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background, two distinct people, same scene, both fully visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.08,
+      "output_path": "docs/verification/m2a1/B2_presence_s42.png"
+    },
+    {
+      "condition_id": "B0_baseline_s77",
+      "suite": "B",
+      "seed": 77,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        }
+      ],
+      "elapsed_seconds": 24.12,
+      "output_path": "docs/verification/m2a1/B0_baseline_s77.png"
+    },
+    {
+      "condition_id": "B1_horiz_s77",
+      "suite": "B",
+      "seed": 77,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.17,
+      "output_path": "docs/verification/m2a1/B1_horiz_s77.png"
+    },
+    {
+      "condition_id": "B2_presence_s77",
+      "suite": "B",
+      "seed": 77,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background, two distinct people, same scene, both fully visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the right side"
+        }
+      ],
+      "elapsed_seconds": 26.04,
+      "output_path": "docs/verification/m2a1/B2_presence_s77.png"
+    },
+    {
+      "condition_id": "B0_baseline_s101",
+      "suite": "B",
+      "seed": 101,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        }
+      ],
+      "elapsed_seconds": 24.44,
+      "output_path": "docs/verification/m2a1/B0_baseline_s101.png"
+    },
+    {
+      "condition_id": "B1_horiz_s101",
+      "suite": "B",
+      "seed": 101,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.32,
+      "output_path": "docs/verification/m2a1/B1_horiz_s101.png"
+    },
+    {
+      "condition_id": "B2_presence_s101",
+      "suite": "B",
+      "seed": 101,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background, two distinct people, same scene, both fully visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.35,
+      "output_path": "docs/verification/m2a1/B2_presence_s101.png"
+    },
+    {
+      "condition_id": "B0_baseline_s133",
+      "suite": "B",
+      "seed": 133,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        }
+      ],
+      "elapsed_seconds": 24.06,
+      "output_path": "docs/verification/m2a1/B0_baseline_s133.png"
+    },
+    {
+      "condition_id": "B1_horiz_s133",
+      "suite": "B",
+      "seed": 133,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.05,
+      "output_path": "docs/verification/m2a1/B1_horiz_s133.png"
+    },
+    {
+      "condition_id": "B2_presence_s133",
+      "suite": "B",
+      "seed": 133,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background, two distinct people, same scene, both fully visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.06,
+      "output_path": "docs/verification/m2a1/B2_presence_s133.png"
+    },
+    {
+      "condition_id": "B0_baseline_s202",
+      "suite": "B",
+      "seed": 202,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        }
+      ],
+      "elapsed_seconds": 24.14,
+      "output_path": "docs/verification/m2a1/B0_baseline_s202.png"
+    },
+    {
+      "condition_id": "B1_horiz_s202",
+      "suite": "B",
+      "seed": 202,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.15,
+      "output_path": "docs/verification/m2a1/B1_horiz_s202.png"
+    },
+    {
+      "condition_id": "B2_presence_s202",
+      "suite": "B",
+      "seed": 202,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background, two distinct people, same scene, both fully visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.19,
+      "output_path": "docs/verification/m2a1/B2_presence_s202.png"
+    },
+    {
+      "condition_id": "B0_baseline_s303",
+      "suite": "B",
+      "seed": 303,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        }
+      ],
+      "elapsed_seconds": 24.06,
+      "output_path": "docs/verification/m2a1/B0_baseline_s303.png"
+    },
+    {
+      "condition_id": "B1_horiz_s303",
+      "suite": "B",
+      "seed": 303,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.1,
+      "output_path": "docs/verification/m2a1/B1_horiz_s303.png"
+    },
+    {
+      "condition_id": "B2_presence_s303",
+      "suite": "B",
+      "seed": 303,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background, two distinct people, same scene, both fully visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.2,
+      "output_path": "docs/verification/m2a1/B2_presence_s303.png"
+    },
+    {
+      "condition_id": "B0_baseline_s404",
+      "suite": "B",
+      "seed": 404,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        }
+      ],
+      "elapsed_seconds": 24.26,
+      "output_path": "docs/verification/m2a1/B0_baseline_s404.png"
+    },
+    {
+      "condition_id": "B1_horiz_s404",
+      "suite": "B",
+      "seed": 404,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.04,
+      "output_path": "docs/verification/m2a1/B1_horiz_s404.png"
+    },
+    {
+      "condition_id": "B2_presence_s404",
+      "suite": "B",
+      "seed": 404,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background, two distinct people, same scene, both fully visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the right side"
+        }
+      ],
+      "elapsed_seconds": 26.02,
+      "output_path": "docs/verification/m2a1/B2_presence_s404.png"
+    },
+    {
+      "condition_id": "B0_baseline_s505",
+      "suite": "B",
+      "seed": 505,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        }
+      ],
+      "elapsed_seconds": 24.37,
+      "output_path": "docs/verification/m2a1/B0_baseline_s505.png"
+    },
+    {
+      "condition_id": "B1_horiz_s505",
+      "suite": "B",
+      "seed": 505,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.19,
+      "output_path": "docs/verification/m2a1/B1_horiz_s505.png"
+    },
+    {
+      "condition_id": "B2_presence_s505",
+      "suite": "B",
+      "seed": 505,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background, two distinct people, same scene, both fully visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.35,
+      "output_path": "docs/verification/m2a1/B2_presence_s505.png"
+    },
+    {
+      "condition_id": "B0_swap_s42",
+      "suite": "B-Swap",
+      "seed": 42,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        },
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        }
+      ],
+      "elapsed_seconds": 24.21,
+      "output_path": "docs/verification/m2a1/B0_swap_s42.png"
+    },
+    {
+      "condition_id": "B1_swap_s42",
+      "suite": "B-Swap",
+      "seed": 42,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the left side"
+        },
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.26,
+      "output_path": "docs/verification/m2a1/B1_swap_s42.png"
+    },
+    {
+      "condition_id": "B2_swap_s42",
+      "suite": "B-Swap",
+      "seed": 42,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background, two distinct people, same scene, both fully visible",
+      "characters": [
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the left side"
+        },
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.12,
+      "output_path": "docs/verification/m2a1/B2_swap_s42.png"
+    },
+    {
+      "condition_id": "B0_swap_s101",
+      "suite": "B-Swap",
+      "seed": 101,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        },
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        }
+      ],
+      "elapsed_seconds": 24.1,
+      "output_path": "docs/verification/m2a1/B0_swap_s101.png"
+    },
+    {
+      "condition_id": "B1_swap_s101",
+      "suite": "B-Swap",
+      "seed": 101,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the left side"
+        },
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.21,
+      "output_path": "docs/verification/m2a1/B1_swap_s101.png"
+    },
+    {
+      "condition_id": "B2_swap_s101",
+      "suite": "B-Swap",
+      "seed": 101,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background, two distinct people, same scene, both fully visible",
+      "characters": [
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the left side"
+        },
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.06,
+      "output_path": "docs/verification/m2a1/B2_swap_s101.png"
+    },
+    {
+      "condition_id": "B0_swap_s202",
+      "suite": "B-Swap",
+      "seed": 202,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        },
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        }
+      ],
+      "elapsed_seconds": 24.2,
+      "output_path": "docs/verification/m2a1/B0_swap_s202.png"
+    },
+    {
+      "condition_id": "B1_swap_s202",
+      "suite": "B-Swap",
+      "seed": 202,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the left side"
+        },
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.11,
+      "output_path": "docs/verification/m2a1/B1_swap_s202.png"
+    },
+    {
+      "condition_id": "B2_swap_s202",
+      "suite": "B-Swap",
+      "seed": 202,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "classroom, daytime, desks, windows, simple background, two distinct people, same scene, both fully visible",
+      "characters": [
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, on the left side"
+        },
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "two distinct people, same scene, both fully visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the right side"
+        }
+      ],
+      "elapsed_seconds": 24.1,
+      "output_path": "docs/verification/m2a1/B2_swap_s202.png"
+    },
+    {
+      "condition_id": "C0_long_s42",
+      "suite": "C",
+      "seed": 42,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "close foreground, upper body prominently in foreground",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, close foreground, upper body prominently in foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "far in the background, small distant full body",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, far in the background, small distant full body"
+        }
+      ],
+      "elapsed_seconds": 24.19,
+      "output_path": "docs/verification/m2a1/C0_long_s42.png"
+    },
+    {
+      "condition_id": "C1_short_s42",
+      "suite": "C",
+      "seed": 42,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "large in foreground",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, large in foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "smaller in background",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, smaller in background"
+        }
+      ],
+      "elapsed_seconds": 24.07,
+      "output_path": "docs/verification/m2a1/C1_short_s42.png"
+    },
+    {
+      "condition_id": "C2_geom_s42",
+      "suite": "C",
+      "seed": 42,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, standing casually"
+        }
+      ],
+      "elapsed_seconds": 24.08,
+      "output_path": "docs/verification/m2a1/C2_geom_s42.png"
+    },
+    {
+      "condition_id": "C3_depth_hint_s42",
+      "suite": "C",
+      "seed": 42,
+      "hint_mode": "spatial_depth",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "large in the foreground",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, large in the foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "smaller in the background",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, standing casually, smaller in the background"
+        }
+      ],
+      "elapsed_seconds": 24.11,
+      "output_path": "docs/verification/m2a1/C3_depth_hint_s42.png"
+    },
+    {
+      "condition_id": "C0_long_s77",
+      "suite": "C",
+      "seed": 77,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "close foreground, upper body prominently in foreground",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, close foreground, upper body prominently in foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "far in the background, small distant full body",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, far in the background, small distant full body"
+        }
+      ],
+      "elapsed_seconds": 24.04,
+      "output_path": "docs/verification/m2a1/C0_long_s77.png"
+    },
+    {
+      "condition_id": "C1_short_s77",
+      "suite": "C",
+      "seed": 77,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "large in foreground",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, large in foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "smaller in background",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, smaller in background"
+        }
+      ],
+      "elapsed_seconds": 24.1,
+      "output_path": "docs/verification/m2a1/C1_short_s77.png"
+    },
+    {
+      "condition_id": "C2_geom_s77",
+      "suite": "C",
+      "seed": 77,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, standing casually"
+        }
+      ],
+      "elapsed_seconds": 24.04,
+      "output_path": "docs/verification/m2a1/C2_geom_s77.png"
+    },
+    {
+      "condition_id": "C3_depth_hint_s77",
+      "suite": "C",
+      "seed": 77,
+      "hint_mode": "spatial_depth",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "large in the foreground",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, large in the foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "smaller in the background",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, standing casually, smaller in the background"
+        }
+      ],
+      "elapsed_seconds": 24.14,
+      "output_path": "docs/verification/m2a1/C3_depth_hint_s77.png"
+    },
+    {
+      "condition_id": "C0_long_s101",
+      "suite": "C",
+      "seed": 101,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "close foreground, upper body prominently in foreground",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, close foreground, upper body prominently in foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "far in the background, small distant full body",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, far in the background, small distant full body"
+        }
+      ],
+      "elapsed_seconds": 24.06,
+      "output_path": "docs/verification/m2a1/C0_long_s101.png"
+    },
+    {
+      "condition_id": "C1_short_s101",
+      "suite": "C",
+      "seed": 101,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "large in foreground",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, large in foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "smaller in background",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, smaller in background"
+        }
+      ],
+      "elapsed_seconds": 24.04,
+      "output_path": "docs/verification/m2a1/C1_short_s101.png"
+    },
+    {
+      "condition_id": "C2_geom_s101",
+      "suite": "C",
+      "seed": 101,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, standing casually"
+        }
+      ],
+      "elapsed_seconds": 26.03,
+      "output_path": "docs/verification/m2a1/C2_geom_s101.png"
+    },
+    {
+      "condition_id": "C3_depth_hint_s101",
+      "suite": "C",
+      "seed": 101,
+      "hint_mode": "spatial_depth",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "large in the foreground",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, large in the foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "smaller in the background",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, standing casually, smaller in the background"
+        }
+      ],
+      "elapsed_seconds": 24.33,
+      "output_path": "docs/verification/m2a1/C3_depth_hint_s101.png"
+    },
+    {
+      "condition_id": "C0_long_s133",
+      "suite": "C",
+      "seed": 133,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "close foreground, upper body prominently in foreground",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, close foreground, upper body prominently in foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "far in the background, small distant full body",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, far in the background, small distant full body"
+        }
+      ],
+      "elapsed_seconds": 24.38,
+      "output_path": "docs/verification/m2a1/C0_long_s133.png"
+    },
+    {
+      "condition_id": "C1_short_s133",
+      "suite": "C",
+      "seed": 133,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "large in foreground",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, large in foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "smaller in background",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, smaller in background"
+        }
+      ],
+      "elapsed_seconds": 24.42,
+      "output_path": "docs/verification/m2a1/C1_short_s133.png"
+    },
+    {
+      "condition_id": "C2_geom_s133",
+      "suite": "C",
+      "seed": 133,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, standing casually"
+        }
+      ],
+      "elapsed_seconds": 24.22,
+      "output_path": "docs/verification/m2a1/C2_geom_s133.png"
+    },
+    {
+      "condition_id": "C3_depth_hint_s133",
+      "suite": "C",
+      "seed": 133,
+      "hint_mode": "spatial_depth",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "large in the foreground",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, large in the foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "smaller in the background",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, standing casually, smaller in the background"
+        }
+      ],
+      "elapsed_seconds": 24.04,
+      "output_path": "docs/verification/m2a1/C3_depth_hint_s133.png"
+    },
+    {
+      "condition_id": "C0_long_s202",
+      "suite": "C",
+      "seed": 202,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "close foreground, upper body prominently in foreground",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, close foreground, upper body prominently in foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "far in the background, small distant full body",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, far in the background, small distant full body"
+        }
+      ],
+      "elapsed_seconds": 24.02,
+      "output_path": "docs/verification/m2a1/C0_long_s202.png"
+    },
+    {
+      "condition_id": "C1_short_s202",
+      "suite": "C",
+      "seed": 202,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "large in foreground",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, large in foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "smaller in background",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, smaller in background"
+        }
+      ],
+      "elapsed_seconds": 24.05,
+      "output_path": "docs/verification/m2a1/C1_short_s202.png"
+    },
+    {
+      "condition_id": "C2_geom_s202",
+      "suite": "C",
+      "seed": 202,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, standing casually"
+        }
+      ],
+      "elapsed_seconds": 24.07,
+      "output_path": "docs/verification/m2a1/C2_geom_s202.png"
+    },
+    {
+      "condition_id": "C3_depth_hint_s202",
+      "suite": "C",
+      "seed": 202,
+      "hint_mode": "spatial_depth",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "large in the foreground",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, large in the foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "smaller in the background",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, standing casually, smaller in the background"
+        }
+      ],
+      "elapsed_seconds": 24.07,
+      "output_path": "docs/verification/m2a1/C3_depth_hint_s202.png"
+    },
+    {
+      "condition_id": "C0_long_s303",
+      "suite": "C",
+      "seed": 303,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "close foreground, upper body prominently in foreground",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, close foreground, upper body prominently in foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "far in the background, small distant full body",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, far in the background, small distant full body"
+        }
+      ],
+      "elapsed_seconds": 24.04,
+      "output_path": "docs/verification/m2a1/C0_long_s303.png"
+    },
+    {
+      "condition_id": "C1_short_s303",
+      "suite": "C",
+      "seed": 303,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "large in foreground",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, large in foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "smaller in background",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, smaller in background"
+        }
+      ],
+      "elapsed_seconds": 24.07,
+      "output_path": "docs/verification/m2a1/C1_short_s303.png"
+    },
+    {
+      "condition_id": "C2_geom_s303",
+      "suite": "C",
+      "seed": 303,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, standing casually"
+        }
+      ],
+      "elapsed_seconds": 24.09,
+      "output_path": "docs/verification/m2a1/C2_geom_s303.png"
+    },
+    {
+      "condition_id": "C3_depth_hint_s303",
+      "suite": "C",
+      "seed": 303,
+      "hint_mode": "spatial_depth",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "large in the foreground",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, large in the foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "smaller in the background",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, standing casually, smaller in the background"
+        }
+      ],
+      "elapsed_seconds": 24.06,
+      "output_path": "docs/verification/m2a1/C3_depth_hint_s303.png"
+    },
+    {
+      "condition_id": "C0_long_s404",
+      "suite": "C",
+      "seed": 404,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "close foreground, upper body prominently in foreground",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, close foreground, upper body prominently in foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "far in the background, small distant full body",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, far in the background, small distant full body"
+        }
+      ],
+      "elapsed_seconds": 24.02,
+      "output_path": "docs/verification/m2a1/C0_long_s404.png"
+    },
+    {
+      "condition_id": "C1_short_s404",
+      "suite": "C",
+      "seed": 404,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "large in foreground",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, large in foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "smaller in background",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, smaller in background"
+        }
+      ],
+      "elapsed_seconds": 24.05,
+      "output_path": "docs/verification/m2a1/C1_short_s404.png"
+    },
+    {
+      "condition_id": "C2_geom_s404",
+      "suite": "C",
+      "seed": 404,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, standing casually"
+        }
+      ],
+      "elapsed_seconds": 24.4,
+      "output_path": "docs/verification/m2a1/C2_geom_s404.png"
+    },
+    {
+      "condition_id": "C3_depth_hint_s404",
+      "suite": "C",
+      "seed": 404,
+      "hint_mode": "spatial_depth",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "large in the foreground",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, large in the foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "smaller in the background",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, standing casually, smaller in the background"
+        }
+      ],
+      "elapsed_seconds": 24.17,
+      "output_path": "docs/verification/m2a1/C3_depth_hint_s404.png"
+    },
+    {
+      "condition_id": "C0_long_s505",
+      "suite": "C",
+      "seed": 505,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "close foreground, upper body prominently in foreground",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, close foreground, upper body prominently in foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "far in the background, small distant full body",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, far in the background, small distant full body"
+        }
+      ],
+      "elapsed_seconds": 24.12,
+      "output_path": "docs/verification/m2a1/C0_long_s505.png"
+    },
+    {
+      "condition_id": "C1_short_s505",
+      "suite": "C",
+      "seed": 505,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "large in foreground",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, large in foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "smaller in background",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, smaller in background"
+        }
+      ],
+      "elapsed_seconds": 24.06,
+      "output_path": "docs/verification/m2a1/C1_short_s505.png"
+    },
+    {
+      "condition_id": "C2_geom_s505",
+      "suite": "C",
+      "seed": 505,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, standing casually"
+        }
+      ],
+      "elapsed_seconds": 24.05,
+      "output_path": "docs/verification/m2a1/C2_geom_s505.png"
+    },
+    {
+      "condition_id": "C3_depth_hint_s505",
+      "suite": "C",
+      "seed": 505,
+      "hint_mode": "spatial_depth",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school hallway, lockers, windows, perspective hallway, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "large in the foreground",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, large in the foreground"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "smaller in the background",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, standing casually, smaller in the background"
+        }
+      ],
+      "elapsed_seconds": 24.09,
+      "output_path": "docs/verification/m2a1/C3_depth_hint_s505.png"
+    },
+    {
+      "condition_id": "H0_baseline_s42",
+      "suite": "H",
+      "seed": 42,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile"
+        }
+      ],
+      "elapsed_seconds": 32.06,
+      "output_path": "docs/verification/m2a1/H0_baseline_s42.png"
+    },
+    {
+      "condition_id": "H1_horiz_s42",
+      "suite": "H",
+      "seed": 42,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, centered"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile, on the right side"
+        }
+      ],
+      "elapsed_seconds": 32.06,
+      "output_path": "docs/verification/m2a1/H1_horiz_s42.png"
+    },
+    {
+      "condition_id": "H2_presence_s42",
+      "suite": "H",
+      "seed": 42,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background, three people, same scene, all visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, centered"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile, on the right side"
+        }
+      ],
+      "elapsed_seconds": 32.06,
+      "output_path": "docs/verification/m2a1/H2_presence_s42.png"
+    },
+    {
+      "condition_id": "H0_baseline_s77",
+      "suite": "H",
+      "seed": 77,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile"
+        }
+      ],
+      "elapsed_seconds": 32.05,
+      "output_path": "docs/verification/m2a1/H0_baseline_s77.png"
+    },
+    {
+      "condition_id": "H1_horiz_s77",
+      "suite": "H",
+      "seed": 77,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, centered"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile, on the right side"
+        }
+      ],
+      "elapsed_seconds": 32.07,
+      "output_path": "docs/verification/m2a1/H1_horiz_s77.png"
+    },
+    {
+      "condition_id": "H2_presence_s77",
+      "suite": "H",
+      "seed": 77,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background, three people, same scene, all visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, centered"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile, on the right side"
+        }
+      ],
+      "elapsed_seconds": 32.12,
+      "output_path": "docs/verification/m2a1/H2_presence_s77.png"
+    },
+    {
+      "condition_id": "H0_baseline_s101",
+      "suite": "H",
+      "seed": 101,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile"
+        }
+      ],
+      "elapsed_seconds": 32.06,
+      "output_path": "docs/verification/m2a1/H0_baseline_s101.png"
+    },
+    {
+      "condition_id": "H1_horiz_s101",
+      "suite": "H",
+      "seed": 101,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, centered"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile, on the right side"
+        }
+      ],
+      "elapsed_seconds": 32.05,
+      "output_path": "docs/verification/m2a1/H1_horiz_s101.png"
+    },
+    {
+      "condition_id": "H2_presence_s101",
+      "suite": "H",
+      "seed": 101,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background, three people, same scene, all visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, centered"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile, on the right side"
+        }
+      ],
+      "elapsed_seconds": 32.04,
+      "output_path": "docs/verification/m2a1/H2_presence_s101.png"
+    },
+    {
+      "condition_id": "H0_baseline_s133",
+      "suite": "H",
+      "seed": 133,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile"
+        }
+      ],
+      "elapsed_seconds": 32.05,
+      "output_path": "docs/verification/m2a1/H0_baseline_s133.png"
+    },
+    {
+      "condition_id": "H1_horiz_s133",
+      "suite": "H",
+      "seed": 133,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, centered"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile, on the right side"
+        }
+      ],
+      "elapsed_seconds": 32.05,
+      "output_path": "docs/verification/m2a1/H1_horiz_s133.png"
+    },
+    {
+      "condition_id": "H2_presence_s133",
+      "suite": "H",
+      "seed": 133,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background, three people, same scene, all visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, centered"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile, on the right side"
+        }
+      ],
+      "elapsed_seconds": 32.03,
+      "output_path": "docs/verification/m2a1/H2_presence_s133.png"
+    },
+    {
+      "condition_id": "H0_baseline_s202",
+      "suite": "H",
+      "seed": 202,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile"
+        }
+      ],
+      "elapsed_seconds": 32.05,
+      "output_path": "docs/verification/m2a1/H0_baseline_s202.png"
+    },
+    {
+      "condition_id": "H1_horiz_s202",
+      "suite": "H",
+      "seed": 202,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, centered"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile, on the right side"
+        }
+      ],
+      "elapsed_seconds": 32.03,
+      "output_path": "docs/verification/m2a1/H1_horiz_s202.png"
+    },
+    {
+      "condition_id": "H2_presence_s202",
+      "suite": "H",
+      "seed": 202,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background, three people, same scene, all visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, centered"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile, on the right side"
+        }
+      ],
+      "elapsed_seconds": 32.05,
+      "output_path": "docs/verification/m2a1/H2_presence_s202.png"
+    },
+    {
+      "condition_id": "H0_baseline_s303",
+      "suite": "H",
+      "seed": 303,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile"
+        }
+      ],
+      "elapsed_seconds": 32.05,
+      "output_path": "docs/verification/m2a1/H0_baseline_s303.png"
+    },
+    {
+      "condition_id": "H1_horiz_s303",
+      "suite": "H",
+      "seed": 303,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, centered"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile, on the right side"
+        }
+      ],
+      "elapsed_seconds": 32.03,
+      "output_path": "docs/verification/m2a1/H1_horiz_s303.png"
+    },
+    {
+      "condition_id": "H2_presence_s303",
+      "suite": "H",
+      "seed": 303,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background, three people, same scene, all visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, centered"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile, on the right side"
+        }
+      ],
+      "elapsed_seconds": 32.08,
+      "output_path": "docs/verification/m2a1/H2_presence_s303.png"
+    },
+    {
+      "condition_id": "H0_baseline_s404",
+      "suite": "H",
+      "seed": 404,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile"
+        }
+      ],
+      "elapsed_seconds": 32.06,
+      "output_path": "docs/verification/m2a1/H0_baseline_s404.png"
+    },
+    {
+      "condition_id": "H1_horiz_s404",
+      "suite": "H",
+      "seed": 404,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, centered"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile, on the right side"
+        }
+      ],
+      "elapsed_seconds": 32.08,
+      "output_path": "docs/verification/m2a1/H1_horiz_s404.png"
+    },
+    {
+      "condition_id": "H2_presence_s404",
+      "suite": "H",
+      "seed": 404,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background, three people, same scene, all visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, centered"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile, on the right side"
+        }
+      ],
+      "elapsed_seconds": 32.05,
+      "output_path": "docs/verification/m2a1/H2_presence_s404.png"
+    },
+    {
+      "condition_id": "H0_baseline_s505",
+      "suite": "H",
+      "seed": 505,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile"
+        }
+      ],
+      "elapsed_seconds": 32.03,
+      "output_path": "docs/verification/m2a1/H0_baseline_s505.png"
+    },
+    {
+      "condition_id": "H1_horiz_s505",
+      "suite": "H",
+      "seed": 505,
+      "hint_mode": "horizontal",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, centered"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile, on the right side"
+        }
+      ],
+      "elapsed_seconds": 32.11,
+      "output_path": "docs/verification/m2a1/H1_horiz_s505.png"
+    },
+    {
+      "condition_id": "H2_presence_s505",
+      "suite": "H",
+      "seed": 505,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school courtyard, benches, trees, daytime, simple background, three people, same scene, all visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "reading a book",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, reading a book, centered"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "looking forward with smile",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "three people, same scene, all visible",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, looking forward with smile, on the right side"
+        }
+      ],
+      "elapsed_seconds": 32.05,
+      "output_path": "docs/verification/m2a1/H2_presence_s505.png"
+    },
+    {
+      "condition_id": "F_cross_scene_s42",
+      "suite": "F",
+      "seed": 42,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "library, bookshelves, reading desk",
+      "characters": [
+        {
+          "instance_id": "inst_1",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "reading a book intently",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, reading a book intently"
+        }
+      ],
+      "elapsed_seconds": 28.04,
+      "output_path": "docs/verification/m2a1/F_cross_scene_s42.png"
+    },
+    {
+      "condition_id": "F_cross_scene_s77",
+      "suite": "F",
+      "seed": 77,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "library, bookshelves, reading desk",
+      "characters": [
+        {
+          "instance_id": "inst_1",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "reading a book intently",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, reading a book intently"
+        }
+      ],
+      "elapsed_seconds": 28.04,
+      "output_path": "docs/verification/m2a1/F_cross_scene_s77.png"
+    },
+    {
+      "condition_id": "F_cross_scene_s101",
+      "suite": "F",
+      "seed": 101,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "library, bookshelves, reading desk",
+      "characters": [
+        {
+          "instance_id": "inst_1",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "reading a book intently",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, reading a book intently"
+        }
+      ],
+      "elapsed_seconds": 30.03,
+      "output_path": "docs/verification/m2a1/F_cross_scene_s101.png"
+    },
+    {
+      "condition_id": "F_cross_scene_s133",
+      "suite": "F",
+      "seed": 133,
+      "hint_mode": "off",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "library, bookshelves, reading desk",
+      "characters": [
+        {
+          "instance_id": "inst_1",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "reading a book intently",
+          "derived_spatial_hint": "",
+          "scene_presence_hint": "",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, reading a book intently"
+        }
+      ],
+      "elapsed_seconds": 30.03,
+      "output_path": "docs/verification/m2a1/F_cross_scene_s133.png"
+    },
+    {
+      "condition_id": "I_crowd_s42",
+      "suite": "I",
+      "seed": 42,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school clubroom, table, daylight, simple background, four people, group composition, all visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "four people, group composition, all visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "sitting reading",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "four people, group composition, all visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, sitting reading, on the left side"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "smiling talking",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "four people, group composition, all visible",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, smiling talking, centered"
+        },
+        {
+          "instance_id": "inst_d",
+          "cast_id": "cast_dave",
+          "raw_identity_prompt": "1boy, messy brown hair, athletic jacket",
+          "raw_acting_prompt": "standing hands in pockets",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "four people, group composition, all visible",
+          "effective_character_prompt": "1boy, messy brown hair, athletic jacket, standing hands in pockets, on the right side"
+        }
+      ],
+      "elapsed_seconds": 44.08,
+      "output_path": "docs/verification/m2a1/I_crowd_s42.png"
+    },
+    {
+      "condition_id": "I_crowd_s77",
+      "suite": "I",
+      "seed": 77,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school clubroom, table, daylight, simple background, four people, group composition, all visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "four people, group composition, all visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "sitting reading",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "four people, group composition, all visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, sitting reading, on the left side"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "smiling talking",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "four people, group composition, all visible",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, smiling talking, centered"
+        },
+        {
+          "instance_id": "inst_d",
+          "cast_id": "cast_dave",
+          "raw_identity_prompt": "1boy, messy brown hair, athletic jacket",
+          "raw_acting_prompt": "standing hands in pockets",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "four people, group composition, all visible",
+          "effective_character_prompt": "1boy, messy brown hair, athletic jacket, standing hands in pockets, on the right side"
+        }
+      ],
+      "elapsed_seconds": 46.59,
+      "output_path": "docs/verification/m2a1/I_crowd_s77.png"
+    },
+    {
+      "condition_id": "I_crowd_s101",
+      "suite": "I",
+      "seed": 101,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school clubroom, table, daylight, simple background, four people, group composition, all visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "four people, group composition, all visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "sitting reading",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "four people, group composition, all visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, sitting reading, on the left side"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "smiling talking",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "four people, group composition, all visible",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, smiling talking, centered"
+        },
+        {
+          "instance_id": "inst_d",
+          "cast_id": "cast_dave",
+          "raw_identity_prompt": "1boy, messy brown hair, athletic jacket",
+          "raw_acting_prompt": "standing hands in pockets",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "four people, group composition, all visible",
+          "effective_character_prompt": "1boy, messy brown hair, athletic jacket, standing hands in pockets, on the right side"
+        }
+      ],
+      "elapsed_seconds": 46.25,
+      "output_path": "docs/verification/m2a1/I_crowd_s101.png"
+    },
+    {
+      "condition_id": "I_crowd_s133",
+      "suite": "I",
+      "seed": 133,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.0,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "effective_scene_prompt": "school clubroom, table, daylight, simple background, four people, group composition, all visible",
+      "characters": [
+        {
+          "instance_id": "inst_a",
+          "cast_id": "cast_alice",
+          "raw_identity_prompt": "1girl, blonde twin tails, school uniform",
+          "raw_acting_prompt": "standing casually",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "four people, group composition, all visible",
+          "effective_character_prompt": "1girl, blonde twin tails, school uniform, standing casually, on the left side"
+        },
+        {
+          "instance_id": "inst_b",
+          "cast_id": "cast_bob",
+          "raw_identity_prompt": "1boy, short dark hair, glasses, school uniform",
+          "raw_acting_prompt": "sitting reading",
+          "derived_spatial_hint": "on the left side",
+          "scene_presence_hint": "four people, group composition, all visible",
+          "effective_character_prompt": "1boy, short dark hair, glasses, school uniform, sitting reading, on the left side"
+        },
+        {
+          "instance_id": "inst_c",
+          "cast_id": "cast_carol",
+          "raw_identity_prompt": "1girl, short brown bob hair, cardigan, school uniform",
+          "raw_acting_prompt": "smiling talking",
+          "derived_spatial_hint": "centered",
+          "scene_presence_hint": "four people, group composition, all visible",
+          "effective_character_prompt": "1girl, short brown bob hair, cardigan, school uniform, smiling talking, centered"
+        },
+        {
+          "instance_id": "inst_d",
+          "cast_id": "cast_dave",
+          "raw_identity_prompt": "1boy, messy brown hair, athletic jacket",
+          "raw_acting_prompt": "standing hands in pockets",
+          "derived_spatial_hint": "on the right side",
+          "scene_presence_hint": "four people, group composition, all visible",
+          "effective_character_prompt": "1boy, messy brown hair, athletic jacket, standing hands in pockets, on the right side"
+        }
+      ],
+      "elapsed_seconds": 46.28,
+      "output_path": "docs/verification/m2a1/I_crowd_s133.png"
+    },
+    {
+      "condition_id": "H_CN020_s101",
+      "suite": "ControlNet",
+      "seed": 101,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.2,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "elapsed_seconds": 60.1,
+      "output_path": "docs/verification/m2a1/H_CN020_s101.png"
+    },
+    {
+      "condition_id": "H_CN035_s101",
+      "suite": "ControlNet",
+      "seed": 101,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.35,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "elapsed_seconds": 52.05,
+      "output_path": "docs/verification/m2a1/H_CN035_s101.png"
+    },
+    {
+      "condition_id": "H_CN020_s202",
+      "suite": "ControlNet",
+      "seed": 202,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.2,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "elapsed_seconds": 56.33,
+      "output_path": "docs/verification/m2a1/H_CN020_s202.png"
+    },
+    {
+      "condition_id": "H_CN035_s202",
+      "suite": "ControlNet",
+      "seed": 202,
+      "hint_mode": "horizontal_presence",
+      "control_strength": 0.35,
+      "runtime_status": "PASS",
+      "visual_status": "PENDING_INSPECTION",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "elapsed_seconds": 46.04,
+      "output_path": "docs/verification/m2a1/H_CN035_s202.png"
+    }
+  ]
+}

@@ -75,24 +75,26 @@ Scene-only Draft (M1) → CAST 複数出演 (M2) → Rough Guide (M3) → UX She
 ## 5. 次の一件 (Current Card Preview)
 
 - **完了Card**: **M2A / 3M-2A — Character Spatial Capability Ladder & Control Escalation Gate** — COMPLETED
-  - 単一人物位置追随（Stage A: 左右別領域配置）: PASS（テキストに左右を含めず完全追随）。
-  - 2人物独立配置（Stage B）: PASS / useful PARTIAL（AliceとBobが同一シーンに独立属性で共存）。
-  - 左右スワップオラクル（Stage B2）: **PASS（重要オラクル成立）**。同Seed 42・同Promptで領域のみ入れ替え、人物の物理配置が左右完全に逆転。因果性を実証。
-  - 遠中近・接写深度（Stage C/D）: **PROMPT_SUFFICIENT**。同一領域サイズでもPrompt（近景バスト vs 遠景全身）のみで強固な遠近オクルージョン階層を形成。極小枠幾何よりもPrompt誘導が安定。
-  - 姿勢天井診断（Stage E）: PASS。椅子コンテキストの明示（"sitting on a wooden chair"）により着席姿勢が成立。
-  - 同一CAST複数コマ（Stage F）: PASS。コマを跨いだ同一人物の出演を確認。
-  - 同一CAST単一コマ重複（Stage G）: PARTIAL。並列双子よりもコマ割り分割・多面体描写へ誘導される傾向を確認。
-  - 同一CAST＋異CAST混成3人（Stage H）: **PASS（Seed 42にてAlice 2体＋Bob 1体の3名完全共存・無漏出を達成）**。
-  - 多人数の崩壊閾値（Stage I）: **3〜4人が境界**。4人以上では単一構図から自動マルチカット分割へ移行。
-  - 区域強度スライダー: 1.0固定で十分機能し、**UIスライダー新設は不要**と判定。
-  - **ControlNet エスカレーション判定**: **不要（Level 0: Prompt + Rough Region でM2Bへ進行）**。
-  - 自動テスト全128件（既存114件＋M2A新規14件）100% PASS。
-  - 実機生成全19条件完走・直接目視検査完了。4種のオラクルコンタクトシートおよび Manifest 配置完了。
   - 報告書: [M2A_CHARACTER_SPATIAL_CAPABILITY_LADDER_REPORT.md](reports/M2A_CHARACTER_SPATIAL_CAPABILITY_LADDER_REPORT.md)
-  - Core Minimum-Hand Character Capability: **READY**
-- **次Card**: **M2B / 3M-2B — Minimum Character & CAST Staging Product UI (Option A: Rough Region + Free Text Prompt)**
+  - 128件自動テスト100% PASS、19条件実機検証完了。
+
+- **完了Card**: **M2A.1 — Prompt-Region Calibration & Conditional ControlNet Escalation Gate** — COMPLETED & VERIFIED
+  - **Spatial Prompt Hint Compiler**: `custom_nodes_custom/tegaki_manga_nodes/spatial_hint_compiler.py` 実装。粗矩形幾何から短い空間語彙（"on the left side", "on the right side", "large in the foreground", "smaller in the background"）を実行時に非破壊導出。
+  - **SSOT 不変性**: Persistent な `TEGAKI_AUTHORING_DOCUMENT` を一切汚染せず、`PAGE_COMPILE_PLAN` および `debug_json` に完全な透明トレーサビリティを保持。
+  - **8-Seed 固定ベンチマーク（Seeds 42, 77, 101, 133, 202, 303, 404, 505）**:
+    - **2人物（Benchmark B）**: B0ベースラインの有用率 25% (2/8) に対し、B1（左右Hint自動補助）で **62.5% (5/8有用、4/8明瞭成功)** へ大幅改善。左右スワップ因果性も100%保持。
+    - **深度（Benchmark C）**: 幾何差のみ（C2）では極小枠の背景人物が1/8しか出ない一方、Derived Depth Hint（C3）により **62.5% (5/8有用)** へ劇的に救済。
+    - **3人物（Benchmark H）**: Prompt+Region単独では1/8有用にとどまり、極めてSeed-Sensitive。
+    - **ControlNet Escalation Gate v2**: 3人物のスコア未達により発動。Weak Block Guide ControlNet (0.20 / 0.35) を実機検証。0.20は効果薄、0.35は格子・ケージ状の作画アーティファクトと姿勢硬直を招き、Brainstorm Freedomが急減。
+    - **製品アーキテクチャ判定**: **CORE_NOT_NEEDED**。Minimum-Hand CoreへControlNetを強制せず、純粋な Prompt + Rough Region + 隠しSpatial Helper（Option A+）で進行。3人物・4人物はTier 3/4（マルチカット分割推奨またはAdvanced補助）として整理。
+  - **自動テスト**: 全139件（既存128件＋M2A.1新規11件）100% PASS。
+  - **実機生成**: 全97条件＋ControlNet 4条件完走。4種のコンタクトシート・Manifest生成完了。
+  - **報告書**: [M2A1_PROMPT_REGION_CALIBRATION_AND_CONTROL_GATE_REPORT.md](reports/M2A1_PROMPT_REGION_CALIBRATION_AND_CONTROL_GATE_REPORT.md)
+  - **製品UI推奨**: **OPTION A+（Rough Region + Free Text Acting Prompt + 隠しAutomatic Spatial Helper）**
+
+- **次Card**: **M2B / 3M-2B — Minimum Character & CAST Staging Product UI (Option A+: Rough Region + Free Text + Hidden Spatial Helper)**
   - CAST Master登録、キャンバス上でのCharacter Rough Region矩形操作、Acting Prompt自由文入力UIの実装。
-  - 複雑な3D Pose/ControlNet/強度スライダーは含めず、最小手の直感操作導線を確立する。
+  - ユーザー向けの方位セレクター（Left/Right）や深度スライダー（Near/Far）は作らず、内部Compilerが透過的に支援。最小手の直感操作導線を確立する。
 
 ---
 
