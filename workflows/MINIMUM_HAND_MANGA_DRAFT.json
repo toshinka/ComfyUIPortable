@@ -1,6 +1,6 @@
 {
-  "last_node_id": 8,
-  "last_link_id": 16,
+  "last_node_id": 9,
+  "last_link_id": 18,
   "nodes": [
     {
       "id": 1,
@@ -67,7 +67,9 @@
         {
           "name": "authoring_document_json",
           "type": "STRING",
-          "links": null,
+          "links": [
+            17
+          ],
           "slot_index": 6
         }
       ],
@@ -144,7 +146,7 @@
         }
       ],
       "widgets_values": [
-        "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors"
+        "\u2643CN_Skeb\\waiIllustriousSDXL_v170.safetensors"
       ]
     },
     {
@@ -377,7 +379,7 @@
       "id": 8,
       "type": "SaveImage",
       "pos": [
-        2020,
+        2380,
         100
       ],
       "size": [
@@ -385,18 +387,75 @@
         680
       ],
       "flags": {},
-      "order": 7,
+      "order": 8,
       "mode": 0,
       "inputs": [
         {
           "name": "images",
           "type": "IMAGE",
-          "link": 13
+          "link": 18
         }
       ],
       "outputs": [],
       "widgets_values": [
         "MangaDraft_M1"
+      ]
+    },
+    {
+      "id": 9,
+      "type": "TegakiMangaFrameOverlay",
+      "pos": [
+        2020,
+        100
+      ],
+      "size": [
+        320,
+        160
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 13
+        },
+        {
+          "name": "authoring_document_json",
+          "type": "STRING",
+          "link": 17,
+          "widget": {
+            "name": "authoring_document_json"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": [
+            18
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "frame_mask",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 1
+        },
+        {
+          "name": "debug_json",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 2
+        }
+      ],
+      "widgets_values": [
+        4,
+        0,
+        ""
       ]
     }
   ],
@@ -477,7 +536,7 @@
       13,
       7,
       0,
-      8,
+      9,
       0,
       "IMAGE"
     ],
@@ -504,11 +563,27 @@
       5,
       1,
       "INT"
+    ],
+    [
+      17,
+      1,
+      6,
+      9,
+      1,
+      "STRING"
+    ],
+    [
+      18,
+      9,
+      0,
+      8,
+      0,
+      "IMAGE"
     ]
   ],
   "groups": [
     {
-      "title": "USER WORKSPACE — MINIMUM-HAND SCENE DRAFT",
+      "title": "USER WORKSPACE \u2014 MINIMUM-HAND SCENE DRAFT",
       "bounding": [
         40,
         40,
@@ -518,7 +593,7 @@
       "color": "#2e7d32"
     },
     {
-      "title": "INTERNAL PIPELINE — DO NOT TOUCH",
+      "title": "INTERNAL PIPELINE \u2014 DO NOT TOUCH",
       "bounding": [
         1020,
         40,
@@ -530,9 +605,9 @@
     {
       "title": "OUTPUT DRAFT IMAGE",
       "bounding": [
-        2010,
+        2000,
         40,
-        510,
+        880,
         780
       ],
       "color": "#1565c0"

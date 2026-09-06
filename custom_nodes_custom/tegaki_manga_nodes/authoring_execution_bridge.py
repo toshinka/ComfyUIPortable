@@ -436,6 +436,27 @@ def generate_scene_regions_preview_image(
             draw.rectangle([cx0, cy0, cx0 + c_badge_w, cy0 + c_badge_h], fill=pal["rgb"] + (220,))
             draw.text((cx0 + 4, cy0 + 3), c_label, fill=(255, 255, 255, 255), font=font)
 
+    # 3. Draw Visual Frames (Bold dark outlines, Card §33/§34)
+    visual_frames = page.get("visual_frames", [])
+    for f_idx, vf in enumerate(visual_frames):
+        b = vf.get("shape") or vf.get("area") or {}
+        fx0 = int(round(float(b.get("x", 0)) * target_w))
+        fy0 = int(round(float(b.get("y", 0)) * target_h))
+        fx1 = int(round((float(b.get("x", 0)) + float(b.get("w", 1))) * target_w))
+        fy1 = int(round((float(b.get("y", 0)) + float(b.get("h", 1))) * target_h))
+
+        fx0, fy0 = max(0, fx0), max(0, fy0)
+        fx1, fy1 = min(target_w, fx1), min(target_h, fy1)
+
+        if fx1 > fx0 and fy1 > fy0:
+            # Clean dark frame outline
+            draw.rectangle([fx0, fy0, fx1, fy1], outline=(30, 41, 59, 255), width=3)
+            f_name = f"Frame {f_idx + 1}"
+            f_label = f"[{f_name}]"
+            f_badge_w = len(f_label) * 7 + 8
+            draw.rectangle([fx0, fy0, fx0 + f_badge_w, fy0 + 16], fill=(30, 41, 59, 230))
+            draw.text((fx0 + 4, fy0 + 2), f_label, fill=(255, 255, 255, 255), font=font)
+
     composite = Image.alpha_composite(base, overlay).convert("RGB")
     return composite
 
@@ -542,6 +563,15 @@ def get_execution_debug_info(
                 "order": i.get("order"),
             }
             for i in instances
+        ],
+        "visual_frames_count": len(page.get("visual_frames", [])),
+        "visual_frames": [
+            {
+                "frame_id": f.get("frame_id"),
+                "shape": f.get("shape") or f.get("area"),
+                "order": f.get("order"),
+            }
+            for f in page.get("visual_frames", [])
         ],
         "style_template": page.get("metadata", {}).get("style_template", "Manga Monochrome"),
         "spatial_hint_mode": spatial_hint_mode,

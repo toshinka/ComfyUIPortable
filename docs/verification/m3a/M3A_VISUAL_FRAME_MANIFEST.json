@@ -1,0 +1,204 @@
+{
+  "milestone": "M3A",
+  "title": "Visual Panel Frame Layer and Deterministic Framing Manifest",
+  "timestamp": "2026-09-06T05:02:40Z",
+  "checkpoint": "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors",
+  "controlnet_core": "OFF (Optional Tier B Supported)",
+  "verifications": {
+    "headless_js_contract": {
+      "status": "PASS",
+      "evidence_type": "HEADLESS_TEST",
+      "test_suite": "scripts/test_m2b_minimum_hand_editor.mjs",
+      "checks_passed": 19,
+      "checks_total": 19
+    },
+    "python_m3a_contract": {
+      "status": "PASS",
+      "evidence_type": "HEADLESS_TEST",
+      "test_suite": "scripts/test_m3a_visual_frame_contract.py",
+      "checks_passed": 7,
+      "checks_total": 7
+    },
+    "live_backend_runtime": {
+      "status": "PASS",
+      "evidence_type": "LIVE_RUNTIME",
+      "runner": "scripts/run_m3a_visual_frame_verification.py",
+      "tasks": [
+        {
+          "task_id": "M3A_V0_zero_frames",
+          "filename": "M3A_V0_zero_frames.png",
+          "seed": 42,
+          "description": "V0: 0 visual frames (zero regression pass-through)",
+          "evidence_type": "LIVE_RUNTIME",
+          "runtime_status": "PASS",
+          "visual_status": "VERIFIED_CORRECT",
+          "scene_count": 2,
+          "frame_count": 0,
+          "visual_frames": []
+        },
+        {
+          "task_id": "M3A_V1_two_frames",
+          "filename": "M3A_V1_two_frames.png",
+          "seed": 42,
+          "description": "V1: 2 visual frames with deterministic 4px frame overlay",
+          "evidence_type": "LIVE_RUNTIME",
+          "runtime_status": "PASS",
+          "visual_status": "VERIFIED_CORRECT",
+          "scene_count": 2,
+          "frame_count": 2,
+          "visual_frames": [
+            {
+              "frame_id": "frame_1",
+              "order": 1,
+              "area": {
+                "shape_type": "rect",
+                "x": 0.08,
+                "y": 0.06,
+                "w": 0.84,
+                "h": 0.42
+              },
+              "border_thickness": 4,
+              "border_color": "#000000"
+            },
+            {
+              "frame_id": "frame_2",
+              "order": 2,
+              "area": {
+                "shape_type": "rect",
+                "x": 0.08,
+                "y": 0.52,
+                "w": 0.84,
+                "h": 0.42
+              },
+              "border_thickness": 4,
+              "border_color": "#000000"
+            }
+          ]
+        },
+        {
+          "task_id": "M3A_V2_asymmetric",
+          "filename": "M3A_V2_asymmetric.png",
+          "seed": 42,
+          "description": "V2: Alternate asymmetric 3-frame layout",
+          "evidence_type": "LIVE_RUNTIME",
+          "runtime_status": "PASS",
+          "visual_status": "VERIFIED_CORRECT",
+          "scene_count": 2,
+          "frame_count": 3,
+          "visual_frames": [
+            {
+              "frame_id": "frame_top_wide",
+              "order": 1,
+              "area": {
+                "shape_type": "rect",
+                "x": 0.05,
+                "y": 0.04,
+                "w": 0.9,
+                "h": 0.32
+              },
+              "border_thickness": 4,
+              "border_color": "#000000"
+            },
+            {
+              "frame_id": "frame_mid_left",
+              "order": 2,
+              "area": {
+                "shape_type": "rect",
+                "x": 0.05,
+                "y": 0.4,
+                "w": 0.42,
+                "h": 0.54
+              },
+              "border_thickness": 4,
+              "border_color": "#000000"
+            },
+            {
+              "frame_id": "frame_mid_right",
+              "order": 3,
+              "area": {
+                "shape_type": "rect",
+                "x": 0.53,
+                "y": 0.4,
+                "w": 0.42,
+                "h": 0.54
+              },
+              "border_thickness": 4,
+              "border_color": "#000000"
+            }
+          ]
+        },
+        {
+          "task_id": "M3A_V3_1s_2f",
+          "filename": "M3A_V3_1s_2f.png",
+          "seed": 42,
+          "description": "V3: 1 Scene + 2 Frames independent decoupling",
+          "evidence_type": "LIVE_RUNTIME",
+          "runtime_status": "PASS",
+          "visual_status": "VERIFIED_CORRECT",
+          "scene_count": 1,
+          "frame_count": 2,
+          "visual_frames": [
+            {
+              "frame_id": "frame_top",
+              "order": 1,
+              "area": {
+                "shape_type": "rect",
+                "x": 0.08,
+                "y": 0.06,
+                "w": 0.84,
+                "h": 0.42
+              },
+              "border_thickness": 4,
+              "border_color": "#000000"
+            },
+            {
+              "frame_id": "frame_bot",
+              "order": 2,
+              "area": {
+                "shape_type": "rect",
+                "x": 0.08,
+                "y": 0.52,
+                "w": 0.84,
+                "h": 0.42
+              },
+              "border_thickness": 4,
+              "border_color": "#000000"
+            }
+          ]
+        },
+        {
+          "task_id": "M3A_V4_2s_1f",
+          "filename": "M3A_V4_2s_1f.png",
+          "seed": 42,
+          "description": "V4: 2 Scenes + 1 Splash Frame decoupling",
+          "evidence_type": "LIVE_RUNTIME",
+          "runtime_status": "PASS",
+          "visual_status": "VERIFIED_CORRECT",
+          "scene_count": 2,
+          "frame_count": 1,
+          "visual_frames": [
+            {
+              "frame_id": "frame_splash",
+              "order": 1,
+              "area": {
+                "shape_type": "rect",
+                "x": 0.05,
+                "y": 0.05,
+                "w": 0.9,
+                "h": 0.9
+              },
+              "border_thickness": 5,
+              "border_color": "#000000"
+            }
+          ]
+        }
+      ]
+    },
+    "oracle_contact_sheet": "docs/verification/m3a/M3A_VISUAL_FRAME_ORACLE.png",
+    "live_browser_product_e2e": {
+      "status": "PENDING (OWNER MANUAL CHECK REQUIRED)",
+      "evidence_type": "LIVE_BROWSER",
+      "reason": "Host environment lacks automated browser runner (playwright/puppeteer). Contract §16 compliance protocol engaged."
+    }
+  }
+}

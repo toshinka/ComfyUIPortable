@@ -464,10 +464,12 @@ def _validate_page(page: Dict[str, Any], page_index: int) -> Tuple[List[str], Li
         else:
             frame_ids.add(fid)
 
-        shape = frame.get("shape")
+        shape = frame.get("shape") or frame.get("area")
         if shape is not None:
             shape_errs = validate_area(shape, f_ctx)
             errors.extend(shape_errs)
+        else:
+            errors.append(f"{f_ctx}: missing shape or area")
 
     # --- CAST ---
     cast_list = page.get("cast", [])

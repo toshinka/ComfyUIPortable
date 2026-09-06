@@ -26,7 +26,13 @@ import {
     cascadeDeleteScene,
     moveSceneWithChildren,
     resizeSceneWithChildren,
-    clampCharacterDrag
+    clampCharacterDrag,
+    getNextFrameId,
+    calculateNewFrameGeometry,
+    copyFramesFromScenes,
+    clampFrameDrag,
+    resizeFrame,
+    checkFrameOverlap
 } from "../custom_nodes_custom/tegaki_manga_nodes/web/js/minimum_hand_authoring_ops.js";
 
 console.log("--- Testing M2B and M2B.1 Minimum-Hand Editor Logic Invariants ---");
@@ -251,7 +257,43 @@ console.log("--- Testing M2B and M2B.1 Minimum-Hand Editor Logic Invariants ---"
                     "document_json widget height must be collapsed to [0, -4]");
                 console.log("✓ Test 15 Passed: Raw document_json hidden state contract verified");
 
-                console.log("\nALL JS FRONTEND CONTRACT TESTS PASSED (15/15)!");
+                                // Test 16: M3A Visual Frame ID generation
+                const existingFrames = [{ frame_id: "frame_1" }, { frame_id: "frame_2" }];
+                assert.strictEqual(getNextFrameId(existingFrames), "frame_3");
+                assert.strictEqual(getNextFrameId([]), "frame_1");
+                console.log("✓ Test 16 Passed: M3A Visual Frame ID generation");
+
+                // Test 17: M3A One-shot non-linking copyFramesFromScenes
+                const sampleScenes = [
+                    { scene_id: "scene_1", area: { x: 0.1, y: 0.1, w: 0.8, h: 0.4 } },
+                    { scene_id: "scene_2", area: { x: 0.1, y: 0.55, w: 0.8, h: 0.4 } }
+                ];
+                const copiedFrames = copyFramesFromScenes(sampleScenes);
+                assert.strictEqual(copiedFrames.length, 2);
+                assert.strictEqual(copiedFrames[0].frame_id, "frame_1");
+                assert.strictEqual(copiedFrames[0].area.x, 0.1);
+                // Mutating copied frame must not mutate original scene
+                copiedFrames[0].area.x = 0.5;
+                assert.strictEqual(sampleScenes[0].area.x, 0.1, "One-shot copy must be non-linking clone");
+                console.log("✓ Test 17 Passed: M3A One-shot non-linking copyFramesFromScenes");
+
+                // Test 18: M3A Visual Frame clamping and resizing
+                const frameArea = { x: 0.1, y: 0.1, w: 0.4, h: 0.4 };
+                const moved = clampFrameDrag(frameArea, 0.8, 0.8);
+                assert.ok(moved.x + frameArea.w <= 1.0, "Frame drag must clamp within page bounds");
+                assert.ok(moved.y + frameArea.h <= 1.0, "Frame drag must clamp within page bounds");
+
+                const resized = resizeFrame(frameArea, "se", 0.2, 0.2);
+                assert.strictEqual(resized.w, 0.6);
+                assert.strictEqual(resized.h, 0.6);
+                console.log("✓ Test 18 Passed: M3A Visual Frame clamping and resizing");
+
+                // Test 19: M3A Edit Layer Selector and Frame Inspector in UI
+                assert.ok(content.includes('EDIT LAYER:'), "Edit layer selector UI must be present");
+                assert.ok(content.includes('Visual Panel Frames'), "Visual Panel Frames layer button must be present");
+                console.log("✓ Test 19 Passed: M3A Edit Layer Selector and Frame Inspector in UI");
+
+                console.log("\nALL JS FRONTEND CONTRACT TESTS PASSED (19/19)!");
             });
         });
     });

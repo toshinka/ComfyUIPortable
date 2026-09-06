@@ -16,6 +16,7 @@ from .panel_content_editor import TegakiMangaPanelContentEditor
 from .character_staging_editor import TegakiMangaCharacterStagingEditor
 from .layout_guide_generator import TegakiMangaLayoutGuideGenerator
 from .minimum_hand_scene_editor import TegakiMinimumHandSceneEditor
+from .frame_overlay import TegakiMangaFrameOverlay
 from . import panel_layout_api
 
 NODE_CLASS_MAPPINGS = {
@@ -40,6 +41,7 @@ NODE_CLASS_MAPPINGS = {
     "TegakiMangaCharacterStagingEditor": TegakiMangaCharacterStagingEditor,
     "TegakiMangaLayoutGuideGenerator": TegakiMangaLayoutGuideGenerator,
     "TegakiMinimumHandSceneEditor": TegakiMinimumHandSceneEditor,
+    "TegakiMangaFrameOverlay": TegakiMangaFrameOverlay,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -64,6 +66,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "TegakiMangaCharacterStagingEditor": "Tegaki Manga Character Staging Editor",
     "TegakiMangaLayoutGuideGenerator": "Tegaki Manga Layout Guide Generator (ControlNet)",
     "TegakiMinimumHandSceneEditor": "Tegaki Minimum-Hand Manga Authoring (Draft)",
+    "TegakiMangaFrameOverlay": "Tegaki Manga Frame Overlay (Deterministic)",
 }
 
 WEB_DIRECTORY = "./web"

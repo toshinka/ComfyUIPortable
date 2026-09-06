@@ -20,8 +20,13 @@ import {
     canDeleteCast,
     cascadeDeleteScene,
     moveSceneWithChildren,
-    resizeSceneWithChildren,
-    clampCharacterDrag
+    clampCharacterDrag,
+    getNextFrameId,
+    calculateNewFrameGeometry,
+    copyFramesFromScenes,
+    clampFrameDrag,
+    resizeFrame,
+    checkFrameOverlap
 } from "./minimum_hand_authoring_ops.js";
 
 const SCENE_PALETTE = [
@@ -169,18 +174,21 @@ app.registerExtension({
             }
 
             let doc = createDefaultDoc();
+            let activeEditLayer = "scene"; // 'scene' | 'frame' | 'character'
             let selectedSceneIndex = 0;
+            let selectedFrameIndex = -1;
             let selectedInstanceId = null;
             let selectedCastId = null;
 
             // Drag state
             let isDragging = false;
-            let dragTarget = "none"; // 'scene' | 'character'
+            let dragTarget = "none"; // 'scene' | 'character' | 'frame'
             let dragMode = "none";   // 'move' | 'nw' | 'ne' | 'se' | 'sw'
             let dragStartX = 0;
             let dragStartY = 0;
             let dragStartSceneArea = null;
             let dragStartInstArea = null;
+            let dragStartFrameArea = null;
             let dragStartChildAreas = []; // [{ id, area }]
 
             function getPage() {
@@ -194,6 +202,12 @@ app.registerExtension({
                 const p = getPage();
                 if (!p.scenes) p.scenes = [];
                 return p.scenes;
+            }
+
+            function getVisualFrames() {
+                const p = getPage();
+                if (!p.visual_frames) p.visual_frames = [];
+                return p.visual_frames;
             }
 
             function getCast() {
@@ -327,6 +341,64 @@ app.registerExtension({
             container.appendChild(canvasWrapper);
 
             const ctx = canvas.getContext("2d");
+
+            // Layer Selector Bar: [Scene] | [Frame] | [Character]
+            const layerSelectorBar = document.createElement("div");
+            layerSelectorBar.style.cssText = `
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                background: #202024;
+                padding: 6px 8px;
+                border-radius: 6px;
+                border: 1px solid #333338;
+            `;
+            layerSelectorBar.innerHTML = `<span style="font-weight: 700; font-size: 11px; color: #a1a1aa; margin-right: 4px;">EDIT LAYER:</span>`;
+
+            const layerButtons = {};
+            const layers = [
+                { id: "scene", label: "Scene Regions", desc: "Edit semantic story regions & regional prompts" },
+                { id: "frame", label: "Visual Panel Frames", desc: "Edit visible manga comic panel borders (overlay / layout)" },
+                { id: "character", label: "Character Staging", desc: "Edit character instance placement & acting within scenes" }
+            ];
+
+            layers.forEach(l => {
+                const btn = document.createElement("button");
+                btn.textContent = l.label;
+                btn.title = l.desc;
+                btn.style.cssText = `
+                    background: ${activeEditLayer === l.id ? "#3b82f6" : "#27272a"};
+                    color: ${activeEditLayer === l.id ? "#ffffff" : "#d4d4d8"};
+                    border: 1px solid ${activeEditLayer === l.id ? "#60a5fa" : "#3f3f46"};
+                    border-radius: 4px;
+                    padding: 3px 10px;
+                    font-size: 11px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.15s;
+                `;
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    activeEditLayer = l.id;
+                    updateLayerButtons();
+                    renderInspector();
+                    renderCanvas();
+                };
+                layerButtons[l.id] = btn;
+                layerSelectorBar.appendChild(btn);
+            });
+
+            function updateLayerButtons() {
+                layers.forEach(l => {
+                    const btn = layerButtons[l.id];
+                    if (!btn) return;
+                    const isActive = activeEditLayer === l.id;
+                    btn.style.background = isActive ? "#3b82f6" : "#27272a";
+                    btn.style.color = isActive ? "#ffffff" : "#d4d4d8";
+                    btn.style.borderColor = isActive ? "#60a5fa" : "#3f3f46";
+                });
+            }
+            container.appendChild(layerSelectorBar);
 
             // Toolbar for Scene Management
             const toolbar = document.createElement("div");
@@ -518,6 +590,108 @@ app.registerExtension({
             sceneInspector.appendChild(warningBadge);
 
             container.appendChild(sceneInspector);
+
+            // Frame Toolbar & Inspector
+            const frameToolbar = document.createElement("div");
+            frameToolbar.style.cssText = "display: none; gap: 6px; align-items: center; flex-wrap: wrap;";
+
+            const btnAddFrame = createButton("+ Add Frame", "Add a new visual frame border", () => {
+                const frames = getVisualFrames();
+                const newFid = getNextFrameId(frames);
+                const geom = calculateNewFrameGeometry(frames);
+                frames.push({
+                    frame_id: newFid,
+                    order: frames.length + 1,
+                    area: {
+                        shape_type: "rect",
+                        x: geom.x,
+                        y: geom.y,
+                        w: geom.w,
+                        h: geom.h
+                    },
+                    border_thickness: 4,
+                    border_color: "#000000",
+                    is_full_bleed: false
+                });
+                selectedFrameIndex = frames.length - 1;
+                syncToWidgets();
+                renderAll();
+            });
+
+            const btnDeleteFrame = createButton("- Remove Frame", "Remove selected visual frame border", () => {
+                const frames = getVisualFrames();
+                if (frames.length === 0 || selectedFrameIndex < 0 || selectedFrameIndex >= frames.length) return;
+                frames.splice(selectedFrameIndex, 1);
+                if (selectedFrameIndex >= frames.length) {
+                    selectedFrameIndex = frames.length - 1;
+                }
+                syncToWidgets();
+                renderAll();
+            }, "#7f1d1d");
+
+            const btnCopyFramesFromScenes = createButton("📋 Copy Frames from Scenes", "One-shot non-linking copy of current scene regions to visual panel frames", () => {
+                const scenes = getScenes();
+                if (scenes.length === 0) return;
+                const ok = confirm("One-shot copy scenes to visual frames? This will replace existing visual frames with clones of current scenes.");
+                if (!ok) return;
+                const p = getPage();
+                p.visual_frames = copyFramesFromScenes(scenes);
+                selectedFrameIndex = p.visual_frames.length > 0 ? 0 : -1;
+                syncToWidgets();
+                renderAll();
+            }, "#1e3a5f");
+
+            frameToolbar.appendChild(btnAddFrame);
+            frameToolbar.appendChild(btnDeleteFrame);
+            frameToolbar.appendChild(btnCopyFramesFromScenes);
+            container.appendChild(frameToolbar);
+
+            // Frame Inspector
+            const frameInspector = document.createElement("div");
+            frameInspector.style.cssText = `
+                display: none;
+                flex-direction: column;
+                gap: 6px;
+                background: #27272a;
+                padding: 8px;
+                border-radius: 6px;
+                border: 1px solid #52525b;
+            `;
+
+            const frameInspectorHeader = document.createElement("div");
+            frameInspectorHeader.style.cssText = "display: flex; justify-content: space-between; align-items: center;";
+
+            const frameBadge = document.createElement("div");
+            frameBadge.style.cssText = "display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 11px;";
+
+            const frameChipsRow = document.createElement("div");
+            frameChipsRow.style.cssText = "display: flex; gap: 4px; align-items: center; flex-wrap: wrap;";
+
+            const frameThicknessRow = document.createElement("div");
+            frameThicknessRow.style.cssText = "display: flex; align-items: center; gap: 8px;";
+            frameThicknessRow.innerHTML = `
+                <label style="color: #a1a1aa; font-size: 11px;">Line Thickness (px):</label>
+                <input id="frame-thickness-input" type="number" min="1" max="24" value="4" style="
+                    background: #18181b; color: #fafafa; border: 1px solid #3f3f46; border-radius: 4px;
+                    padding: 2px 6px; width: 50px; font-size: 11px;
+                " />
+            `;
+            const frameThicknessInput = frameThicknessRow.querySelector("#frame-thickness-input");
+            frameThicknessInput.oninput = () => {
+                const frames = getVisualFrames();
+                const curFrame = frames[selectedFrameIndex];
+                if (curFrame) {
+                    curFrame.border_thickness = parseInt(frameThicknessInput.value, 10) || 4;
+                    syncToWidgets();
+                    renderCanvas();
+                }
+            };
+
+            frameInspector.appendChild(frameInspectorHeader);
+            frameInspectorHeader.appendChild(frameBadge);
+            frameInspector.appendChild(frameChipsRow);
+            frameInspector.appendChild(frameThicknessRow);
+            container.appendChild(frameInspector);
 
             // Character Instance Inspector (visible when an instance is selected)
             const charInspector = document.createElement("div");
@@ -754,12 +928,61 @@ app.registerExtension({
             }
 
             function renderInspector() {
+                updateLayerButtons();
                 const scenes = getScenes();
+                const frames = getVisualFrames();
                 const countSpan = container.querySelector("#scene-counter");
-                if (countSpan) countSpan.textContent = `Scenes: ${scenes.length} / 6`;
+                if (countSpan) countSpan.textContent = `Scenes: ${scenes.length} / 6 | Frames: ${frames.length}`;
 
                 btnAddScene.disabled = scenes.length >= 6;
                 btnDeleteScene.disabled = scenes.length <= 1;
+
+                if (activeEditLayer === "frame") {
+                    toolbar.style.display = "none";
+                    sceneInspector.style.display = "none";
+                    charInspector.style.display = "none";
+                    frameToolbar.style.display = "flex";
+                    frameInspector.style.display = "flex";
+
+                    // Render Frame Chips
+                    frameChipsRow.innerHTML = "";
+                    frames.forEach((fr, idx) => {
+                        const isSelected = (idx === selectedFrameIndex);
+                        const chip = document.createElement("button");
+                        chip.style.cssText = `
+                            background: ${isSelected ? "#3b82f6" : "#18181b"};
+                            color: ${isSelected ? "#ffffff" : "#d4d4d8"};
+                            border: 1px solid ${isSelected ? "#60a5fa" : "#3f3f46"};
+                            border-radius: 4px;
+                            padding: 2px 8px;
+                            font-size: 11px;
+                            font-weight: 600;
+                            cursor: pointer;
+                        `;
+                        chip.textContent = fr.frame_id || `Frame ${idx + 1}`;
+                        chip.onclick = (e) => {
+                            e.preventDefault();
+                            selectedFrameIndex = idx;
+                            renderInspector();
+                            renderCanvas();
+                        };
+                        frameChipsRow.appendChild(chip);
+                    });
+
+                    const curFrame = frames[selectedFrameIndex];
+                    if (curFrame) {
+                        frameBadge.innerHTML = `<span style="color: #60a5fa;">Selected: <b>${curFrame.frame_id || 'Frame ' + (selectedFrameIndex + 1)}</b></span>`;
+                        frameThicknessInput.value = curFrame.border_thickness || 4;
+                    } else {
+                        frameBadge.innerHTML = `<span style="color: #71717a;">No frame selected</span>`;
+                    }
+                    return;
+                } else {
+                    toolbar.style.display = "flex";
+                    sceneInspector.style.display = "flex";
+                    frameToolbar.style.display = "none";
+                    frameInspector.style.display = "none";
+                }
 
                 const curScene = scenes[selectedSceneIndex];
                 if (!curScene) {
@@ -935,27 +1158,91 @@ app.registerExtension({
                 }
 
                 const scenes = getScenes();
+                const frames = getVisualFrames();
                 const allInstances = getCharacterInstances();
                 const castList = getCast();
 
-                // 1. Draw Scenes (Translucent thin boxes)
+                const isFrameActive = (activeEditLayer === "frame");
+                const isSceneActive = (activeEditLayer === "scene");
+                const isCharActive = (activeEditLayer === "character");
+
+                // 1. Draw Visual Frames (Border Layer)
+                frames.forEach((fr, idx) => {
+                    const b = fr.area || fr.shape || { x: 0, y: 0, w: 1, h: 1 };
+                    const isSelected = (isFrameActive && idx === selectedFrameIndex);
+                    const rx = b.x * cw;
+                    const ry = b.y * ch;
+                    const rw = b.w * cw;
+                    const rh = b.h * ch;
+
+                    // Fill interior very light translucent when editing frames
+                    if (isFrameActive) {
+                        ctx.fillStyle = isSelected ? "rgba(59, 130, 246, 0.08)" : "rgba(0, 0, 0, 0.02)";
+                        ctx.fillRect(rx, ry, rw, rh);
+                    }
+
+                    // Border line (comic panel style)
+                    const thickness = Math.max(1, Math.min(10, Math.round((fr.border_thickness || 4) * (cw / 832))));
+                    ctx.strokeStyle = isSelected ? "#2563eb" : (fr.border_color || "#18181b");
+                    ctx.lineWidth = isSelected ? Math.max(thickness, 3) : thickness;
+                    ctx.strokeRect(rx, ry, rw, rh);
+
+                    // Badge
+                    const label = fr.frame_id || `Frame ${idx + 1}`;
+                    ctx.font = "bold 9px system-ui, sans-serif";
+                    const tw = ctx.measureText(label).width;
+                    ctx.fillStyle = isSelected ? "#2563eb" : "#3f3f46";
+                    ctx.fillRect(rx, ry, tw + 6, 14);
+                    ctx.fillStyle = "#ffffff";
+                    ctx.fillText(label, rx + 3, ry + 10);
+
+                    // Handles if selected in Frame layer
+                    if (isSelected) {
+                        const hs = 8;
+                        ctx.fillStyle = "#ffffff";
+                        ctx.strokeStyle = "#2563eb";
+                        ctx.lineWidth = 2;
+                        const corners = [
+                            [rx, ry],
+                            [rx + rw, ry],
+                            [rx + rw, ry + rh],
+                            [rx, ry + rh]
+                        ];
+                        corners.forEach(([cx, cy]) => {
+                            ctx.fillRect(cx - hs / 2, cy - hs / 2, hs, hs);
+                            ctx.strokeRect(cx - hs / 2, cy - hs / 2, hs, hs);
+                        });
+                    }
+                });
+
+                // 2. Draw Scenes (Translucent boxes)
                 scenes.forEach((sc, idx) => {
                     const b = sc.area || { x: 0, y: 0, w: 1, h: 1 };
                     const col = getSceneColor(idx);
-                    const isSelected = (idx === selectedSceneIndex && !selectedInstanceId);
+                    const isSelected = (isSceneActive && idx === selectedSceneIndex && !selectedInstanceId);
 
                     const rx = b.x * cw;
                     const ry = b.y * ch;
                     const rw = b.w * cw;
                     const rh = b.h * ch;
 
+                    // Fill & stroke alpha based on layer
+                    let fillAlpha = isSelected ? 0.22 : 0.10;
+                    let strokeAlpha = 1.0;
+                    let strokeWidth = isSelected ? 3 : 1.5;
+                    if (isFrameActive) {
+                        fillAlpha = 0.04;
+                        strokeAlpha = 0.4;
+                        strokeWidth = 1;
+                    }
+
                     // Fill
-                    ctx.fillStyle = `rgba(${col.rgb.join(",")}, ${isSelected ? 0.20 : 0.10})`;
+                    ctx.fillStyle = `rgba(${col.rgb.join(",")}, ${fillAlpha})`;
                     ctx.fillRect(rx, ry, rw, rh);
 
                     // Stroke
-                    ctx.strokeStyle = col.hex;
-                    ctx.lineWidth = isSelected ? 3 : 1.5;
+                    ctx.strokeStyle = isFrameActive ? `rgba(${col.rgb.join(",")}, ${strokeAlpha})` : col.hex;
+                    ctx.lineWidth = strokeWidth;
                     ctx.strokeRect(rx, ry, rw, rh);
 
                     // Label badge
@@ -963,7 +1250,7 @@ app.registerExtension({
                     ctx.font = "bold 10px system-ui, sans-serif";
                     const tw = ctx.measureText(label).width;
 
-                    ctx.fillStyle = col.hex;
+                    ctx.fillStyle = isFrameActive ? `rgba(${col.rgb.join(",")}, 0.6)` : col.hex;
                     ctx.fillRect(rx, ry, tw + 8, 16);
 
                     ctx.fillStyle = "#ffffff";
@@ -989,11 +1276,11 @@ app.registerExtension({
                     }
                 });
 
-                // 2. Draw Character Instances (Strong saturated boxes)
+                // 3. Draw Character Instances (Strong saturated boxes)
                 allInstances.forEach(inst => {
                     const b = inst.area || { x: 0, y: 0, w: 0.2, h: 0.2 };
                     const col = getCastColor(inst.cast_id);
-                    const isSelected = (inst.instance_id === selectedInstanceId);
+                    const isSelected = (isCharActive && inst.instance_id === selectedInstanceId);
                     const cInfo = castList.find(c => c.cast_id === inst.cast_id);
                     const cName = cInfo ? cInfo.display_name : inst.cast_id;
 
@@ -1002,13 +1289,22 @@ app.registerExtension({
                     const rw = b.w * cw;
                     const rh = b.h * ch;
 
+                    let fillAlpha = isSelected ? 0.35 : 0.20;
+                    let strokeAlpha = 1.0;
+                    let strokeWidth = isSelected ? 3 : 2;
+                    if (isFrameActive) {
+                        fillAlpha = 0.05;
+                        strokeAlpha = 0.3;
+                        strokeWidth = 1;
+                    }
+
                     // Fill
-                    ctx.fillStyle = `rgba(${col.rgb.join(",")}, ${isSelected ? 0.35 : 0.20})`;
+                    ctx.fillStyle = `rgba(${col.rgb.join(",")}, ${fillAlpha})`;
                     ctx.fillRect(rx, ry, rw, rh);
 
                     // Stroke
-                    ctx.strokeStyle = col.hex;
-                    ctx.lineWidth = isSelected ? 3 : 2;
+                    ctx.strokeStyle = isFrameActive ? `rgba(${col.rgb.join(",")}, ${strokeAlpha})` : col.hex;
+                    ctx.lineWidth = strokeWidth;
                     ctx.strokeRect(rx, ry, rw, rh);
 
                     // Badge
@@ -1016,7 +1312,7 @@ app.registerExtension({
                     ctx.font = "bold 10px system-ui, sans-serif";
                     const tw = ctx.measureText(badgeText).width;
 
-                    ctx.fillStyle = col.hex;
+                    ctx.fillStyle = isFrameActive ? `rgba(${col.rgb.join(",")}, 0.5)` : col.hex;
                     ctx.fillRect(rx, ry, tw + 8, 16);
 
                     ctx.fillStyle = "#ffffff";
@@ -1155,48 +1451,98 @@ app.registerExtension({
                 return -1;
             }
 
+            function hitTestFrame(x, y) {
+                const frames = getVisualFrames();
+                for (let i = frames.length - 1; i >= 0; i--) {
+                    const b = frames[i].area || frames[i].shape || { x: 0, y: 0, w: 1, h: 1 };
+                    if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
             canvas.onmousedown = (e) => {
                 const pos = getCanvasNormPos(e);
                 const scenes = getScenes();
+                const frames = getVisualFrames();
                 const allInstances = getCharacterInstances();
 
-                // 1. Check if clicking selected character handle
-                if (selectedInstanceId) {
-                    const curInst = allInstances.find(i => i.instance_id === selectedInstanceId);
-                    if (curInst) {
-                        const h = hitTestHandle(curInst.area, pos.px, pos.py);
+                // Layer: FRAME
+                if (activeEditLayer === "frame") {
+                    if (selectedFrameIndex >= 0 && selectedFrameIndex < frames.length) {
+                        const curFrame = frames[selectedFrameIndex];
+                        const fa = curFrame.area || curFrame.shape;
+                        const h = hitTestHandle(fa, pos.px, pos.py);
                         if (h) {
                             isDragging = true;
-                            dragTarget = "character";
+                            dragTarget = "frame";
                             dragMode = h;
                             dragStartX = pos.x;
                             dragStartY = pos.y;
-                            dragStartInstArea = { ...curInst.area };
+                            dragStartFrameArea = { ...fa };
                             return;
                         }
                     }
-                }
 
-                // 2. Check if clicking any character box
-                const hitChar = hitTestCharacter(pos.x, pos.y);
-                if (hitChar) {
-                    selectedInstanceId = hitChar.instance_id;
-                    const pSceneIdx = scenes.findIndex(s => s.scene_id === hitChar.scene_id);
-                    if (pSceneIdx !== -1) selectedSceneIndex = pSceneIdx;
-
-                    isDragging = true;
-                    dragTarget = "character";
-                    dragMode = "move";
-                    dragStartX = pos.x;
-                    dragStartY = pos.y;
-                    dragStartInstArea = { ...hitChar.area };
-                    renderAll();
+                    const hitF = hitTestFrame(pos.x, pos.y);
+                    if (hitF !== -1) {
+                        selectedFrameIndex = hitF;
+                        const fa = frames[hitF].area || frames[hitF].shape;
+                        isDragging = true;
+                        dragTarget = "frame";
+                        dragMode = "move";
+                        dragStartX = pos.x;
+                        dragStartY = pos.y;
+                        dragStartFrameArea = { ...fa };
+                        renderAll();
+                    } else {
+                        selectedFrameIndex = -1;
+                        renderAll();
+                    }
                     return;
                 }
 
-                // 3. Check if clicking selected scene handle
+                // Layer: CHARACTER
+                if (activeEditLayer === "character") {
+                    if (selectedInstanceId) {
+                        const curInst = allInstances.find(i => i.instance_id === selectedInstanceId);
+                        if (curInst) {
+                            const h = hitTestHandle(curInst.area, pos.px, pos.py);
+                            if (h) {
+                                isDragging = true;
+                                dragTarget = "character";
+                                dragMode = h;
+                                dragStartX = pos.x;
+                                dragStartY = pos.y;
+                                dragStartInstArea = { ...curInst.area };
+                                return;
+                            }
+                        }
+                    }
+
+                    const hitChar = hitTestCharacter(pos.x, pos.y);
+                    if (hitChar) {
+                        selectedInstanceId = hitChar.instance_id;
+                        const pSceneIdx = scenes.findIndex(s => s.scene_id === hitChar.scene_id);
+                        if (pSceneIdx !== -1) selectedSceneIndex = pSceneIdx;
+                        isDragging = true;
+                        dragTarget = "character";
+                        dragMode = "move";
+                        dragStartX = pos.x;
+                        dragStartY = pos.y;
+                        dragStartInstArea = { ...hitChar.area };
+                        renderAll();
+                    } else {
+                        selectedInstanceId = null;
+                        renderAll();
+                    }
+                    return;
+                }
+
+                // Layer: SCENE (default)
                 const curScene = scenes[selectedSceneIndex];
-                if (curScene && !selectedInstanceId) {
+                if (curScene) {
                     const handle = hitTestHandle(curScene.area, pos.px, pos.py);
                     if (handle) {
                         isDragging = true;
@@ -1212,11 +1558,9 @@ app.registerExtension({
                     }
                 }
 
-                // 4. Check if clicking any scene box
                 const hitIdx = hitTestScene(pos.x, pos.y);
                 if (hitIdx !== -1) {
                     selectedSceneIndex = hitIdx;
-                    selectedInstanceId = null;
                     isDragging = true;
                     dragTarget = "scene";
                     dragMode = "move";
@@ -1228,7 +1572,6 @@ app.registerExtension({
                         .map(i => ({ id: i.instance_id, area: { ...i.area } }));
                     renderAll();
                 } else {
-                    selectedInstanceId = null;
                     renderAll();
                 }
             };
@@ -1240,6 +1583,27 @@ app.registerExtension({
                 const dy = pos.y - dragStartY;
                 const scenes = getScenes();
                 const allInstances = getCharacterInstances();
+
+                if (dragTarget === "frame") {
+                    const frames = getVisualFrames();
+                    const curFrame = frames[selectedFrameIndex];
+                    if (!curFrame || !dragStartFrameArea) return;
+                    const b = curFrame.area || curFrame.shape;
+
+                    if (dragMode === "move") {
+                        const newPos = clampFrameDrag(dragStartFrameArea, dx, dy);
+                        b.x = newPos.x;
+                        b.y = newPos.y;
+                    } else {
+                        const newGeom = resizeFrame(dragStartFrameArea, dragMode, dx, dy);
+                        b.x = newGeom.x;
+                        b.y = newGeom.y;
+                        b.w = newGeom.w;
+                        b.h = newGeom.h;
+                    }
+                    renderCanvas();
+                    return;
+                }
 
                 if (dragTarget === "character") {
                     const curInst = allInstances.find(i => i.instance_id === selectedInstanceId);
@@ -1368,6 +1732,7 @@ app.registerExtension({
                     dragMode = "none";
                     dragStartSceneArea = null;
                     dragStartInstArea = null;
+                    dragStartFrameArea = null;
                     dragStartChildAreas = [];
                     syncToWidgets();
                     renderAll();
