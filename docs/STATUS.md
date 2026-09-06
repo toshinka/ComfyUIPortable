@@ -1,7 +1,7 @@
 # ComfyUIPortable 現在地 (Status & Direction)
 
-更新: 2026-09-06 JST
-Review Target Commit SHA: `待OwnerPush` (M3A Commit A — local, pending owner push)
+更新: 2026-09-07 JST
+Review Target Commit SHA: `待OwnerPush` (M3A.1 Commit A — local, pending owner push)
 正本入口: [GITHUB_ComfyUI.txt](../GITHUB_ComfyUI.txt)
 
 ---
@@ -105,17 +105,20 @@ Scene-only Draft (M1) → CAST 複数出演 (M2) → Rough Guide (M3) → UX She
   - **報告書**: [M2B1_CAST_PLACEMENT_AND_BROWSER_CLOSURE_REPORT.md](reports/M2B1_CAST_PLACEMENT_AND_BROWSER_CLOSURE_REPORT.md)
   - **Manifest**: `docs/verification/m2b1/M2B1_PRODUCT_E2E_MANIFEST.json`
 
-- **現行Card**: **M3A / 3M-3A — Visual Panel Frame Layer & Frame Guide Integration** — PASS (Headless) / OWNER ACCEPTANCE PENDING (Browser)
-  - **Visual Frame Contract**: `page.visual_frames` を SSOT として独立した Visual Panel Frame レイヤーを実装。Scene と Frame の完全独立性（相互不干渉インバリアント）を確立。
-  - **Edit Layer Selector**: Authoring DOM 上部に `[Scene Regions] | [Visual Panel Frames] | [Character Staging]` の 3-layer switch を追加。非アクティブ層は透過表示・drag 不可。
-  - **Frame 操作**: Add / Select / Drag / 4-corner Resize / Delete / Copy-from-Scenes (one-shot) を実装。Stable ID (`frame_{timestamp}_{random4hex}`)。
-  - **Deterministic Frame Overlay**: 新規 `TegakiMangaFrameOverlay` ノード (frame_overlay.py) が VAEDecode 出力へ黒枠線を PIL+Torch で確実描画。0 frames → pixel-identical pass-through。
-  - **Visual Frame Bridge**: `authoring_visual_frame_bridge.py` を新規追加。`derive_panel_layout_spec_from_frames()` と `render_deterministic_frame_overlay()` を実装。Document を mutate しない。
-  - **Canonical Workflow 更新**: `MINIMUM_HAND_MANGA_DRAFT.json` に Node 9 (TegakiMangaFrameOverlay) を追加。KSampler → VAEDecode → FrameOverlay → SaveImage の経路を確立。
-  - **ControlNet Frame Guide**: PENDING（実環境 compatible asset 未確認）。Primary gate (Deterministic Overlay) は独立 PASS。
-  - **自動テスト**: Python 7/7 (M3A contract) + 167 (全回帰) PASS、JS 19/19 PASS。ライブ検証 V0–V4 全 PASS。
-  - **検証アーティファクト**: `docs/verification/m3a/` (Contact Sheet + Manifest + UI Preview × 5 + Live Render × 5)
+- **完了Card**: **M3A / 3M-3A — Visual Panel Frame Layer & Frame Guide Integration** — PASS (Headless) / OWNER ACCEPTANCE PENDING (Browser)
+  - `page.visual_frames` SSOT、3-layer Edit UI、Frame独立操作、TegakiMangaFrameOverlay node、0-frame pass-through、V0-V4 PASS。
   - **報告書**: [M3A_VISUAL_PANEL_FRAME_AND_FRAME_GUIDE_REPORT.md](reports/M3A_VISUAL_PANEL_FRAME_AND_FRAME_GUIDE_REPORT.md)
+
+- **現行Card**: **M3A.1 / 3M-3A.1 — Frame Runtime Truth, Gutter Semantics & Live Browser Closure** — PASS (Headless) / OWNER ACCEPTANCE PENDING (Browser)
+  - **Finding A (fail-closed)**: invalid JSON / out-of-range page_index → ERROR status (fail-closed)。0 frames → pass-through PASS (legal)。
+  - **Finding B (white gutter)**: comic_panels semantics: 白キャンバス + source paste inside frames + 黒枠線。Frame外 = 純白 gutter。
+  - **Finding C (per-frame thickness)**: `border_thickness` per-frame honored、global `line_thickness` は fallback のみ。
+  - **Finding D (area canonical)**: `area` key canonical。`shape` はlegacy fallback。`copyFramesFromScenes` area-only出力。JSON roundtrip後のdrift解消。
+  - **Finding E (empty guide)**: `derive_panel_layout_spec_from_frames([])` → None (no fake full-frame)。
+  - **Manifest truth**: `visual_status=PENDING`、`structural_frame_status` のみ pixel oracle で確認。
+  - **Frame ID correction**: sequential `frame_1, frame_2...` (not timestamp+random — M3A Report記述誤り修正)。
+  - **自動テスト**: Python 14/14 (M3A.1 新規) + 7/7 (M3A) + 13/13 (回帰) PASS、JS 19/19 PASS。V0-V4 pixel oracle PASS。
+  - **報告書**: [M3A1_FRAME_RUNTIME_TRUTH_AND_BROWSER_CLOSURE_REPORT.md](reports/M3A1_FRAME_RUNTIME_TRUTH_AND_BROWSER_CLOSURE_REPORT.md)
 
 - **次Card候補**: **M3B — Rough Manga / White-Dummy Character Guide Integration** (Owner Browser受入完了後に着手)
   - rough manga image drop、white-dummy / silhouette character guide、Character Instance ↔ rough figure association、weak occupancy ControlNet を統合予定。

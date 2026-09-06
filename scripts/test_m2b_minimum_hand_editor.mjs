@@ -275,6 +275,9 @@ console.log("--- Testing M2B and M2B.1 Minimum-Hand Editor Logic Invariants ---"
                 // Mutating copied frame must not mutate original scene
                 copiedFrames[0].area.x = 0.5;
                 assert.strictEqual(sampleScenes[0].area.x, 0.1, "One-shot copy must be non-linking clone");
+                // M3A.1: copyFramesFromScenes must output area-only (no shape key drift)
+                assert.ok(!("shape" in copiedFrames[0]), "copyFramesFromScenes must NOT write shape key — area is canonical");
+                assert.ok(!("shape" in copiedFrames[1]), "copyFramesFromScenes must NOT write shape key — area is canonical");
                 console.log("✓ Test 17 Passed: M3A One-shot non-linking copyFramesFromScenes");
 
                 // Test 18: M3A Visual Frame clamping and resizing

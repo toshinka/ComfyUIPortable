@@ -25,9 +25,10 @@
 | `M2A.1 / 3M-2A.1` | COMPLETED | Prompt-Region Calibration & Conditional ControlNet Escalation Gate（8-seed実証、Spatial Hint Compiler、Option A+採択） |
 | `M2B / 3M-2B` | COMPLETED | Minimum-Hand CAST & Character Staging Product UI (Option A+: Rough Region + Free Text + Hidden Spatial Helper) |
 | `M2B.1 / 3M-2B.1` | COMPLETED / FAIL (Browser) | CAST Placement Semantics & Live Browser Closure (選択CAST配置因果性修正、純粋操作分離、実機閉域検証; Owner Browser check FAIL) |
-| `M2B.2 / 3M-2B.2` | COMPLETED / OWNER ACCEPTED | Live UI Bootstrap, Widget Serialization & Workflow Repair (app.js import修正、seed control_after_generate停止、raw json隠蔽、シリアライズ確定) |
-| `M3A / 3M-3A` | PASS (Headless) / OWNER PENDING | Visual Panel Frame Layer & Frame Guide Integration (独立Visual Frame層、Deterministic Overlay、3-layer Edit UI、V0-V4 PASS) |
-| `M3B / 3M-3B` | NEXT CANDIDATE | Rough Manga / White-Dummy Character Guide Integration (M3A Browser受入後に着手) |
+| `M2B.2 / 3M-2B.2` | COMPLETED / OWNER ACCEPTED | Live UI Bootstrap, Widget Serialization & Workflow Repair |
+| `M3A / 3M-3A` | COMPLETED (Headless) / OWNER PENDING (Browser) | Visual Panel Frame Layer & Frame Guide Integration |
+| `M3A.1 / 3M-3A.1` | PASS (Headless) / OWNER PENDING | Frame Runtime Truth, Gutter Semantics & Live Browser Closure (fail-closed、comic_panels white gutter、per-frame thickness、area canonical key、derive→None) |
+| `M3B / 3M-3B` | NEXT CANDIDATE | Rough Manga / White-Dummy Character Guide Integration (M3A.1 Browser受入後に着手) |
 
 ## 3. HISTORICAL / SUPERSEDED (過去の参照資料)
 過去のPhase指示書や中間計画書は歴史的経緯の参照用であり、次作業の直接指示とはみなさない。

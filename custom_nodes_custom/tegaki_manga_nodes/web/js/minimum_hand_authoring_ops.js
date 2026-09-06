@@ -323,7 +323,6 @@ export function copyFramesFromScenes(scenes = []) {
             frame_id: `frame_${idx + 1}`,
             order: idx + 1,
             area: geom,
-            shape: geom,
             border_thickness: 4,
             border_color: "#000000",
             metadata: {}
@@ -409,9 +408,9 @@ export function resizeFrame(startArea, handle, dx, dy, minSize = 0.05) {
 export function checkFrameOverlap(frames = []) {
     const pairs = [];
     for (let i = 0; i < frames.length; i++) {
-        const a = frames[i].shape || frames[i].area || {};
+        const a = frames[i].area || frames[i].shape || {};
         for (let j = i + 1; j < frames.length; j++) {
-            const b = frames[j].shape || frames[j].area || {};
+            const b = frames[j].area || frames[j].shape || {};
             // Check bounding box intersection
             const noOverlap = (
                 (a.x + a.w) <= b.x ||

@@ -1,0 +1,98 @@
+{
+  "milestone": "M3A.1",
+  "title": "Frame Runtime Truth, Gutter Semantics & Live Browser Closure",
+  "timestamp": "2026-09-06T16:01:32Z",
+  "overall_structural_status": "PASS",
+  "note": "visual_status=PENDING for image-content checks. structural_frame_status=PASS is verified by pixel oracles. LIVE_BROWSER checks require owner manual confirmation.",
+  "verifications": {
+    "python_m3a1_runtime_truth": {
+      "status": "PASS",
+      "evidence_type": "HEADLESS_TEST",
+      "test_suite": "scripts/test_m3a1_frame_overlay_runtime_truth.py",
+      "checks_passed": 14,
+      "checks_total": 14
+    },
+    "python_m3a_contract_regression": {
+      "status": "PASS",
+      "evidence_type": "HEADLESS_TEST",
+      "test_suite": "scripts/test_m3a_visual_frame_contract.py",
+      "checks_passed": 7,
+      "checks_total": 7
+    },
+    "js_frontend_contract": {
+      "status": "PASS",
+      "evidence_type": "HEADLESS_TEST",
+      "test_suite": "scripts/test_m2b_minimum_hand_editor.mjs",
+      "checks_passed": 19,
+      "checks_total": 19
+    },
+    "pixel_oracle_tasks": [
+      {
+        "task_id": "V0_zero_frames",
+        "description": "0 visual frames => pixel-identical pass-through",
+        "runtime_status": "PASS",
+        "structural_frame_status": "PASS",
+        "visual_status": "PENDING",
+        "review_method": "PIXEL_ORACLE",
+        "pixel_match": true
+      },
+      {
+        "task_id": "V1_two_frames_gutter",
+        "description": "2 frames 4px uniform border - white gutter and black borders",
+        "runtime_status": "PASS",
+        "structural_frame_status": "PASS",
+        "visual_status": "PENDING",
+        "review_method": "PIXEL_ORACLE",
+        "checks_passed": 4,
+        "checks_total": 4
+      },
+      {
+        "task_id": "V2_per_frame_thickness",
+        "description": "Per-frame thickness 2px (thin) vs 8px (thick) - pixel oracle",
+        "runtime_status": "PASS",
+        "structural_frame_status": "PASS",
+        "visual_status": "PENDING",
+        "review_method": "PIXEL_ORACLE",
+        "checks_passed": 2,
+        "checks_total": 2
+      },
+      {
+        "task_id": "V3_area_roundtrip",
+        "description": "Area-only canonical key - no shape drift after JSON roundtrip and drag",
+        "runtime_status": "PASS",
+        "structural_frame_status": "PASS",
+        "visual_status": "PENDING",
+        "review_method": "PIXEL_ORACLE",
+        "shape_key_absent": true,
+        "frame2_independent": true,
+        "area_respected_in_render": true
+      },
+      {
+        "task_id": "V4_empty_guide_disabled",
+        "description": "derive_panel_layout_spec_from_frames([]) returns None — no fake full-frame layout",
+        "runtime_status": "PASS",
+        "structural_frame_status": "PASS",
+        "visual_status": "N/A",
+        "review_method": "STRUCTURAL_CHECK",
+        "returns_none": true
+      }
+    ],
+    "oracle_contact_sheet": "docs/verification/m3a1/M3A1_FRAME_GUTTER_AND_THICKNESS_ORACLE.png",
+    "live_browser_frame_edit": {
+      "runtime_status": "PENDING",
+      "visual_status": "PENDING",
+      "review_method": "LIVE_BROWSER",
+      "evidence_type": "OWNER_MANUAL",
+      "required_steps": [
+        "Server restart + browser hard reload",
+        "Load MINIMUM_HAND_MANGA_DRAFT.json",
+        "Click Visual Panel Frames layer",
+        "Click Copy Frames from Scenes",
+        "Queue -> verify white gutter + black frames in SaveImage output",
+        "Drag Frame 1 -> Queue -> verify position changed",
+        "Save Workflow -> Reload -> verify frames retained",
+        "Post-reload drag -> Queue -> verify new geometry used"
+      ]
+    }
+  }
+}

@@ -76,7 +76,7 @@ class TestM3AVisualFrameContract(unittest.TestCase):
         self.assertEqual(mask.max().item(), 0.0, "Mask should be completely empty (0.0)")
         dbg = json.loads(debug)
         self.assertEqual(dbg["status"], "PASS")
-        self.assertEqual(dbg["mode"], "pass_through")
+        self.assertEqual(dbg["render_mode"], "pass_through")
         self.assertEqual(dbg["frame_count"], 0)
 
     def test_02_deterministic_border_overlay(self):
@@ -111,7 +111,7 @@ class TestM3AVisualFrameContract(unittest.TestCase):
 
         dbg = json.loads(debug)
         self.assertEqual(dbg["status"], "PASS")
-        self.assertEqual(dbg["mode"], "deterministic_overlay")
+        self.assertEqual(dbg["render_mode"], "comic_panels")
         self.assertEqual(dbg["frame_count"], 2)
 
         # Inside frame remains white
