@@ -5,14 +5,14 @@ Branch: main
 Canonical path: ComfyUIPortable/GITHUB_ComfyUI.txt
 Latest Entry: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB_ComfyUI.txt
 
-Review Target Commit SHA: 117c5d9a59de5d33a51fedb3819b5a4bae0eba38
+Review Target Commit SHA: 45ccd226b7a853e6279261a34bbdcdf5e98a1a32 (M3A Commit A — LOCAL PENDING OWNER PUSH)
 Planning Commit SHA: 261a3d7297455931d391e62f2d8a1335193d8d90
-Planning publication: Published on remote main (Planning: 261a3d72, M0: 5e57ae2f, M1: c9a8dc1b, M1 Navigation: 64456929, M1.1: 7e516015, M1.1 Navigation: b6bea40c, M2A: 72e032c7, M2A Navigation: 88993df0, M2A.1: 7e9528d7, M2A.1 Navigation: 408744b1, M2B: e676deb5, M2B Navigation: 463ec8f9, M2B.1: 1b3bd224, M2B.1 Navigation: 4bc82536). Implementation Review Target (Commit A): 117c5d9a59de5d33a51fedb3819b5a4bae0eba38 (local, pending owner push).
+Planning publication: Published on remote main (Planning: 261a3d72, M0: 5e57ae2f, M1: c9a8dc1b, M1 Navigation: 64456929, M1.1: 7e516015, M1.1 Navigation: b6bea40c, M2A: 72e032c7, M2A Navigation: 88993df0, M2A.1: 7e9528d7, M2A.1 Navigation: 408744b1, M2B: e676deb5, M2B Navigation: 463ec8f9, M2B.1: 1b3bd224, M2B.1 Navigation: 4bc82536, M2B.2 A: 117c5d9a, M2B.2 B: 85cc0245). M3A Implementation Commit A: LOCAL PENDING OWNER PUSH.
 
 Current direction:
-Minimum-Hand / Scene-first. Simple Scene-only draft first, optional CAST with repeated appearances next, rough manga/dummy guide afterward. Scene regions and visible panel frames are independent. Pose / Interaction are later refinement.
-Current card: M2B.2 — PASS / OWNER ACCEPTANCE PENDING (Live UI Bootstrap, Widget Serialization & Workflow Repair: Root Cause A app.js import depth resolved to ../../../scripts/app.js, Root Cause B seed control_after_generate disabled to prevent auto-widget shift and Invalid Input on style_template, Root Cause C raw document_json hidden on primary UI surface, Canonical workflow verified with 4 exact widgets, 167 Python tests + 15 JS tests passing, static endpoints HTTP 200).
-Next card candidate: M3 / 3M-3 — Rough Manga / Visual Panel Guide Integration (only after owner browser acceptance).
+Minimum-Hand / Scene-first. Simple Scene-only draft first, optional CAST with repeated appearances next, Visual Panel Frames independent from Semantic Scenes now stable, rough manga/dummy guide next. Scene regions and visible panel frames are independent (M3A invariant established). Pose / Interaction are later refinement.
+Current card: M3A — PASS (Headless) / OWNER ACCEPTANCE PENDING (Visual Panel Frame Layer & Frame Guide Integration: independent Visual Frame SSOT page.visual_frames, 3-layer Edit UI [Scene Regions | Visual Panel Frames | Character Staging], Deterministic Frame Overlay node TegakiMangaFrameOverlay, 0-frame pass-through, Frame/Scene independence contract tests 7/7 PASS, JS 19/19 PASS, Python 167 regression PASS, live V0-V4 all PASS, ControlNet PENDING asset not confirmed).
+Next card candidate: M3B / 3M-3B — Rough Manga / White-Dummy Character Guide Integration (only after M3A owner browser acceptance).
 
 Evidence correction:
 Phase 3L was reported complete. Its presence evaluation JSON has 14 visual_status=PENDING entries. Owner acceptance is not established by that report.
@@ -37,7 +37,11 @@ Document authority: docs/DOCUMENT_REGISTER.md
 Old intermediate plans and Phase requests are historical, not next-work instructions.
 
 Implementation evidence (pinned to implementation Review Target)
-M2B.2 Report (Current Review Target):
+M3A Report (Current Review Target — LOCAL PENDING OWNER PUSH):
+docs/reports/M3A_VISUAL_PANEL_FRAME_AND_FRAME_GUIDE_REPORT.md
+(URL will be pinned after owner push)
+
+M2B.2 Report (Previous Review Target):
 https://raw.githubusercontent.com/toshinka/tegaki/117c5d9a59de5d33a51fedb3819b5a4bae0eba38/ComfyUIPortable/docs/reports/M2B2_LIVE_UI_BOOTSTRAP_AND_WORKFLOW_REPAIR_REPORT.md
 
 M2B.1 Report:
