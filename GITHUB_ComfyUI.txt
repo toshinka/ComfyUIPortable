@@ -5,13 +5,13 @@ Branch: main
 Canonical path: ComfyUIPortable/GITHUB_ComfyUI.txt
 Latest Entry: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB_ComfyUI.txt
 
-Review Target Commit SHA: e676deb53824b97c18058c3dd2fc20cb08d0f822
+Review Target Commit SHA: 1b3bd2246c6a2f440d7a7f810a8a75a798fb9bc2
 Planning Commit SHA: 261a3d7297455931d391e62f2d8a1335193d8d90
-Planning publication: Published on remote main (Planning: 261a3d72, M0: 5e57ae2f, M1: c9a8dc1b, M1 Navigation: 64456929, M1.1: 7e516015, M1.1 Navigation: b6bea40c, M2A: 72e032c7, M2A Navigation: 88993df0, M2A.1: 7e9528d7, M2A.1 Navigation: 408744b1). Implementation Review Target (Commit A): e676deb53824b97c18058c3dd2fc20cb08d0f822 (local, pending owner push).
+Planning publication: Published on remote main (Planning: 261a3d72, M0: 5e57ae2f, M1: c9a8dc1b, M1 Navigation: 64456929, M1.1: 7e516015, M1.1 Navigation: b6bea40c, M2A: 72e032c7, M2A Navigation: 88993df0, M2A.1: 7e9528d7, M2A.1 Navigation: 408744b1, M2B: e676deb5, M2B Navigation: 0d6da8c1). Implementation Review Target (Commit A): 1b3bd2246c6a2f440d7a7f810a8a75a798fb9bc2 (local, pending owner push).
 
 Current direction:
 Minimum-Hand / Scene-first. Simple Scene-only draft first, optional CAST with repeated appearances next, rough manga/dummy guide afterward. Scene regions and visible panel frames are independent. Pose / Interaction are later refinement.
-Current card: M2B / 3M-2B — COMPLETED (Minimum-Hand CAST and Character Staging Product UI: Option A+ integrated into TegakiMinimumHandSceneEditor, auto spatial compiler wired, CAST palette & character instance hierarchy implemented, workflow canonicalized to MINIMUM_HAND_MANGA_DRAFT.json, 161 Python unit tests + 7 JS tests passing, GPU runtime verified across single-character, 2-character, depth, and repeated CAST multi-scene).
+Current card: M2B.1 — COMPLETED (CAST Placement Semantics & Live Browser Closure: Finding A modulo cycling resolved to strict user CAST selection causality, pure authoring operations decoupled into minimum_hand_authoring_ops.js, last instance removal resets input_mode to simple while preserving prompt, DOM injection hardened, 165 Python unit tests + 13 JS tests passing, GPU runtime verified on standalone ComfyUI, E2E strictly categorized with Live Browser E2E PENDING Owner check).
 Next card candidate: M3 / 3M-3 — Rough Manga / Visual Panel Guide Integration (rough panel guides independent of scene regions).
 
 Evidence correction:
@@ -37,7 +37,10 @@ Document authority: docs/DOCUMENT_REGISTER.md
 Old intermediate plans and Phase requests are historical, not next-work instructions.
 
 Implementation evidence (pinned to implementation Review Target)
-M2B Report (Current Review Target):
+M2B.1 Report (Current Review Target):
+https://raw.githubusercontent.com/toshinka/tegaki/1b3bd2246c6a2f440d7a7f810a8a75a798fb9bc2/ComfyUIPortable/docs/reports/M2B1_CAST_PLACEMENT_AND_BROWSER_CLOSURE_REPORT.md
+
+M2B Report:
 https://raw.githubusercontent.com/toshinka/tegaki/e676deb53824b97c18058c3dd2fc20cb08d0f822/ComfyUIPortable/docs/reports/M2B_MINIMUM_HAND_CAST_STAGING_PRODUCT_UI_REPORT.md
 
 M2A.1 Report:
