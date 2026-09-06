@@ -1,18 +1,18 @@
 ComfyUIPortable — External AI Entry (canonical)
-Updated: 2026-09-06 JST
+Updated: 2026-09-07 JST
 Repository: https://github.com/toshinka/tegaki
 Branch: main
 Canonical path: ComfyUIPortable/GITHUB_ComfyUI.txt
 Latest Entry: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB_ComfyUI.txt
 
-Review Target Commit SHA: 45ccd226b7a853e6279261a34bbdcdf5e98a1a32 (M3A Commit A — LOCAL PENDING OWNER PUSH)
+Review Target Commit SHA: a7f0baaad6e7f5d82c39b1042e8a3c4e9f1a7d5b (M3A.1 Commit A — LOCAL PENDING OWNER PUSH)
 Planning Commit SHA: 261a3d7297455931d391e62f2d8a1335193d8d90
-Planning publication: Published on remote main (Planning: 261a3d72, M0: 5e57ae2f, M1: c9a8dc1b, M1 Navigation: 64456929, M1.1: 7e516015, M1.1 Navigation: b6bea40c, M2A: 72e032c7, M2A Navigation: 88993df0, M2A.1: 7e9528d7, M2A.1 Navigation: 408744b1, M2B: e676deb5, M2B Navigation: 463ec8f9, M2B.1: 1b3bd224, M2B.1 Navigation: 4bc82536, M2B.2 A: 117c5d9a, M2B.2 B: 85cc0245). M3A Implementation Commit A: LOCAL PENDING OWNER PUSH.
+Planning publication: Published on remote main (Planning: 261a3d72, M0: 5e57ae2f, M1: c9a8dc1b, M1 Navigation: 64456929, M1.1: 7e516015, M1.1 Navigation: b6bea40c, M2A: 72e032c7, M2A Navigation: 88993df0, M2A.1: 7e9528d7, M2A.1 Navigation: 408744b1, M2B: e676deb5, M2B Navigation: 463ec8f9, M2B.1: 1b3bd224, M2B.1 Navigation: 4bc82536, M2B.2 A: 117c5d9a, M2B.2 B: 85cc0245, M3A A: 45ccd226, M3A B: 858dd7f5). M3A.1 Implementation Commit A: LOCAL PENDING OWNER PUSH.
 
 Current direction:
-Minimum-Hand / Scene-first. Simple Scene-only draft first, optional CAST with repeated appearances next, Visual Panel Frames independent from Semantic Scenes now stable, rough manga/dummy guide next. Scene regions and visible panel frames are independent (M3A invariant established). Pose / Interaction are later refinement.
-Current card: M3A — PASS (Headless) / OWNER ACCEPTANCE PENDING (Visual Panel Frame Layer & Frame Guide Integration: independent Visual Frame SSOT page.visual_frames, 3-layer Edit UI [Scene Regions | Visual Panel Frames | Character Staging], Deterministic Frame Overlay node TegakiMangaFrameOverlay, 0-frame pass-through, Frame/Scene independence contract tests 7/7 PASS, JS 19/19 PASS, Python 167 regression PASS, live V0-V4 all PASS, ControlNet PENDING asset not confirmed).
-Next card candidate: M3B / 3M-3B — Rough Manga / White-Dummy Character Guide Integration (only after M3A owner browser acceptance).
+Minimum-Hand / Scene-first. Visual Panel Frames independent from Semantic Scenes (M3A invariant). M3A.1 closes runtime semantics: comic_panels white gutter + per-frame thickness + fail-closed + area canonical key. M3B (rough manga/dummy guide) pending owner browser acceptance.
+Current card: M3A.1 — PASS (Headless) / OWNER ACCEPTANCE PENDING (Frame Runtime Truth, Gutter Semantics & Live Browser Closure: fail-closed on invalid JSON/out-of-range page_index, comic_panels white gutter semantics, per-frame border_thickness honored, area canonical key drift fixed, copyFramesFromScenes area-only, derive([])=None, V0-V4 pixel oracle PASS, Python 34 tests + JS 19 tests PASS).
+Next card candidate: M3B / 3M-3B — Rough Manga / White-Dummy Character Guide Integration (only after M3A.1 owner browser acceptance).
 
 Evidence correction:
 Phase 3L was reported complete. Its presence evaluation JSON has 14 visual_status=PENDING entries. Owner acceptance is not established by that report.
@@ -37,9 +37,12 @@ Document authority: docs/DOCUMENT_REGISTER.md
 Old intermediate plans and Phase requests are historical, not next-work instructions.
 
 Implementation evidence (pinned to implementation Review Target)
-M3A Report (Current Review Target — LOCAL PENDING OWNER PUSH):
-docs/reports/M3A_VISUAL_PANEL_FRAME_AND_FRAME_GUIDE_REPORT.md
+M3A.1 Report (Current Review Target — LOCAL PENDING OWNER PUSH):
+docs/reports/M3A1_FRAME_RUNTIME_TRUTH_AND_BROWSER_CLOSURE_REPORT.md
 (URL will be pinned after owner push)
+
+M3A Report (Previous Review Target):
+docs/reports/M3A_VISUAL_PANEL_FRAME_AND_FRAME_GUIDE_REPORT.md
 
 M2B.2 Report (Previous Review Target):
 https://raw.githubusercontent.com/toshinka/tegaki/117c5d9a59de5d33a51fedb3819b5a4bae0eba38/ComfyUIPortable/docs/reports/M2B2_LIVE_UI_BOOTSTRAP_AND_WORKFLOW_REPAIR_REPORT.md
