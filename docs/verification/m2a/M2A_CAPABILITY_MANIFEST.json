@@ -1,0 +1,1005 @@
+{
+  "milestone": "M2A",
+  "title": "M2A Character Spatial Capability Ladder Manifest",
+  "timestamp": "2026-09-06 10:28:46",
+  "checkpoint": "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors",
+  "conditions_total": 19,
+  "conditions_completed": 19,
+  "entries": [
+    {
+      "condition_id": "A1_single_alice_left",
+      "tier": "A_SINGLE_CHAR",
+      "name": "A1 Alice Left (Seed 42)",
+      "seed": 42,
+      "scenes": [
+        "Courtyard"
+      ],
+      "cast": [
+        "Alice"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_alice_left",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.08,
+            "y": 0.1,
+            "w": 0.38,
+            "h": 0.8
+          },
+          "acting_prompt": "standing casually"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PASS",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/A1_single_alice_left.png",
+      "preview_path": "docs/verification/m2a/A1_single_alice_left_preview.png",
+      "elapsed_seconds": 22.02,
+      "presence_result": "PASS (1/1)",
+      "identity_result": "PASS (Alice blonde twin tails, blue eyes, school uniform)",
+      "position_result": "PASS (cleanly occupies left column x=0.08..0.46)",
+      "depth_result": "N/A (single character mid-ground)",
+      "visual_notes": "Dominant subject follows left rough region without any left/right words in prompt.",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    },
+    {
+      "condition_id": "A2_single_alice_right",
+      "tier": "A_SINGLE_CHAR",
+      "name": "A2 Alice Right (Seed 42)",
+      "seed": 42,
+      "scenes": [
+        "Courtyard"
+      ],
+      "cast": [
+        "Alice"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_alice_right",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.54,
+            "y": 0.1,
+            "w": 0.38,
+            "h": 0.8
+          },
+          "acting_prompt": "standing casually"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PASS",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/A2_single_alice_right.png",
+      "preview_path": "docs/verification/m2a/A2_single_alice_right_preview.png",
+      "elapsed_seconds": 18.02,
+      "presence_result": "PASS (1/1)",
+      "identity_result": "PASS (Alice blonde hair, school uniform)",
+      "position_result": "PASS (cleanly occupies right side x=0.54..0.92)",
+      "depth_result": "N/A (single character)",
+      "visual_notes": "Under identical seed 42, shifting character area to right moves subject cleanly to right side.",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    },
+    {
+      "condition_id": "B_two_char_seed42",
+      "tier": "B_TWO_CHAR",
+      "name": "B Two Characters (Seed 42)",
+      "seed": 42,
+      "scenes": [
+        "Classroom"
+      ],
+      "cast": [
+        "Alice",
+        "Bob"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_alice",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.08,
+            "y": 0.1,
+            "w": 0.38,
+            "h": 0.8
+          },
+          "acting_prompt": "standing, looking forward"
+        },
+        {
+          "instance_id": "inst_bob",
+          "cast_id": "cast_bob",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.54,
+            "y": 0.1,
+            "w": 0.38,
+            "h": 0.8
+          },
+          "acting_prompt": "standing, holding a notebook"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PASS",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/B_two_char_seed42.png",
+      "preview_path": "docs/verification/m2a/B_two_char_seed42_preview.png",
+      "elapsed_seconds": 24.02,
+      "presence_result": "PASS (2/2)",
+      "identity_result": "PASS (Alice blonde hair; Bob short dark hair and glasses; no cross-identity contamination)",
+      "position_result": "PASS (Alice left x=0.08; Bob right x=0.54)",
+      "depth_result": "BALANCED (both characters at conversational medium depth)",
+      "visual_notes": "Two distinct characters rendered side-by-side with independent visual attributes matching CAST specs.",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    },
+    {
+      "condition_id": "B_two_char_seed101",
+      "tier": "B_TWO_CHAR",
+      "name": "B Two Characters (Seed 101)",
+      "seed": 101,
+      "scenes": [
+        "Classroom"
+      ],
+      "cast": [
+        "Alice",
+        "Bob"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_alice",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.08,
+            "y": 0.1,
+            "w": 0.38,
+            "h": 0.8
+          },
+          "acting_prompt": "standing, looking forward"
+        },
+        {
+          "instance_id": "inst_bob",
+          "cast_id": "cast_bob",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.54,
+            "y": 0.1,
+            "w": 0.38,
+            "h": 0.8
+          },
+          "acting_prompt": "standing, holding a notebook"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PARTIAL",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/B_two_char_seed101.png",
+      "preview_path": "docs/verification/m2a/B_two_char_seed101_preview.png",
+      "elapsed_seconds": 24.04,
+      "presence_result": "PARTIAL (2/2 present, 1 dominant)",
+      "identity_result": "PASS (Alice clearly defined)",
+      "position_result": "PARTIAL (Alice centered-left, Bob partially behind in right background)",
+      "depth_result": "STAGGERED (Alice foreground, Bob background occluded)",
+      "visual_notes": "Alice is prominent in front of classroom desk; Bob is partially occluded behind on right.",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    },
+    {
+      "condition_id": "B_two_char_seed202",
+      "tier": "B_TWO_CHAR",
+      "name": "B Two Characters (Seed 202)",
+      "seed": 202,
+      "scenes": [
+        "Classroom"
+      ],
+      "cast": [
+        "Alice",
+        "Bob"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_alice",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.08,
+            "y": 0.1,
+            "w": 0.38,
+            "h": 0.8
+          },
+          "acting_prompt": "standing, looking forward"
+        },
+        {
+          "instance_id": "inst_bob",
+          "cast_id": "cast_bob",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.54,
+            "y": 0.1,
+            "w": 0.38,
+            "h": 0.8
+          },
+          "acting_prompt": "standing, holding a notebook"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PARTIAL",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/B_two_char_seed202.png",
+      "preview_path": "docs/verification/m2a/B_two_char_seed202_preview.png",
+      "elapsed_seconds": 24.39,
+      "presence_result": "PARTIAL (2/2 present, 1 dominant)",
+      "identity_result": "PASS (Alice clearly defined with uniform and blonde hair)",
+      "position_result": "PARTIAL (Alice center-left looking away; Bob right edge in blazer)",
+      "depth_result": "STAGGERED (Alice center-foreground, Bob right edge)",
+      "visual_notes": "Alice is fully rendered; Bob is represented by right-side figure in school blazer.",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    },
+    {
+      "condition_id": "B2_swap_oracle_seed42",
+      "tier": "B2_SWAP_ORACLE",
+      "name": "B2 Swap Oracle (Seed 42)",
+      "seed": 42,
+      "scenes": [
+        "Classroom"
+      ],
+      "cast": [
+        "Alice",
+        "Bob"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_bob",
+          "cast_id": "cast_bob",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.08,
+            "y": 0.1,
+            "w": 0.38,
+            "h": 0.8
+          },
+          "acting_prompt": "standing, holding a notebook"
+        },
+        {
+          "instance_id": "inst_alice",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.54,
+            "y": 0.1,
+            "w": 0.38,
+            "h": 0.8
+          },
+          "acting_prompt": "standing, looking forward"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PASS",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/B2_swap_oracle_seed42.png",
+      "preview_path": "docs/verification/m2a/B2_swap_oracle_seed42_preview.png",
+      "elapsed_seconds": 24.08,
+      "presence_result": "PASS (2/2)",
+      "identity_result": "PASS (Bob glasses/dark hair; Alice blonde twin tails/sailor collar)",
+      "position_result": "PASS (Bob cleanly flipped to LEFT; Alice cleanly flipped to RIGHT)",
+      "depth_result": "BALANCED (Bob left foreground, Alice right desk)",
+      "visual_notes": "CRUCIAL SWAP ORACLE: Under identical seed 42 and identical prompts to B, swapping regions cleanly flips the physical positions of Alice and Bob!",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    },
+    {
+      "condition_id": "C1_depth_prompt_only",
+      "tier": "C_DEPTH",
+      "name": "C1 Depth Prompt-Only (Seed 42)",
+      "seed": 42,
+      "scenes": [
+        "School Hallway"
+      ],
+      "cast": [
+        "Alice",
+        "Bob"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_alice_fg",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.08,
+            "y": 0.12,
+            "w": 0.4,
+            "h": 0.78
+          },
+          "acting_prompt": "close foreground, upper body prominently in foreground"
+        },
+        {
+          "instance_id": "inst_bob_bg",
+          "cast_id": "cast_bob",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.52,
+            "y": 0.12,
+            "w": 0.4,
+            "h": 0.78
+          },
+          "acting_prompt": "far in the background, small distant full body"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PASS",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/C1_depth_prompt_only.png",
+      "preview_path": "docs/verification/m2a/C1_depth_prompt_only_preview.png",
+      "elapsed_seconds": 24.03,
+      "presence_result": "PASS (2/2)",
+      "identity_result": "PASS (Alice blonde girl; Bob glasses/blazer boy)",
+      "position_result": "PASS (Alice left, Bob right)",
+      "depth_result": "PASS (EXCELLENT: Alice extreme close-up foreground bust; Bob distant walking full body)",
+      "visual_notes": "Prompt alone induces profound depth separation and occlusion hierarchy with identical bounding box sizes. Answers Owner Question: Prompt is highly sufficient for depth!",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    },
+    {
+      "condition_id": "C2_depth_geom_only",
+      "tier": "C_DEPTH",
+      "name": "C2 Depth Geometry-Only (Seed 42)",
+      "seed": 42,
+      "scenes": [
+        "School Hallway"
+      ],
+      "cast": [
+        "Alice",
+        "Bob"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_alice_large",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.06,
+            "y": 0.08,
+            "w": 0.54,
+            "h": 0.84
+          },
+          "acting_prompt": "standing casually"
+        },
+        {
+          "instance_id": "inst_bob_small",
+          "cast_id": "cast_bob",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.68,
+            "y": 0.26,
+            "w": 0.24,
+            "h": 0.45
+          },
+          "acting_prompt": "standing casually"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PARTIAL",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/C2_depth_geom_only.png",
+      "preview_path": "docs/verification/m2a/C2_depth_geom_only_preview.png",
+      "elapsed_seconds": 24.08,
+      "presence_result": "PARTIAL (1/2 dominant)",
+      "identity_result": "PASS (Alice blonde hair/uniform)",
+      "position_result": "PARTIAL (Alice centered in hallway)",
+      "depth_result": "PARTIAL (small region Bob collapsed/suppressed without depth prompt guidance)",
+      "visual_notes": "Small box without depth prompt guidance can cause subject suppression unless prompt reinforces depth.",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    },
+    {
+      "condition_id": "C3_depth_combined",
+      "tier": "C_DEPTH",
+      "name": "C3 Depth Combined (Seed 42)",
+      "seed": 42,
+      "scenes": [
+        "School Hallway"
+      ],
+      "cast": [
+        "Alice",
+        "Bob"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_alice_comb",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.06,
+            "y": 0.08,
+            "w": 0.54,
+            "h": 0.84
+          },
+          "acting_prompt": "close foreground, upper body prominently in foreground"
+        },
+        {
+          "instance_id": "inst_bob_comb",
+          "cast_id": "cast_bob",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.68,
+            "y": 0.26,
+            "w": 0.24,
+            "h": 0.45
+          },
+          "acting_prompt": "far in the background, small distant full body"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PARTIAL",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/C3_depth_combined.png",
+      "preview_path": "docs/verification/m2a/C3_depth_combined_preview.png",
+      "elapsed_seconds": 24.04,
+      "presence_result": "PARTIAL (1/2 dominant)",
+      "identity_result": "PASS (Alice extreme close-up)",
+      "position_result": "PARTIAL (Alice fills left side)",
+      "depth_result": "PARTIAL (Alice massive foreground; Bob suppressed in small box)",
+      "visual_notes": "Extreme close-up Alice dominates the frame; small distant box did not trigger Bob cleanly on this seed.",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    },
+    {
+      "condition_id": "E1_pose_standing",
+      "tier": "E_POSE_DIAGNOSTIC",
+      "name": "E1 Pose Standing (Seed 42)",
+      "seed": 42,
+      "scenes": [
+        "Room"
+      ],
+      "cast": [
+        "Alice"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_alice_stand",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.2,
+            "y": 0.1,
+            "w": 0.6,
+            "h": 0.8
+          },
+          "acting_prompt": "standing casually"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PASS",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/E1_pose_standing.png",
+      "preview_path": "docs/verification/m2a/E1_pose_standing_preview.png",
+      "elapsed_seconds": 18.05,
+      "presence_result": "PASS (1/1)",
+      "identity_result": "PASS (Alice blonde twin tails, sailor uniform)",
+      "position_result": "PASS (centered in room)",
+      "depth_result": "FULL_BODY (standing upright with hands folded)",
+      "visual_notes": "Standing pose prompt executed cleanly.",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    },
+    {
+      "condition_id": "E2_pose_sitting",
+      "tier": "E_POSE_DIAGNOSTIC",
+      "name": "E2 Pose Sitting (Seed 42)",
+      "seed": 42,
+      "scenes": [
+        "Room"
+      ],
+      "cast": [
+        "Alice"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_alice_sit",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.2,
+            "y": 0.1,
+            "w": 0.6,
+            "h": 0.8
+          },
+          "acting_prompt": "sitting on a wooden chair, relaxed posture"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PASS",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/E2_pose_sitting.png",
+      "preview_path": "docs/verification/m2a/E2_pose_sitting_preview.png",
+      "elapsed_seconds": 18.04,
+      "presence_result": "PASS (1/1)",
+      "identity_result": "PASS (Alice blonde twin tails, sailor uniform)",
+      "position_result": "PASS (centered in room)",
+      "depth_result": "FULL_BODY (sitting on wooden bench with bent knees and seated posture)",
+      "visual_notes": "Sitting pose executed cleanly when chair context is included in acting prompt.",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    },
+    {
+      "condition_id": "F_same_cast_across_scenes",
+      "tier": "F_ACROSS_SCENES",
+      "name": "F Same CAST Across 2 Scenes (Seed 42)",
+      "seed": 42,
+      "scenes": [
+        "Scene 1 (Top)",
+        "Scene 2 (Bottom)"
+      ],
+      "cast": [
+        "Alice"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_alice_scene1",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.12,
+            "y": 0.1,
+            "w": 0.4,
+            "h": 0.35
+          },
+          "acting_prompt": "reading a book quietly"
+        },
+        {
+          "instance_id": "inst_alice_scene2",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.5,
+            "y": 0.56,
+            "w": 0.38,
+            "h": 0.35
+          },
+          "acting_prompt": "walking and looking back, surprised smile"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PASS",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/F_same_cast_across_scenes.png",
+      "preview_path": "docs/verification/m2a/F_same_cast_across_scenes_preview.png",
+      "elapsed_seconds": 28.05,
+      "presence_result": "PASS (2 scenes, 2 Alice appearances)",
+      "identity_result": "PASS (Alice blonde hair and uniform features shared across both scenes)",
+      "position_result": "PASS (Instance 1 in Top scene; Instance 2 in Bottom scene)",
+      "depth_result": "N/A (multi-scene layout)",
+      "visual_notes": "Same CAST Master successfully instantiated across independent semantic scenes on one page.",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    },
+    {
+      "condition_id": "G_same_cast_twice_seed42",
+      "tier": "G_SAME_CAST_TWICE",
+      "name": "G Same CAST Twice (Seed 42)",
+      "seed": 42,
+      "scenes": [
+        "Music Room"
+      ],
+      "cast": [
+        "Alice"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_alice_a",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.08,
+            "y": 0.1,
+            "w": 0.38,
+            "h": 0.8
+          },
+          "acting_prompt": "smiling happily, waving hand"
+        },
+        {
+          "instance_id": "inst_alice_b",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.54,
+            "y": 0.1,
+            "w": 0.38,
+            "h": 0.8
+          },
+          "acting_prompt": "looking away thoughtfully with hand on chin"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PARTIAL",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/G_same_cast_twice_seed42.png",
+      "preview_path": "docs/verification/m2a/G_same_cast_twice_seed42_preview.png",
+      "elapsed_seconds": 24.09,
+      "presence_result": "PARTIAL (multiple Alice cuts rendered)",
+      "identity_result": "PASS (Alice visual identity maintained)",
+      "position_result": "PARTIAL (split framing instead of 2 side-by-side bodies)",
+      "depth_result": "CLOSE-UP / SPLIT",
+      "visual_notes": "Model responded to two same-identity prompts by generating split comic framing of Alice.",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    },
+    {
+      "condition_id": "G_same_cast_twice_seed101",
+      "tier": "G_SAME_CAST_TWICE",
+      "name": "G Same CAST Twice (Seed 101)",
+      "seed": 101,
+      "scenes": [
+        "Music Room"
+      ],
+      "cast": [
+        "Alice"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_alice_a",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.08,
+            "y": 0.1,
+            "w": 0.38,
+            "h": 0.8
+          },
+          "acting_prompt": "smiling happily, waving hand"
+        },
+        {
+          "instance_id": "inst_alice_b",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.54,
+            "y": 0.1,
+            "w": 0.38,
+            "h": 0.8
+          },
+          "acting_prompt": "looking away thoughtfully with hand on chin"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PARTIAL",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/G_same_cast_twice_seed101.png",
+      "preview_path": "docs/verification/m2a/G_same_cast_twice_seed101_preview.png",
+      "elapsed_seconds": 24.08,
+      "presence_result": "PARTIAL (creative split reflection of Alice)",
+      "identity_result": "PASS (Alice visual identity)",
+      "position_result": "PARTIAL (split reflection: waving left hand and thoughtful right hand)",
+      "depth_result": "SPLIT_VIEW",
+      "visual_notes": "Composite reflection cleverly combines Alice 1 waving prompt and Alice 2 chin prompt into one split illustration.",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    },
+    {
+      "condition_id": "G_same_cast_twice_seed202",
+      "tier": "G_SAME_CAST_TWICE",
+      "name": "G Same CAST Twice (Seed 202)",
+      "seed": 202,
+      "scenes": [
+        "Music Room"
+      ],
+      "cast": [
+        "Alice"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_alice_a",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.08,
+            "y": 0.1,
+            "w": 0.38,
+            "h": 0.8
+          },
+          "acting_prompt": "smiling happily, waving hand"
+        },
+        {
+          "instance_id": "inst_alice_b",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.54,
+            "y": 0.1,
+            "w": 0.38,
+            "h": 0.8
+          },
+          "acting_prompt": "looking away thoughtfully with hand on chin"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PARTIAL",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/G_same_cast_twice_seed202.png",
+      "preview_path": "docs/verification/m2a/G_same_cast_twice_seed202_preview.png",
+      "elapsed_seconds": 24.13,
+      "presence_result": "PARTIAL (split comic cut)",
+      "identity_result": "PASS (Alice visual identity)",
+      "position_result": "PARTIAL (split cut view)",
+      "depth_result": "SPLIT_VIEW",
+      "visual_notes": "Split panel cut representation of Alice.",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    },
+    {
+      "condition_id": "H_mixed_3person_seed42",
+      "tier": "H_MIXED_3PERSON",
+      "name": "H Mixed 3-Person (Seed 42)",
+      "seed": 42,
+      "scenes": [
+        "Clubroom"
+      ],
+      "cast": [
+        "Alice",
+        "Bob"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_alice_1",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.05,
+            "y": 0.15,
+            "w": 0.27,
+            "h": 0.75
+          },
+          "acting_prompt": "cheerful smile, talking"
+        },
+        {
+          "instance_id": "inst_alice_2",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.36,
+            "y": 0.15,
+            "w": 0.27,
+            "h": 0.75
+          },
+          "acting_prompt": "curious expression, pointing"
+        },
+        {
+          "instance_id": "inst_bob_1",
+          "cast_id": "cast_bob",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.68,
+            "y": 0.15,
+            "w": 0.27,
+            "h": 0.75
+          },
+          "acting_prompt": "listening calmly with glasses"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PASS",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/H_mixed_3person_seed42.png",
+      "preview_path": "docs/verification/m2a/H_mixed_3person_seed42_preview.png",
+      "elapsed_seconds": 32.06,
+      "presence_result": "PASS (3/3: Alice 1, Alice 2, Bob 1 all clearly visible)",
+      "identity_result": "PASS (2 distinct blonde girls + 1 boy with glasses and tie; zero Bob-Alice leakage)",
+      "position_result": "PASS (Alice 1 left foreground; Alice 2 center midground; Bob right foreground)",
+      "depth_result": "EXCELLENT (3-tier depth in classroom)",
+      "visual_notes": "SPECTACULAR 3-PERSON RESULT: Both recurrent Alice instances and distinct Bob instance coexist with perfect spatial and identity separation!",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    },
+    {
+      "condition_id": "H_mixed_3person_seed101",
+      "tier": "H_MIXED_3PERSON",
+      "name": "H Mixed 3-Person (Seed 101)",
+      "seed": 101,
+      "scenes": [
+        "Clubroom"
+      ],
+      "cast": [
+        "Alice",
+        "Bob"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_alice_1",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.05,
+            "y": 0.15,
+            "w": 0.27,
+            "h": 0.75
+          },
+          "acting_prompt": "cheerful smile, talking"
+        },
+        {
+          "instance_id": "inst_alice_2",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.36,
+            "y": 0.15,
+            "w": 0.27,
+            "h": 0.75
+          },
+          "acting_prompt": "curious expression, pointing"
+        },
+        {
+          "instance_id": "inst_bob_1",
+          "cast_id": "cast_bob",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.68,
+            "y": 0.15,
+            "w": 0.27,
+            "h": 0.75
+          },
+          "acting_prompt": "listening calmly with glasses"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PARTIAL",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/H_mixed_3person_seed101.png",
+      "preview_path": "docs/verification/m2a/H_mixed_3person_seed101_preview.png",
+      "elapsed_seconds": 32.05,
+      "presence_result": "PARTIAL (1 dominant girl in center classroom)",
+      "identity_result": "PASS (clean anime girl)",
+      "position_result": "PARTIAL (centered)",
+      "depth_result": "SINGLE_FIGURE",
+      "visual_notes": "Collapsed to single centered student in classroom.",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    },
+    {
+      "condition_id": "H_mixed_3person_seed202",
+      "tier": "H_MIXED_3PERSON",
+      "name": "H Mixed 3-Person (Seed 202)",
+      "seed": 202,
+      "scenes": [
+        "Clubroom"
+      ],
+      "cast": [
+        "Alice",
+        "Bob"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_alice_1",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.05,
+            "y": 0.15,
+            "w": 0.27,
+            "h": 0.75
+          },
+          "acting_prompt": "cheerful smile, talking"
+        },
+        {
+          "instance_id": "inst_alice_2",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.36,
+            "y": 0.15,
+            "w": 0.27,
+            "h": 0.75
+          },
+          "acting_prompt": "curious expression, pointing"
+        },
+        {
+          "instance_id": "inst_bob_1",
+          "cast_id": "cast_bob",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.68,
+            "y": 0.15,
+            "w": 0.27,
+            "h": 0.75
+          },
+          "acting_prompt": "listening calmly with glasses"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PARTIAL",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/H_mixed_3person_seed202.png",
+      "preview_path": "docs/verification/m2a/H_mixed_3person_seed202_preview.png",
+      "elapsed_seconds": 32.05,
+      "presence_result": "PARTIAL (1 dominant girl at desk)",
+      "identity_result": "PARTIAL (hair shows subtle blonde/dark two-tone blend)",
+      "position_result": "PARTIAL (centered)",
+      "depth_result": "SINGLE_FIGURE",
+      "visual_notes": "Single student with subtle prompt attribute blending.",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    },
+    {
+      "condition_id": "I_crowd_4person_seed42",
+      "tier": "I_CROWD_4PERSON",
+      "name": "I Crowd 4-Person (Seed 42)",
+      "seed": 42,
+      "scenes": [
+        "Auditorium"
+      ],
+      "cast": [
+        "Alice",
+        "Bob",
+        "Carol",
+        "Dave"
+      ],
+      "instances": [
+        {
+          "instance_id": "inst_c1",
+          "cast_id": "cast_alice",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.05,
+            "y": 0.15,
+            "w": 0.2,
+            "h": 0.75
+          },
+          "acting_prompt": "standing cheerful"
+        },
+        {
+          "instance_id": "inst_c2",
+          "cast_id": "cast_bob",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.28,
+            "y": 0.15,
+            "w": 0.2,
+            "h": 0.75
+          },
+          "acting_prompt": "standing with notebook"
+        },
+        {
+          "instance_id": "inst_c3",
+          "cast_id": "cast_carol",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.51,
+            "y": 0.15,
+            "w": 0.2,
+            "h": 0.75
+          },
+          "acting_prompt": "standing energetic"
+        },
+        {
+          "instance_id": "inst_c4",
+          "cast_id": "cast_dave",
+          "area": {
+            "shape_type": "rect",
+            "x": 0.74,
+            "y": 0.15,
+            "w": 0.2,
+            "h": 0.75
+          },
+          "acting_prompt": "standing with arms crossed"
+        }
+      ],
+      "runtime_status": "PASS",
+      "visual_status": "PARTIAL",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "output_path": "docs/verification/m2a/I_crowd_4person_seed42.png",
+      "preview_path": "docs/verification/m2a/I_crowd_4person_seed42_preview.png",
+      "elapsed_seconds": 38.05,
+      "presence_result": "PARTIAL (4 figures distributed across comic panels: 3 in top panel, 1 on stage)",
+      "identity_result": "PASS (glasses boy, brown hair boy, blonde girl all identifiable)",
+      "position_result": "PARTIAL (decomposed into multi-cut comic strip rather than 4 parallel columns)",
+      "depth_result": "COMIC_MULTI_PANEL",
+      "visual_notes": "Crowd breakdown threshold: When 4+ characters are requested, SDXL naturally decomposes the single scene into comic multi-cuts to fit everyone.",
+      "character_strength": 1.0,
+      "control_mode": "prompt_and_rough_region_level_0"
+    }
+  ]
+}

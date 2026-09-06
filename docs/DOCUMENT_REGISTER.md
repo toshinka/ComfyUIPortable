@@ -21,7 +21,8 @@
 | `M0.1 / 3M-0.1` | COMPLETED | 契約境界Hardening（FK空集合、孤立binding遮断、Scene/Frame乖離検出、厳格座標逆変換、境界move等） |
 | `M1 / 3M-1` | COMPLETED | Scene-only Minimum-Hand Draft（かんたんモード、粗領域・Scene Prompt・Seed生成導線・実機検証5条件完走） |
 | `M1.1 / 3M-1.1` | COMPLETED | Canonical Workflow Wiring & UI SSOT Truth Fix（正本実配線、dimensions方言撤廃、一意ID、Manifest v2、実機配線検証3条件完走） |
-| `M2 / 3M-2` | NEXT CANDIDATE | Minimum Character & CAST Staging（CAST登録、Scene出演、Character Rough Region配置、LoRA） |
+| `M2A / 3M-2A` | COMPLETED | Character Spatial Capability Ladder & Control Escalation Gate（左右スワップ因果性実証、Prompt深度実証、3人混成実証、ControlNet不要判定） |
+| `M2B / 3M-2B` | NEXT CANDIDATE | Minimum Character & CAST Staging Product UI (Option A: Rough Region + Free Text Prompt) |
 
 ## 3. HISTORICAL / SUPERSEDED (過去の参照資料)
 過去のPhase指示書や中間計画書は歴史的経緯の参照用であり、次作業の直接指示とはみなさない。

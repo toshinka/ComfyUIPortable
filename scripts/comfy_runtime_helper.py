@@ -40,6 +40,31 @@ def is_port_open(host: str = COMFY_HOST, port: int = COMFY_PORT) -> bool:
         return False
 
 
+def restart_server(timeout: int = 90):
+    """Kills any existing ComfyUI server process on COMFY_PORT and starts a fresh one."""
+    if is_port_open():
+        print(f"[ComfyRuntimeHelper] Stopping existing server on port {COMFY_PORT}...")
+        if sys.platform == "win32":
+            try:
+                out = subprocess.check_output(
+                    f'powershell -Command "(Get-NetTCPConnection -LocalPort {COMFY_PORT} -ErrorAction SilentlyContinue).OwningProcess"',
+                    shell=True
+                ).decode().strip()
+                for line in out.splitlines():
+                    pid = line.strip()
+                    if pid and pid != "0":
+                        subprocess.run(["taskkill", "/F", "/T", "/PID", pid], capture_output=True)
+            except Exception:
+                pass
+        else:
+            try:
+                subprocess.run(f"fuser -k {COMFY_PORT}/tcp", shell=True, capture_output=True)
+            except Exception:
+                pass
+        time.sleep(2)
+    ensure_server(timeout=timeout)
+
+
 def ensure_server(timeout: int = 90):
     """
     Ensures ComfyUI server is running and accepting API requests.

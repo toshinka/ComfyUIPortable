@@ -146,10 +146,23 @@ class TegakiMangaMaskBuilder:
                 cx, cy, cw, ch = float(area["x"]), float(area["y"]), float(area["w"]), float(area["h"])
                 is_unconstrained = False
 
-            page_x = kx + kw * cx
-            page_y = ky + kh * cy
-            page_w = kw * cw
-            page_h = kh * ch
+            if c.get("coordinate_space") == "page" or c.get("area_coordinate_mode") == "page":
+                page_x = cx
+                page_y = cy
+                page_w = cw
+                page_h = ch
+                koma_local = {
+                    "x": round((cx - kx) / kw, 4) if kw > 0 else 0.0,
+                    "y": round((cy - ky) / kh, 4) if kh > 0 else 0.0,
+                    "w": round(cw / kw, 4) if kw > 0 else 1.0,
+                    "h": round(ch / kh, 4) if kh > 0 else 1.0,
+                }
+            else:
+                page_x = kx + kw * cx
+                page_y = ky + kh * cy
+                page_w = kw * cw
+                page_h = kh * ch
+                koma_local = {"x": cx, "y": cy, "w": cw, "h": ch} if not is_unconstrained else None
 
             c_px0 = max(0, min(width, int(round(page_x * width))))
             c_py0 = max(0, min(height, int(round(page_y * height))))
@@ -165,7 +178,7 @@ class TegakiMangaMaskBuilder:
                 "panel_id": p_id,
                 "index": c_idx,
                 "is_unconstrained": is_unconstrained,
-                "koma_local_area": {"x": cx, "y": cy, "w": cw, "h": ch} if not is_unconstrained else None,
+                "koma_local_area": koma_local,
                 "page_projected_area": {
                     "x": round(page_x, 4),
                     "y": round(page_y, 4),

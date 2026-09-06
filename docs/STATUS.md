@@ -74,21 +74,25 @@ Scene-only Draft (M1) → CAST 複数出演 (M2) → Rough Guide (M3) → UX She
 
 ## 5. 次の一件 (Current Card Preview)
 
-- **完了Card**: **M1.1 / 3M-1.1 — Canonical Workflow Wiring & UI SSOT Truth Fix** — COMPLETED
-  - Finding A〜H 全件是正完了。
-  - `workflows/M1_MINIMUM_HAND_SCENE_DRAFT.json`: Editor.seed → KSampler.seed (Link 14), Editor.width/height → EmptyLatentImage.width/height (Link 15, 16) を正本実配線。
-  - `page.dimensions` レガシー方言を完全排除し、Python/JS ともに `page.width_px`, `page.height_px` に一本化。
-  - `document_json` を SSOT とする明示同期ポリシーと `debug_json` 診断キー（effective_sampler_seed, effective_latent_width 等）を実装。
-  - 中間Scene削除後の追加でも衝突しない一意安定 Scene ID 生成アルゴリズムを配備。
-  - 未実装だった Custom 選択肢を UI から正直に棚上げ（M2 へ延期）。
-  - 自動テスト全114件（M0/M0.1 旧78件 + M1 旧20件 + M1.1 新規16件）100% PASS。Node.js client unit test 3件 PASS。
-  - Live ComfyUI（SDXL Illustrious v1.7）による実配線実機画像生成 3条件（W1: Seed 42 832x1216, W2: Seed 101 832x1216, W3: Landscape 1216x832）完走・全目視確認。
-  - Manifest v2（runtime/visual 分離、直接目視ノート記録）および Contact Sheet を `docs/verification/m1/` に配置完了。
-  - 報告書: [M1_1_CANONICAL_WORKFLOW_WIRING_REPORT.md](reports/M1_1_CANONICAL_WORKFLOW_WIRING_REPORT.md)
-  - M1 Product Path: PASS
-- **次Card**: **M2 / 3M-2 — Minimum Character & CAST Staging**
-  - CAST Master登録（1〜2名）、Sceneへの簡易CAST出演、Character Rough Region配置、LoRA適用。Simple modeとの共存。
-  - （※実ブラウザでの対話的GUI手動確認実施後に進行）
+- **完了Card**: **M2A / 3M-2A — Character Spatial Capability Ladder & Control Escalation Gate** — COMPLETED
+  - 単一人物位置追随（Stage A: 左右別領域配置）: PASS（テキストに左右を含めず完全追随）。
+  - 2人物独立配置（Stage B）: PASS / useful PARTIAL（AliceとBobが同一シーンに独立属性で共存）。
+  - 左右スワップオラクル（Stage B2）: **PASS（重要オラクル成立）**。同Seed 42・同Promptで領域のみ入れ替え、人物の物理配置が左右完全に逆転。因果性を実証。
+  - 遠中近・接写深度（Stage C/D）: **PROMPT_SUFFICIENT**。同一領域サイズでもPrompt（近景バスト vs 遠景全身）のみで強固な遠近オクルージョン階層を形成。極小枠幾何よりもPrompt誘導が安定。
+  - 姿勢天井診断（Stage E）: PASS。椅子コンテキストの明示（"sitting on a wooden chair"）により着席姿勢が成立。
+  - 同一CAST複数コマ（Stage F）: PASS。コマを跨いだ同一人物の出演を確認。
+  - 同一CAST単一コマ重複（Stage G）: PARTIAL。並列双子よりもコマ割り分割・多面体描写へ誘導される傾向を確認。
+  - 同一CAST＋異CAST混成3人（Stage H）: **PASS（Seed 42にてAlice 2体＋Bob 1体の3名完全共存・無漏出を達成）**。
+  - 多人数の崩壊閾値（Stage I）: **3〜4人が境界**。4人以上では単一構図から自動マルチカット分割へ移行。
+  - 区域強度スライダー: 1.0固定で十分機能し、**UIスライダー新設は不要**と判定。
+  - **ControlNet エスカレーション判定**: **不要（Level 0: Prompt + Rough Region でM2Bへ進行）**。
+  - 自動テスト全128件（既存114件＋M2A新規14件）100% PASS。
+  - 実機生成全19条件完走・直接目視検査完了。4種のオラクルコンタクトシートおよび Manifest 配置完了。
+  - 報告書: [M2A_CHARACTER_SPATIAL_CAPABILITY_LADDER_REPORT.md](reports/M2A_CHARACTER_SPATIAL_CAPABILITY_LADDER_REPORT.md)
+  - Core Minimum-Hand Character Capability: **READY**
+- **次Card**: **M2B / 3M-2B — Minimum Character & CAST Staging Product UI (Option A: Rough Region + Free Text Prompt)**
+  - CAST Master登録、キャンバス上でのCharacter Rough Region矩形操作、Acting Prompt自由文入力UIの実装。
+  - 複雑な3D Pose/ControlNet/強度スライダーは含めず、最小手の直感操作導線を確立する。
 
 ---
 
