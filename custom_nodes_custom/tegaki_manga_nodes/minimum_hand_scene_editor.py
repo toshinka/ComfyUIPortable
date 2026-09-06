@@ -112,10 +112,10 @@ class TegakiMinimumHandSceneEditor:
                 }),
             },
             "optional": {
-                "style_template": (["Manga Monochrome", "Manga Color", "Custom"], {
+                "style_template": (["Manga Monochrome", "Manga Color"], {
                     "default": "Manga Monochrome"
                 }),
-                "resolution": (["Portrait 832x1216", "Landscape 1216x832", "Square 1024x1024", "Custom"], {
+                "resolution": (["Portrait 832x1216", "Landscape 1216x832", "Square 1024x1024"], {
                     "default": "Portrait 832x1216"
                 }),
             }
@@ -146,13 +146,16 @@ class TegakiMinimumHandSceneEditor:
         self,
         document_json: str,
         seed: int = 42,
-        style_template: str = "Manga Monochrome",
-        resolution: str = "Portrait 832x1216",
+        style_template: str = None,
+        resolution: str = None,
     ) -> Tuple[Any, Any, int, int, int, str, str]:
         # Parse document JSON
         raw_text = (document_json or "").strip()
         if not raw_text:
-            doc = create_default_m1_document(seed=seed, style_template_name=style_template)
+            doc = create_default_m1_document(
+                seed=seed,
+                style_template_name=style_template or "Manga Monochrome",
+            )
         else:
             try:
                 doc = json.loads(raw_text)
@@ -163,30 +166,49 @@ class TegakiMinimumHandSceneEditor:
         if not isinstance(doc, dict) or "pages" not in doc or not doc["pages"]:
             raise ValueError("[TegakiSceneEditor] Authoring document must contain at least one page.")
 
+        # Migrate any legacy 'dimensions' dialect to canonical page.width_px / page.height_px
+        for p in doc.get("pages", []):
+            if isinstance(p, dict) and "dimensions" in p:
+                dims = p.pop("dimensions")
+                if isinstance(dims, dict):
+                    if "width_px" not in p:
+                        p["width_px"] = dims.get("width_px", 832)
+                    if "height_px" not in p:
+                        p["height_px"] = dims.get("height_px", 1216)
+
         page = doc["pages"][0]
 
-        # Resolution sync if preset is selected
-        if resolution in RESOLUTION_PRESETS:
+        # Resolution synchronization:
+        if resolution is not None and resolution in RESOLUTION_PRESETS:
             res_w, res_h = RESOLUTION_PRESETS[resolution]
             page["width_px"] = res_w
             page["height_px"] = res_h
         else:
             res_w = int(page.get("width_px", 832))
             res_h = int(page.get("height_px", 1216))
+            page["width_px"] = res_w
+            page["height_px"] = res_h
 
-        # Style template sync if template selected and prompts are blank or non-custom
-        if style_template in STYLE_TEMPLATES:
+        # Style template synchronization:
+        if "metadata" not in page or not isinstance(page["metadata"], dict):
+            page["metadata"] = {}
+
+        if style_template is not None and style_template in STYLE_TEMPLATES:
             page["metadata"]["style_template"] = style_template
-            # If style prompt is empty, populate from template
+            tmpl = STYLE_TEMPLATES[style_template]
             if not page.get("style_prompt"):
-                page["style_prompt"] = STYLE_TEMPLATES[style_template]["style_prompt"]
+                page["style_prompt"] = tmpl["style_prompt"]
             if not page.get("style_negative_prompt"):
-                page["style_negative_prompt"] = STYLE_TEMPLATES[style_template]["style_negative_prompt"]
+                page["style_negative_prompt"] = tmpl["style_negative_prompt"]
+        else:
+            if not page.get("metadata", {}).get("style_template"):
+                page["metadata"]["style_template"] = "Manga Monochrome"
 
-        # Seed sync
+        # Seed synchronization:
         if "generation" not in page or not isinstance(page["generation"], dict):
             page["generation"] = {}
         page["generation"]["seed"] = int(seed)
+        effective_seed = int(seed)
 
         # Compile to PAGE_COMPILE_PLAN (validates M1 constraints: >=1 scene, <=6 scenes, simple mode)
         page_compile_plan = compile_document_to_page_plan(doc)
@@ -195,7 +217,8 @@ class TegakiMinimumHandSceneEditor:
         preview_tensor = generate_scene_regions_preview_tensor(doc)
 
         # Generate debug json
-        debug_info = get_execution_debug_info(doc)
+        debug_info = get_execution_debug_info(doc, seed=effective_seed)
+        debug_info["widget_seed"] = int(seed)
         debug_str = json.dumps(debug_info, indent=2, ensure_ascii=False)
 
         # Normalized document JSON
@@ -204,7 +227,7 @@ class TegakiMinimumHandSceneEditor:
         return (
             page_compile_plan,
             preview_tensor,
-            int(seed),
+            effective_seed,
             res_w,
             res_h,
             debug_str,

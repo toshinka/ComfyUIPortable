@@ -1,6 +1,6 @@
 {
   "last_node_id": 8,
-  "last_link_id": 13,
+  "last_link_id": 16,
   "nodes": [
     {
       "id": 1,
@@ -37,19 +37,25 @@
         {
           "name": "seed",
           "type": "INT",
-          "links": null,
+          "links": [
+            14
+          ],
           "slot_index": 2
         },
         {
           "name": "width",
           "type": "INT",
-          "links": null,
+          "links": [
+            15
+          ],
           "slot_index": 3
         },
         {
           "name": "height",
           "type": "INT",
-          "links": null,
+          "links": [
+            16
+          ],
           "slot_index": 4
         },
         {
@@ -66,7 +72,7 @@
         }
       ],
       "widgets_values": [
-        "{\n  \"schema_id\": \"TEGAKI_AUTHORING_DOCUMENT\",\n  \"schema_version\": \"1.0.0\",\n  \"document_id\": \"doc_canonical_m1\",\n  \"pages\": [\n    {\n      \"page_id\": \"page_1\",\n      \"order\": 1,\n      \"dimensions\": {\n        \"width_px\": 832,\n        \"height_px\": 1216\n      },\n      \"style_prompt\": \"manga page, monochrome, expressive linework, high contrast, screentone shading\",\n      \"style_negative_prompt\": \"bad anatomy, blurry, photo, color, 3d render, watermark, text\",\n      \"scenes\": [\n        {\n          \"scene_id\": \"scene_top\",\n          \"name\": \"Scene 1\",\n          \"prompt\": \"school classroom, desks and chairs, a student reading quietly by the window, warm sunlight\",\n          \"negative_prompt\": \"\",\n          \"input_mode\": \"simple\",\n          \"area\": {\n            \"shape_type\": \"rect\",\n            \"x\": 0.08,\n            \"y\": 0.06,\n            \"w\": 0.84,\n            \"h\": 0.42\n          },\n          \"order\": 1,\n          \"metadata\": {}\n        },\n        {\n          \"scene_id\": \"scene_bottom\",\n          \"name\": \"Scene 2\",\n          \"prompt\": \"outdoor train station platform, railway tracks, a commuter waiting with bicycle, afternoon sky\",\n          \"negative_prompt\": \"\",\n          \"input_mode\": \"simple\",\n          \"area\": {\n            \"shape_type\": \"rect\",\n            \"x\": 0.08,\n            \"y\": 0.52,\n            \"w\": 0.84,\n            \"h\": 0.42\n          },\n          \"order\": 2,\n          \"metadata\": {}\n        }\n      ],\n      \"visual_frames\": [],\n      \"cast\": [],\n      \"character_instances\": [],\n      \"guides\": [],\n      \"metadata\": {\n        \"style_template\": \"Manga Monochrome\"\n      },\n      \"generation\": {\n        \"seed\": 42\n      }\n    }\n  ],\n  \"metadata\": {}\n}",
+        "{\n  \"schema_id\": \"TEGAKI_AUTHORING_DOCUMENT\",\n  \"schema_version\": \"1.0.0\",\n  \"document_id\": \"doc_canonical_m1\",\n  \"pages\": [\n    {\n      \"page_id\": \"page_1\",\n      \"order\": 1,\n      \"width_px\": 832,\n      \"height_px\": 1216,\n      \"style_prompt\": \"manga page, monochrome, expressive linework, high contrast, screentone shading\",\n      \"style_negative_prompt\": \"bad anatomy, blurry, photo, color, 3d render, watermark, text\",\n      \"scenes\": [\n        {\n          \"scene_id\": \"scene_top\",\n          \"name\": \"Scene 1\",\n          \"prompt\": \"school classroom, desks and chairs, a student reading quietly by the window, warm sunlight\",\n          \"negative_prompt\": \"\",\n          \"input_mode\": \"simple\",\n          \"area\": {\n            \"shape_type\": \"rect\",\n            \"x\": 0.08,\n            \"y\": 0.06,\n            \"w\": 0.84,\n            \"h\": 0.42\n          },\n          \"order\": 1,\n          \"metadata\": {}\n        },\n        {\n          \"scene_id\": \"scene_bottom\",\n          \"name\": \"Scene 2\",\n          \"prompt\": \"outdoor train station platform, railway tracks, a commuter waiting with bicycle, afternoon sky\",\n          \"negative_prompt\": \"\",\n          \"input_mode\": \"simple\",\n          \"area\": {\n            \"shape_type\": \"rect\",\n            \"x\": 0.08,\n            \"y\": 0.52,\n            \"w\": 0.84,\n            \"h\": 0.42\n          },\n          \"order\": 2,\n          \"metadata\": {}\n        }\n      ],\n      \"visual_frames\": [],\n      \"cast\": [],\n      \"character_instances\": [],\n      \"guides\": [],\n      \"metadata\": {\n        \"style_template\": \"Manga Monochrome\"\n      },\n      \"generation\": {\n        \"seed\": 42\n      }\n    }\n  ],\n  \"metadata\": {}\n}",
         42,
         "Manga Monochrome",
         "Portrait 832x1216"
@@ -231,7 +237,24 @@
       "flags": {},
       "order": 4,
       "mode": 0,
-      "inputs": [],
+      "inputs": [
+        {
+          "name": "width",
+          "type": "INT",
+          "link": 15,
+          "widget": {
+            "name": "width"
+          }
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "link": 16,
+          "widget": {
+            "name": "height"
+          }
+        }
+      ],
       "outputs": [
         {
           "name": "LATENT",
@@ -282,6 +305,14 @@
           "name": "latent_image",
           "type": "LATENT",
           "link": 11
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "link": 14,
+          "widget": {
+            "name": "seed"
+          }
         }
       ],
       "outputs": [
@@ -449,6 +480,30 @@
       8,
       0,
       "IMAGE"
+    ],
+    [
+      14,
+      1,
+      2,
+      6,
+      4,
+      "INT"
+    ],
+    [
+      15,
+      1,
+      3,
+      5,
+      0,
+      "INT"
+    ],
+    [
+      16,
+      1,
+      4,
+      5,
+      1,
+      "INT"
     ]
   ],
   "groups": [

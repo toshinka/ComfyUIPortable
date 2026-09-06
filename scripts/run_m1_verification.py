@@ -74,11 +74,17 @@ CKPT_NAME = r"♃CN_Skeb\waiIllustriousSDXL_v170.safetensors"
 
 
 def build_m1_prompt_workflow(doc: Dict[str, Any], seed: int, prefix: str) -> Dict[str, Any]:
-    """Construct ComfyUI prompt dictionary for M1 Minimum-Hand Scene Draft."""
+    """Construct ComfyUI prompt dictionary for M1.1 Minimum-Hand Scene Draft with causal wiring."""
     doc_json = json.dumps(doc)
     page = doc["pages"][0]
     w = int(page.get("width_px", 832))
     h = int(page.get("height_px", 1216))
+    if w == 1216 and h == 832:
+        res_preset = "Landscape 1216x832"
+    elif w == 1024 and h == 1024:
+        res_preset = "Square 1024x1024"
+    else:
+        res_preset = "Portrait 832x1216"
 
     return {
         "1": {
@@ -86,8 +92,8 @@ def build_m1_prompt_workflow(doc: Dict[str, Any], seed: int, prefix: str) -> Dic
             "inputs": {
                 "document_json": doc_json,
                 "seed": seed,
-                "style_template": "Manga Monochrome",
-                "resolution": f"Portrait {w}x{h}",
+                "style_template": page.get("metadata", {}).get("style_template", "Manga Monochrome"),
+                "resolution": res_preset,
             }
         },
         "2": {
@@ -111,8 +117,8 @@ def build_m1_prompt_workflow(doc: Dict[str, Any], seed: int, prefix: str) -> Dic
         "4": {
             "class_type": "EmptyLatentImage",
             "inputs": {
-                "width": w,
-                "height": h,
+                "width": ["1", 3],
+                "height": ["1", 4],
                 "batch_size": 1
             }
         },
@@ -123,7 +129,7 @@ def build_m1_prompt_workflow(doc: Dict[str, Any], seed: int, prefix: str) -> Dic
                 "positive": ["3", 0],
                 "negative": ["3", 1],
                 "latent_image": ["4", 0],
-                "seed": seed,
+                "seed": ["1", 2],
                 "steps": 20,
                 "cfg": 7.0,
                 "sampler_name": "euler",
@@ -195,6 +201,19 @@ def create_condition_c_doc(seed: int = 42) -> Dict[str, Any]:
     return doc
 
 
+def create_condition_landscape_doc(seed: int = 42) -> Dict[str, Any]:
+    """Condition W3: Landscape 1216x832 2-scene layout for resolution wiring proof."""
+    doc = create_default_m1_document(1216, 832, "Manga Monochrome", seed)
+    scenes = doc["pages"][0]["scenes"]
+    scenes[0]["name"] = "Left Classroom"
+    scenes[0]["prompt"] = "school classroom, desks and chairs, student reading by the window, warm sunlight"
+    scenes[0]["area"] = make_area(0.06, 0.08, 0.42, 0.84)
+    scenes[1]["name"] = "Right Train Platform"
+    scenes[1]["prompt"] = "outdoor train station platform, railway tracks, commuter waiting with bicycle, afternoon sky"
+    scenes[1]["area"] = make_area(0.52, 0.08, 0.42, 0.84)
+    return doc
+
+
 def generate_contact_sheet(items: List[Dict[str, Any]], output_path: str):
     """Generate high-resolution contact sheet comparing layout preview and output."""
     thumb_w, thumb_h = 320, 468
@@ -213,7 +232,7 @@ def generate_contact_sheet(items: List[Dict[str, Any]], output_path: str):
         font_title = None
 
     # Title
-    draw.text((pad, pad), "TEGAKI PHASE 3M-1 (M1) — MINIMUM-HAND SCENE DRAFT CONTACT SHEET", fill=(250, 250, 250), font=font_title)
+    draw.text((pad, pad), "TEGAKI PHASE 3M-1 (M1.1) — MINIMUM-HAND SCENE DRAFT CONTACT SHEET", fill=(250, 250, 250), font=font_title)
 
     for idx, it in enumerate(items):
         x_base = pad + idx * (item_w + pad)
@@ -244,57 +263,130 @@ def generate_contact_sheet(items: List[Dict[str, Any]], output_path: str):
     print(f"[M1 Verification] Contact sheet saved to {output_path}")
 
 
+# Historical M1 review records with direct visual inspection
+HISTORICAL_M1_RECORDS = [
+    {
+        "condition_id": "Condition_A",
+        "title": "1 Scene Full Draft",
+        "filename": "A_one_scene.png",
+        "file_path": os.path.join(DOCS_DIR, "A_one_scene.png"),
+        "preview_path": os.path.join(DOCS_DIR, "A_one_scene_preview.png"),
+        "seed": 42,
+        "resolution": "832x1216",
+        "elapsed_seconds": 18.04,
+        "notes": "Validates single scene baseline draft generation.",
+        "runtime_status": "PASS",
+        "visual_status": "PASS",
+        "review_method": "DIRECT_IMAGE_INSPECTION",
+        "visual_notes": "Clean single full-page monochrome manga draft. Classroom scene with desks, window light, screentone shading rendered cleanly across canvas.",
+        "provenance": "LIVE_COMFYUI_GENERATION"
+    },
+    {
+        "condition_id": "Condition_B",
+        "title": "2 Distinct Scenes (Top Classroom / Bottom Train)",
+        "filename": "B_two_scene_seed42.png",
+        "file_path": os.path.join(DOCS_DIR, "B_two_scene_seed42.png"),
+        "preview_path": os.path.join(DOCS_DIR, "B_two_scene_seed42_preview.png"),
+        "seed": 42,
+        "resolution": "832x1216",
+        "elapsed_seconds": 16.02,
+        "notes": "Canonical 2-scene draft. Verifies spatial separation between top classroom and bottom train.",
+        "runtime_status": "PASS",
+        "visual_status": "PASS",
+        "review_method": "DIRECT_IMAGE_INSPECTION",
+        "visual_notes": "Top half contains school classroom; bottom half contains outdoor train tracks and platform. Strong spatial regional separation.",
+        "provenance": "LIVE_COMFYUI_GENERATION"
+    },
+    {
+        "condition_id": "Condition_C",
+        "title": "Geometry Swap Oracle (Top Train / Bottom Classroom)",
+        "filename": "C_swap_same_seed42.png",
+        "file_path": os.path.join(DOCS_DIR, "C_swap_same_seed42.png"),
+        "preview_path": os.path.join(DOCS_DIR, "C_swap_same_seed42_preview.png"),
+        "seed": 42,
+        "resolution": "832x1216",
+        "elapsed_seconds": 16.02,
+        "notes": "Geometry swap oracle with identical seed 42. Verifies semantic locality causality.",
+        "runtime_status": "PASS",
+        "visual_status": "PASS",
+        "review_method": "DIRECT_IMAGE_INSPECTION",
+        "visual_notes": "Direct oracle against Condition B: train station is now at top; classroom is now at bottom. Demonstrates causal locality under identical seed 42.",
+        "provenance": "LIVE_COMFYUI_GENERATION"
+    },
+    {
+        "condition_id": "Condition_D1",
+        "title": "Seed Brainstorm Variation 1",
+        "filename": "D_seed101.png",
+        "file_path": os.path.join(DOCS_DIR, "D_seed101.png"),
+        "preview_path": os.path.join(DOCS_DIR, "D_seed101_preview.png"),
+        "seed": 101,
+        "resolution": "832x1216",
+        "elapsed_seconds": 16.25,
+        "notes": "Seed 101 variation on canonical 2-scene layout.",
+        "runtime_status": "PASS",
+        "visual_status": "PASS",
+        "review_method": "DIRECT_IMAGE_INSPECTION",
+        "visual_notes": "Seed 101 changes composition details (character pose, camera angle) while strictly respecting regional prompt boundaries.",
+        "provenance": "LIVE_COMFYUI_GENERATION"
+    },
+    {
+        "condition_id": "Condition_D2",
+        "title": "Seed Brainstorm Variation 2",
+        "filename": "E_seed202.png",
+        "file_path": os.path.join(DOCS_DIR, "E_seed202.png"),
+        "preview_path": os.path.join(DOCS_DIR, "E_seed202_preview.png"),
+        "seed": 202,
+        "resolution": "832x1216",
+        "elapsed_seconds": 16.02,
+        "notes": "Seed 202 variation on canonical 2-scene layout.",
+        "runtime_status": "PASS",
+        "visual_status": "PASS",
+        "review_method": "DIRECT_IMAGE_INSPECTION",
+        "visual_notes": "Seed 202 produces another distinct aesthetic variation while maintaining the top classroom / bottom train layout.",
+        "provenance": "LIVE_COMFYUI_GENERATION"
+    }
+]
+
+
 def main():
     print("=================================================================")
-    print("Tegaki M1 (Phase 3M-1) Minimum-Hand Scene Draft Verification")
+    print("Tegaki M1.1 Canonical Workflow Wiring & UI SSOT Verification Run")
     print("=================================================================")
 
-    # Define test conditions
+    # M1.1 Canonical Wiring Proof Conditions (Card §44: W1, W2, W3)
     conditions = [
         {
-            "id": "Condition_A",
-            "filename": "A_one_scene.png",
-            "prefix": "A_one_scene",
-            "title": "1 Scene Full Draft",
+            "id": "Condition_W1",
+            "filename": "W1_seed42.png",
+            "prefix": "W1_seed42",
+            "title": "W1 Canonical 2-Scene Wiring (Seed 42, Portrait 832x1216)",
             "seed": 42,
-            "doc_fn": create_condition_a_doc,
-            "notes": "Validates single scene baseline draft generation."
-        },
-        {
-            "id": "Condition_B",
-            "filename": "B_two_scene_seed42.png",
-            "prefix": "B_two_scene_seed42",
-            "title": "2 Distinct Scenes (Top Classroom / Bottom Train)",
-            "seed": 42,
+            "resolution": "832x1216",
             "doc_fn": create_condition_b_doc,
-            "notes": "Canonical 2-scene draft. Verifies spatial separation between top classroom and bottom train."
+            "notes": "Verifies that Editor seed output (42) and width/height (832x1216) causally drive KSampler and EmptyLatentImage.",
+            "provenance": "LIVE_COMFYUI_CANONICAL_WIRING"
         },
         {
-            "id": "Condition_C",
-            "filename": "C_swap_same_seed42.png",
-            "prefix": "C_swap_same_seed42",
-            "title": "Geometry Swap Oracle (Top Train / Bottom Classroom)",
-            "seed": 42,
-            "doc_fn": create_condition_c_doc,
-            "notes": "Geometry swap oracle with identical seed 42. Verifies semantic locality causality."
-        },
-        {
-            "id": "Condition_D1",
-            "filename": "D_seed101.png",
-            "prefix": "D_seed101",
-            "title": "Seed Brainstorm Variation 1",
+            "id": "Condition_W2",
+            "filename": "W2_seed101.png",
+            "prefix": "W2_seed101",
+            "title": "W2 Seed Causal Variation (Seed 101, Portrait 832x1216)",
             "seed": 101,
+            "resolution": "832x1216",
             "doc_fn": create_condition_b_doc,
-            "notes": "Seed 101 variation on canonical 2-scene layout."
+            "notes": "Verifies that changing Editor seed from 42 to 101 via Editor output produces an entirely distinct generation.",
+            "provenance": "LIVE_COMFYUI_CANONICAL_WIRING"
         },
         {
-            "id": "Condition_D2",
-            "filename": "E_seed202.png",
-            "prefix": "E_seed202",
-            "title": "Seed Brainstorm Variation 2",
-            "seed": 202,
-            "doc_fn": create_condition_b_doc,
-            "notes": "Seed 202 variation on canonical 2-scene layout."
+            "id": "Condition_W3",
+            "filename": "W3_landscape.png",
+            "prefix": "W3_landscape",
+            "title": "W3 Resolution Causal Variation (Landscape 1216x832, Seed 42)",
+            "seed": 42,
+            "resolution": "1216x832",
+            "doc_fn": create_condition_landscape_doc,
+            "notes": "Verifies that Editor resolution outputs (1216x832) causally drive EmptyLatentImage to output a 1216x832 landscape PNG.",
+            "provenance": "LIVE_COMFYUI_CANONICAL_WIRING"
         },
     ]
 
@@ -357,11 +449,14 @@ def main():
                 "file_path": dest_path,
                 "preview_path": cond["preview_path"],
                 "seed": cond["seed"],
-                "resolution": "832x1216",
+                "resolution": cond.get("resolution", "832x1216"),
                 "elapsed_seconds": round(elapsed, 2),
                 "notes": cond["notes"],
-                "status": "PASS",
-                "provenance": "LIVE_COMFYUI_GENERATION"
+                "runtime_status": "PASS",
+                "visual_status": "PENDING",
+                "review_method": "NOT_REVIEWED",
+                "visual_notes": "",
+                "provenance": cond.get("provenance", "LIVE_COMFYUI_CANONICAL_WIRING")
             })
 
     except Exception as e:
@@ -376,23 +471,26 @@ def main():
     contact_sheet_path = os.path.join(DOCS_DIR, "M1_SCENE_DRAFT_CONTACT_SHEET.png")
     generate_contact_sheet(items_for_contact_sheet, contact_sheet_path)
 
-    # Generate Manifest JSON
+    # Generate Manifest JSON v2 (Card §41)
+    all_manifest_records = HISTORICAL_M1_RECORDS + manifest_records
     manifest_path = os.path.join(DOCS_DIR, "M1_SCENE_DRAFT_MANIFEST.json")
     manifest_data = {
-        "milestone": "Phase 3M-1 / M1",
-        "title": "Minimum-Hand Scene Draft Empirical Verification Suite",
+        "manifest_version": "2.0.0",
+        "milestone": "M1.1 / Phase 3M-1.1",
+        "title": "Canonical Workflow Wiring & UI SSOT Empirical Verification Suite",
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "checkpoint": CKPT_NAME,
         "base_model": "Illustrious SDXL v1.7",
-        "resolution": "832x1216 (Portrait)",
-        "total_conditions": len(manifest_records),
+        "total_conditions": len(all_manifest_records),
+        "wiring_proof_conditions": len(manifest_records),
+        "historical_conditions": len(HISTORICAL_M1_RECORDS),
         "contact_sheet": contact_sheet_path,
-        "conditions": manifest_records
+        "conditions": all_manifest_records
     }
 
     with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(manifest_data, f, indent=2, ensure_ascii=False)
-    print(f"[M1 Verification] Manifest saved to {manifest_path}")
+    print(f"[M1 Verification] Manifest v2 saved to {manifest_path}")
 
     print("\n=================================================================")
     print("M1 Verification Run Completed Successfully!")

@@ -1,11 +1,13 @@
 {
-  "milestone": "Phase 3M-1 / M1",
-  "title": "Minimum-Hand Scene Draft Empirical Verification Suite",
-  "timestamp": "2026-09-05T23:48:16Z",
+  "manifest_version": "2.0.0",
+  "milestone": "M1.1 / Phase 3M-1.1",
+  "title": "Canonical Workflow Wiring & UI SSOT Empirical Verification Suite",
+  "timestamp": "2026-09-06T00:27:47Z",
   "checkpoint": "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors",
   "base_model": "Illustrious SDXL v1.7",
-  "resolution": "832x1216 (Portrait)",
-  "total_conditions": 5,
+  "total_conditions": 8,
+  "wiring_proof_conditions": 3,
+  "historical_conditions": 5,
   "contact_sheet": "D:\\GitHub\\tegaki\\ComfyUIPortable\\docs\\verification\\m1\\M1_SCENE_DRAFT_CONTACT_SHEET.png",
   "conditions": [
     {
@@ -18,7 +20,10 @@
       "resolution": "832x1216",
       "elapsed_seconds": 18.04,
       "notes": "Validates single scene baseline draft generation.",
-      "status": "PASS",
+      "runtime_status": "PASS",
+      "visual_status": "PASS",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "visual_notes": "Clean single full-page monochrome manga draft. Classroom scene with desks, window light, screentone shading rendered cleanly across canvas.",
       "provenance": "LIVE_COMFYUI_GENERATION"
     },
     {
@@ -31,7 +36,10 @@
       "resolution": "832x1216",
       "elapsed_seconds": 16.02,
       "notes": "Canonical 2-scene draft. Verifies spatial separation between top classroom and bottom train.",
-      "status": "PASS",
+      "runtime_status": "PASS",
+      "visual_status": "PASS",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "visual_notes": "Top half contains school classroom; bottom half contains outdoor train tracks and platform. Strong spatial regional separation.",
       "provenance": "LIVE_COMFYUI_GENERATION"
     },
     {
@@ -44,7 +52,10 @@
       "resolution": "832x1216",
       "elapsed_seconds": 16.02,
       "notes": "Geometry swap oracle with identical seed 42. Verifies semantic locality causality.",
-      "status": "PASS",
+      "runtime_status": "PASS",
+      "visual_status": "PASS",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "visual_notes": "Direct oracle against Condition B: train station is now at top; classroom is now at bottom. Demonstrates causal locality under identical seed 42.",
       "provenance": "LIVE_COMFYUI_GENERATION"
     },
     {
@@ -57,7 +68,10 @@
       "resolution": "832x1216",
       "elapsed_seconds": 16.25,
       "notes": "Seed 101 variation on canonical 2-scene layout.",
-      "status": "PASS",
+      "runtime_status": "PASS",
+      "visual_status": "PASS",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "visual_notes": "Seed 101 changes composition details (character pose, camera angle) while strictly respecting regional prompt boundaries.",
       "provenance": "LIVE_COMFYUI_GENERATION"
     },
     {
@@ -70,8 +84,59 @@
       "resolution": "832x1216",
       "elapsed_seconds": 16.02,
       "notes": "Seed 202 variation on canonical 2-scene layout.",
-      "status": "PASS",
+      "runtime_status": "PASS",
+      "visual_status": "PASS",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "visual_notes": "Seed 202 produces another distinct aesthetic variation while maintaining the top classroom / bottom train layout.",
       "provenance": "LIVE_COMFYUI_GENERATION"
+    },
+    {
+      "condition_id": "Condition_W1",
+      "title": "W1 Canonical 2-Scene Wiring (Seed 42, Portrait 832x1216)",
+      "filename": "W1_seed42.png",
+      "file_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\docs\\verification\\m1\\W1_seed42.png",
+      "preview_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\docs\\verification\\m1\\W1_seed42_preview.png",
+      "seed": 42,
+      "resolution": "832x1216",
+      "elapsed_seconds": 20.05,
+      "notes": "Verifies that Editor seed output (42) and width/height (832x1216) causally drive KSampler and EmptyLatentImage.",
+      "runtime_status": "PASS",
+      "visual_status": "PASS",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "visual_notes": "Verified 832x1216 portrait generation with seed 42. Top classroom window and bottom train tracks match layout preview.",
+      "provenance": "LIVE_COMFYUI_CANONICAL_WIRING"
+    },
+    {
+      "condition_id": "Condition_W2",
+      "title": "W2 Seed Causal Variation (Seed 101, Portrait 832x1216)",
+      "filename": "W2_seed101.png",
+      "file_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\docs\\verification\\m1\\W2_seed101.png",
+      "preview_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\docs\\verification\\m1\\W2_seed101_preview.png",
+      "seed": 101,
+      "resolution": "832x1216",
+      "elapsed_seconds": 14.21,
+      "notes": "Verifies that changing Editor seed from 42 to 101 via Editor output produces an entirely distinct generation.",
+      "runtime_status": "PASS",
+      "visual_status": "PASS",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "visual_notes": "Verified seed 101 variation. Layout regions match W1, but character pose and camera angle vary significantly, proving causally wired seed output.",
+      "provenance": "LIVE_COMFYUI_CANONICAL_WIRING"
+    },
+    {
+      "condition_id": "Condition_W3",
+      "title": "W3 Resolution Causal Variation (Landscape 1216x832, Seed 42)",
+      "filename": "W3_landscape.png",
+      "file_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\docs\\verification\\m1\\W3_landscape.png",
+      "preview_path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\docs\\verification\\m1\\W3_landscape_preview.png",
+      "seed": 42,
+      "resolution": "1216x832",
+      "elapsed_seconds": 14.03,
+      "notes": "Verifies that Editor resolution outputs (1216x832) causally drive EmptyLatentImage to output a 1216x832 landscape PNG.",
+      "runtime_status": "PASS",
+      "visual_status": "PASS",
+      "review_method": "DIRECT_IMAGE_INSPECTION",
+      "visual_notes": "Verified 1216x832 landscape generation. Width and height from Editor node successfully drove EmptyLatentImage to create horizontal 2-panel spread.",
+      "provenance": "LIVE_COMFYUI_CANONICAL_WIRING"
     }
   ]
 }

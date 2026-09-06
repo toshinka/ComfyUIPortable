@@ -47,11 +47,9 @@ function createDefaultDoc(resolutionStr = "Portrait 832x1216", styleTemplate = "
         pages: [
             {
                 page_id: "page_1",
-                order: 0,
-                dimensions: {
-                    width_px: res.width,
-                    height_px: res.height
-                },
+                order: 1,
+                width_px: res.width,
+                height_px: res.height,
                 style_prompt: tmpl.prompt,
                 style_negative_prompt: tmpl.negative,
                 generation: {
@@ -219,14 +217,29 @@ app.registerExtension({
             const btnAddScene = createButton("+ Add Scene", "Add a new scene rectangle (max 6)", () => {
                 const scenes = getScenes();
                 if (scenes.length >= 6) return;
-                const count = scenes.length + 1;
-                const newId = `scene_${count}`;
+
+                // Stable unique ID generation (Finding G)
+                let nextNum = 1;
+                const existingNums = scenes.map(s => {
+                    const m = s.scene_id && s.scene_id.match(/scene_(\d+)/);
+                    return m ? parseInt(m[1], 10) : 0;
+                });
+                if (existingNums.length > 0) {
+                    nextNum = Math.max(...existingNums, 0) + 1;
+                }
+                let newId = `scene_${nextNum}`;
+                while (scenes.some(s => s.scene_id === newId)) {
+                    nextNum++;
+                    newId = `scene_${nextNum}`;
+                }
+
                 const yOffset = 0.06 + ((scenes.length % 3) * 0.30);
+                const orderNum = scenes.length + 1;
                 scenes.push({
                     scene_id: newId,
-                    order: scenes.length + 1,
-                    name: `Scene ${count}`,
-                    prompt: `scene ${count} content prompt`,
+                    order: orderNum,
+                    name: `Scene ${orderNum}`,
+                    prompt: `scene ${orderNum} content prompt`,
                     negative_prompt: "",
                     input_mode: "simple",
                     area: {
@@ -464,8 +477,8 @@ app.registerExtension({
 
                 const page = getPage();
                 const resWidget = node.widgets.find(w => w.name === "resolution");
-                if (resWidget && page.dimensions) {
-                    const resStr = `${page.dimensions.width_px}x${page.dimensions.height_px}`;
+                if (resWidget && (page.width_px || page.height_px)) {
+                    const resStr = `${page.width_px}x${page.height_px}`;
                     if (resStr.includes("832x1216")) resWidget.value = "Portrait 832x1216";
                     else if (resStr.includes("1216x832")) resWidget.value = "Landscape 1216x832";
                     else if (resStr.includes("1024x1024")) resWidget.value = "Square 1024x1024";
@@ -490,6 +503,15 @@ app.registerExtension({
                     try {
                         const parsed = JSON.parse(docWidget.value);
                         if (parsed && parsed.schema_id === "TEGAKI_AUTHORING_DOCUMENT" && Array.isArray(parsed.pages)) {
+                            // Migrate any legacy dimensions if present
+                            parsed.pages.forEach(p => {
+                                const legacy = p["dimensions"];
+                                if (legacy && (!p.width_px || !p.height_px)) {
+                                    p.width_px = legacy.width_px;
+                                    p.height_px = legacy.height_px;
+                                    delete p["dimensions"];
+                                }
+                            });
                             doc = parsed;
                         }
                     } catch (e) {
@@ -649,8 +671,8 @@ app.registerExtension({
                     if (origCb) origCb.apply(this, arguments);
                     const res = parseResolution(v);
                     const p = getPage();
-                    p.dimensions.width_px = res.width;
-                    p.dimensions.height_px = res.height;
+                    p.width_px = res.width;
+                    p.height_px = res.height;
                     syncToWidgets();
                     renderCanvas();
                 };

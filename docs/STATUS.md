@@ -74,15 +74,21 @@ Scene-only Draft (M1) → CAST 複数出演 (M2) → Rough Guide (M3) → UX She
 
 ## 5. 次の一件 (Current Card Preview)
 
-- **完了Card**: **M1 / 3M-1 — Scene-only Minimum-Hand Draft** — COMPLETED
-  - Resolution Preset + Style Template + Scene Rectangles + Scene Prompts + Seed → 実機生成導線を完工。
-  - `TegakiMinimumHandSceneEditor` ノード、`authoring_execution_bridge.py`、Web UI拡張 `minimum_hand_scene_editor.js`、正本ワークフロー `workflows/M1_MINIMUM_HAND_SCENE_DRAFT.json` 実装。
-  - 98件自動テスト（旧78件 + 新規20件）全PASS。
-  - Live ComfyUI（SDXL Illustrious v1.7）による実機画像生成 5条件（A: 1 Scene, B: 2 Scenes, C: Geometry Swap Oracle, D1/D2: Seed Brainstorm）全完走・全目視確認（平均生成時間 16.5秒）。
-  - Contact Sheet・Manifest を `docs/verification/m1/` に配置完了。
-  - 報告書: [M1_3M1_SCENE_ONLY_MINIMUM_HAND_DRAFT_REPORT.md](reports/M1_3M1_SCENE_ONLY_MINIMUM_HAND_DRAFT_REPORT.md)
+- **完了Card**: **M1.1 / 3M-1.1 — Canonical Workflow Wiring & UI SSOT Truth Fix** — COMPLETED
+  - Finding A〜H 全件是正完了。
+  - `workflows/M1_MINIMUM_HAND_SCENE_DRAFT.json`: Editor.seed → KSampler.seed (Link 14), Editor.width/height → EmptyLatentImage.width/height (Link 15, 16) を正本実配線。
+  - `page.dimensions` レガシー方言を完全排除し、Python/JS ともに `page.width_px`, `page.height_px` に一本化。
+  - `document_json` を SSOT とする明示同期ポリシーと `debug_json` 診断キー（effective_sampler_seed, effective_latent_width 等）を実装。
+  - 中間Scene削除後の追加でも衝突しない一意安定 Scene ID 生成アルゴリズムを配備。
+  - 未実装だった Custom 選択肢を UI から正直に棚上げ（M2 へ延期）。
+  - 自動テスト全114件（M0/M0.1 旧78件 + M1 旧20件 + M1.1 新規16件）100% PASS。Node.js client unit test 3件 PASS。
+  - Live ComfyUI（SDXL Illustrious v1.7）による実配線実機画像生成 3条件（W1: Seed 42 832x1216, W2: Seed 101 832x1216, W3: Landscape 1216x832）完走・全目視確認。
+  - Manifest v2（runtime/visual 分離、直接目視ノート記録）および Contact Sheet を `docs/verification/m1/` に配置完了。
+  - 報告書: [M1_1_CANONICAL_WORKFLOW_WIRING_REPORT.md](reports/M1_1_CANONICAL_WORKFLOW_WIRING_REPORT.md)
+  - M1 Product Path: PASS
 - **次Card**: **M2 / 3M-2 — Minimum Character & CAST Staging**
   - CAST Master登録（1〜2名）、Sceneへの簡易CAST出演、Character Rough Region配置、LoRA適用。Simple modeとの共存。
+  - （※実ブラウザでの対話的GUI手動確認実施後に進行）
 
 ---
 

@@ -20,6 +20,7 @@
 | `M0 / 3M-0` | COMPLETED | Versioned Authoring Contract固定、Scene/Frame分離、Legacy Import/Export基盤 |
 | `M0.1 / 3M-0.1` | COMPLETED | 契約境界Hardening（FK空集合、孤立binding遮断、Scene/Frame乖離検出、厳格座標逆変換、境界move等） |
 | `M1 / 3M-1` | COMPLETED | Scene-only Minimum-Hand Draft（かんたんモード、粗領域・Scene Prompt・Seed生成導線・実機検証5条件完走） |
+| `M1.1 / 3M-1.1` | COMPLETED | Canonical Workflow Wiring & UI SSOT Truth Fix（正本実配線、dimensions方言撤廃、一意ID、Manifest v2、実機配線検証3条件完走） |
 | `M2 / 3M-2` | NEXT CANDIDATE | Minimum Character & CAST Staging（CAST登録、Scene出演、Character Rough Region配置、LoRA） |
 
 ## 3. HISTORICAL / SUPERSEDED (過去の参照資料)

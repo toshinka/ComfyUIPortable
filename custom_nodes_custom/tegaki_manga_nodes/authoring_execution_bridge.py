@@ -292,14 +292,23 @@ def get_execution_debug_info(
     scenes = page.get("scenes", [])
     gen = page.get("generation", {})
 
-    effective_seed = seed if seed is not None else int(gen.get("seed", 42))
+    w_px = int(page.get("width_px", 832))
+    h_px = int(page.get("height_px", 1216))
+    doc_seed = int(gen.get("seed", 42))
+    effective_seed = seed if seed is not None else doc_seed
 
     return {
         "schema_id": doc.get("schema_id", SCHEMA_ID),
         "schema_version": doc.get("schema_version", SCHEMA_VERSION),
+        "document_seed": doc_seed,
+        "effective_sampler_seed": effective_seed,
+        "document_resolution": f"{w_px}x{h_px}",
+        "effective_latent_width": w_px,
+        "effective_latent_height": h_px,
+        "effective_latent_resolution": f"{w_px}x{h_px}",
         "page_resolution": {
-            "width": int(page.get("width_px", 832)),
-            "height": int(page.get("height_px", 1216)),
+            "width": w_px,
+            "height": h_px,
         },
         "scene_count": len(scenes),
         "scene_ids": [s.get("scene_id") for s in scenes],
