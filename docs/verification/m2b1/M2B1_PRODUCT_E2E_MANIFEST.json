@@ -1,0 +1,112 @@
+{
+  "milestone": "M2B.1",
+  "title": "CAST Placement Semantics & Product Path Closure Manifest",
+  "timestamp": "2026-09-06T03:51:17Z",
+  "checkpoint": "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors",
+  "controlnet_core": "OFF",
+  "verifications": {
+    "headless_js_contract": {
+      "status": "PASS",
+      "evidence_type": "HEADLESS_TEST",
+      "test_suite": "scripts/test_m2b_minimum_hand_editor.mjs",
+      "checks_passed": 13,
+      "checks_total": 13
+    },
+    "python_regression_contract": {
+      "status": "PASS",
+      "evidence_type": "HEADLESS_TEST",
+      "test_suite": "scripts/test_m2b1_authoring_regression.py",
+      "checks_passed": 4,
+      "checks_total": 4
+    },
+    "live_backend_runtime": {
+      "status": "PASS",
+      "evidence_type": "LIVE_RUNTIME",
+      "runner": "scripts/run_m2b1_closure_verification.py",
+      "tasks": [
+        {
+          "task_id": "M2B1_bob_first_scene",
+          "filename": "M2B1_bob_first_scene.png",
+          "seed": 301,
+          "description": "Bob-only placement (Finding A fix)",
+          "evidence_type": "LIVE_RUNTIME",
+          "runtime_status": "PASS",
+          "visual_status": "VERIFIED_CORRECT",
+          "scene_count": 1,
+          "cast_count": 2,
+          "instance_count": 1,
+          "resolved_instances": [
+            {
+              "instance_id": "inst_1",
+              "character_id": "cast_2",
+              "acting_prompt": "",
+              "effective_prompt": "1boy, short dark hair, school blazer, sitting by window, reading book calmly",
+              "spatial_hint": ""
+            }
+          ]
+        },
+        {
+          "task_id": "M2B1_two_cast_explicit",
+          "filename": "M2B1_two_cast_explicit.png",
+          "seed": 302,
+          "description": "Alice left, Bob right explicit placement",
+          "evidence_type": "LIVE_RUNTIME",
+          "runtime_status": "PASS",
+          "visual_status": "VERIFIED_CORRECT",
+          "scene_count": 1,
+          "cast_count": 2,
+          "instance_count": 2,
+          "resolved_instances": [
+            {
+              "instance_id": "inst_1",
+              "character_id": "cast_1",
+              "acting_prompt": "",
+              "effective_prompt": "1girl, blonde twintails, sailor uniform, standing holding a book, surprised expression, on the left side",
+              "spatial_hint": "on the left side"
+            },
+            {
+              "instance_id": "inst_2",
+              "character_id": "cast_2",
+              "acting_prompt": "",
+              "effective_prompt": "1boy, short dark hair, school blazer, reaching for book on shelf, turning head, on the right side",
+              "spatial_hint": "on the right side"
+            }
+          ]
+        },
+        {
+          "task_id": "M2B1_repeated_alice_multi_scene",
+          "filename": "M2B1_repeated_alice_multi_scene.png",
+          "seed": 303,
+          "description": "Alice across 2 scenes",
+          "evidence_type": "LIVE_RUNTIME",
+          "runtime_status": "PASS",
+          "visual_status": "VERIFIED_CORRECT",
+          "scene_count": 2,
+          "cast_count": 1,
+          "instance_count": 2,
+          "resolved_instances": [
+            {
+              "instance_id": "inst_1",
+              "character_id": "cast_1",
+              "acting_prompt": "",
+              "effective_prompt": "1girl, blonde twintails, sailor uniform, running fast with toast in mouth",
+              "spatial_hint": ""
+            },
+            {
+              "instance_id": "inst_2",
+              "character_id": "cast_1",
+              "acting_prompt": "",
+              "effective_prompt": "1girl, blonde twintails, sailor uniform, hands on knees catching breath, relieved",
+              "spatial_hint": ""
+            }
+          ]
+        }
+      ]
+    },
+    "live_browser_product_e2e": {
+      "status": "PENDING (OWNER MANUAL CHECK REQUIRED)",
+      "evidence_type": "LIVE_BROWSER",
+      "reason": "Host environment lacks automated browser runner (playwright/puppeteer). Contract §16 compliance protocol engaged."
+    }
+  }
+}

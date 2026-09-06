@@ -12,6 +12,17 @@
  * Strict SSOT: TEGAKI_AUTHORING_DOCUMENT in document_json widget.
  */
 import { app } from "../../scripts/app.js";
+import {
+    chooseCastForPlacement,
+    getNextInstanceId,
+    calculateNewInstanceGeometry,
+    onInstanceRemoved,
+    canDeleteCast,
+    cascadeDeleteScene,
+    moveSceneWithChildren,
+    resizeSceneWithChildren,
+    clampCharacterDrag
+} from "./minimum_hand_authoring_ops.js";
 
 const SCENE_PALETTE = [
     { name: "Scene 1", hex: "#e53935", rgb: [229, 57, 53] },
@@ -381,12 +392,12 @@ app.registerExtension({
                 const deadScene = scenes[selectedSceneIndex];
                 if (deadScene) {
                     const p = getPage();
-                    p.character_instances = (p.character_instances || []).filter(inst => inst.scene_id !== deadScene.scene_id);
+                    const res = cascadeDeleteScene(deadScene.scene_id, p.scenes, p.character_instances || []);
+                    p.scenes = res.scenes;
+                    p.character_instances = res.instances;
                 }
-                scenes.splice(selectedSceneIndex, 1);
-                scenes.forEach((s, i) => { s.order = i + 1; });
-                if (selectedSceneIndex >= scenes.length) {
-                    selectedSceneIndex = scenes.length - 1;
+                if (selectedSceneIndex >= getScenes().length) {
+                    selectedSceneIndex = getScenes().length - 1;
                 }
                 selectedInstanceId = null;
                 syncToWidgets();
@@ -517,8 +528,18 @@ app.registerExtension({
             const btnRemoveChar = createButton("Remove Character", "Remove this character from the scene", () => {
                 if (!selectedInstanceId) return;
                 const p = getPage();
+                const curInst = (p.character_instances || []).find(inst => inst.instance_id === selectedInstanceId);
+                const sceneId = curInst ? curInst.scene_id : null;
+
                 p.character_instances = (p.character_instances || []).filter(inst => inst.instance_id !== selectedInstanceId);
                 selectedInstanceId = null;
+
+                if (sceneId) {
+                    const scene = (p.scenes || []).find(s => s.scene_id === sceneId);
+                    const remaining = (p.character_instances || []).filter(inst => inst.scene_id === sceneId);
+                    onInstanceRemoved(scene, remaining);
+                }
+
                 syncToWidgets();
                 renderAll();
             }, "#b91c1c");
@@ -587,6 +608,7 @@ app.registerExtension({
                         e.preventDefault();
                         selectedCastId = (selectedCastId === c.cast_id) ? null : c.cast_id;
                         renderCastSection();
+                        renderInspector();
                     };
                     castChipsRow.appendChild(chip);
                 });
@@ -644,50 +666,23 @@ app.registerExtension({
                 }
 
                 castInspector.style.display = "flex";
-                castInspector.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div style="font-weight: 600; font-size: 11px; color: #38bdf8;">CAST Details (${curCast.cast_id})</div>
-                        <button id="btn-delete-cast" style="
-                            background: #b91c1c; color: #fff; border: 1px solid #dc2626; border-radius: 4px;
-                            padding: 2px 6px; font-size: 10px; cursor: pointer;
-                        ">Delete CAST</button>
-                    </div>
-                    <div style="display: flex; gap: 6px; align-items: center;">
-                        <label style="color: #a1a1aa; font-size: 11px; width: 80px;">Name:</label>
-                        <input id="cast-name-input" type="text" value="${curCast.display_name || ''}" style="
-                            background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 4px;
-                            padding: 2px 6px; font-size: 11px; flex: 1;
-                        " />
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                        <label style="color: #a1a1aa; font-size: 11px;">Identity Prompt (features, hair, costume):</label>
-                        <textarea id="cast-id-prompt" rows="2" style="
-                            background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 4px;
-                            padding: 4px; font-size: 11px; resize: vertical;
-                        ">${curCast.identity_prompt || ''}</textarea>
-                    </div>
+                castInspector.innerHTML = "";
+
+                const headerRow = document.createElement("div");
+                headerRow.style.cssText = "display: flex; justify-content: space-between; align-items: center;";
+                const headerTitle = document.createElement("div");
+                headerTitle.style.cssText = "font-weight: 600; font-size: 11px; color: #38bdf8;";
+                headerTitle.textContent = `CAST Details (${curCast.cast_id})`;
+                const btnDeleteCast = document.createElement("button");
+                btnDeleteCast.style.cssText = `
+                    background: #b91c1c; color: #fff; border: 1px solid #dc2626; border-radius: 4px;
+                    padding: 2px 6px; font-size: 10px; cursor: pointer;
                 `;
-
-                const nameInput = castInspector.querySelector("#cast-name-input");
-                nameInput.oninput = () => {
-                    curCast.display_name = nameInput.value;
-                    syncToWidgets();
-                    renderCanvas();
-                    renderInspector();
-                };
-
-                const idPromptArea = castInspector.querySelector("#cast-id-prompt");
-                idPromptArea.oninput = () => {
-                    curCast.identity_prompt = idPromptArea.value;
-                    syncToWidgets();
-                };
-
-                const btnDeleteCast = castInspector.querySelector("#btn-delete-cast");
+                btnDeleteCast.textContent = "Delete CAST";
                 btnDeleteCast.onclick = (e) => {
                     e.preventDefault();
                     const allInstances = getCharacterInstances();
-                    const isReferenced = allInstances.some(inst => inst.cast_id === curCast.cast_id);
-                    if (isReferenced) {
+                    if (!canDeleteCast(curCast.cast_id, allInstances)) {
                         alert(`Cannot delete CAST '${curCast.display_name || curCast.cast_id}' because it is placed in scenes. Please remove appearances from scenes first.`);
                         return;
                     }
@@ -699,6 +694,51 @@ app.registerExtension({
                     renderInspector();
                     renderCanvas();
                 };
+                headerRow.appendChild(headerTitle);
+                headerRow.appendChild(btnDeleteCast);
+                castInspector.appendChild(headerRow);
+
+                const nameRow = document.createElement("div");
+                nameRow.style.cssText = "display: flex; gap: 6px; align-items: center;";
+                const nameLabel = document.createElement("label");
+                nameLabel.style.cssText = "color: #a1a1aa; font-size: 11px; width: 80px;";
+                nameLabel.textContent = "Name:";
+                const nameInput = document.createElement("input");
+                nameInput.type = "text";
+                nameInput.value = curCast.display_name || "";
+                nameInput.style.cssText = `
+                    background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 4px;
+                    padding: 2px 6px; font-size: 11px; flex: 1;
+                `;
+                nameInput.oninput = () => {
+                    curCast.display_name = nameInput.value;
+                    syncToWidgets();
+                    renderCanvas();
+                    renderInspector();
+                };
+                nameRow.appendChild(nameLabel);
+                nameRow.appendChild(nameInput);
+                castInspector.appendChild(nameRow);
+
+                const promptRow = document.createElement("div");
+                promptRow.style.cssText = "display: flex; flex-direction: column; gap: 2px;";
+                const promptLabel = document.createElement("label");
+                promptLabel.style.cssText = "color: #a1a1aa; font-size: 11px;";
+                promptLabel.textContent = "Identity Prompt (features, hair, costume):";
+                const idPromptArea = document.createElement("textarea");
+                idPromptArea.rows = 2;
+                idPromptArea.value = curCast.identity_prompt || "";
+                idPromptArea.style.cssText = `
+                    background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 4px;
+                    padding: 4px; font-size: 11px; resize: vertical;
+                `;
+                idPromptArea.oninput = () => {
+                    curCast.identity_prompt = idPromptArea.value;
+                    syncToWidgets();
+                };
+                promptRow.appendChild(promptLabel);
+                promptRow.appendChild(idPromptArea);
+                castInspector.appendChild(promptRow);
             }
 
             function renderInspector() {
@@ -733,13 +773,25 @@ app.registerExtension({
                 const sceneInstances = allInstances.filter(inst => inst.scene_id === curScene.scene_id);
                 const castList = getCast();
 
+                // Determine placement candidate label / tooltip
+                const candidateCheck = chooseCastForPlacement({ castList, selectedCastId, sceneInstances });
+                let addCharLabel = "+ Add Character";
+                let addCharTitle = "Place character into this scene";
+                if (candidateCheck.ok && candidateCheck.targetCast) {
+                    const cName = candidateCheck.targetCast.display_name || candidateCheck.targetCast.cast_id;
+                    addCharLabel = `+ Place ${cName}`;
+                    addCharTitle = `Place ${cName} into Scene ${selectedSceneIndex + 1}`;
+                } else if (candidateCheck.reason === "SELECTION_REQUIRED") {
+                    addCharTitle = "Select a CAST above first to place into this scene";
+                }
+
                 sceneCharactersRow.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
                         <span style="font-size: 11px; font-weight: 600; color: #a1a1aa;">CHARACTERS IN SCENE (${sceneInstances.length})</span>
-                        <button id="btn-add-char-to-scene" style="
+                        <button id="btn-add-char-to-scene" title="${addCharTitle}" style="
                             background: #27272a; color: #fafafa; border: 1px dashed #52525b; border-radius: 4px;
                             padding: 2px 6px; font-size: 10px; cursor: pointer;
-                        ">+ Add Character</button>
+                        ">${addCharLabel}</button>
                     </div>
                     <div id="scene-chars-chips" style="display: flex; gap: 4px; align-items: center; flex-wrap: wrap;"></div>
                 `;
@@ -776,50 +828,22 @@ app.registerExtension({
                 const btnAddChar = sceneCharactersRow.querySelector("#btn-add-char-to-scene");
                 btnAddChar.onclick = (e) => {
                     e.preventDefault();
-                    if (castList.length === 0) {
-                        alert("Please register at least one CAST character above before placing them in a scene.");
+                    const pickResult = chooseCastForPlacement({ castList, selectedCastId, sceneInstances });
+                    if (!pickResult.ok) {
+                        alert(pickResult.error);
                         return;
                     }
 
-                    // Choose cast
-                    const targetCast = castList[sceneInstances.length % castList.length];
-
-                    // Generate unique collision-free instance_id
-                    let nextInstNum = 1;
-                    const existingInstNums = allInstances.map(i => {
-                        const m = i.instance_id && i.instance_id.match(/inst_(\d+)/);
-                        return m ? parseInt(m[1], 10) : 0;
-                    });
-                    if (existingInstNums.length > 0) {
-                        nextInstNum = Math.max(...existingInstNums, 0) + 1;
-                    }
-                    let newInstId = `inst_${nextInstNum}`;
-                    while (allInstances.some(i => i.instance_id === newInstId)) {
-                        nextInstNum++;
-                        newInstId = `inst_${nextInstNum}`;
-                    }
-
-                    const sb = curScene.area || { x: 0.1, y: 0.1, w: 0.8, h: 0.4 };
-                    const count = sceneInstances.length;
-                    const charW = parseFloat((sb.w * 0.40).toFixed(4));
-                    const charH = parseFloat((sb.h * 0.80).toFixed(4));
-                    const charX = count === 0
-                        ? parseFloat((sb.x + sb.w * 0.08).toFixed(4))
-                        : parseFloat((sb.x + sb.w * 0.52).toFixed(4));
-                    const charY = parseFloat((sb.y + sb.h * 0.10).toFixed(4));
+                    const targetCast = pickResult.targetCast;
+                    const newInstId = getNextInstanceId(allInstances);
+                    const geom = calculateNewInstanceGeometry(curScene.area, sceneInstances.length);
 
                     const newInst = {
                         instance_id: newInstId,
                         cast_id: targetCast.cast_id,
                         scene_id: curScene.scene_id,
                         order: sceneInstances.length + 1,
-                        area: {
-                            shape_type: "rect",
-                            x: charX,
-                            y: charY,
-                            w: charW,
-                            h: charH
-                        },
+                        area: geom,
                         acting_prompt: "standing casually",
                         negative_prompt_override: "",
                         metadata: {}
@@ -859,10 +883,13 @@ app.registerExtension({
                     const cInfo = castList.find(c => c.cast_id === curInst.cast_id);
                     const cName = cInfo ? cInfo.display_name : curInst.cast_id;
                     const cCol = getCastColor(curInst.cast_id);
-                    charBadge.innerHTML = `
-                        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${cCol.hex};"></span>
-                        <span>Editing [${cName}] in Scene ${selectedSceneIndex + 1}</span>
-                    `;
+                    charBadge.innerHTML = "";
+                    const dot = document.createElement("span");
+                    dot.style.cssText = `display:inline-block; width:8px; height:8px; border-radius:50%; background:${cCol.hex};`;
+                    const badgeText = document.createElement("span");
+                    badgeText.textContent = `Editing [${cName}] in Scene ${selectedSceneIndex + 1}`;
+                    charBadge.appendChild(dot);
+                    charBadge.appendChild(badgeText);
                     charActingInput.value = curInst.acting_prompt || "";
                 } else {
                     charInspector.style.display = "none";
