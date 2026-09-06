@@ -5,14 +5,14 @@ Branch: main
 Canonical path: ComfyUIPortable/GITHUB_ComfyUI.txt
 Latest Entry: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB_ComfyUI.txt
 
-Review Target Commit SHA: 72e032c71d97eed2712552062a75fde5d29c2360
+Review Target Commit SHA: 7e9528d751959b62e108aaad8df363548855df92
 Planning Commit SHA: 261a3d7297455931d391e62f2d8a1335193d8d90
-Planning publication: Published on remote main (Planning: 261a3d72, M0: 5e57ae2f, M1: c9a8dc1b, M1 Navigation: 64456929, M1.1: 7e516015, M1.1 Navigation: b6bea40c). Implementation Review Target (Commit A): 72e032c71d97eed2712552062a75fde5d29c2360.
+Planning publication: Published on remote main (Planning: 261a3d72, M0: 5e57ae2f, M1: c9a8dc1b, M1 Navigation: 64456929, M1.1: 7e516015, M1.1 Navigation: b6bea40c, M2A: 72e032c7, M2A Navigation: 88993df0). Implementation Review Target (Commit A): 7e9528d751959b62e108aaad8df363548855df92.
 
 Current direction:
 Minimum-Hand / Scene-first. Simple Scene-only draft first, optional CAST with repeated appearances next, rough manga/dummy guide afterward. Scene regions and visible panel frames are independent. Pose / Interaction are later refinement.
-Current card: M2A / 3M-2A — COMPLETED (Character Spatial Capability Ladder & Control Escalation Gate: 14 automated bridge tests + 114 regression tests passing; 19 empirical GPU conditions generated and visually inspected; Left/Right Swap Oracle PASS; Prompt Depth PASS; ControlNet NOT needed for baseline).
-Next card candidate: M2B / 3M-2B — Minimum-Hand Character & CAST Staging Product UI (Option A: Rough Region + Free Text Prompt; interactive canvas character staging, CAST Master registration, free text acting prompt).
+Current card: M2A.1 / 3M-2A.1 — COMPLETED (Prompt-Region Calibration & Conditional ControlNet Escalation Gate: 139 automated tests passing; 97 prompt-region conditions + 4 ControlNet conditions across 8 seeds; Spatial Prompt Hint Compiler implemented and verified; Option A+ recommended for M2B; ControlNet core escalation NOT needed).
+Next card candidate: M2B / 3M-2B — Minimum Character & CAST Staging Product UI (Option A+: Rough Region + Free Text + Hidden Spatial Helper).
 
 Evidence correction:
 Phase 3L was reported complete. Its presence evaluation JSON has 14 visual_status=PENDING entries. Owner acceptance is not established by that report.
@@ -37,7 +37,10 @@ Document authority: docs/DOCUMENT_REGISTER.md
 Old intermediate plans and Phase requests are historical, not next-work instructions.
 
 Implementation evidence (pinned to implementation Review Target)
-M2A Report (Current Review Target):
+M2A.1 Report (Current Review Target):
+https://raw.githubusercontent.com/toshinka/tegaki/7e9528d751959b62e108aaad8df363548855df92/ComfyUIPortable/docs/reports/M2A1_PROMPT_REGION_CALIBRATION_AND_CONTROL_GATE_REPORT.md
+
+M2A Report:
 https://raw.githubusercontent.com/toshinka/tegaki/72e032c71d97eed2712552062a75fde5d29c2360/ComfyUIPortable/docs/reports/M2A_CHARACTER_SPATIAL_CAPABILITY_LADDER_REPORT.md
 
 M1.1 Report:
