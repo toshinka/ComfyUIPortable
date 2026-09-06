@@ -1,7 +1,7 @@
 # ComfyUIPortable 現在地 (Status & Direction)
 
 更新: 2026-09-06 JST
-Review Target Commit SHA: `7e516015f8c6fdfde118a83a9dcfdb04560d02aa` (Phase 3M-1.1 M1.1 実装正本)
+Review Target Commit SHA: `72e032c71d97eed2712552062a75fde5d29c2360` (Phase 3M-2A M2A 実装正本)
 正本入口: [GITHUB_ComfyUI.txt](../GITHUB_ComfyUI.txt)
 
 ---
