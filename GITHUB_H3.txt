@@ -6,7 +6,7 @@ Updated: 2026-09-09 JST
 
 Current Stage
 -------------
-H1A / TEGAKI H3 minimum video skin / Native T2V vertical slice
+H1B / Single Reference / Native I2V vertical slice
 Groundwork: PASS (historical)
 Semantic Alignment: PASS (historical)
 Astra bounded UI review: COMPLETED (historical)
@@ -18,6 +18,10 @@ H1A implementation commit: 925596b9d7fbd731290fe9869ea34a0006249130
 H1A Native generation: VERIFIED LOCAL GENERATION
 H1A browser UI generation: VERIFIED BROWSER UI GENERATION
 H1A publication: PUBLISHED ON MAIN
+H1B implementation: IMPLEMENTED
+H1B T2V regression: VERIFIED BROWSER UI GENERATION
+H1B Native I2V generation: VERIFIED LOCAL GENERATION
+H1B browser UI I2V generation: VERIFIED BROWSER UI GENERATION
 Owner acceptance: PENDING
 
 This entry is the starting point for external AI review of MiniMax H3 work. It
@@ -42,6 +46,9 @@ Read Order
 15. ComfyUIPortable/docs/h3/reports/H1A_MINIMUM_VIDEO_SKIN_NATIVE_T2V_REPORT.md
 16. ComfyUIPortable/docs/h3/evidence/h1a/2026-09-08/README.md
 17. ComfyUIPortable/docs/h3/evidence/h1a/2026-09-08/manifest.json
+18. ComfyUIPortable/docs/h3/reports/H1B_SINGLE_REFERENCE_NATIVE_I2V_REPORT.md
+19. ComfyUIPortable/docs/h3/evidence/h1b/2026-09-09/README.md
+20. ComfyUIPortable/docs/h3/evidence/h1b/2026-09-09/manifest.json
 
 Master Roadmap
 --------------
@@ -54,13 +61,13 @@ D:\GitHub\tegaki\MiniMax H3\Archive\H3_VIDEO導入・Still対応基盤・動画�
 The root master and Archive source are byte-identical. Archive was preserved;
 it was not deleted, moved, renamed, or edited.
 
-Expected GitHub URL after Owner push:
+Canonical GitHub URL:
 https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
 
-The local origin/main baseline did not contain the new root path before this
-closeout. External GitHub fetch was unavailable during this run, so the public
-URL remains pending Owner push and external verification. Do not present it as
-already published.
+The root master path is present in the local `origin/main` tracking ref at
+commit `47056a7c972f187f0ce9686db1ae7bb93ce8aca3`. This confirms the repository
+publication state represented by `origin/main`; it does not imply Owner
+acceptance or final production acceptance.
 
 Rev.3 direction, summarized:
 - H3 VIDEO first, using existing implementations where useful.
@@ -96,25 +103,27 @@ remain outside H3 implementation scope. A later, separately authorized namespace
 task created GITHUB_MANGA.txt and converted GITHUB_ComfyUI.txt into a thin router;
 this navigation change does not merge H3 and Manga runtime semantics.
 
-H1A now owns the narrow implementation boundary under `h3/` and
-`workflows/h3/`: a local vanilla UI, a small HTTP adapter server, and the
-materialized Native T2V workflow. H1A keeps the H3 model store isolated and
-does not add a custom node, change ComfyUI core/frontend/shared models, or touch
-the Manga runtime. Generated MP4s and model weights remain ignored.
+H1A/H1B now own the narrow implementation boundary under `h3/` and
+`workflows/h3/`: a local vanilla UI, a small HTTP adapter server, and separate
+materialized Native T2V and single-Start-Frame I2V workflows. H1B accepts one
+validated uploaded reference and binds it only to `first_frame`. The H3 model
+store remains isolated; no custom node, ComfyUI core/frontend/shared model, or
+Manga runtime change was made. Generated MP4s, uploaded runtime inputs, and
+model weights remain ignored.
 
 Current Review Gate
 -------------------
-H1A is implemented and has a Native backend result plus a browser UI result.
-The implementation commit `925596b9d7fbd731290fe9869ea34a0006249130` is
-published on `main`. The evidence is ready for Web GPT / Astra H1A review.
-Owner acceptance and license action remain separate; publication does not imply
-Owner acceptance. H1B, I2V, REF2VA, Still, Studio, Timeline, Storyboard, Cast,
-3D, and Manga are not started by this slice.
+H1B is implemented as the next bounded slice and has a T2V regression result,
+Native I2V result, and browser UI I2V result. The evidence is ready for Web GPT
+/ Astra H1B review. Owner acceptance and license action remain separate;
+publication does not imply Owner acceptance. H1B.1, REF2VA, Still, Studio,
+Timeline, Storyboard, Cast, 3D, and Manga are not started by this slice.
 
 Publication Note
 ----------------
 The H1A files are published on `main` in implementation commit
-`925596b9d7fbd731290fe9869ea34a0006249130`. The expected GitHub URLs are listed
-in `docs/h3/README.md` and the H1A report. Publication does not imply Owner
-acceptance. Historical H0/H0.1 reports remain historical records and are not
-rewritten to claim H1A work.
+`925596b9d7fbd731290fe9869ea34a0006249130`. H1B implementation and evidence
+are recorded in the H1B report and dated evidence directory. The current Rev.3
+root path is present in `origin/main` at `47056a7c972f187f0ce9686db1ae7bb93ce8aca3`.
+Publication does not imply Owner acceptance. Historical H0/H0.1/H1A reports
+remain historical records and are not rewritten to claim later work.

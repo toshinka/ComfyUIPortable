@@ -1,0 +1,207 @@
+{
+  "schema": "tegaki.h3.h1b.evidence/v1",
+  "captured_at": "2026-09-09T08:03:25+09:00",
+  "status": [
+    "IMPLEMENTED",
+    "VERIFIED LOCAL STARTUP",
+    "VERIFIED LOCAL GENERATION",
+    "VERIFIED BROWSER UI GENERATION",
+    "OWNER ACCEPTANCE PENDING"
+  ],
+  "implementation": {
+    "commit": "50573c57ec1fb4ea5858352f07f5332d50326f41",
+    "canonical_launcher": "h3/run_h3.bat",
+    "h1a_compatibility_launcher": "h3/run_h1a.bat",
+    "skin_url": "http://127.0.0.1:8190/",
+    "native_backend_url": "http://127.0.0.1:8188/"
+  },
+  "environment": {
+    "host_gpu": "NVIDIA GeForce RTX 4070",
+    "vram_total_bytes": 12878086144,
+    "ram_total_bytes": 68476002304,
+    "native_backend": "ComfyUI 0.30.0",
+    "python": "3.13.14 embedded",
+    "pytorch": "2.13.0+cu130",
+    "dynamic_vram": true,
+    "async_offload_streams": 2,
+    "custom_nodes": "disabled",
+    "shared_comfyui_models_used": false,
+    "model_store": "h3/model_store/"
+  },
+  "workflow": {
+    "path": "workflows/h3/H1B_NATIVE_I2V_BASE.json",
+    "schema": "tegaki.h3.h1b.native-i2v/v1",
+    "official_source": "https://github.com/Comfy-Org/workflow_templates/blob/main/templates/video_minimax_h3_i2v.json",
+    "official_workflow_commit": "66abae5205f7c5105281146fa109f7c12801d268",
+    "official_workflow_sha256": "4DC94E9EA308C1D60409E7F55DBA5E2788DAB4659C2DBB90F1E9481498767540",
+    "local_workflow_sha256": "6BFA82EA20B65C84CBDB62A1EF949581D4F03368C2F6B035D6081EF204FE72DE",
+    "reference_role": "start_frame",
+    "resolution": [608, 352],
+    "duration_seconds": 5,
+    "frames": 124,
+    "fps": 24,
+    "steps": 20,
+    "sampler": "res_multistep",
+    "scheduler": "simple",
+    "turbo_lora": false,
+    "last_frame_bound": false
+  },
+  "browser": {
+    "capture_method": "Codex in-app browser via CUA/Playwright",
+    "screenshot_persisted": false,
+    "screenshot_note": "Live AX state and completion screenshot were captured in the CUA transcript; committed binary evidence is the media frame/contact-sheet set.",
+    "events": [
+      {
+        "route": "native_t2v",
+        "submitted_at": "2026-09-09T07:45:54+09:00",
+        "completed_at": "2026-09-09T07:48:33+09:00",
+        "visible_state": "Completed · T2V",
+        "queue_after": 0
+      },
+      {
+        "action": "reference_add",
+        "result": "accepted; thumbnail and Start Frame card visible"
+      },
+      {
+        "action": "reference_replace",
+        "result": "accepted; selected Start Frame replaced and remained visible"
+      },
+      {
+        "action": "reference_remove",
+        "result": "card cleared; prompt/resolution/duration retained; no server delete"
+      },
+      {
+        "route": "native_i2v",
+        "submitted_at": "2026-09-09T08:01:03+09:00",
+        "completed_at": "2026-09-09T08:03:25+09:00",
+        "visible_state": "Completed · Start Frame",
+        "queue_after": 0,
+        "reference_id": "00c89a2a6cdc49b8adc833b447a75700"
+      }
+    ]
+  },
+  "runs": [
+    {
+      "route": "browser-ui-t2v-regression",
+      "prompt_id": "a188fe59-2031-4fac-a6f8-dc82ef7ea4c3",
+      "elapsed_seconds": 158.43,
+      "output": {
+        "path": "output/h3/video/h1a_native_t2v_00003_.mp4",
+        "bytes": 228976,
+        "sha256": "6F849052D9D3252FB8A5EBF4D1DDA7269C6328539A5BBC932DA58A803A9E0236"
+      },
+      "ffprobe": {
+        "video_codec": "h264",
+        "audio_codec": "aac",
+        "audio_channels": 2,
+        "audio_sample_rate": 32000,
+        "width": 608,
+        "height": 352,
+        "fps": 24,
+        "video_frames": 124,
+        "media_duration_seconds": 5.167
+      },
+      "oom": false
+    },
+    {
+      "route": "browser-ui-native-i2v",
+      "job_id": "816c8270228f40c6b39735414e499ed9",
+      "prompt_id": "5ea30fc7-e8a1-413b-9d4e-3bca0812c29c",
+      "reference": {
+        "id": "00c89a2a6cdc49b8adc833b447a75700",
+        "role": "start_frame",
+        "source": "docs/h3/evidence/reference-implementations/native/2026-09-08_generation/frames/first_frame.png",
+        "stored_runtime_path": "output/h3/inputs/00c89a2a6cdc49b8adc833b447a75700.png"
+      },
+      "elapsed_seconds": 142.28,
+      "output": {
+        "path": "output/h3/video/h1b_native_i2v_00001_.mp4",
+        "bytes": 413441,
+        "sha256": "7D322ABE7B159514C46A2690ED5145FF00C846579F8E3EDFD21DF65FB6C49386"
+      },
+      "native_prompt_checks": {
+        "conditioning_node": "131",
+        "load_image_node": "132",
+        "first_frame": ["132", 0],
+        "last_frame_present": false,
+        "load_image": "inputs/00c89a2a6cdc49b8adc833b447a75700.png"
+      },
+      "ffprobe": {
+        "video_codec": "h264",
+        "audio_codec": "aac",
+        "audio_channels": 2,
+        "audio_sample_rate": 32000,
+        "width": 608,
+        "height": 352,
+        "fps": 24,
+        "video_frames": 124,
+        "media_duration_seconds": 5.167
+      },
+      "oom": false,
+      "fallback": false
+    }
+  ],
+  "resource_sampling": {
+    "sample_phase": "active native_i2v generation",
+    "vram_free_bytes": [2355837824, 2403420544, 2697017283, 2388937088, 2391296384],
+    "ram_free_bytes": [3205750784, 3128602624, 3103027200, 3190931456],
+    "minimum_vram_free_bytes": 2355837824,
+    "minimum_ram_free_bytes": 3103027200,
+    "oom": false,
+    "post_job_cache_note": "Free VRAM was approximately 0.7 GB after completion while the Native model cache remained resident; this is not the active-generation peak."
+  },
+  "tests": {
+    "python_unittest_count": 19,
+    "python_unittest_passed": 19,
+    "python_unittest_failed": 0,
+    "h1b_ui_smoke_passed": 13,
+    "javascript_check": "passed",
+    "python_compileall": "passed",
+    "json_parse": "passed",
+    "git_diff_check": "passed"
+  },
+  "evidence": {
+    "browser_screenshot": null,
+    "first_frame": {
+      "path": "frames/first_frame.png",
+      "sha256": "14C6966ED60B804A037E99969E9ED798437D77047A4866B6C83DCA65E85584F5"
+    },
+    "middle_frame": {
+      "path": "frames/middle_frame.png",
+      "sha256": "FC2B90A3AB29B4863AC514215100437C4100064DB086D881F99909D869DBE463"
+    },
+    "last_frame": {
+      "path": "frames/last_frame.png",
+      "sha256": "E0CB3B1C0363E26F1D9EB0FE2AE2CBD604AD2DE19C84642C77C3118325459D84"
+    },
+    "contact_sheet": {
+      "path": "contact_sheet.png",
+      "sha256": "60A64E1F8A985C6C37AD90F1DE9D9F1603354899BF285DD67E8A8BBCC9200377"
+    },
+    "generated_mp4_committed": false,
+    "reference_input_committed": false,
+    "model_weights_committed": false
+  },
+  "non_scope": [
+    "H1B.1",
+    "REF2VA",
+    "multi-reference",
+    "end-frame",
+    "Still",
+    "Turbo",
+    "LightX",
+    "PDD",
+    "FastH3",
+    "VSA",
+    "Studio",
+    "Timeline",
+    "Storyboard",
+    "Cast",
+    "3D",
+    "Manga",
+    "custom-node-vendoring",
+    "ComfyUI-core-or-frontend-changes",
+    "persistent-project-storage",
+    "public-deployment"
+  ]
+}
