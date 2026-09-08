@@ -2,7 +2,7 @@ ComfyUIPortable — MiniMax H3 External AI Entry
 Repository: https://github.com/toshinka/tegaki
 Branch: main
 Canonical path: ComfyUIPortable/GITHUB_H3.txt
-Updated: 2026-09-08 JST
+Updated: 2026-09-09 JST
 
 Current Stage
 -------------
@@ -14,8 +14,10 @@ H0 startup/source audit: HISTORICAL
 H0.1 model acquisition: TECHNICALLY PASS; OWNER LICENSE ACTION REQUIRED
 H0.1 generation smoke: 3 VERIFIED LOCAL GENERATION / 1 BLOCKED (historical)
 H1A implementation: IMPLEMENTED
+H1A implementation commit: 925596b9d7fbd731290fe9869ea34a0006249130
 H1A Native generation: VERIFIED LOCAL GENERATION
 H1A browser UI generation: VERIFIED BROWSER UI GENERATION
+H1A publication: PUBLISHED ON MAIN
 Owner acceptance: PENDING
 
 This entry is the starting point for external AI review of MiniMax H3 work. It
@@ -103,13 +105,16 @@ the Manga runtime. Generated MP4s and model weights remain ignored.
 Current Review Gate
 -------------------
 H1A is implemented and has a Native backend result plus a browser UI result.
-The evidence is ready for Web GPT / Astra H1A review. Owner acceptance, license
-action, and push remain separate. H1B, I2V, REF2VA, Still, Studio, Timeline,
-Storyboard, Cast, 3D, and Manga are not started by this slice.
+The implementation commit `925596b9d7fbd731290fe9869ea34a0006249130` is
+published on `main`. The evidence is ready for Web GPT / Astra H1A review.
+Owner acceptance and license action remain separate; publication does not imply
+Owner acceptance. H1B, I2V, REF2VA, Still, Studio, Timeline, Storyboard, Cast,
+3D, and Manga are not started by this slice.
 
 Publication Note
 ----------------
-The expected GitHub URLs for the H1A files are listed in `docs/h3/README.md` and
-the H1A report. They become reviewable after the Owner publishes the H1A commit
-to main. Historical H0/H0.1 reports remain historical records and are not
+The H1A files are published on `main` in implementation commit
+`925596b9d7fbd731290fe9869ea34a0006249130`. The expected GitHub URLs are listed
+in `docs/h3/README.md` and the H1A report. Publication does not imply Owner
+acceptance. Historical H0/H0.1 reports remain historical records and are not
 rewritten to claim H1A work.

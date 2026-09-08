@@ -1,11 +1,13 @@
 # MiniMax H3 Document Hub
 
-更新: 2026-09-08 JST
+更新: 2026-09-09 JST
 
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
 将来の実装棚とReference Implementation evidenceを一か所から辿るための
 document hub です。現在は **H1A / minimum video skin and Native T2V vertical slice**
 であり、H0/H0.1 の model isolation と generation smoke は履歴として保持します。
+H1A implementation commit `925596b9d7fbd731290fe9869ea34a0006249130` is
+published on `main`; Owner acceptance remains pending.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
@@ -119,7 +121,7 @@ implementation follows from that result automatically.
 
 The historical groundwork reports remain historical records. The current gate is
 the H1A report and evidence above; it does not imply Owner acceptance, public
-deployment, or adoption of a candidate implementation.
+production deployment, or adoption of a candidate implementation.
 
 ## H1A implementation boundary
 
@@ -159,7 +161,7 @@ persistent project schema from these paths.
 9. Read the H1A report and dated evidence; verify the browser UI path separately
    from direct API/runtime evidence.
 10. Stop at the Web GPT / Astra H1A review gate; do not infer Owner acceptance,
-    H1B, or public deployment from a local generation result.
+    H1B, or production deployment from a local generation result.
 
 ## Evidence vocabulary
 

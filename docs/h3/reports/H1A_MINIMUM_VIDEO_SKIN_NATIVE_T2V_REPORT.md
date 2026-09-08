@@ -1,8 +1,9 @@
 # H1A Minimum Video Skin — Native T2V Vertical Slice Report
 
-更新: 2026-09-08 JST
+更新: 2026-09-09 JST
 Stage: `H1A`
-Status: `IMPLEMENTED` / `VERIFIED LOCAL GENERATION` / `VERIFIED BROWSER UI GENERATION`
+Status: `IMPLEMENTED` / `VERIFIED LOCAL GENERATION` / `VERIFIED BROWSER UI GENERATION` / `PUBLISHED ON MAIN`
+Implementation commit: `925596b9d7fbd731290fe9869ea34a0006249130`
 Owner acceptance: `PENDING`
 
 ## 1. Outcome
@@ -104,7 +105,22 @@ frames and a contact sheet. Generated MP4s and model weights remain ignored.
 | Browser UI | Generate → Running/Cancel → Completed Preview → History verified by AX and screenshot |
 | Media probe | 608x352 / 24 FPS / 124 frames / H.264 + AAC verified |
 
-## 7. Deferred and explicit non-scope
+## 7. Restart smoke — 2026-09-09
+
+After the PC restart boundary, `h3/run_h1a.bat` was executed without changing
+the H1A source or re-downloading any model. Native ComfyUI listened on 8188,
+the H1A server listened on 8190, and `/api/status` returned `READY`. The
+browser UI loaded and visibly contained the editable Prompt, Resolution,
+Duration, Generate, Preview, status, Queue, and History areas. The four isolated
+H3 model files remained present under `h3/model_store/` with the existing total
+size of 42,470,585,471 bytes. Generation was intentionally not rerun.
+
+The launcher’s optional automatic external-browser open is not used in the
+controlled smoke command; the same 8190 page was opened and verified in the
+local in-app browser. This does not change the launcher’s backend/UI startup
+behavior.
+
+## 8. Deferred and explicit non-scope
 
 H1B, I2V, REF2VA, Still, multi-shot, Studio, Timeline, Storyboard, Cast, 3D,
 Manga, Runtime Profiles, custom-node vendoring, ComfyUI core/frontend changes,
@@ -116,14 +132,15 @@ The H3 model package remains subject to the existing MiniMax H3 license and
 Owner/legal review. Candidate repositories remain references only; no external
 candidate source was vendored.
 
-## 8. Review gate
+## 9. Review gate
 
-H1A is ready for Web GPT / Astra H1A review as a local technical slice. It is
-not marked Owner `ACCEPTED`, and no push was performed. The next decision is
-review of this evidence and the narrow H1A contract; H1B must not be inferred
-from this implementation.
+H1A implementation commit `925596b9d7fbd731290fe9869ea34a0006249130` is now
+published on `main`. H1A is ready for Web GPT / Astra H1A review as a local
+technical slice. It is not marked Owner `ACCEPTED`; publication does not imply
+Owner acceptance. The next decision is review of this evidence and the narrow
+H1A contract; H1B must not be inferred from this implementation.
 
-## 9. Provenance links
+## 10. Provenance links
 
 - [Comfy-Org/ComfyUI](https://github.com/Comfy-Org/ComfyUI)
 - [Official MiniMax H3 T2V workflow](https://github.com/Comfy-Org/workflow_templates/blob/main/templates/video_minimax_h3_t2v.json)
