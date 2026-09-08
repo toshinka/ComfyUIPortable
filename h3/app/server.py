@@ -1,4 +1,4 @@
-"""Small local HTTP server for the H1A Native H3 T2V vertical slice.
+"""Small local HTTP server for the H3 Native T2V / Start Frame skin.
 
 The server owns only the local UI/session boundary. ComfyUI remains the source
 of truth for queue execution, history, and generated output. No project DB is
@@ -11,6 +11,9 @@ import argparse
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from email.parser import BytesParser
+from email.policy import default as email_default
+from io import BytesIO
 import json
 import mimetypes
 import os
@@ -19,6 +22,7 @@ import sys
 import threading
 import time
 from typing import Any, Iterable, Mapping
+import warnings
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
 from urllib.request import Request as UrlRequest
@@ -26,18 +30,29 @@ from urllib.request import urlopen
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+from PIL import Image, UnidentifiedImageError
+
 
 PORTABLE_ROOT = Path(__file__).resolve().parents[2]
 if str(PORTABLE_ROOT) not in sys.path:
     sys.path.insert(0, str(PORTABLE_ROOT))
 
 from h3.adapters.native_t2v import (  # noqa: E402
+    H3Reference,
     H3Request,
+    REFERENCE_ROLE_START_FRAME,
     RequestValidationError,
+    ROUTE_I2V,
+    ROUTE_T2V,
     WorkflowIncompatibleError,
-    compile_workflow,
+    resolve_route,
     validate_request,
     workflow_metadata,
+)
+from h3.adapters.native_t2v import compile_workflow as compile_t2v  # noqa: E402
+from h3.adapters.native_i2v import (  # noqa: E402
+    compile_workflow as compile_i2v,
+    workflow_metadata as i2v_workflow_metadata,
 )
 
 
@@ -52,6 +67,10 @@ STATE_LABELS = {
 }
 TERMINAL_STATES = {"COMPLETED", "FAILED", "CANCELLED"}
 VIDEO_SUFFIXES = {".mp4", ".webm", ".mov", ".mkv"}
+REFERENCE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
+REFERENCE_MAX_BYTES = 20 * 1024 * 1024
+REFERENCE_MAX_PIXELS = 16_777_216
+MULTIPART_OVERHEAD_LIMIT = 512 * 1024
 
 
 class BackendError(RuntimeError):
@@ -60,6 +79,46 @@ class BackendError(RuntimeError):
 
 class BackendRejected(BackendError):
     """ComfyUI rejected a validly shaped request."""
+
+
+class ReferenceRequestError(RequestValidationError):
+    """An uploaded reference failed the H1B input boundary."""
+
+    error_kind = "reference_upload_failed"
+    status = HTTPStatus.BAD_REQUEST
+
+
+class ReferenceTooLargeError(ReferenceRequestError):
+    error_kind = "reference_upload_failed"
+    status = HTTPStatus.REQUEST_ENTITY_TOO_LARGE
+
+
+class ReferenceDecodeError(ReferenceRequestError):
+    error_kind = "reference_decode_failed"
+
+
+class ReferenceAssetMissingError(ReferenceRequestError):
+    error_kind = "reference_asset_missing"
+
+
+@dataclass(frozen=True)
+class ReferenceAsset:
+    reference: H3Reference
+    path: Path
+    filename: str
+    content_type: str
+    width: int
+    height: int
+
+    def public(self) -> dict[str, Any]:
+        return {
+            **self.reference.public(),
+            "filename": self.filename,
+            "content_type": self.content_type,
+            "width": self.width,
+            "height": self.height,
+            "preview_url": f"/api/references/{quote(self.reference.id, safe='')}",
+        }
 
 
 class BackendClient:
@@ -244,6 +303,8 @@ class Job:
     request: H3Request
     created_at: str
     created_epoch: float
+    route: str = ROUTE_T2V
+    reference: dict[str, Any] | None = None
     prompt_id: str | None = None
     state: str = "QUEUED"
     error: str | None = None
@@ -265,6 +326,10 @@ class Job:
             "prompt_id": self.prompt_id,
             "state": self.state,
             "label": STATE_LABELS.get(self.state, self.state),
+            "route": self.route,
+            "route_label": "Start Frame" if self.route == ROUTE_I2V else "T2V",
+            "reference_used": self.reference is not None,
+            "reference": self.reference,
             "request": self.request.public(),
             "created_at": self.created_at,
             "completed_at": self.completed_at,
@@ -282,15 +347,116 @@ class H1ASession:
     def __init__(self, backend_url: str, output_root: Path):
         self.backend = BackendClient(backend_url)
         self.output_root = output_root.resolve()
+        self.input_root = (self.output_root / "inputs").resolve()
+        self.input_root.mkdir(parents=True, exist_ok=True)
         self.client_id = f"tegaki-h1a-{os.getpid()}-{uuid_token()}"
         self.jobs: OrderedDict[str, Job] = OrderedDict()
+        self.references: dict[str, ReferenceAsset] = {}
         self.lock = threading.RLock()
+
+    def upload_reference(self, filename: str, body: bytes) -> ReferenceAsset:
+        if not isinstance(body, bytes) or not body:
+            raise ReferenceRequestError("Reference upload is empty.")
+        if len(body) > REFERENCE_MAX_BYTES:
+            raise ReferenceTooLargeError(
+                f"Reference image must be {REFERENCE_MAX_BYTES // (1024 * 1024)} MB or smaller."
+            )
+        if not isinstance(filename, str) or not filename.strip():
+            raise ReferenceRequestError("Reference filename is required.")
+        filename = filename.strip()
+        if (
+            filename in {".", ".."}
+            or "/" in filename
+            or "\\" in filename
+            or ":" in filename
+            or Path(filename).is_absolute()
+        ):
+            raise ReferenceRequestError("Reference filename is unsafe.")
+        suffix = Path(filename).suffix.lower()
+        if suffix not in REFERENCE_SUFFIXES:
+            raise ReferenceRequestError("Reference must be PNG, JPEG, or WebP.")
+
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("error", Image.DecompressionBombWarning)
+                with Image.open(BytesIO(body)) as image:
+                    actual_format = (image.format or "").upper()
+                    width, height = image.size
+                    if width <= 0 or height <= 0 or width * height > REFERENCE_MAX_PIXELS:
+                        raise ReferenceDecodeError("Reference image dimensions are too large.")
+                    image.verify()
+            with Image.open(BytesIO(body)) as image:
+                image.load()
+        except ReferenceRequestError:
+            raise
+        except (
+            Image.DecompressionBombError,
+            Image.DecompressionBombWarning,
+            OSError,
+            SyntaxError,
+            UnidentifiedImageError,
+        ) as exc:
+            raise ReferenceDecodeError("Reference image could not be decoded.") from exc
+
+        format_suffixes = {
+            "PNG": {".png"},
+            "JPEG": {".jpg", ".jpeg"},
+            "WEBP": {".webp"},
+        }
+        if suffix not in format_suffixes.get(actual_format, set()):
+            raise ReferenceDecodeError("Reference extension does not match its image format.")
+        content_types = {
+            "PNG": "image/png",
+            "JPEG": "image/jpeg",
+            "WEBP": "image/webp",
+        }
+
+        reference_id = uuid_token()
+        safe_filename = f"{reference_id}{suffix}"
+        path = (self.input_root / safe_filename).resolve()
+        try:
+            path.relative_to(self.input_root)
+            with path.open("xb") as handle:
+                handle.write(body)
+        except OSError as exc:
+            raise ReferenceRequestError("Reference upload could not be stored.") from exc
+
+        asset = ReferenceAsset(
+            reference=H3Reference(reference_id, REFERENCE_ROLE_START_FRAME),
+            path=path,
+            filename=safe_filename,
+            content_type=content_types[actual_format],
+            width=width,
+            height=height,
+        )
+        with self.lock:
+            self.references[reference_id] = asset
+        return asset
+
+    def get_reference(self, reference_id: str) -> ReferenceAsset | None:
+        with self.lock:
+            return self.references.get(reference_id)
 
     def submit(self, payload: Mapping[str, Any]) -> Job:
         request = validate_request(payload)
-        graph = compile_workflow(request)
+        route = resolve_route(request.reference)
+        asset = None
+        if request.reference is not None:
+            asset = self.get_reference(request.reference.id)
+            if asset is None or not asset.path.is_file():
+                raise ReferenceAssetMissingError("Reference asset is missing.")
+            graph = compile_i2v(request, f"inputs/{asset.filename}")
+        else:
+            graph = compile_t2v(request)
         job_id = uuid_token()
-        job = Job(job_id, request, now_iso(), time.time())
+        job = Job(
+            job_id,
+            request,
+            now_iso(),
+            time.time(),
+            route=route,
+            reference=asset.public() if asset else None,
+        )
         with self.lock:
             self.jobs[job_id] = job
         try:
@@ -424,7 +590,7 @@ class H1AHandler(BaseHTTPRequestHandler):
     server: "H1AServer"
 
     def log_message(self, format: str, *args: Any) -> None:
-        print(f"[h1a] {self.address_string()} - {format % args}", flush=True)
+        print(f"[h3] {self.address_string()} - {format % args}", flush=True)
 
     def _send_json(self, status: int, value: Any) -> None:
         body = json_bytes(value)
@@ -451,6 +617,46 @@ class H1AHandler(BaseHTTPRequestHandler):
             raise RequestValidationError("Request body must be a JSON object.")
         return value
 
+    def _read_multipart_reference(self) -> tuple[str, bytes]:
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError as exc:
+            raise ReferenceRequestError("Invalid reference upload length.") from exc
+        if length <= 0:
+            raise ReferenceRequestError("Reference upload is empty.")
+        if length > REFERENCE_MAX_BYTES + MULTIPART_OVERHEAD_LIMIT:
+            raise ReferenceTooLargeError(
+                f"Reference image must be {REFERENCE_MAX_BYTES // (1024 * 1024)} MB or smaller."
+            )
+        content_type = self.headers.get("Content-Type", "")
+        if not content_type.lower().startswith("multipart/form-data"):
+            raise ReferenceRequestError("Reference upload must use multipart/form-data.")
+        raw = self.rfile.read(length)
+        header = (
+            f"Content-Type: {content_type}\r\n"
+            "MIME-Version: 1.0\r\n"
+            "\r\n"
+        ).encode("utf-8", errors="replace")
+        try:
+            message = BytesParser(policy=email_default).parsebytes(header + raw)
+        except (TypeError, ValueError) as exc:
+            raise ReferenceRequestError("Reference upload could not be parsed.") from exc
+        if not message.is_multipart():
+            raise ReferenceRequestError("Reference upload must contain a file part.")
+        for part in message.walk():
+            if part.is_multipart():
+                continue
+            disposition = part.get("Content-Disposition", "")
+            name = part.get_param("name", header="content-disposition")
+            if name not in {"reference", "file"} or "filename" not in disposition:
+                continue
+            filename = part.get_filename()
+            body = part.get_payload(decode=True)
+            if not isinstance(filename, str) or not isinstance(body, bytes):
+                raise ReferenceRequestError("Reference upload file is malformed.")
+            return filename, body
+        raise ReferenceRequestError("Reference upload file is missing.")
+
     def do_GET(self) -> None:  # noqa: N802
         path = urlparse(self.path).path
         if path == "/api/config":
@@ -461,6 +667,12 @@ class H1AHandler(BaseHTTPRequestHandler):
                     "duration_options": [{"label": "5 seconds", "value": 5}],
                     "default_steps": 20,
                     "workflow": workflow_metadata(),
+                    "i2v_workflow": i2v_workflow_metadata(),
+                    "reference": {
+                        "roles": [REFERENCE_ROLE_START_FRAME],
+                        "extensions": [".png", ".jpg", ".jpeg", ".webp"],
+                        "max_bytes": REFERENCE_MAX_BYTES,
+                    },
                 },
             )
             return
@@ -482,6 +694,11 @@ class H1AHandler(BaseHTTPRequestHandler):
         if path == "/api/history":
             self._send_json(HTTPStatus.OK, {"entries": self.server.session.history()})
             return
+        if path.startswith("/api/references/"):
+            segments = [segment for segment in path.split("/") if segment]
+            if len(segments) == 3:
+                self._serve_reference(segments[2])
+                return
         if path.startswith("/api/jobs/"):
             segments = [segment for segment in path.split("/") if segment]
             if len(segments) == 4 and segments[-1] == "video":
@@ -497,6 +714,23 @@ class H1AHandler(BaseHTTPRequestHandler):
             self._serve_static(path.removeprefix("/static/"))
             return
         self._send_json(HTTPStatus.NOT_FOUND, {"error": "Not found"})
+
+    def _serve_reference(self, reference_id: str) -> None:
+        asset = self.server.session.get_reference(reference_id)
+        if asset is None or not asset.path.is_file():
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Reference asset not found"})
+            return
+        try:
+            body = asset.path.read_bytes()
+        except OSError:
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Reference asset not found"})
+            return
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", asset.content_type)
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def _serve_job(self, job_id: str) -> None:
         job = self.server.session.get_job(job_id)
@@ -556,6 +790,11 @@ class H1AHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802
         path = urlparse(self.path).path
         try:
+            if path == "/api/references":
+                filename, body = self._read_multipart_reference()
+                asset = self.server.session.upload_reference(filename, body)
+                self._send_json(HTTPStatus.CREATED, {"reference": asset.public()})
+                return
             if path == "/api/generate":
                 payload = self._read_json()
                 job = self.server.session.submit(payload)
@@ -572,6 +811,8 @@ class H1AHandler(BaseHTTPRequestHandler):
                     self._send_json(HTTPStatus.OK, {"job": job.public()})
                     return
             self._send_json(HTTPStatus.NOT_FOUND, {"error": "Not found"})
+        except ReferenceRequestError as exc:
+            self._send_json(exc.status, {"error": str(exc), "kind": exc.error_kind})
         except RequestValidationError as exc:
             self._send_json(HTTPStatus.BAD_REQUEST, {"error": str(exc), "kind": "validation"})
         except WorkflowIncompatibleError as exc:
@@ -587,8 +828,8 @@ class H1AHandler(BaseHTTPRequestHandler):
                 {"error": str(exc), "kind": "backend_unavailable"},
             )
         except Exception as exc:  # Keep local UI errors readable without exposing a traceback.
-            print(f"[h1a] internal error: {exc!r}", flush=True)
-            self._send_json(HTTPStatus.INTERNAL_SERVER_ERROR, {"error": "H1A server error."})
+            print(f"[h3] internal error: {exc!r}", flush=True)
+            self._send_json(HTTPStatus.INTERNAL_SERVER_ERROR, {"error": "H3 server error."})
 
 
 class H1AServer(ThreadingHTTPServer):
@@ -601,7 +842,7 @@ class H1AServer(ThreadingHTTPServer):
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="TEGAKI H3 H1A local video skin")
+    parser = argparse.ArgumentParser(description="TEGAKI H3 local Native video skin")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8190)
     parser.add_argument("--comfy-url", default="http://127.0.0.1:8188")
@@ -616,7 +857,7 @@ def main() -> None:
     session = H1ASession(args.comfy_url, output_root)
     server = H1AServer((args.host, args.port), session)
     print(
-        f"TEGAKI H3 H1A UI listening on http://{args.host}:{args.port}/ "
+        f"TEGAKI H3 UI listening on http://{args.host}:{args.port}/ "
         f"(Native backend: {args.comfy_url})",
         flush=True,
     )

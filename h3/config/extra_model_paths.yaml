@@ -1,4 +1,4 @@
-# H1A local-development model boundary.
+# H3 local-development model boundary.
 # The first-wave H3 weights stay outside the shared ComfyUI/Manga model tree.
 h3_h1a:
   base_path: ../model_store/

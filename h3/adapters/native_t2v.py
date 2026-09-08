@@ -13,6 +13,7 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 import random
+import re
 from typing import Any, Mapping
 
 
@@ -26,6 +27,10 @@ DEFAULT_STEPS = 20
 MAX_PROMPT_LENGTH = 4000
 MIN_DURATION_SECONDS = 0.2
 MAX_DURATION_SECONDS = 15.0
+REFERENCE_ROLE_START_FRAME = "start_frame"
+ROUTE_T2V = "native_t2v"
+ROUTE_I2V = "native_i2v"
+REFERENCE_ID_PATTERN = re.compile(r"^[0-9a-f]{32}$")
 
 
 class RequestValidationError(ValueError):
@@ -37,6 +42,17 @@ class WorkflowIncompatibleError(RuntimeError):
 
 
 @dataclass(frozen=True)
+class H3Reference:
+    """The bounded H1B reference contract; the server owns the local asset."""
+
+    id: str
+    role: str = REFERENCE_ROLE_START_FRAME
+
+    def public(self) -> dict[str, str]:
+        return {"id": self.id, "role": self.role}
+
+
+@dataclass(frozen=True)
 class H3Request:
     prompt: str
     width: int = 608
@@ -44,6 +60,7 @@ class H3Request:
     duration: float = DEFAULT_DURATION_SECONDS
     seed: int | None = None
     steps: int = DEFAULT_STEPS
+    reference: H3Reference | None = None
 
     def public(self) -> dict[str, Any]:
         return {
@@ -53,7 +70,29 @@ class H3Request:
             "duration": self.duration,
             "seed": self.seed,
             "steps": self.steps,
+            "reference": self.reference.public() if self.reference else None,
         }
+
+
+def validate_reference(value: Any) -> H3Reference | None:
+    if value in (None, ""):
+        return None
+    if not isinstance(value, Mapping):
+        raise RequestValidationError("Reference must be an object.")
+    reference_id = value.get("id")
+    if not isinstance(reference_id, str) or not REFERENCE_ID_PATTERN.fullmatch(reference_id):
+        raise RequestValidationError("Reference id is invalid.")
+    role = value.get("role")
+    if role != REFERENCE_ROLE_START_FRAME:
+        raise RequestValidationError("Reference role is unsupported.")
+    return H3Reference(reference_id, role)
+
+
+def resolve_route(reference: H3Reference | Mapping[str, Any] | None) -> str:
+    """Resolve the only two H1B routes without a user-facing mode selector."""
+
+    normalized = reference if isinstance(reference, H3Reference) else validate_reference(reference)
+    return ROUTE_T2V if normalized is None else ROUTE_I2V
 
 
 def duration_to_frames(duration_seconds: float) -> int:
@@ -104,7 +143,7 @@ def validate_request(payload: Mapping[str, Any]) -> H3Request:
     width = _coerce_int(payload.get("width", 608), "Width")
     height = _coerce_int(payload.get("height", 352), "Height")
     if (width, height) not in ALLOWED_RESOLUTIONS:
-        raise RequestValidationError("H1A currently supports 608 x 352 only.")
+        raise RequestValidationError("H3 currently supports 608 x 352 only.")
 
     duration_value = payload.get("duration", DEFAULT_DURATION_SECONDS)
     if isinstance(duration_value, str):
@@ -120,7 +159,7 @@ def validate_request(payload: Mapping[str, Any]) -> H3Request:
 
     steps = _coerce_int(payload.get("steps", DEFAULT_STEPS), "Steps")
     if steps != DEFAULT_STEPS:
-        raise RequestValidationError("H1A uses the verified 20-step baseline.")
+        raise RequestValidationError("H3 uses the verified 20-step baseline.")
 
     seed_value = payload.get("seed")
     if seed_value in (None, "", "random"):
@@ -130,6 +169,8 @@ def validate_request(payload: Mapping[str, Any]) -> H3Request:
         if not 0 <= seed <= 2**63 - 1:
             raise RequestValidationError("Seed must be between 0 and 2^63-1.")
 
+    reference = validate_reference(payload.get("reference"))
+
     return H3Request(
         prompt=prompt,
         width=width,
@@ -137,6 +178,7 @@ def validate_request(payload: Mapping[str, Any]) -> H3Request:
         duration=duration,
         seed=seed,
         steps=steps,
+        reference=reference,
     )
 
 

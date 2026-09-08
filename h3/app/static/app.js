@@ -1,6 +1,8 @@
 const state = {
   backend: "CONNECTING",
   currentJob: null,
+  reference: null,
+  referenceUploading: false,
   pollTimer: null,
   backendTimer: null,
 };
@@ -8,6 +10,15 @@ const state = {
 const $ = (id) => document.getElementById(id);
 const form = $("generate-form");
 const promptInput = $("prompt");
+const referenceFile = $("reference-file");
+const referenceAdd = $("reference-add");
+const referenceReplace = $("reference-replace");
+const referenceRemove = $("reference-remove");
+const referenceEmpty = $("reference-empty");
+const referenceSelected = $("reference-selected");
+const referenceThumbnail = $("reference-thumbnail");
+const referenceName = $("reference-name");
+const referenceStatus = $("reference-status");
 const resolutionInput = $("resolution");
 const durationInput = $("duration");
 const seedInput = $("seed");
@@ -52,7 +63,7 @@ function setBackendStatus(next, message = "") {
 }
 
 function updateGenerateAvailability() {
-  generateButton.disabled = !promptInput.value.trim() || Boolean(state.currentJob && !TERMINAL.has(state.currentJob.state));
+  generateButton.disabled = !promptInput.value.trim() || state.referenceUploading || Boolean(state.currentJob && !TERMINAL.has(state.currentJob.state));
 }
 
 function setDetails(message) {
@@ -70,6 +81,50 @@ function updatePromptCount() {
   updateGenerateAvailability();
 }
 
+function setReferenceView(reference) {
+  state.reference = reference;
+  referenceSelected.hidden = !reference;
+  referenceEmpty.hidden = Boolean(reference);
+  if (!reference) {
+    referenceThumbnail.removeAttribute("src");
+    referenceName.textContent = "";
+    referenceStatus.textContent = "";
+    updateGenerateAvailability();
+    return;
+  }
+  referenceThumbnail.src = `${reference.preview_url}?v=${encodeURIComponent(reference.id)}`;
+  referenceName.textContent = `${reference.width} x ${reference.height}`;
+  referenceStatus.textContent = "";
+  updateGenerateAvailability();
+}
+
+async function uploadReference(file) {
+  if (!file) return;
+  const body = new FormData();
+  body.append("reference", file, file.name);
+  state.referenceUploading = true;
+  referenceAdd.disabled = true;
+  referenceReplace.disabled = true;
+  referenceStatus.textContent = "Uploading reference…";
+  updateGenerateAvailability();
+  try {
+    const response = await fetch("/api/references", { method: "POST", body, cache: "no-store" });
+    let result = {};
+    try { result = await response.json(); } catch { result = {}; }
+    if (!response.ok) throw new Error(result.error || `Reference upload failed (${response.status})`);
+    setReferenceView(result.reference);
+  } catch (error) {
+    referenceStatus.textContent = error.message;
+    setDetails(error.message);
+  } finally {
+    state.referenceUploading = false;
+    referenceAdd.disabled = false;
+    referenceReplace.disabled = false;
+    referenceFile.value = "";
+    updateGenerateAvailability();
+  }
+}
+
 function setJobView(job) {
   state.currentJob = job;
   generationStatus.textContent = job.label || job.state;
@@ -85,7 +140,8 @@ function setJobView(job) {
       previewVideo.src = `${job.video_url}?v=${encodeURIComponent(job.job_id)}`;
       previewVideo.load();
     }
-    previewMeta.textContent = `Completed in ${Number(job.elapsed_seconds || 0).toFixed(1)}s · ${job.request.width} x ${job.request.height} · ${job.request.duration}s`;
+    const routeLabel = job.route_label || (job.reference_used ? "Start Frame" : "T2V");
+    previewMeta.textContent = `${routeLabel} · Completed in ${Number(job.elapsed_seconds || 0).toFixed(1)}s · ${job.request.width} x ${job.request.height} · ${job.request.duration}s`;
     setDetails("");
   } else if (job.state === "FAILED" || job.state === "DISCONNECTED") {
     previewMeta.textContent = "Inputs are retained. Correct the issue or try Generate again.";
@@ -131,6 +187,7 @@ async function submitGeneration(event) {
         duration: Number(durationInput.value),
         seed,
         steps: Number(stepsInput.value),
+        reference: state.reference ? { id: state.reference.id, role: state.reference.role } : null,
       }),
     });
     setJobView(body.job);
@@ -199,7 +256,7 @@ function createHistoryCard(entry) {
   content.className = "history-content";
   const open = document.createElement("button");
   open.type = "button";
-  open.textContent = entry.label || entry.state;
+  open.textContent = `${entry.label || entry.state} · ${entry.route_label || (entry.reference_used ? "Start Frame" : "T2V")}`;
   open.addEventListener("click", () => { state.currentJob = entry; setJobView(entry); window.scrollTo({ top: 0, behavior: "smooth" }); });
   const prompt = document.createElement("div");
   prompt.className = "history-prompt";
@@ -253,6 +310,10 @@ promptInput.addEventListener("input", updatePromptCount);
 form.addEventListener("submit", submitGeneration);
 cancelButton.addEventListener("click", cancelGeneration);
 $("random-seed").addEventListener("click", () => { seedInput.value = ""; seedInput.focus(); });
+referenceAdd.addEventListener("click", () => referenceFile.click());
+referenceReplace.addEventListener("click", () => referenceFile.click());
+referenceFile.addEventListener("change", () => uploadReference(referenceFile.files?.[0]));
+referenceRemove.addEventListener("click", () => setReferenceView(null));
 
 updatePromptCount();
 loadConfig();

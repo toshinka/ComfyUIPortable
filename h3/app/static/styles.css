@@ -225,6 +225,35 @@ textarea::placeholder, input::placeholder { color: #a58a82; }
   font-size: 0.72rem;
 }
 
+.reference-card {
+  margin-top: 18px;
+  padding: 13px 14px 14px;
+  border: 1px solid var(--soft-line);
+  border-radius: 9px;
+  background: #fffdf9;
+}
+
+.reference-heading-row {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.reference-heading-row .field-label { margin-bottom: 4px; }
+.reference-helper { color: var(--light-maroon); font-size: 0.76rem; line-height: 1.45; }
+.reference-helper span { color: var(--muted); }
+.reference-add { min-height: 36px; padding: 0 11px; white-space: nowrap; }
+.reference-empty { margin-top: 11px; color: var(--muted); font-size: 0.76rem; }
+.reference-selected { display: flex; align-items: center; gap: 11px; margin-top: 11px; }
+.reference-thumbnail { width: 78px; height: 54px; flex: 0 0 auto; border: 1px solid var(--line); border-radius: 6px; background: #f7eae2; object-fit: cover; }
+.reference-selected-body { min-width: 0; display: grid; gap: 3px; }
+.reference-selected-body strong { color: var(--ink); font-size: 0.82rem; }
+.reference-name { overflow: hidden; color: var(--muted); font-size: 0.7rem; text-overflow: ellipsis; white-space: nowrap; }
+.reference-actions { display: flex; gap: 7px; margin-top: 4px; }
+.reference-actions .quiet-button { min-height: 30px; padding: 0 9px; font-size: 0.74rem; }
+.reference-status { min-height: 15px; margin-top: 7px; color: var(--danger); font-size: 0.72rem; }
+
 .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
 
 .advanced-panel {

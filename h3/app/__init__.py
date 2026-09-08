@@ -1,1 +1,1 @@
-"""Small local H1A H3 Video skin server."""
+"""Small local H3 Native Video skin server."""
