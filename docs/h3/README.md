@@ -23,6 +23,7 @@ model、workflowの実装は開始していません。
 | `docs/h3/plans/H3_ASTRA_UI_REVIEW_HANDOFF.md` | Astra UI review handoff index | CURRENT HANDOFF INDEX | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/plans/H3_ASTRA_UI_REVIEW_HANDOFF.md` |
 | `docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md` | This groundwork report | CURRENT REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md` |
 | `docs/h3/reports/H3_GROUNDWORK_CLOSEOUT_REPORT.md` | Groundwork closeout and publication distinction | CURRENT CLOSEOUT REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_GROUNDWORK_CLOSEOUT_REPORT.md` |
+| `docs/h3/reports/H3_ASTRA_PREP_SEMANTIC_ALIGNMENT_REPORT.md` | Astra preparation semantic alignment report | CURRENT PREP REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_ASTRA_PREP_SEMANTIC_ALIGNMENT_REPORT.md` |
 
 ## External master roadmap
 
@@ -77,6 +78,9 @@ must be a separate, bounded task after Web GPT reviews this groundwork.
 - [H3_GROUNDWORK_CLOSEOUT_REPORT.md](reports/H3_GROUNDWORK_CLOSEOUT_REPORT.md)
   — current Rev.3 path, visual language, Astra handoff, local/public state
   distinction, and closeout gate.
+- [H3_ASTRA_PREP_SEMANTIC_ALIGNMENT_REPORT.md](reports/H3_ASTRA_PREP_SEMANTIC_ALIGNMENT_REPORT.md)
+  — correction of Cognitive Level / Cognitive Lens roles, H3 Video review scope,
+  and Illustrious Manga boundary.
 
 ## Empty implementation shelves
 

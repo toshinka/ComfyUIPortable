@@ -19,6 +19,11 @@ preview、progressive disclosure を現代的に設計する。
 theme」でもない。軽い workspace と明確な production control を持つ、TEGAKI
 らしい authoring surface である。
 
+Brand identity may be distinctive. Basic interaction grammar should remain
+familiar unless there is a clear production benefit. Known words such as
+Generate, Reference, History, Queue, Timeline, Inspector, Project, Shot, and
+Take are not renamed merely to make the brand appear more original.
+
 ## Canonical palette evidence
 
 値は live repository の tegaki_work/styles/main.css にある既存 token を
@@ -53,32 +58,55 @@ theme」でもない。軽い workspace と明確な production control を持�
    contrast、長時間作業の視認性で判断する。dark surface を採る場合も
    generic dark SaaS の黒紫一色にはしない。
 
-## Authoring UX direction
+## H3 Video initial authoring direction
 
-H3 の入口は Scene-first / minimum-action を基本とする。
+H3 初期 GUI review の入口は、H3 VIDEO を minimum-action で生成できる
+production surface とする。
 
-- 最初の画面は Scene を成立させるための最小入力、preview、次の一手を示す。
-- CAST、pose、interaction、runtime tuning は必要になった時だけ progressive
-  disclosure する。
-- semantic Scene region（意味上の人物・背景・action 領域）と visual Panel
-  Frame（見た目のコマ矩形）は同一視しない。可変・重複・再配置の余地を残す。
-- UI は操作の結果を preview と state で返し、設定項目の数で「本格的」に見せない。
-- H3 Video、Still、Studio、Illustrious Manga の境界は navigation と wording
-  で読めるようにし、早すぎる統合で一つの巨大な mode menu にしない。
+- Project、Shot、Take、Prompt、Reference、Generate、Preview、Queue、History、
+  Continuation、Resolution、Duration、Seed、LoRA、Runtime Profile を主要語彙
+  とする。
+- Studio 以降では Timeline、Storyboard、Continuity、Retake、Segment が加わる。
+- UI は操作の結果を preview、progress、queue、history、error/status visibility
+  で返し、設定項目の数で「本格的」に見せない。
+- 必要な設定だけを段階的に出し、H3 Video / Still / Studio の境界を navigation
+  と wording で読めるようにする。
+- Panel、Page、Manga semantic region は初期 H3 VIDEO GUI review の必須論点に
+  しない。
+
+Illustrious Manga has its own Scene / Panel / Region / Character semantics.
+Do not redesign or merge those semantics during this H3 Video review.
 
 ## Cognitive design anchors
 
-Rev.3 の cognitive level、cognitive lens、mountain を visual language
-にも適用する。
+### 思考の水平 / Cognitive Level
 
-| Anchor | UI での意味 | Review question |
-|---|---|---|
-| Cognitive level | 今ユーザーが扱っている粒度（Scene、Shot、Asset、Runtime、Review） | 画面は現在の粒度を隠していないか |
-| Cognitive lens | 同じ素材を別の目的で見る切替 | lens の切替がデータの複製や混乱を生まないか |
-| Mountain | 乗り越える価値のある authoring の山 | complexity は結果の品質や再現性に見合うか |
+TEGAKI の「思考の水平」は、同じ利用文化圏で広く定着している UI・操作概念を
+基準面とし、ユーザーが既存知識をそのまま転用できる範囲では、不要な認知的段差を
+作らないという設計原則である。
 
-「山」は常に表示する階段ではない。Scene-only entry から始め、必要な
-complexity だけを段階的に現すことが、H3 の review 基準である。
+新しい操作体系を導入して基準面から高さを作る場合、その高さには明確な制作上の
+利益が必要である。既知の production-tool convention をブランド独自性だけで
+改名・破壊しない。
+
+### Scope and information hierarchy
+
+Scene、Shot、Asset、Runtime、Review は「思考の水平」の定義ではない。これらは
+現在の context、workspace scope、information hierarchy として、今どの粒度を
+扱っているかを示す。
+
+### 思考のレンズ / Cognitive Lens
+
+Cognitive Lens は、同じ Project / Asset / Job を目的別に見る切替である。
+Project、Asset、Generate、Reference、Still、Video、Timeline、Diagnostic、
+Review などを tab、segmented button、drawer、inspector、workspace switch 等で
+扱う。新しい保存正本や別アプリを意味しない。
+
+### Mountain
+
+「山」は常に表示する階段ではない。新しい操作体系を要求する場合は、明確な速度、
+明瞭さ、制御性、再現性、または新しい制作能力が頂上に必要である。必要な
+complexity だけを progressive disclosure で現すことが H3 の review 基準である。
 
 ## Benchmark roles
 
@@ -87,10 +115,10 @@ complexity だけを段階的に現すことが、H3 の review 基準である�
 | Reference role | 取り出す観点 | 取り出さないもの |
 |---|---|---|
 | TEGAKI / Futaba heritage | palette、軽さ、文化的な識別性 | 古い掲示板の layout そのもの |
-| 現行 Illustrious authoring | scene / panel / layer の production semantics | H3 実装への早期統合 |
+| 現行 Illustrious authoring | Manga-specific semantics と境界の確認 | H3 Video review への Panel / Region data model の持ち込み |
 | ComfyUI / workflow tools | runtime、queue、再現性、debug の可視化 | node graph を H3 の入口にすること |
 | 現代の creative production tools | hierarchy、preview、status、undo、focus | generic dark SaaS の外観 |
-| Manga / storyboard tools | Scene、Shot、Panel Frame の思考単位 | semantic region と frame の固定的同一視 |
+| Manga / storyboard tools | Studio later の Timeline、Storyboard、Continuity、Retake、Segment | 初期 H3 Video の必須論点にすること |
 
 ## Explicit anti-goals
 
@@ -103,7 +131,10 @@ complexity だけを段階的に現すことが、H3 の review 基準である�
 
 ## Review output expected from Astra
 
-Astra はこの文書をもとに、(a) palette の役割分担、(b) Scene-first の階層、
-(c) semantic Scene と visual Panel Frame の分離、(d) H3 Video / Still /
-Studio の境界、(e) anti-goal への抵触リスクを review する。具体的な
-画面実装や最終配色の決定は、Web GPT が別途発行する実装前の指示まで保留する。
+Astra はこの文書をもとに、(a) palette の役割分担、(b) minimum-action H3 Video
+entry の階層、(c) familiar production-tool convention と cognitive lens の
+scope separation、(d) H3 Video / Still / Studio の境界、(e) queue / progress /
+error / status visibility、(f) anti-goal への抵触リスクを review する。
+Panel / Page / Manga schema、Illustrious semantic redesign はこの初期 review の
+設計対象にしない。具体的な画面実装や最終配色の決定は、Web GPT が別途発行する
+実装前の指示まで保留する。

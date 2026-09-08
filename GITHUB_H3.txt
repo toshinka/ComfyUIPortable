@@ -80,9 +80,9 @@ frontend framework, backend, custom node, model, workflow, schema, or GUI.
 
 Current Review Gate
 -------------------
-Local closeout gate is complete. Next gate:
-Owner push, external URL verification, then Web GPT review before H3 Phase H0/H1
-implementation. Astra UI review remains a separate bounded task after Web GPT.
+Astra preparation semantic alignment is complete. Next gate:
+Web GPT review and Astra bounded UI review instruction. H3 implementation remains
+blocked until those review gates release it.
 
 Do not start H3 implementation until the review is complete.
 

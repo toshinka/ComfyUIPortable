@@ -39,35 +39,59 @@
 
 ## Astra review scope
 
-Astra に求めるのは H3 GUI の design review だけである。
+Astra に求めるのは、H3 VIDEO 初期 GUI の bounded design review だけである。
 
-1. Scene-first / minimum-action が入口として成立するか。
-2. Cognitive level と cognitive lens が画面階層・navigation・状態表示に
-   反映できるか。
-3. semantic Scene region と visual Panel Frame を、意味と見た目の別モデル
-   として保てるか。
-4. Futaba palette を TEGAKI の DNA として残しながら、2020年代の production
-   tool として視認性、density、focus、status を成立させられるか。
-5. H3 Video、Still、Studio、Illustrious Manga の境界を premature integration
-   なしに説明できるか。
-6. どの complexity が production 上の「価値ある mountain」なのか、どこを
-   progressive disclosure に送るべきか。
+1. H3 VIDEO の minimum-action entry が成立するか。
+2. familiar production-tool conventions をどこまで維持するか。
+3. cognitive lens による scope separation が成立するか。
+4. progressive disclosure の境界が妥当か。
+5. Futaba heritage palette と modern production UI を両立できるか。
+6. H3 Video / Still / Studio の境界を保てるか。
+7. Reference UX の方向が既知の制作概念から連続しているか。
+8. queue / progress / error / status visibility が不足していないか。
+9. どの complexity が slope で、どこが mountain なのか。
+10. premature Manga integration を避けられているか。
+
+Illustrious Manga has its own Scene / Panel / Region / Character semantics.
+Do not redesign or merge those semantics during this H3 Video review. Panel /
+Page / Manga schema は初期 review の対象外で、後段の bounded task に送る。
 
 ## Expected review output
 
 レビュー結果は次の順で返す。
 
-- confirmed principles
-- ambiguous or conflicting principles
-- proposed information hierarchy
-- minimum-action Scene entry
-- state / status / error visibility risks
-- semantic Scene と visual Panel Frame の境界リスク
-- まだ決めてはいけない事項
-- Web GPT に返すべき next gate
+- Confirmed principles
+- Conflicts / ambiguities
+- UI information hierarchy
+- Minimum H3 Video entry
+- Reference interaction direction
+- Lens / progressive disclosure proposal
+- Visual language direction
+- Status / queue / error visibility
+- What should remain conventional
+- What could justify a slope
+- What could justify a mountain
+- What not to decide yet
+- Risks
+- Questions / decisions for Web GPT
 
 スクリーン案や component 名を出してもよいが、それらは review artifact と
-して扱い、実装の正本・最終仕様・Owner acceptance とは扱わない。
+して扱い、実装の正本・最終仕様・Owner acceptance とは扱わない。heritage-heavy、
+balanced、next-generation の三案出しは canonical requirement にしない。
+
+## Review operation boundary
+
+Astra review is expected to be a single bounded review pass.
+
+Do not:
+
+- start implementation
+- spawn subagents by default
+- perform broad repository rewrites
+- redesign unrelated Illustrious systems
+- create production code
+- install dependencies
+- select final architecture unilaterally
 
 ## Stop conditions
 
