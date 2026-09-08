@@ -21,6 +21,7 @@ node、model、workflow、schema、GUI implementation は未着手のままで�
 - closeout 前の HEAD / origin/main local ref:
   3883e9a26e72c6544c9dac78fa9e271eb234944f
 - closeout 前の worktree: clean
+- final git status after closeout: clean
 - Rev.3 Archive source SHA-256:
   ECCED065DDB950D6485360E64297A1046CB241C8D062A7E78693EF3F502369E1
 - root copy SHA-256: same as Archive source
@@ -34,12 +35,23 @@ execution environment because outbound GitHub access was unavailable. Therefore
 the URL below is the intended post-push URL, not a claim that the current public
 main already exposes the new closeout commit.
 
-Expected post-push URL:
+The preceding Web GPT groundwork audit confirmed the six groundwork files on
+GitHub main at the baseline commit. That confirmation is kept distinct from
+the Rev.3 root publication handled by this closeout.
+
+Verified local URL target / expected post-push URL:
 
 https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
 
 Recheck the URL after Owner push and replace this note with the resulting
 commit link if GitHub encoding differs.
+
+### GitHub review links
+
+- Repository: https://github.com/toshinka/tegaki
+- H3 document hub: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/README.md
+- H3 entry: https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/GITHUB_H3.txt
+- Rev.3 root target: the URL above; public content verification is pending Owner push
 
 ## 3. Rev.3 canonical path
 
@@ -107,6 +119,7 @@ slice.
 
 - Groundwork baseline: 3883e9a26e72c6544c9dac78fa9e271eb234944f
 - Closeout commit SHA: 47056a7c972f187f0ce9686db1ae7bb93ce8aca3
+- Push state: local main is ahead of origin/main by three closeout commits; not pushed
 - Public GitHub verification: pending Owner push and a successful external fetch
 - Owner responsibility: push, Web GPT review, Astra Chat issuance, and final
   acceptance
