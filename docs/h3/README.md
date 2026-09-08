@@ -4,8 +4,8 @@
 
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
 将来の実装棚とReference Implementation evidenceを一か所から辿るための
-document hub です。現在は **H0 / Reference Implementation Evaluation** であり、
-H3 GUI、generation backend、custom node、model、workflowの実装は開始していません。
+document hub です。現在は **H0.1 / model isolation and generation smoke** であり、
+H3 GUI、production generation backend、custom node、workflowの実装は開始していません。
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
@@ -25,8 +25,10 @@ H3 GUI、generation backend、custom node、model、workflowの実装は開始�
 | `docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md` | This groundwork report | CURRENT REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md` |
 | `docs/h3/reports/H3_GROUNDWORK_CLOSEOUT_REPORT.md` | Groundwork closeout and publication distinction | CURRENT CLOSEOUT REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_GROUNDWORK_CLOSEOUT_REPORT.md` |
 | `docs/h3/reports/H3_ASTRA_PREP_SEMANTIC_ALIGNMENT_REPORT.md` | Astra preparation semantic alignment report | CURRENT PREP REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_ASTRA_PREP_SEMANTIC_ALIGNMENT_REPORT.md` |
-| `docs/h3/evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md` | Candidate evidence index | CURRENT H0 GATE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md` |
-| `docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md` | Four-candidate evaluation report | CURRENT H0 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md` |
+| `docs/h3/evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md` | Candidate evidence index | CURRENT H0.1 GATE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md` |
+| `docs/h3/evidence/H3_MODEL_ACQUISITION_MANIFEST.md` | Official first-wave model provenance, license, size, and hash ledger | CURRENT H0.1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/H3_MODEL_ACQUISITION_MANIFEST.md` |
+| `docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_GENERATION_EVALUATION_REPORT.md` | Fixed-task generation comparison and H1 ingredient disposition | CURRENT H0.1 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_GENERATION_EVALUATION_REPORT.md` |
+| `docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md` | Historical H0 startup/source evaluation | HISTORICAL H0 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md` |
 
 ## External master roadmap
 
@@ -89,22 +91,28 @@ implementation follows from that result automatically.
   and Illustrious Manga boundary.
 - [H3_ASTRA_UI_REVIEW_RESULT.md](reports/H3_ASTRA_UI_REVIEW_RESULT.md) — bounded
   Astra review evidence: KEEP / ADJUST / DEFER / VALIDATE and the next evaluation gate.
+- [H3_REFERENCE_IMPLEMENTATION_GENERATION_EVALUATION_REPORT.md](reports/H3_REFERENCE_IMPLEMENTATION_GENERATION_EVALUATION_REPORT.md)
+  — H0.1 model-backed generation comparison, memory/error record, and H1 ingredient disposition.
 - [H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md](reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md)
-  — Native, H3 Easy, onigirikiller, and AntaresAlice local/source evaluation.
+  — historical H0 Native, H3 Easy, onigirikiller, and AntaresAlice startup/source evaluation.
 
 ## Evidence
 
 - [H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md](evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md)
-  — evaluation date, source commit, install/runtime status, blockers, and candidate
+  — H0/H0.1 split, source commit, install/runtime status, blockers, and candidate
   evidence links.
+- [H3_MODEL_ACQUISITION_MANIFEST.md](evidence/H3_MODEL_ACQUISITION_MANIFEST.md)
+  — official model filenames, source revision, license restrictions, sizes, SHA-256,
+  local isolation, and deferred assets.
 - [Reference implementation evidence](evidence/reference-implementations/) — dated
-  candidate README, manifest, actual local screenshots where a UI started, and
-  contact sheets where available.
+  startup history plus H0.1 generation README, manifest, actual local screenshots,
+  frame triplets, and contact sheets where generation succeeded.
 - Production H3 output is isolated at `output/h3/video/`, with `debug/` and `tests/`
   alongside it. Existing `output/` content and Manga output are outside this slice.
 
 The historical groundwork reports remain historical records. The current gate is the
-H0 evidence index/report above; it does not imply that any candidate is adopted.
+H0.1 model manifest, evidence index, and generation report above; it does not imply
+that any candidate is adopted.
 
 ## Empty implementation shelves
 
@@ -134,15 +142,17 @@ their names.
    implementation instructions.
 7. Review the empty directory boundary and confirm that existing Illustrious
    files were not changed.
-8. Read the dated Reference Implementation evidence and verify that `VERIFIED LOCAL`,
-   `BLOCKED`, and `NOT TESTED` are not conflated.
-9. Stop at the Web GPT evidence review gate.
+8. Read the H0.1 model manifest and generation evidence; verify that generation,
+   startup, blocked, owner-action-required, and not-tested states are not conflated.
+9. Stop at the Web GPT H1 ingredient review gate; do not infer adoption or Owner
+   acceptance from a local generation result.
 
 ## Evidence vocabulary
 
 - `OBSERVED`: public repository/document observation only.
-- `VERIFIED LOCAL`: a reproducible local startup, API, or static result; it does not
-  imply generation quality or Owner acceptance.
+- `VERIFIED LOCAL STARTUP`: a reproducible local startup/API/static result.
+- `VERIFIED LOCAL GENERATION`: a reproducible local output with hash and frame
+  evidence; it does not imply quality or Owner acceptance.
 - `BLOCKED`: a concrete dependency, model, or scope boundary stopped the relevant
   runtime path.
 - `NOT TESTED`: the relevant path was not exercised and must not be inferred.

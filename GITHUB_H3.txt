@@ -6,11 +6,13 @@ Updated: 2026-09-08 JST
 
 Current Stage
 -------------
-H0 / Reference Implementation Evaluation
+H0.1 / H3 model and dependency isolation / generation smoke
 Groundwork: PASS
 Semantic Alignment: PASS
 Astra bounded UI review: COMPLETED
-Reference Implementation Evaluation: IN PROGRESS
+H0 startup/source audit: HISTORICAL
+H0.1 model acquisition: TECHNICALLY PASS; OWNER LICENSE ACTION REQUIRED
+H0.1 generation smoke: 3 VERIFIED LOCAL GENERATION / 1 BLOCKED
 H3 implementation has not started.
 
 This entry is the starting point for external AI review of MiniMax H3 work. It
@@ -29,7 +31,9 @@ Read Order
 9. ComfyUIPortable/docs/h3/plans/H3_ASTRA_UI_REVIEW_HANDOFF.md
 10. ComfyUIPortable/docs/h3/reports/H3_ASTRA_UI_REVIEW_RESULT.md
 11. ComfyUIPortable/docs/h3/evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md
-12. ComfyUIPortable/docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md
+12. ComfyUIPortable/docs/h3/evidence/H3_MODEL_ACQUISITION_MANIFEST.md
+13. ComfyUIPortable/docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_GENERATION_EVALUATION_REPORT.md
+14. ComfyUIPortable/docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md (historical H0)
 
 Master Roadmap
 --------------
@@ -84,19 +88,23 @@ remain outside H3 implementation scope. A later, separately authorized namespace
 task created GITHUB_MANGA.txt and converted GITHUB_ComfyUI.txt into a thin router;
 this navigation change does not merge H3 and Manga runtime semantics.
 
-The H3 directories are intentionally empty shelves. This task does not add a
-frontend framework, backend, custom node, model, workflow, schema, or GUI.
+The H3 production directories remain empty implementation shelves. H0.1 adds
+ignored local model/runtime working areas plus tracked evidence records only; it does not add a
+frontend framework, production backend, custom node, model/workflow to the shared
+runtime, schema, or GUI.
 
 Current Review Gate
 -------------------
 Groundwork and semantic alignment are PASS, and the bounded Astra UI review is
-complete. The current gate is H0 Reference Implementation Evaluation: Native,
-H3 Easy, onigirikiller, and AntaresAlice source/runtime evidence is recorded in
-the index and report. Next gate: Web GPT evidence review and an explicit H1
-ingredient decision. H3 implementation remains blocked until a later bounded card
-releases it.
+complete. The current gate is H0.1 generation evidence review: the first-wave
+official assets are hash-verified in an isolated store; Native, H3 Easy, and
+onigirikiller produced fixed-task local outputs; Antares candidate-native
+generation is blocked by `MiniMaxH3AudioConditioningT8` not being present in the
+intentionally custom-node-free shared backend. Next gate: Web GPT evidence review
+and an explicit H1 ingredient decision. H3 implementation remains blocked until a
+later bounded implementation card releases it.
 
-Do not start H3 implementation until the H0 evidence review and a later bounded
+Do not start H3 implementation until the H0.1 evidence review and a later bounded
 implementation card explicitly release it.
 
 Publication Note

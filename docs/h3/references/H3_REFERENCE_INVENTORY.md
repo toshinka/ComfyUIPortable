@@ -1,8 +1,9 @@
 # H3 Reference Inventory
 
 更新: 2026-09-08 JST
-目的: 採用前の候補棚卸し。評価用cloneは無視されたlocal worktreeに限定し、
-install、source copy、workflow導入、採用決定はしていない。
+目的: 採用前の候補棚卸し。評価用clone、H0.1のdisposable runtime、専用venvは
+無視されたlocal shelfに限定し、shared runtimeへのinstall、TEGAKI sourceへの
+source copy、workflow導入、採用決定はしていない。
 
 `Pinned commit` は公開commit履歴で短SHAまで確認できた場合だけ記録しています。
 短SHAは将来の採用pinではなく、この調査時点の追跡用スナップショットです。
@@ -30,7 +31,9 @@ install、source copy、workflow導入、採用決定はしていない。
 - Why relevant: workspace、history、reference reuse、continuation、progress、
   ComfyUI boundaryの観察対象。
 - Expected use: H1 skinのinteraction benchmark。source copyやforkではない。
-- Status: `VERIFIED LOCAL` (WebUI/status startup only; generation blocked)
+- Status: `VERIFIED LOCAL STARTUP`; candidate-native generation `BLOCKED` by
+  missing `MiniMaxH3AudioConditioningT8` in the intentionally custom-node-free
+  backend
 - Pinned commit: `4f10667c604f9cb333ac119b457a3659260a8966` (main, checked 2026-09-08)
 - Last checked: 2026-09-08 JST
 - Notes: model weightsは含まれない。H3 model licenseとruntimeは別監査。
@@ -44,10 +47,12 @@ install、source copy、workflow導入、採用決定はしていない。
 - Current role: queue / last-frame chaining中心のVideo WebUI
 - Why relevant: 12GB VRAMのT2V/I2V記録、ComfyUI HTTP boundary、bulk queue、join。
 - Expected use: H1 minimum flowと12GB baselineの比較材料。
-- Status: `BLOCKED` (embedded Python lacks `gradio>=4.39`; generation also lacks models)
+- Status: `VERIFIED LOCAL GENERATION` through the UI/API and Native backend; Gradio
+  was isolated in `h3/eval_envs/onigirikiller/`
 - Pinned commit: `f9b28d56d69192e4516907a61103a71ff2c29c27` (main, checked 2026-09-08)
 - Last checked: 2026-09-08 JST
-- Notes: READMEはRef2VAをより重い経路として説明。GPU実証はTegakiの未実施事項。
+- Notes: READMEはRef2VAをより重い経路として説明。H0.1はpruned FL2VAの固定
+  T2V smokeのみで、candidate-specific peak VRAMは別採取していない。
 
 ### ComfyUI-MiniMaxH3-Easy
 
@@ -59,11 +64,13 @@ install、source copy、workflow導入、採用決定はしていない。
 - Why relevant: one Media input、ordered media、`@` reference editor、I2V / first-last
   frame / R2V、advanced settingの段階表示。
 - Expected use: H1/H2 interaction and adapter boundary review。
-- Status: `BLOCKED` (not installed into shared ComfyUI; H3 weights absent)
+- Status: `VERIFIED LOCAL GENERATION` in a disposable isolated ComfyUI copy; not
+  installed into shared ComfyUI
 - Pinned commit: `d00fd814769e586545c454d75068856c71c79116` (main, checked 2026-09-08)
 - Last checked: 2026-09-08 JST
-- Notes: ignored local source worktree only. `/object_info` had no H3 Easy nodes;
-  no shared runtime mutation.
+- Notes: ignored local source and disposable runtime only. Isolated `/object_info`
+  contained H3 Easy nodes; no shared runtime mutation. The smoke was I2V with the
+  Native first frame as reference.
 
 ## Tier B — Studio / GUI設計時に強く参照
 
@@ -215,11 +222,14 @@ install、source copy、workflow導入、採用決定はしていない。
 - Why relevant: official node signatures, loader paths, model folder conventions, runtime
   compatibility。
 - Expected use: inspect current native H3 support; no fork in this groundwork。
-- Status: `VERIFIED LOCAL` (native startup and H3 node registry; generation blocked)
+- Status: `VERIFIED LOCAL GENERATION` (native T2V smoke; startup and H3 node
+  registry also verified)
 - Pinned commit: `b1693ecba9f5b65f8c80ab36b195ab963ec92413` (local detached vendor; checked 2026-09-08)
 - Last checked: 2026-09-08 JST
 - Notes: upstream master checked at `efa6c8f804bff78b46a0fd458ebd2e47bba07a30`.
-  ComfyUI license does not relicense MiniMax H3 weights or third-party nodes.
+  H0.1 output is recorded under the generation evidence directory with a
+  conservative sampled peak of 11,651/12,282 MiB. ComfyUI license does not
+  relicense MiniMax H3 weights or third-party nodes.
 
 ### MiniMax-AI/MiniMax-H3
 
@@ -272,7 +282,9 @@ install、source copy、workflow導入、採用決定はしていない。
 ## Inventory decision
 
 No candidate is installed into the shared runtime, copied into TEGAKI source, or
-declared adopted. Three source-only evaluation worktrees exist under the ignored
-`h3/reference_impls/` shelf. The next decision is Web GPT evidence review, followed
-by a separately scoped owner-authorized card if the review approves a source and a
-pinned license/provenance boundary.
+declared adopted. Three source-only evaluation worktrees and disposable runtime /
+venv areas exist under ignored H3 shelves. Four first-wave official model files
+are hash-verified under the ignored `h3/model_store/`; REF2VA and experimental
+assets remain absent. The next decision is Web GPT evidence review, followed by a
+separately scoped owner-authorized card if the review approves an H1 ingredient
+and a pinned license/provenance boundary.

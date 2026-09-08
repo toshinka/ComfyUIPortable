@@ -1,0 +1,50 @@
+{
+  "candidate": "onigirikiller",
+  "status": "VERIFIED LOCAL GENERATION",
+  "checked_at": "2026-09-08",
+  "source_repo": "https://github.com/onigirikiller/minimax-h3-webui",
+  "source_commit": "f9b28d56d69192e4516907a61103a71ff2c29c27",
+  "runtime": "dedicated h3/eval_envs/onigirikiller environment",
+  "python": "Miniconda Python 3.13.5",
+  "gradio": "5.50.0 after isolated gradio<6,>=4.39 adjustment",
+  "ui": "http://127.0.0.1:7860",
+  "gradio_event_id": "9d95765b8b774d08a96d0f9a944d9244",
+  "backend_queue_id": "2d947385",
+  "task": "t2v",
+  "prompt": "A small red service robot with a round white head walks slowly through a quiet greenhouse. The camera tracks gently from left to right. Leaves move slightly in the air. Soft mechanical footsteps and subtle greenhouse ambience.",
+  "resolution": [608, 352],
+  "frames": 124,
+  "fps": 24,
+  "duration_seconds": 5.167,
+  "steps": 20,
+  "sampler": "res_multistep",
+  "scheduler": "simple",
+  "seed": 20260908,
+  "turbo_lora": false,
+  "elapsed_seconds": 141.84,
+  "peak_vram_mib_sampled": null,
+  "vram_total_mib": 12282,
+  "system_ram_total_bytes": 68476002304,
+  "offload": "Native ComfyUI DynamicVRAM / asynchronous offload",
+  "oom": false,
+  "outputs": [
+    {
+      "path": "output/h3/video/h3studio_2d947385_00001_.mp4",
+      "size_bytes": 541758,
+      "sha256": "69EF473198FA4C58C948E948BE259F13E18DE867ACF081AAEE856E27D623B7F0"
+    },
+    {
+      "path": "output/h3/video/20260908_214053_2d947385.mp4",
+      "size_bytes": 541758,
+      "sha256": "69EF473198FA4C58C948E948BE259F13E18DE867ACF081AAEE856E27D623B7F0"
+    }
+  ],
+  "frames_evidence": {
+    "first": "frames/first_frame.png",
+    "middle": "frames/middle_frame.png",
+    "last": "frames/last_frame.png",
+    "contact_sheet": "contact_sheet.png"
+  },
+  "screenshots": ["screenshots/onigirikiller_completed.png"],
+  "shared_manga_runtime_modified": false
+}

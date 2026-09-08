@@ -1,0 +1,42 @@
+{
+  "candidate": "h3-easy",
+  "status": "VERIFIED LOCAL GENERATION",
+  "checked_at": "2026-09-08",
+  "source_repo": "https://github.com/nkxx188/ComfyUI-MiniMaxH3-Easy",
+  "source_commit": "d00fd814769e586545c454d75068856c71c79116",
+  "runtime": "isolated copy under h3/eval_runtime/comfyui",
+  "server": "http://127.0.0.1:8189",
+  "prompt_id": "fa9cc53f-4e34-481c-a444-bdbff75b6b44",
+  "task": "i2v",
+  "reference": "output/h3/tests/reference_robot_v1.png",
+  "prompt": "A small red service robot with a round white head walks slowly through a quiet greenhouse. The camera tracks gently from left to right. Leaves move slightly in the air. Soft mechanical footsteps and subtle greenhouse ambience.",
+  "resolution": [608, 352],
+  "frames": 124,
+  "fps": 24,
+  "duration_seconds": 5.167,
+  "steps": 20,
+  "sampler": "res_multistep",
+  "scheduler": "simple",
+  "seed": 20260908,
+  "model": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+  "turbo_lora": false,
+  "elapsed_seconds": 152.49,
+  "peak_vram_mib_sampled": null,
+  "vram_total_mib": 12282,
+  "system_ram_total_bytes": 68476002304,
+  "offload": "DynamicVRAM path; candidate-specific stream sample not retained",
+  "oom": false,
+  "output": {
+    "path": "output/h3/video/h0_1_h3easy_i2v_00001_.mp4",
+    "size_bytes": 486301,
+    "sha256": "E297EEF9EDCF33635F1068906A41A145585A99AF5A7F05A5A94FEAFE7ADF9D74"
+  },
+  "frames_evidence": {
+    "first": "frames/first_frame.png",
+    "middle": "frames/middle_frame.png",
+    "last": "frames/last_frame.png",
+    "contact_sheet": "contact_sheet.png"
+  },
+  "screenshots": ["screenshots/h3easy_completed.png"],
+  "shared_manga_runtime_modified": false
+}

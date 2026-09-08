@@ -1,9 +1,9 @@
 # H3 Current Landscape
 
 更新: 2026-09-08 JST
-Evidence level: public repository/document review; no local H3 generation run
+Evidence level: public provenance review plus H0.1 local model-backed generation smoke
 
-## H0 reference implementation evaluation snapshot (2026-09-08)
+## H0 / H0.1 reference implementation snapshot (2026-09-08)
 
 Status vocabulary in this section is strict:
 
@@ -15,13 +15,15 @@ Status vocabulary in this section is strict:
 
 | Candidate | Source | Checked commit | Code license | Local result |
 |---|---|---|---|---|
-| Native / official ComfyUI | https://github.com/Comfy-Org/ComfyUI | local `b1693ecba9f5b65f8c80ab36b195ab963ec92413`; upstream master `efa6c8f804bff78b46a0fd458ebd2e47bba07a30` | GPL-3.0 | `VERIFIED LOCAL` startup and native H3 registry; generation `BLOCKED` by missing weights |
-| H3 Easy | https://github.com/nkxx188/ComfyUI-MiniMaxH3-Easy | `d00fd814769e586545c454d75068856c71c79116` | MIT | `BLOCKED` before runtime install; shared custom-node tree unchanged |
-| onigirikiller | https://github.com/onigirikiller/minimax-h3-webui | `f9b28d56d69192e4516907a61103a71ff2c29c27` | Apache-2.0 | `BLOCKED` at `gradio` import; model weights also absent |
-| AntaresAlice | https://github.com/AntaresAlice/h3-webui | `4f10667c604f9cb333ac119b457a3659260a8966` | MIT | `VERIFIED LOCAL` WebUI/status startup; generation `BLOCKED` by missing weights |
+| Native / official ComfyUI | https://github.com/Comfy-Org/ComfyUI | local `b1693ecba9f5b65f8c80ab36b195ab963ec92413`; upstream master `efa6c8f804bff78b46a0fd458ebd2e47bba07a30` | GPL-3.0 | `VERIFIED LOCAL GENERATION` T2V at 608x352; conservative peak 11,651/12,282 MiB |
+| H3 Easy | https://github.com/nkxx188/ComfyUI-MiniMaxH3-Easy | `d00fd814769e586545c454d75068856c71c79116` | MIT | `VERIFIED LOCAL GENERATION` isolated I2V; shared custom-node tree unchanged |
+| onigirikiller | https://github.com/onigirikiller/minimax-h3-webui | `f9b28d56d69192e4516907a61103a71ff2c29c27` | Apache-2.0 | `VERIFIED LOCAL GENERATION` UI/API plus Native backend; Gradio isolated |
+| AntaresAlice | https://github.com/AntaresAlice/h3-webui | `4f10667c604f9cb333ac119b457a3659260a8966` | MIT | `VERIFIED LOCAL STARTUP`; generation `BLOCKED` by missing `MiniMaxH3AudioConditioningT8` in isolated backend |
 
-No H3 model weight was downloaded. Candidate worktrees are ignored local
-evaluation copies; only URL/SHA/license/manifest/evidence are tracked.
+The four first-wave official model files are hash-verified in the ignored local
+`h3/model_store/`; no weight is in the shared `ComfyUI/models/` tree. Candidate
+worktrees, runtime copies, venvs, and production video are local-only; only
+URL/SHA/license/manifest/text evidence is tracked.
 
 ## Executive summary
 
@@ -215,10 +217,17 @@ Research Laterです。
 
 ## Research boundary
 
-- ここで述べた機能は公開README / LICENSE / commit履歴の観察です。
-- H3実機生成、12GB/16GB比較、画素品質、Browser受入、Owner受入は未実施です。
+- ここで述べた機能は公開README / LICENSE / commit履歴の観察と、H0.1固定
+  smokeの範囲を分けて記録しています。
+- H0.1では公式first-wave assetを使い、Native T2V、隔離H3 Easy I2V、
+  onigirikiller UI/API経由T2Vを実生成した。Antares candidate-native経路は
+  required custom node不足でsampling前にBLOCKEDとなった。
+- これは12GB/16GBの全面比較、画素品質、長尺、REF2VA、Browser受入、Owner
+  受入ではありません。候補ごとのpeak VRAMをすべて採取したとも主張しません。
 - H3 model license、third-party model、custom node、GPL/Apache/MIT/Unlicense
-  の組み合わせは別途provenance auditが必要です。
+  の組み合わせは別途provenance auditが必要です。Official assetのhashと
+  Community License recordは[acquisition manifest](../evidence/H3_MODEL_ACQUISITION_MANIFEST.md)
+  に固定しています。
 - 既存Illustrious Manga runtime、workflow、canonical docsはこの調査で変更
   していません。
 

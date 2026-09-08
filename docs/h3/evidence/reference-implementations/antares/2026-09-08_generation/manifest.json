@@ -1,0 +1,34 @@
+{
+  "candidate": "antares",
+  "status": "VERIFIED LOCAL STARTUP; BLOCKED CANDIDATE-NATIVE GENERATION",
+  "checked_at": "2026-09-08",
+  "source_repo": "https://github.com/AntaresAlice/h3-webui",
+  "source_commit": "4f10667c604f9cb333ac119b457a3659260a8966",
+  "server": "http://127.0.0.1:8081",
+  "workspace": "h0_1_antares",
+  "task": "i2v",
+  "reference": "ws_bfc40cbc2b.png",
+  "resolution": [608, 352],
+  "duration_seconds_requested": 5,
+  "steps": 20,
+  "seed": 20260908,
+  "low_vram": true,
+  "sage_attention": false,
+  "turbo_lora": false,
+  "comfyui_status": {
+    "http": 200,
+    "up": true,
+    "ref2va_present": false,
+    "model_store_isolated": true
+  },
+  "generation": {
+    "http": 400,
+    "error": "ComfyUI rejected: Node 'MiniMaxH3AudioConditioningT8' not found. The custom node may not be installed.",
+    "sampling_started": false,
+    "oom": false
+  },
+  "output": null,
+  "frames_evidence": null,
+  "screenshots": ["screenshots/antares_ready.png"],
+  "shared_manga_runtime_modified": false
+}
