@@ -16,22 +16,32 @@ Read Order
 ----------
 1. ComfyUIPortable/GITHUB_H3.txt
 2. ComfyUIPortable/docs/h3/README.md
-3. ComfyUIPortable/docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md
-4. ComfyUIPortable/docs/h3/research/H3_CURRENT_LANDSCAPE.md
-5. ComfyUIPortable/docs/h3/references/H3_REFERENCE_INVENTORY.md
-6. ComfyUIPortable/docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md
-7. The local Rev.3 master roadmap named below, when the local checkout is
-   available.
+3. MiniMax H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
+4. ComfyUIPortable/docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md
+5. ComfyUIPortable/docs/h3/plans/H3_GUI_VISUAL_LANGUAGE_AND_BRAND.md
+6. ComfyUIPortable/docs/h3/research/H3_CURRENT_LANDSCAPE.md
+7. ComfyUIPortable/docs/h3/references/H3_REFERENCE_INVENTORY.md
+8. ComfyUIPortable/docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md
+9. ComfyUIPortable/docs/h3/plans/H3_ASTRA_UI_REVIEW_HANDOFF.md
 
 Master Roadmap
 --------------
-Observed local Rev.3 roadmap:
+Current local Rev.3 master:
+D:\GitHub\tegaki\MiniMax H3\H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
+
+Preserved Archive source:
 D:\GitHub\tegaki\MiniMax H3\Archive\H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
 
-The requested non-Archive path for this Rev.3 file was not present during this
-groundwork pass. The observed location is recorded as an observation only; it
-was not moved, renamed, deleted, or archived by this task. No GitHub URL is
-invented for a local file whose publication could not be confirmed.
+The root master and Archive source are byte-identical. Archive was preserved;
+it was not deleted, moved, renamed, or edited.
+
+Expected GitHub URL after Owner push:
+https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
+
+The local origin/main baseline did not contain the new root path before this
+closeout. External GitHub fetch was unavailable during this run, so the public
+URL remains pending Owner push and external verification. Do not present it as
+already published.
 
 Rev.3 direction, summarized:
 - H3 VIDEO first, using existing implementations where useful.
@@ -51,6 +61,7 @@ H3 Document Map
 - ComfyUIPortable/docs/h3/references/
 - ComfyUIPortable/docs/h3/research/
 - ComfyUIPortable/docs/h3/reports/
+- MiniMax H3/<Rev.3 current master>
 - ComfyUIPortable/h3/
 - ComfyUIPortable/workflows/h3/
 
@@ -69,13 +80,15 @@ frontend framework, backend, custom node, model, workflow, schema, or GUI.
 
 Current Review Gate
 -------------------
-Next gate:
-Web GPT review before H3 Phase H0/H1 implementation.
+Local closeout gate is complete. Next gate:
+Owner push, external URL verification, then Web GPT review before H3 Phase H0/H1
+implementation. Astra UI review remains a separate bounded task after Web GPT.
 
 Do not start H3 implementation until the review is complete.
 
 Publication Note
 ----------------
 The expected GitHub URLs for the files added in this slice are listed in
-docs/h3/README.md and the groundwork report. They become reviewable after the
-Owner publishes the relevant commit to main.
+docs/h3/README.md and the closeout report. They become reviewable after the
+Owner publishes the relevant closeout commit to main. The historical
+groundwork report remains an initial-state record and is not rewritten.

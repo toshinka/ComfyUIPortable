@@ -19,20 +19,31 @@ model、workflowの実装は開始していません。
 | `docs/h3/research/H3_CURRENT_LANDSCAPE.md` | Current candidate landscape summary | CURRENT RESEARCH | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/research/H3_CURRENT_LANDSCAPE.md` |
 | `docs/h3/references/H3_REFERENCE_INVENTORY.md` | Candidate and provenance inventory | CURRENT RESEARCH | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/references/H3_REFERENCE_INVENTORY.md` |
 | `docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md` | Rev.3 GUI principle summary | CURRENT DESIGN SUMMARY | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md` |
+| `docs/h3/plans/H3_GUI_VISUAL_LANGUAGE_AND_BRAND.md` | TEGAKI visual / brand language | CURRENT DESIGN SUMMARY | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/plans/H3_GUI_VISUAL_LANGUAGE_AND_BRAND.md` |
+| `docs/h3/plans/H3_ASTRA_UI_REVIEW_HANDOFF.md` | Astra UI review handoff index | CURRENT HANDOFF INDEX | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/plans/H3_ASTRA_UI_REVIEW_HANDOFF.md` |
 | `docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md` | This groundwork report | CURRENT REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md` |
+| `docs/h3/reports/H3_GROUNDWORK_CLOSEOUT_REPORT.md` | Groundwork closeout and publication distinction | CURRENT CLOSEOUT REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_GROUNDWORK_CLOSEOUT_REPORT.md` |
 
 ## External master roadmap
 
-The local Rev.3 file observed during this pass is:
+The current local Rev.3 master is:
 
-```text
-D:\GitHub\tegaki\MiniMax H3\Archive\H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
-```
+D:/GitHub/tegaki/MiniMax H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
 
-The path requested by the original task, without `Archive`, was not found in the
-live checkout. The file was not moved or renamed. A public GitHub URL for the
-Rev.3 file was not confirmed, so none is supplied here. This is an unresolved
-path/publication observation, not a reason to change the existing H3 documents.
+The preserved source remains:
+
+D:/GitHub/tegaki/MiniMax H3/Archive/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
+
+The two files are byte-identical. The Archive source was not deleted, moved,
+renamed, merged, or edited.
+
+Expected GitHub URL after Owner push:
+
+https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
+
+The local origin/main baseline did not contain the root path before this
+closeout. External GitHub fetch was unavailable in this run, so publication
+must be verified after Owner push; the URL is not claimed as already live.
 
 The current `GITHUB_ComfyUI.txt` remains the canonical entry for the existing
 Illustrious Manga line and is intentionally not routed through this hub.
@@ -50,6 +61,11 @@ Illustrious Manga line and is intentionally not routed through this hub.
 - [H3_GUI_DESIGN_PRINCIPLES.md](plans/H3_GUI_DESIGN_PRINCIPLES.md) — short
   summary of Rev.3's cognitive-level, cognitive-lens, progressive-disclosure,
   and "mountain" principles.
+- [H3_GUI_VISUAL_LANGUAGE_AND_BRAND.md](plans/H3_GUI_VISUAL_LANGUAGE_AND_BRAND.md)
+  — Futaba heritage palette as TEGAKI DNA, modern production UI guardrails,
+  benchmark roles, and anti-goals.
+- [H3_ASTRA_UI_REVIEW_HANDOFF.md](plans/H3_ASTRA_UI_REVIEW_HANDOFF.md) — read
+  order and bounded output contract for Astra's separate UI review Chat.
 
 No Astra implementation instruction is created here. The later Astra UI review
 must be a separate, bounded task after Web GPT reviews this groundwork.
@@ -58,6 +74,9 @@ must be a separate, bounded task after Web GPT reviews this groundwork.
 
 - [H3_GROUNDWORK_INITIALIZATION_REPORT.md](reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md)
   — added files, boundaries, observations, review links, and the next gate.
+- [H3_GROUNDWORK_CLOSEOUT_REPORT.md](reports/H3_GROUNDWORK_CLOSEOUT_REPORT.md)
+  — current Rev.3 path, visual language, Astra handoff, local/public state
+  distinction, and closeout gate.
 
 ## Empty implementation shelves
 
@@ -77,14 +96,17 @@ their names.
 ## Review recipe
 
 1. Start at `GITHUB_H3.txt`.
-2. Read the landscape and inventory together; do not treat a candidate as
+2. Read the current Rev.3 master and confirm the Archive source is preserved.
+3. Read the landscape and inventory together; do not treat a candidate as
    adopted because it appears in either document.
-3. Check licenses and model provenance before any code reuse or installation.
-4. Confirm that H3 Video remains first, H3 Still is an acceptance capability,
+4. Check licenses and model provenance before any code reuse or installation.
+5. Confirm that H3 Video remains first, H3 Still is an acceptance capability,
    and H3 Manga remains later research.
-5. Review the empty directory boundary and confirm that existing Illustrious
+6. Review the visual language and Astra handoff as review boundaries, not
+   implementation instructions.
+7. Review the empty directory boundary and confirm that existing Illustrious
    files were not changed.
-6. Stop at the Web GPT review gate.
+8. Stop at the Web GPT review gate.
 
 ## Evidence vocabulary
 
