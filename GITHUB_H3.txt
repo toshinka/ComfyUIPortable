@@ -1,0 +1,81 @@
+ComfyUIPortable — MiniMax H3 External AI Entry
+Repository: https://github.com/toshinka/tegaki
+Branch: main
+Canonical path: ComfyUIPortable/GITHUB_H3.txt
+Updated: 2026-09-08 JST
+
+Current Stage
+-------------
+Groundwork / Pre-H0
+H3 implementation has not started.
+
+This entry is the starting point for external AI review of MiniMax H3 work. It
+is an index and boundary document, not an implementation instruction.
+
+Read Order
+----------
+1. ComfyUIPortable/GITHUB_H3.txt
+2. ComfyUIPortable/docs/h3/README.md
+3. ComfyUIPortable/docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md
+4. ComfyUIPortable/docs/h3/research/H3_CURRENT_LANDSCAPE.md
+5. ComfyUIPortable/docs/h3/references/H3_REFERENCE_INVENTORY.md
+6. ComfyUIPortable/docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md
+7. The local Rev.3 master roadmap named below, when the local checkout is
+   available.
+
+Master Roadmap
+--------------
+Observed local Rev.3 roadmap:
+D:\GitHub\tegaki\MiniMax H3\Archive\H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
+
+The requested non-Archive path for this Rev.3 file was not present during this
+groundwork pass. The observed location is recorded as an observation only; it
+was not moved, renamed, deleted, or archived by this task. No GitHub URL is
+invented for a local file whose publication could not be confirmed.
+
+Rev.3 direction, summarized:
+- H3 VIDEO first, using existing implementations where useful.
+- Keep the initial base able to accept H3 Still routes and ordered references.
+- Grow toward Studio / Storyboard / Previz only after a practical video path.
+- Complete the existing Illustrious Manga line independently of H3.
+- Consider Manga / Video shell integration only after both sides work.
+- Start H3 MANGA last; it is not part of this groundwork.
+- Keep Base Quality, Stable Fast, and Experimental runtime profiles separate.
+- Apply the GUI principles of cognitive level, cognitive lenses, progressive
+  disclosure, and a valuable "mountain" only where the benefit earns the slope.
+
+H3 Document Map
+---------------
+- ComfyUIPortable/docs/h3/README.md
+- ComfyUIPortable/docs/h3/plans/
+- ComfyUIPortable/docs/h3/references/
+- ComfyUIPortable/docs/h3/research/
+- ComfyUIPortable/docs/h3/reports/
+- ComfyUIPortable/h3/
+- ComfyUIPortable/workflows/h3/
+
+Boundary
+--------
+Do not modify the existing Illustrious Manga implementation, canonical
+documents, workflows, or planning structure unless explicitly instructed in a
+separate task.
+
+In particular, GITHUB_ComfyUI.txt, docs/STATUS.md, docs/plans/, workflows/,
+and the existing Illustrious runtime remain outside this H3 groundwork slice.
+Do not add a router to GITHUB_ComfyUI.txt and do not create GITHUB_MANGA.txt.
+
+The H3 directories are intentionally empty shelves. This task does not add a
+frontend framework, backend, custom node, model, workflow, schema, or GUI.
+
+Current Review Gate
+-------------------
+Next gate:
+Web GPT review before H3 Phase H0/H1 implementation.
+
+Do not start H3 implementation until the review is complete.
+
+Publication Note
+----------------
+The expected GitHub URLs for the files added in this slice are listed in
+docs/h3/README.md and the groundwork report. They become reviewable after the
+Owner publishes the relevant commit to main.

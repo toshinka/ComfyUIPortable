@@ -1,7 +1,0 @@
-ComfyUIPortable entry moved / 入口統合済み
-Canonical: ComfyUIPortable/GITHUB_ComfyUI.txt
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB_ComfyUI.txt
-
-Read the canonical entry for implementation SHA, planning SHA, current state and reading order.
-This file is a compatibility pointer only; do not maintain status here.
-Previous contents: Archive/2026-09-06_pre_astra_replan/GITHUB.TXT
