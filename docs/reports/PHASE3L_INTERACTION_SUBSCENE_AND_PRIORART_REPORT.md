@@ -15,7 +15,7 @@ Phase 3L strictly enforces the provenance separation between execution runtime s
 
 ## 3. Prior-Art Audit
 A comprehensive technical audit was executed across existing ComfyUI ecosystem projects (`ComfyUI-Inspire-Pack`, `ComfyUI-Advanced-ControlNet`, `ComfyUI-Impact-Pack`, `OpenPose Editor`, `ComfyUI-EasyUseAnima`).
-The audit established that generic regional sampling, ControlNet scheduling, and mask/pose editing primitives already exist in high-quality, mature implementations. Tegaki's distinct value lies in its high-level domain concepts: **CAST, Character Instance, Panel, Scene, SubScene, Interaction, Staging, Authoring Data, and Semantic Compiler**. Full details are recorded in `docs/reports/PHASE3L_PRIOR_ART_ADOPTION_AUDIT.md`.
+The audit established that generic regional sampling, ControlNet scheduling, and mask/pose editing primitives already exist in high-quality, mature implementations. Tegaki's distinct value lies in its high-level domain concepts: **CAST, Character Instance, Panel, Scene, SubScene, Interaction, Staging, Authoring Data, and Semantic Compiler**. The audit was later classified as research and is now at `docs/manga/research/PHASE3L_PRIOR_ART_ADOPTION_AUDIT.md`. Historical pinned links at the Phase 3L commit retain the original path.
 
 ## 4. Inspire RegionalPromptSimple Comparison
 We compared Tegaki's native regional execution pipeline against Inspire-Pack's `RegionalPromptSimple` under identical conditions:

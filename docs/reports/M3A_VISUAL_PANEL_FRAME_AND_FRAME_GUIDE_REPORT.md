@@ -2,7 +2,7 @@
 ## ComfyUIPortable / Phase 3M-3A
 
 作成日: 2026-09-06 JST
-Card: ComfyUI_Portable_M3A_Visual_Panel_Frame_Layer_and_Frame_Guide_Integration_Request.md
+Card: [`M3A_VISUAL_PANEL_FRAME_LAYER_AND_FRAME_GUIDE_INTEGRATION.md`](../manga/cards/completed/M3A_VISUAL_PANEL_FRAME_LAYER_AND_FRAME_GUIDE_INTEGRATION.md)
 実装者: Antigravity (Gemini)
 
 ---

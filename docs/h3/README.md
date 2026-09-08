@@ -46,8 +46,9 @@ The local origin/main baseline did not contain the root path before this
 closeout. External GitHub fetch was unavailable in this run, so publication
 must be verified after Owner push; the URL is not claimed as already live.
 
-The current `GITHUB_ComfyUI.txt` remains the canonical entry for the existing
-Illustrious Manga line and is intentionally not routed through this hub.
+The current `GITHUB_MANGA.txt` is the canonical entry for the Manga Authoring
+line. `GITHUB_ComfyUI.txt` is a thin compatibility router to the separate Manga
+and H3 entries; it does not merge either subsystem's runtime semantics.
 
 ## Research
 

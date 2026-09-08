@@ -1,6 +1,10 @@
-# Gemini向け文書整理カード（製品実装とは別）
+# Gemini向け旧文書整理カード（製品実装とは別・2026-09-08時点で後継migrationへ移行）
 
 2026-09-06 / docs-only。M0/M1を待たせる一括整理をしない。
+
+現在のnamespace整理は `docs/manga/MANGA_DOCUMENT_NAMESPACE_MIGRATION_MAP.md` と
+`docs/manga/reports/MANGA_DOCUMENT_NAMESPACE_MIGRATION_REPORT.md` が所有する。
+この旧カードをGemini再開時の実装指示として使用しない。
 
 ## 今回Astraで済ませるもの
 

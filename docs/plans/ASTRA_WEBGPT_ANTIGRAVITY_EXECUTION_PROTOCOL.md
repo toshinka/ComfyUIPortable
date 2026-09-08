@@ -15,7 +15,7 @@
 
 ## 読む順序とトークン節約
 
-1. `GITHUB_ComfyUI.txt` → `docs/STATUS.md`。
+1. `GITHUB_MANGA.txt` → `docs/STATUS.md` → `docs/manga/README.md`。
 2. `ASTRA_MANGA_AUTHORING_MASTER_PLAN.md`。既読後はrevisionと変更節だけ。
 3. 今回のUX節/棚卸し該当行→current card。
 4. 対象file header・関数・関連testと直近reportだけ。
@@ -52,7 +52,7 @@ M0は契約文書＋fixture提案のみ。SOLがschema/旧import表を確定し�
 
 ## GitHub受渡し
 
-唯一の現在入口は `ComfyUIPortable/GITHUB_ComfyUI.txt`。`GITHUB.TXT`は誘導stubだけで更新情報を二重管理しない。
+Mangaの現在入口は `ComfyUIPortable/GITHUB_MANGA.txt`。`GITHUB_ComfyUI.txt`はManga/H3 routerであり、詳細な状態を二重管理しない。
 
 - 実装Review Target SHAは実装commitを指す。今回の計画追加だけではPhase 3LのSHAを置き換えない。
 - Planning Commit SHAは計画のcommit。今回はローカル発行で未commit。架空SHAや未公開pinned URLを作らない。
@@ -64,7 +64,7 @@ M0は契約文書＋fixture提案のみ。SOLがschema/旧import表を確定し�
 
 ```text
 ComfyUIPortableのScene-first漫画生成を監修してください。
-入口は ComfyUIPortable/GITHUB_ComfyUI.txt です。
+入口は ComfyUIPortable/GITHUB_MANGA.txt です。
 STATUS→Astra Master Plan→UX→棚卸しのギャップ→実行プロトコルを読み、
 M0 / 3M-0だけのGemini 3.8向けカードを発行してください。
 優先はかんたんScene-only→CAST複数出演→白ハゲGuideです。

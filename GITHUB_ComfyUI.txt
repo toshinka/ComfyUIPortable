@@ -1,97 +1,35 @@
-ComfyUIPortable — External AI Entry (canonical)
-Updated: 2026-09-07 JST
+ComfyUIPortable — External AI Router / Compatibility Entry
+Updated: 2026-09-08 JST
 Repository: https://github.com/toshinka/tegaki
 Branch: main
-Canonical path: ComfyUIPortable/GITHUB_ComfyUI.txt
-Latest Entry: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB_ComfyUI.txt
+Canonical router path: ComfyUIPortable/GITHUB_ComfyUI.txt
+Router update publication: LOCAL PENDING OWNER COMMIT/PUSH
 
-Review Target Commit SHA: a7f0baaad6e7f5d82c39b1042e8a3c4e9f1a7d5b (M3A.1 Commit A — LOCAL PENDING OWNER PUSH)
-Planning Commit SHA: 261a3d7297455931d391e62f2d8a1335193d8d90
-Planning publication: Published on remote main (Planning: 261a3d72, M0: 5e57ae2f, M1: c9a8dc1b, M1 Navigation: 64456929, M1.1: 7e516015, M1.1 Navigation: b6bea40c, M2A: 72e032c7, M2A Navigation: 88993df0, M2A.1: 7e9528d7, M2A.1 Navigation: 408744b1, M2B: e676deb5, M2B Navigation: 463ec8f9, M2B.1: 1b3bd224, M2B.1 Navigation: 4bc82536, M2B.2 A: 117c5d9a, M2B.2 B: 85cc0245, M3A A: 45ccd226, M3A B: 858dd7f5). M3A.1 Implementation Commit A: LOCAL PENDING OWNER PUSH.
+This file routes external AI readers to the domain-specific canonical entry.
+Do not maintain detailed project status, Review Target SHA, plans, or evidence here.
+The new Manga route becomes public only after the Owner commits and pushes it.
 
-Current direction:
-Minimum-Hand / Scene-first. Visual Panel Frames independent from Semantic Scenes (M3A invariant). M3A.1 closes runtime semantics: comic_panels white gutter + per-frame thickness + fail-closed + area canonical key. M3B (rough manga/dummy guide) pending owner browser acceptance.
-Current card: M3A.1 — PASS (Headless) / OWNER ACCEPTANCE PENDING (Frame Runtime Truth, Gutter Semantics & Live Browser Closure: fail-closed on invalid JSON/out-of-range page_index, comic_panels white gutter semantics, per-frame border_thickness honored, area canonical key drift fixed, copyFramesFromScenes area-only, derive([])=None, V0-V4 pixel oracle PASS, Python 34 tests + JS 19 tests PASS).
-Next card candidate: M3B / 3M-3B — Rough Manga / White-Dummy Character Guide Integration (only after M3A.1 owner browser acceptance).
+Manga Authoring
+---------------
+Canonical entry:
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB_MANGA.txt
 
-Evidence correction:
-Phase 3L was reported complete. Its presence evaluation JSON has 14 visual_status=PENDING entries. Owner acceptance is not established by that report.
-WF71 uses TegakiMangaImpactRegionalAdapter / RegionalSampler / core ControlNetApplyAdvanced; it does not establish Inspire or Advanced-ControlNet backend parity. See Astra inventory.
+Local path:
+ComfyUIPortable/GITHUB_MANGA.txt
 
-Strategic Planning SSOT — reading order
-1. docs/STATUS.md
-   https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/STATUS.md
-2. docs/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md
-   https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md
-3. docs/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md
-   https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md
-4. docs/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md
-   https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md
-5. docs/plans/ASTRA_WEBGPT_ANTIGRAVITY_EXECUTION_PROTOCOL.md
-   https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/plans/ASTRA_WEBGPT_ANTIGRAVITY_EXECUTION_PROTOCOL.md
-6. Current card / relevant report / only relevant code and workflows.
+MiniMax H3
+----------
+Canonical entry:
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB_H3.txt
 
-Separate cleanup card:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/plans/ASTRA_GEMINI_CLEANUP_INSTRUCTIONS.md
-Document authority: docs/DOCUMENT_REGISTER.md
-Old intermediate plans and Phase requests are historical, not next-work instructions.
+Local path:
+ComfyUIPortable/GITHUB_H3.txt
 
-Implementation evidence (pinned to implementation Review Target)
-M3A.1 Report (Current Review Target — LOCAL PENDING OWNER PUSH):
-docs/reports/M3A1_FRAME_RUNTIME_TRUTH_AND_BROWSER_CLOSURE_REPORT.md
-(URL will be pinned after owner push)
+Boundary
+--------
+Manga Authoring and H3 share the repository and Portable base, but currently
+have separate feature namespaces, runtime semantics, planning, evidence, and
+External AI entries. Read the relevant canonical entry before reviewing work.
 
-M3A Report (Previous Review Target):
-docs/reports/M3A_VISUAL_PANEL_FRAME_AND_FRAME_GUIDE_REPORT.md
-
-M2B.2 Report (Previous Review Target):
-https://raw.githubusercontent.com/toshinka/tegaki/117c5d9a59de5d33a51fedb3819b5a4bae0eba38/ComfyUIPortable/docs/reports/M2B2_LIVE_UI_BOOTSTRAP_AND_WORKFLOW_REPAIR_REPORT.md
-
-M2B.1 Report:
-https://raw.githubusercontent.com/toshinka/tegaki/1b3bd2246c6a2f440d7a7f810a8a75a798fb9bc2/ComfyUIPortable/docs/reports/M2B1_CAST_PLACEMENT_AND_BROWSER_CLOSURE_REPORT.md
-
-M2B Report:
-https://raw.githubusercontent.com/toshinka/tegaki/e676deb53824b97c18058c3dd2fc20cb08d0f822/ComfyUIPortable/docs/reports/M2B_MINIMUM_HAND_CAST_STAGING_PRODUCT_UI_REPORT.md
-
-M2A.1 Report:
-https://raw.githubusercontent.com/toshinka/tegaki/7e9528d751959b62e108aaad8df363548855df92/ComfyUIPortable/docs/reports/M2A1_PROMPT_REGION_CALIBRATION_AND_CONTROL_GATE_REPORT.md
-
-M2A Report:
-https://raw.githubusercontent.com/toshinka/tegaki/72e032c71d97eed2712552062a75fde5d29c2360/ComfyUIPortable/docs/reports/M2A_CHARACTER_SPATIAL_CAPABILITY_LADDER_REPORT.md
-
-M1.1 Report:
-https://raw.githubusercontent.com/toshinka/tegaki/7e516015f8c6fdfde118a83a9dcfdb04560d02aa/ComfyUIPortable/docs/reports/M1_1_CANONICAL_WORKFLOW_WIRING_REPORT.md
-
-M1 Report (Historical Baseline):
-https://raw.githubusercontent.com/toshinka/tegaki/c9a8dc1b937b97866a49ff41affc929a1fb8f9a3/ComfyUIPortable/docs/reports/M1_3M1_SCENE_ONLY_MINIMUM_HAND_DRAFT_REPORT.md
-
-M0.1 Report:
-https://raw.githubusercontent.com/toshinka/tegaki/0a1ccd46fe8160b487ab748b0dfae19092ff7ac3/ComfyUIPortable/docs/reports/M0_1_CONTRACT_HARDENING_REPORT.md
-
-M0 Report:
-https://raw.githubusercontent.com/toshinka/tegaki/0a1ccd46fe8160b487ab748b0dfae19092ff7ac3/ComfyUIPortable/docs/reports/M0_3M0_VERSIONED_AUTHORING_CONTRACT_REPORT.md
-
-Historical Phase 3L evidence (previous Review Target 5eee2d4f):
-Report:
-https://raw.githubusercontent.com/toshinka/tegaki/5eee2d4f7fa342e40add6c48fcb1ae7e8f1867b8/ComfyUIPortable/docs/reports/PHASE3L_INTERACTION_SUBSCENE_AND_PRIORART_REPORT.md
-Backend decisions (claims require the correction above):
-https://raw.githubusercontent.com/toshinka/tegaki/5eee2d4f7fa342e40add6c48fcb1ae7e8f1867b8/ComfyUIPortable/docs/reports/PHASE3L_BACKEND_ADOPTION_DECISIONS.md
-Verification manifest:
-https://raw.githubusercontent.com/toshinka/tegaki/5eee2d4f7fa342e40add6c48fcb1ae7e8f1867b8/ComfyUIPortable/docs/verification/PHASE3L_CANONICAL_VERIFICATION_MANIFEST.json
-Visual evaluation:
-https://raw.githubusercontent.com/toshinka/tegaki/5eee2d4f7fa342e40add6c48fcb1ae7e8f1867b8/ComfyUIPortable/docs/verification/PHASE3L_PRESENCE_EVALUATION.json
-
-External UI / Prior-Art References
-MRP navigation (only when needed; separate project):
-https://raw.githubusercontent.com/toshinka/tegaki/main/EasyReforgeExtension/GitHubURL_ERE.txt
-ComfyUI Comic Creator (REFERENCE decision; selective reuse requires pinned-source audit):
-https://github.com/ketle-man/comfyui-comic-creator
-
-Update duty:
-Gemini updates STATUS at start/end and on material findings; updates affected plan sections, inventory and report every card. Strategic deviations remain proposals for SOL/Astra review.
-Publication: Commit A = plan or implementation; Commit B = entry SHA + pinned links. Do not replace the implementation Review Target with a documentation-only SHA. Owner pushes.
-Before planning commit publication, give WEB GPT the local plan files. Do not claim unpublished URLs work.
-
-Archive:
-Archive/2026-09-06_pre_astra_replan/MANIFEST.json records old entry files and two intermediate plans with SHA256. Originals are preserved as snapshots; old plan paths remain for historical references.
-GITHUB.TXT is a compatibility pointer only. Do not duplicate current status there.
+Future common TEGAKI shell/skin integration is not a current implementation
+requirement. H3 Manga remains deferred.

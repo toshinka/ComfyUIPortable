@@ -1,6 +1,6 @@
 # ComfyUI Portable 漫画制作環境 (Tegaki Manga Edition)
 
-現在の外部AI入口は [GITHUB_ComfyUI.txt](GITHUB_ComfyUI.txt)、現在地は [docs/STATUS.md](docs/STATUS.md)。
+外部AIの共通routerは [GITHUB_ComfyUI.txt](GITHUB_ComfyUI.txt)、Manga正本入口は [GITHUB_MANGA.txt](GITHUB_MANGA.txt)、H3正本入口は [GITHUB_H3.txt](GITHUB_H3.txt)です。Mangaの現在地は [docs/STATUS.md](docs/STATUS.md)。
 2026-09-06の [Astra Master Plan](docs/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md) が新しい戦略正本です。
 以下は既存環境の説明を含み、新計画のScene-first UIが実装済みという意味ではありません。
 
@@ -59,7 +59,9 @@ D:\GitHub\tegaki\ComfyUIPortable\
  ├─ run_nvidia_gpu.bat                      # 起動バッチ
  ├─ .gitignore                              # Git除外設定
  ├─ README.md                               # 本ドキュメント
- ├─ GITHUB_ComfyUI.txt                    # 外部AI入口の正本（GITHUB.TXTは誘導のみ）
+ ├─ GITHUB_ComfyUI.txt                    # 外部AI router / compatibility entry
+ ├─ GITHUB_MANGA.txt                      # Manga Authoring正本入口
+ ├─ GITHUB_H3.txt                         # MiniMax H3正本入口
  ├─ configs/
  │   └─ extra_model_paths.yaml              # 外部モデルパス定義テンプレート
  ├─ docs/                                   # 漫画制作データ契約・仕様書・設計資料集
@@ -70,7 +72,7 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ KNOWN_ISSUES.md                     # 既知の課題・解決済み履歴
  │   ├─ WORKFLOW_INDEX.md                   # ワークフロー解説・索引
  │   ├─ DEPENDENCIES.md                     # パッケージ・ハードウェア環境仕様
- │   ├─ RESEARCH_REFERENCES.md              # 参照リポジトリ・ライセンス
+ │   ├─ manga/references/RESEARCH_REFERENCES.md # Manga参照リポジトリ・ライセンス
  │   ├─ CUSTOM_NODE_MANIFEST.md             # 外部Custom Nodeコミット追跡
  │   ├─ verification/                           # 正準検証マニフェスト (PHASE3G / PHASE3H / PHASE3I / PHASE3J / PHASE3J.1)
  │   └─ reports/                            # 開発フェーズ完了報告書・検証記録集
@@ -309,7 +311,6 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
   - パネル属性として `near`、`medium`、`far` を定義し、`explicit staging > camera default` 契約のもとで未指定人物の自動フレーミングを制御（Contact Sheet Z5）。
 - **Zero-Touch 互換性**:
   - Workflows 60〜65（全6件）を新規策定し、対象全49ワークフローのライブスキーマ適合性 100% PASS を達成。
-
 
 
 

@@ -71,9 +71,10 @@ Do not modify the existing Illustrious Manga implementation, canonical
 documents, workflows, or planning structure unless explicitly instructed in a
 separate task.
 
-In particular, GITHUB_ComfyUI.txt, docs/STATUS.md, docs/plans/, workflows/,
-and the existing Illustrious runtime remain outside this H3 groundwork slice.
-Do not add a router to GITHUB_ComfyUI.txt and do not create GITHUB_MANGA.txt.
+The existing Manga runtime, docs/STATUS.md, docs/plans/, and Manga workflows
+remain outside H3 implementation scope. A later, separately authorized namespace
+task created GITHUB_MANGA.txt and converted GITHUB_ComfyUI.txt into a thin router;
+this navigation change does not merge H3 and Manga runtime semantics.
 
 The H3 directories are intentionally empty shelves. This task does not add a
 frontend framework, backend, custom node, model, workflow, schema, or GUI.

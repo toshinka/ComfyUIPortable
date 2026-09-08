@@ -1,8 +1,13 @@
 # ComfyUIPortable 現在地 (Status & Direction)
 
-更新: 2026-09-07 JST
-Review Target Commit SHA: `待OwnerPush` (M3A.1 Commit A — local, pending owner push)
-正本入口: [GITHUB_ComfyUI.txt](../GITHUB_ComfyUI.txt)
+更新: 2026-09-08 JST
+Review Target Commit SHA: `a7f0baaad6e7f5d82c39b1042e8a3c4e9f1a7d5b` (M3A.1 implementation, published)
+Manga正本入口: [GITHUB_MANGA.txt](../GITHUB_MANGA.txt)
+
+`GITHUB_ComfyUI.txt` はManga/H3を振り分けるCompatibility Routerへ変更した。
+今回のnamespace整理は文書/navigationのみで、Manga runtime・workflow・schema・outputを変更していない。
+Gemini再開時は[再開コンテキスト](manga/MANGA_GEMINI_RESTART_CONTEXT.md)から現状を確認し、
+[Card Router](manga/cards/README.md)の規則に従ってSOLが新しい限定Cardを発行する。
 
 ---
 

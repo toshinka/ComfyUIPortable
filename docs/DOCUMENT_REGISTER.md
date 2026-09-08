@@ -1,6 +1,17 @@
 # 文書登録簿 — ComfyUIPortable (Document Register)
 
-2026-09-06 JST 更新。
+2026-09-08 JST 更新。
+
+## 0. DOMAIN ENTRY MAP
+
+| Domain | Canonical Entry | Document Hub | Boundary |
+|---|---|---|---|
+| Router / compatibility | `../GITHUB_ComfyUI.txt` | このRegister | 詳細なstatusを所有しない |
+| Manga Authoring | `../GITHUB_MANGA.txt` | `manga/README.md` | Illustrious/Anima等の画像backendを扱うManga subsystem |
+| MiniMax H3 | `../GITHUB_H3.txt` | `h3/README.md` | Groundwork / Pre-H0。Manga runtimeへ接続しない |
+
+MangaとH3はrepository/Portable baseを共有するが、現在は別production subsystem。
+将来の共通TEGAKI shellは両者が独立して利用可能になった後の候補であり、現行要件ではない。
 
 ## 1. CURRENT AUTHORITY (現在正本)
 以下の文書群が、ComfyUIPortable の現行戦略・UX設計・資産棚卸し・運用ルールの最高権威を持つ。
@@ -12,6 +23,10 @@
 | `plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md` | CURRENT DESIGN | UX導線・手数設計・画面レイアウト・出現条件 |
 | `plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md` | CURRENT AUDIT | 既存ノード/ワークフロー資産棚卸し・証拠の限界・Comic Creator参考 |
 | `plans/ASTRA_WEBGPT_ANTIGRAVITY_EXECUTION_PROTOCOL.md` | CURRENT PROCESS | Web GPT (設計/Card発行) と Antigravity Gemini (実装) の協調プロトコル |
+| `manga/README.md` | MANGA DOCUMENT HUB | Mangaの正本、report、research、verificationへのnavigation |
+| `manga/MANGA_DOCUMENT_NAMESPACE_MIGRATION_MAP.md` | CURRENT MIGRATION AUDIT | 文書/outputのmove/retain判断と参照監査 |
+| `manga/MANGA_GEMINI_RESTART_CONTEXT.md` | CURRENT RESTART CONTEXT | Gemini停止時点。実装Cardではない |
+| `manga/cards/README.md` | CARD ROUTER | Cardのcurrent/completed境界と保管場所。旧Cardを現行指示として使わないための入口 |
 
 ## 2. CURRENT CARD (現行作業カード)
 | カード | 状態 | 役割 |
@@ -36,10 +51,14 @@
 | 文書/群 | 状態 | 扱い |
 |---|---|---|
 | `CAST_SPEC_V1.md`, `COMPILE_PLAN_V1.md`, `MANGA_SCENE_DATA_CONTRACT.md`, `LORA_ENTRY_V1.md` | EXISTING CONTRACT | M0での旧import互換性照合対象 |
-| `reports/PHASE3L_*`, `verification/PHASE3L_*` | HISTORICAL EVIDENCE | Phase 3Lの実装成果（14件PENDING・WF71限界を包含） |
+| `reports/PHASE3L_*`, `verification/PHASE3L_*`, `manga/research/PHASE3L_PRIOR_ART_ADOPTION_AUDIT.md` | HISTORICAL EVIDENCE / RESEARCH | Phase 3Lの実装成果（14件PENDING・WF71限界を包含） |
 | その他旧Phase reports / verification (Phase 2〜3K) | HISTORICAL EVIDENCE | 必要時のみ個別参照 |
-| `../GPTからの指示書/` の旧Phase依頼書・旧中間計画書 | SUPERSEDED STRATEGY | 新戦略と競合するため歴史資料として保持 |
+| `manga/cards/completed/` | COMPLETED EXECUTION CARDS | 3M-Prep〜M3A.1の実行契約。実績確認用であり再実行しない |
+| `manga/archive/instructions/` | SUPERSEDED INSTRUCTIONS | Phase 2〜3Lの旧依頼書。新戦略と競合するため歴史資料として保持 |
+| `manga/archive/plans/` | SUPERSEDED / DEFERRED PLANS | 旧中間計画、GUI追補、将来構想。現行戦略の根拠にはしない |
+| `manga/archive/duplicates/` | PRESERVED DUPLICATE | byte-identicalなM1.1複製を削除せず隔離保管 |
 | `../Archive/2026-09-06_pre_astra_replan/` | ARCHIVED SNAPSHOT | 統合前原本のハッシュ保全 |
 | `WORKFLOW_INDEX.md`, `DEPENDENCIES.md`, `KNOWN_ISSUES.md` | EXISTING REFERENCE | 古い記述を含む。実装/環境はlive確認 |
+| `manga/references/RESEARCH_REFERENCES.md` | CURRENT REFERENCE INVENTORY | Manga外部asset・license・provenance |
 
 ※ 本projectには現時点で `TECHNICAL.md` は存在しない。Tegaki本体（`tegaki_work/`）の同名文書やPhase履歴を本環境へ混同しないこと。
