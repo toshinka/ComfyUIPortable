@@ -106,19 +106,19 @@ slice.
 ## 9. Commit and publication
 
 - Groundwork baseline: 3883e9a26e72c6544c9dac78fa9e271eb234944f
-- Closeout commit SHA: to be recorded after the Owner-separated closeout commit
+- Closeout commit SHA: 47056a7c972f187f0ce9686db1ae7bb93ce8aca3
 - Public GitHub verification: pending Owner push and a successful external fetch
 - Owner responsibility: push, Web GPT review, Astra Chat issuance, and final
   acceptance
 
 ## 10. Next gate
 
-1. Stage only the files listed in Sections 4 and 5.
-2. Create a separated closeout commit; do not stage unrelated changes.
-3. Owner pushes it to main.
-4. Reopen the root Rev.3 URL and confirm the six groundwork files plus the
-   closeout files.
-5. Web GPT reviews the complete H3 document chain.
-6. Only after that review may a separate Astra UI review be issued.
-7. H3 implementation remains blocked until the design / review gates explicitly
-   release it.
+1. The separated closeout commit above contains only the files listed in
+   Sections 4 and 5; unrelated changes were not staged.
+2. Owner pushes it to main.
+3. Reopen the root Rev.3 URL and confirm the six groundwork files plus the
+  closeout files.
+4. Web GPT reviews the complete H3 document chain.
+5. Only after that review may a separate Astra UI review be issued.
+6. H3 implementation remains blocked until the design / review gates explicitly
+  release it.
