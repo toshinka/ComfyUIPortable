@@ -1,0 +1,41 @@
+{
+  "candidate": "h3-easy",
+  "source_repo": "https://github.com/nkxx188/ComfyUI-MiniMaxH3-Easy",
+  "source_commit": "d00fd814769e586545c454d75068856c71c79116",
+  "upstream_status": "local shallow clone matches checked main head",
+  "checked_at": "2026-09-08T19:40:20+09:00",
+  "comfyui_version": "0.30.0",
+  "gpu": "NVIDIA GeForce RTX 4070",
+  "vram": "12282 MiB",
+  "ram": "63.77 GiB",
+  "workflow": "Upstream workflow examples inspected only; no workflow run",
+  "required_custom_nodes": "ComfyUI-MiniMaxH3-Easy under ComfyUI/custom_nodes plus native MiniMax H3 nodes",
+  "python_dependencies": "requests, psutil; remaining imports supplied by ComfyUI runtime",
+  "expected_output_path": "ComfyUIPortable/output/h3/video/",
+  "compatibility_note": "ComfyUI 0.30.0 native H3 surface present; Easy not installed and assets absent",
+  "models": {
+    "status": "missing",
+    "provenance": "MiniMax H3 official distribution; model terms are separate from MIT node code",
+    "source": "https://github.com/MiniMax-AI/MiniMax-H3",
+    "expected": [
+      "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "minimax_h3_ref2va_pruned_int8_convrot.safetensors",
+      "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "minimax_h3_video_vae_fp16.safetensors",
+      "minimax_h3_audio_vae_fp32.safetensors"
+    ],
+    "found": []
+  },
+  "resolution": null,
+  "duration": null,
+  "steps": null,
+  "generation_status": "BLOCKED: candidate not installed into shared runtime and H3 assets absent",
+  "output_sha256": null,
+  "screenshots": [],
+  "local_patch": "None; ignored source worktree only",
+  "notes": [
+    "Source syntax compilation passed",
+    "Live native /object_info contained no H3 Easy nodes",
+    "No upstream screenshot was substituted"
+  ]
+}

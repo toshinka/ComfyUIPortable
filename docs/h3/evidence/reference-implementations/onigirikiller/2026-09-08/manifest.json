@@ -1,0 +1,41 @@
+{
+  "candidate": "onigirikiller",
+  "source_repo": "https://github.com/onigirikiller/minimax-h3-webui",
+  "source_commit": "f9b28d56d69192e4516907a61103a71ff2c29c27",
+  "upstream_status": "local shallow clone matches checked main head",
+  "checked_at": "2026-09-08T19:40:20+09:00",
+  "comfyui_version": "0.30.0",
+  "gpu": "NVIDIA GeForce RTX 4070",
+  "vram": "12282 MiB",
+  "ram": "63.77 GiB",
+  "workflow": "No workflow run; app launch attempted only",
+  "required_custom_nodes": "Official MiniMax H3 nodes in ComfyUI/custom_nodes plus documented ComfyUI/video workflow nodes",
+  "python_dependencies": "gradio>=4.39; ComfyUI is a separate runtime",
+  "expected_output_path": "ComfyUIPortable/output/h3/video/",
+  "compatibility_note": "ComfyUI 0.30.0 available; gradio missing and H3 assets absent",
+  "models": {
+    "status": "missing",
+    "provenance": "MiniMax H3 official distribution; model terms are separate from Apache-2.0 UI code",
+    "source": "https://github.com/MiniMax-AI/MiniMax-H3",
+    "expected": [
+      "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "minimax_h3_video_vae_fp16.safetensors",
+      "minimax_h3_audio_vae_fp32.safetensors",
+      "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "minimax_h3_ref2va_pruned_int8_convrot.safetensors"
+    ],
+    "found": []
+  },
+  "resolution": null,
+  "duration": null,
+  "steps": null,
+  "generation_status": "BLOCKED: gradio>=4.39 missing; H3 assets absent",
+  "output_sha256": null,
+  "screenshots": [],
+  "local_patch": "None; no dependency installation",
+  "notes": [
+    "python app.py --help failed at import gradio",
+    "No candidate UI started",
+    "No upstream screenshot was substituted"
+  ]
+}

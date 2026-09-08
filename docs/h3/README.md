@@ -3,9 +3,9 @@
 更新: 2026-09-08 JST
 
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
-将来の実装棚を一か所から辿るための document hub です。現在は
-**Groundwork / Pre-H0** であり、H3 GUI、generation backend、custom node、
-model、workflowの実装は開始していません。
+将来の実装棚とReference Implementation evidenceを一か所から辿るための
+document hub です。現在は **H0 / Reference Implementation Evaluation** であり、
+H3 GUI、generation backend、custom node、model、workflowの実装は開始していません。
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
@@ -21,9 +21,12 @@ model、workflowの実装は開始していません。
 | `docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md` | Rev.3 GUI principle summary | CURRENT DESIGN SUMMARY | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md` |
 | `docs/h3/plans/H3_GUI_VISUAL_LANGUAGE_AND_BRAND.md` | TEGAKI visual / brand language | CURRENT DESIGN SUMMARY | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/plans/H3_GUI_VISUAL_LANGUAGE_AND_BRAND.md` |
 | `docs/h3/plans/H3_ASTRA_UI_REVIEW_HANDOFF.md` | Astra UI review handoff index | CURRENT HANDOFF INDEX | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/plans/H3_ASTRA_UI_REVIEW_HANDOFF.md` |
+| `docs/h3/reports/H3_ASTRA_UI_REVIEW_RESULT.md` | Bounded Astra UI review evidence | CURRENT REVIEW EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_ASTRA_UI_REVIEW_RESULT.md` |
 | `docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md` | This groundwork report | CURRENT REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md` |
 | `docs/h3/reports/H3_GROUNDWORK_CLOSEOUT_REPORT.md` | Groundwork closeout and publication distinction | CURRENT CLOSEOUT REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_GROUNDWORK_CLOSEOUT_REPORT.md` |
 | `docs/h3/reports/H3_ASTRA_PREP_SEMANTIC_ALIGNMENT_REPORT.md` | Astra preparation semantic alignment report | CURRENT PREP REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_ASTRA_PREP_SEMANTIC_ALIGNMENT_REPORT.md` |
+| `docs/h3/evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md` | Candidate evidence index | CURRENT H0 GATE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md` |
+| `docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md` | Four-candidate evaluation report | CURRENT H0 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md` |
 
 ## External master roadmap
 
@@ -69,8 +72,10 @@ and H3 entries; it does not merge either subsystem's runtime semantics.
 - [H3_ASTRA_UI_REVIEW_HANDOFF.md](plans/H3_ASTRA_UI_REVIEW_HANDOFF.md) — read
   order and bounded output contract for Astra's separate UI review Chat.
 
-No Astra implementation instruction is created here. The later Astra UI review
-must be a separate, bounded task after Web GPT reviews this groundwork.
+No Astra implementation instruction is created here. The bounded Astra review is
+now complete as a separate review pass; its evidence is recorded in
+[H3_ASTRA_UI_REVIEW_RESULT.md](reports/H3_ASTRA_UI_REVIEW_RESULT.md). No
+implementation follows from that result automatically.
 
 ## Reports
 
@@ -82,6 +87,24 @@ must be a separate, bounded task after Web GPT reviews this groundwork.
 - [H3_ASTRA_PREP_SEMANTIC_ALIGNMENT_REPORT.md](reports/H3_ASTRA_PREP_SEMANTIC_ALIGNMENT_REPORT.md)
   — correction of Cognitive Level / Cognitive Lens roles, H3 Video review scope,
   and Illustrious Manga boundary.
+- [H3_ASTRA_UI_REVIEW_RESULT.md](reports/H3_ASTRA_UI_REVIEW_RESULT.md) — bounded
+  Astra review evidence: KEEP / ADJUST / DEFER / VALIDATE and the next evaluation gate.
+- [H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md](reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md)
+  — Native, H3 Easy, onigirikiller, and AntaresAlice local/source evaluation.
+
+## Evidence
+
+- [H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md](evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md)
+  — evaluation date, source commit, install/runtime status, blockers, and candidate
+  evidence links.
+- [Reference implementation evidence](evidence/reference-implementations/) — dated
+  candidate README, manifest, actual local screenshots where a UI started, and
+  contact sheets where available.
+- Production H3 output is isolated at `output/h3/video/`, with `debug/` and `tests/`
+  alongside it. Existing `output/` content and Manga output are outside this slice.
+
+The historical groundwork reports remain historical records. The current gate is the
+H0 evidence index/report above; it does not imply that any candidate is adopted.
 
 ## Empty implementation shelves
 
@@ -111,11 +134,18 @@ their names.
    implementation instructions.
 7. Review the empty directory boundary and confirm that existing Illustrious
    files were not changed.
-8. Stop at the Web GPT review gate.
+8. Read the dated Reference Implementation evidence and verify that `VERIFIED LOCAL`,
+   `BLOCKED`, and `NOT TESTED` are not conflated.
+9. Stop at the Web GPT evidence review gate.
 
 ## Evidence vocabulary
 
 - `OBSERVED`: public repository/document observation only.
+- `VERIFIED LOCAL`: a reproducible local startup, API, or static result; it does not
+  imply generation quality or Owner acceptance.
+- `BLOCKED`: a concrete dependency, model, or scope boundary stopped the relevant
+  runtime path.
+- `NOT TESTED`: the relevant path was not exercised and must not be inferred.
 - `INSPECT`: keep as a review target; no adoption decision.
 - `ADOPT-CANDIDATE`: possible future design or code candidate, pending a pinned
   source and license audit.

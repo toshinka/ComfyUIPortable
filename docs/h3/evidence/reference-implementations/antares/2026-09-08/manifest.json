@@ -1,0 +1,47 @@
+{
+  "candidate": "antares",
+  "source_repo": "https://github.com/AntaresAlice/h3-webui",
+  "source_commit": "4f10667c604f9cb333ac119b457a3659260a8966",
+  "upstream_status": "local shallow clone matches checked main head",
+  "checked_at": "2026-09-08T19:40:20+09:00",
+  "comfyui_version": "0.30.0",
+  "gpu": "NVIDIA GeForce RTX 4070",
+  "vram": "12282 MiB",
+  "ram": "63.77 GiB",
+  "workflow": "Antares local start surface and /api/comfyui/status smoke check; no generation",
+  "required_custom_nodes": "MiniMax H3 nodes and documented ComfyUI video save/decode chain",
+  "python_dependencies": "aiohttp, Pillow, PyAV from Portable ComfyUI runtime",
+  "expected_output_path": "ComfyUIPortable/output/h3/video/",
+  "compatibility_note": "WebUI connected to ComfyUI 0.30.0 and status API; ref2va_present false",
+  "models": {
+    "status": "missing",
+    "provenance": "MiniMax H3 official distribution; model terms are separate from MIT WebUI code",
+    "source": "https://github.com/MiniMax-AI/MiniMax-H3",
+    "expected": [
+      "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "minimax_h3_video_vae_fp16.safetensors",
+      "minimax_h3_audio_vae_fp32.safetensors",
+      "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "minimax_h3_ref2va_pruned_int8_convrot.safetensors"
+    ],
+    "found": [],
+    "ref2va_present": false
+  },
+  "resolution": "UI presets observed; no generation",
+  "duration": "UI presets 2s/5s/10s/15s observed; no generation",
+  "steps": "UI default 4 observed; no generation",
+  "generation_status": "BLOCKED: H3 model assets absent; WebUI startup verified",
+  "output_sha256": null,
+  "screenshots": ["screenshots/01_start.png"],
+  "screenshot_sha256": {
+    "screenshots/01_start.png": "836EA70051605392614F9667D7A536388A2E85983889F730D27A1BFA39AFB1F6",
+    "contact_sheet.png": "27EDB7900BCFA58CF0D6EA03EBB0E1AB275C44027699EA6BC8DBC29E300C712F"
+  },
+  "local_patch": "None; environment-only COMFYUI_URL/INPUT/OUTPUT and port 8081",
+  "notes": [
+    "HTTP / returned 200",
+    "HTTP /api/comfyui/status returned 200",
+    "No output media was written",
+    "Actual local start screenshot only; no upstream screenshot substituted"
+  ]
+}

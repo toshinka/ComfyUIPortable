@@ -1,0 +1,46 @@
+{
+  "candidate": "native",
+  "source_repo": "https://github.com/Comfy-Org/ComfyUI",
+  "source_commit": "b1693ecba9f5b65f8c80ab36b195ab963ec92413",
+  "upstream_head_checked": "efa6c8f804bff78b46a0fd458ebd2e47bba07a30",
+  "upstream_status": "local detached vendor; upstream master checked and differs",
+  "checked_at": "2026-09-08T19:40:20+09:00",
+  "comfyui_version": "0.30.0",
+  "gpu": "NVIDIA GeForce RTX 4070",
+  "vram": "12282 MiB",
+  "ram": "63.77 GiB",
+  "workflow": "Native H3 node/API capability inspection; no generation workflow queued",
+  "required_custom_nodes": "Native MiniMax H3 nodes in ComfyUI; no candidate node installed",
+  "python_dependencies": "Portable ComfyUI environment; Python 3.13.14, PyTorch 2.13.0+cu130, aiohttp, Pillow, PyAV",
+  "expected_output_path": "ComfyUIPortable/output/h3/video/",
+  "compatibility_note": "ComfyUI 0.30.0 native H3 registry verified; model assets absent",
+  "models": {
+    "status": "missing",
+    "provenance": "MiniMax H3 official distribution; Community License Agreement is separate from ComfyUI GPL-3.0",
+    "source": "https://github.com/MiniMax-AI/MiniMax-H3",
+    "expected": [
+      "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "minimax_h3_ref2va_pruned_int8_convrot.safetensors",
+      "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "minimax_h3_video_vae_fp16.safetensors",
+      "minimax_h3_audio_vae_fp32.safetensors"
+    ],
+    "found": []
+  },
+  "resolution": null,
+  "duration": null,
+  "steps": null,
+  "generation_status": "BLOCKED: H3 model assets absent; native startup only",
+  "output_sha256": null,
+  "screenshots": ["screenshots/01_start.png"],
+  "screenshot_sha256": {
+    "screenshots/01_start.png": "27AB49B31F2306F21650B2138CB40585402CFB568A99004A39432254F18B55C3",
+    "contact_sheet.png": "4D75198A613017EB317CCA2C1BC6C499B6CE347715460C8157CD902E1E6248C7"
+  },
+  "local_patch": "None; launch flags only (--cpu --disable-auto-launch)",
+  "notes": [
+    "HTTP /system_stats returned 200",
+    "HTTP /object_info listed native MiniMax H3 entries",
+    "No output media was written"
+  ]
+}

@@ -3,6 +3,26 @@
 更新: 2026-09-08 JST
 Evidence level: public repository/document review; no local H3 generation run
 
+## H0 reference implementation evaluation snapshot (2026-09-08)
+
+Status vocabulary in this section is strict:
+
+- `OBSERVED`: source or public-document fact.
+- `VERIFIED LOCAL`: a local startup/API/static result was reproduced.
+- `BLOCKED`: an explicit dependency, model, or evaluation-boundary blocker stopped
+  the candidate before the relevant runtime result.
+- `NOT TESTED`: no claim is made because the relevant path was not exercised.
+
+| Candidate | Source | Checked commit | Code license | Local result |
+|---|---|---|---|---|
+| Native / official ComfyUI | https://github.com/Comfy-Org/ComfyUI | local `b1693ecba9f5b65f8c80ab36b195ab963ec92413`; upstream master `efa6c8f804bff78b46a0fd458ebd2e47bba07a30` | GPL-3.0 | `VERIFIED LOCAL` startup and native H3 registry; generation `BLOCKED` by missing weights |
+| H3 Easy | https://github.com/nkxx188/ComfyUI-MiniMaxH3-Easy | `d00fd814769e586545c454d75068856c71c79116` | MIT | `BLOCKED` before runtime install; shared custom-node tree unchanged |
+| onigirikiller | https://github.com/onigirikiller/minimax-h3-webui | `f9b28d56d69192e4516907a61103a71ff2c29c27` | Apache-2.0 | `BLOCKED` at `gradio` import; model weights also absent |
+| AntaresAlice | https://github.com/AntaresAlice/h3-webui | `4f10667c604f9cb333ac119b457a3659260a8966` | MIT | `VERIFIED LOCAL` WebUI/status startup; generation `BLOCKED` by missing weights |
+
+No H3 model weight was downloaded. Candidate worktrees are ignored local
+evaluation copies; only URL/SHA/license/manifest/evidence are tracked.
+
 ## Executive summary
 
 Rev.3の順序を維持するなら、H3は「全部を独自実装する新製品」ではなく、
@@ -71,8 +91,8 @@ default profileへ自動昇格させません。
 ### AntaresAlice/h3-webui
 
 Self-hosted WebUIとして、workspace / history / reference再利用 / continuation /
-progress / ComfyUI境界を観察する対象です。MITと明記され、2026-09-02確認時の
-main先頭付近は `1f566ba` でした。H1 Minimum Skinの設計材料として強い一方、
+progress / ComfyUI境界を観察する対象です。MITと明記され、2026-09-08確認時の
+main先頭は `4f10667c604f9cb333ac119b457a3659260a8966` でした。H1 Minimum Skinの設計材料として強い一方、
 モデル・ランタイムの採用判断は別に必要です。
 
 ### onigirikiller/minimax-h3-webui
@@ -80,14 +100,12 @@ main先頭付近は `1f566ba` でした。H1 Minimum Skinの設計材料とし�
 ComfyUI HTTP APIを駆動するqueue / last-frame chaining / join / bulk JSONの
 小さなVideo UIです。Apache-2.0。READMEには12GB VRAMでT2V/I2Vを動かした記録と、
 Ref2VAはより重いという制限があり、12GB baselineの設計材料になります。
-2026-08-04確認時の先頭commitは `f9b28d5` でした。
+2026-09-08確認時の先頭commitは `f9b28d56d69192e4516907a61103a71ff2c29c27` でした。
 
 ### ComfyUI-MiniMaxH3-Easy
 
-今回確認できた公開 repository は
-`vanessaliu036-lab/comfyui-minimaxh3-easy` です。指示書の呼称とrepository
-名に表記差があるため、同一候補として扱いつつ、導入前にsource identityを
-再確認します。MIT。mixed media input、ordered reference、`@` editor、
+今回確認した公開 repository は
+`nkxx188/ComfyUI-MiniMaxH3-Easy` です。MIT。mixed media input、ordered reference、`@` editor、
 I2V / first-last-frame / R2Vの段階化が、最小手の入口の参考になります。
 
 ### ComfyUI-H3Studio
@@ -208,7 +226,7 @@ Research Laterです。
 
 - [AntaresAlice/h3-webui](https://github.com/AntaresAlice/h3-webui)
 - [onigirikiller/minimax-h3-webui](https://github.com/onigirikiller/minimax-h3-webui)
-- [ComfyUI-MiniMaxH3-Easy](https://github.com/vanessaliu036-lab/comfyui-minimaxh3-easy)
+- [ComfyUI-MiniMaxH3-Easy](https://github.com/nkxx188/ComfyUI-MiniMaxH3-Easy)
 - [ComfyUI-H3Studio](https://github.com/shootthesound/ComfyUI-H3Studio)
 - [MiniMax H3 Director](https://github.com/seesee75-commits/ComfyUI-MiniMaxH3-Director)
 - [AIMixer MiniMax H3 Director](https://github.com/AIMixer/ComfyUI_MiniMaxH3_Director)

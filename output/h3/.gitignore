@@ -1,0 +1,9 @@
+# H3 production outputs are local-only. Evidence manifests record hashes and
+# conditions; generated media is never committed here.
+*
+!video/
+!video/.gitkeep
+!debug/
+!debug/.gitkeep
+!tests/
+!tests/.gitkeep

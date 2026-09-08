@@ -1,7 +1,8 @@
 # H3 Reference Inventory
 
 更新: 2026-09-08 JST
-目的: 採用前の候補棚卸し。clone、install、source copy、workflow導入はしていない。
+目的: 採用前の候補棚卸し。評価用cloneは無視されたlocal worktreeに限定し、
+install、source copy、workflow導入、採用決定はしていない。
 
 `Pinned commit` は公開commit履歴で短SHAまで確認できた場合だけ記録しています。
 短SHAは将来の採用pinではなく、この調査時点の追跡用スナップショットです。
@@ -12,6 +13,10 @@
 - `ADOPT-CANDIDATE`: 将来の選択肢になり得るが、採用決定ではない。
 - `DEFER`: 現在のGroundwork / H1より後で扱う。
 - `RESEARCH-LATER`: canonical source、再現条件、またはライセンス境界が未確定。
+- `OBSERVED`: source/document fact only.
+- `VERIFIED LOCAL`: local startup/API/static result reproduced in the evidence pass.
+- `BLOCKED`: explicit dependency, model, or evaluation-boundary blocker.
+- `NOT TESTED`: the relevant runtime path was not exercised.
 
 ## Tier A — 今すぐ設計材料
 
@@ -25,8 +30,8 @@
 - Why relevant: workspace、history、reference reuse、continuation、progress、
   ComfyUI boundaryの観察対象。
 - Expected use: H1 skinのinteraction benchmark。source copyやforkではない。
-- Status: `ADOPT-CANDIDATE` (design material only)
-- Pinned commit: `1f566ba` (main history, checked 2026-09-08)
+- Status: `VERIFIED LOCAL` (WebUI/status startup only; generation blocked)
+- Pinned commit: `4f10667c604f9cb333ac119b457a3659260a8966` (main, checked 2026-09-08)
 - Last checked: 2026-09-08 JST
 - Notes: model weightsは含まれない。H3 model licenseとruntimeは別監査。
 
@@ -39,25 +44,26 @@
 - Current role: queue / last-frame chaining中心のVideo WebUI
 - Why relevant: 12GB VRAMのT2V/I2V記録、ComfyUI HTTP boundary、bulk queue、join。
 - Expected use: H1 minimum flowと12GB baselineの比較材料。
-- Status: `ADOPT-CANDIDATE` (design material only)
-- Pinned commit: `f9b28d5` (main history, checked 2026-09-08)
+- Status: `BLOCKED` (embedded Python lacks `gradio>=4.39`; generation also lacks models)
+- Pinned commit: `f9b28d56d69192e4516907a61103a71ff2c29c27` (main, checked 2026-09-08)
 - Last checked: 2026-09-08 JST
 - Notes: READMEはRef2VAをより重い経路として説明。GPU実証はTegakiの未実施事項。
 
 ### ComfyUI-MiniMaxH3-Easy
 
 - Name: `ComfyUI-MiniMaxH3-Easy`
-- Repository: https://github.com/vanessaliu036-lab/comfyui-minimaxh3-easy
-- GitHub URL: https://github.com/vanessaliu036-lab/comfyui-minimaxh3-easy
+- Repository: https://github.com/nkxx188/ComfyUI-MiniMaxH3-Easy
+- GitHub URL: https://github.com/nkxx188/ComfyUI-MiniMaxH3-Easy
 - License: MIT
 - Current role: unified ComfyUI node / workflow surface
 - Why relevant: one Media input、ordered media、`@` reference editor、I2V / first-last
   frame / R2V、advanced settingの段階表示。
 - Expected use: H1/H2 interaction and adapter boundary review。
-- Status: `ADOPT-CANDIDATE` (design material only)
-- Pinned commit: not recorded; public history did not expose a stable SHA in this pass
+- Status: `BLOCKED` (not installed into shared ComfyUI; H3 weights absent)
+- Pinned commit: `d00fd814769e586545c454d75068856c71c79116` (main, checked 2026-09-08)
 - Last checked: 2026-09-08 JST
-- Notes: 指示書の呼称と公開repositoryのowner/nameに差がある。導入前にidentityを再確認。
+- Notes: ignored local source worktree only. `/object_info` had no H3 Easy nodes;
+  no shared runtime mutation.
 
 ## Tier B — Studio / GUI設計時に強く参照
 
@@ -209,10 +215,11 @@
 - Why relevant: official node signatures, loader paths, model folder conventions, runtime
   compatibility。
 - Expected use: inspect current native H3 support; no fork in this groundwork。
-- Status: `INSPECT`
-- Pinned commit: not recorded
+- Status: `VERIFIED LOCAL` (native startup and H3 node registry; generation blocked)
+- Pinned commit: `b1693ecba9f5b65f8c80ab36b195ab963ec92413` (local detached vendor; checked 2026-09-08)
 - Last checked: 2026-09-08 JST
-- Notes: ComfyUI license does not relicense MiniMax H3 weights or third-party nodes.
+- Notes: upstream master checked at `efa6c8f804bff78b46a0fd458ebd2e47bba07a30`.
+  ComfyUI license does not relicense MiniMax H3 weights or third-party nodes.
 
 ### MiniMax-AI/MiniMax-H3
 
@@ -264,6 +271,8 @@
 
 ## Inventory decision
 
-No candidate is installed, cloned, copied, or declared adopted by this inventory.
-The next decision is Web GPT review, followed by a separately scoped H0/H1 card if
-the review approves a source and a pinned license/provenance boundary.
+No candidate is installed into the shared runtime, copied into TEGAKI source, or
+declared adopted. Three source-only evaluation worktrees exist under the ignored
+`h3/reference_impls/` shelf. The next decision is Web GPT evidence review, followed
+by a separately scoped owner-authorized card if the review approves a source and a
+pinned license/provenance boundary.

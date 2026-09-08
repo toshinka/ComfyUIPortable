@@ -1,6 +1,10 @@
 # Astra UI Review Handoff Index
 
 更新: 2026-09-08 JST
+Status: bounded review completed; this file remains the historical handoff contract
+
+The result of the bounded pass is recorded at:
+`ComfyUIPortable/docs/h3/reports/H3_ASTRA_UI_REVIEW_RESULT.md`
 
 ## Purpose
 
@@ -27,6 +31,8 @@
 ## Current handoff state
 
 - H3 implementation は開始していない。
+- Astra bounded UI review は完了し、KEEP / ADJUST / DEFER / VALIDATE と次の
+  Reference Implementation Evaluation criteria が result report に固定された。
 - H3 frontend、backend、custom node、model、workflow、schema は追加しない。
 - 既存 Illustrious Manga implementation、canonical documents、workflow、
   runtime は変更しない。

@@ -1,0 +1,5 @@
+# External reference implementations are local evaluation worktrees only.
+# Their source, dependencies, and generated files must never enter TEGAKI.
+*
+!.gitignore
+!README.md
