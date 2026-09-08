@@ -113,7 +113,7 @@ worktreeをcleanに戻す。H3 implementationとAstra executionは未開始で�
 
 ## Commit SHA
 
-- Semantic alignment commit: to be recorded after the bounded commit
+- Semantic alignment commit: 2fe4869972b8a1b846d794339e9177fe8c03f441
 - Push state: Owner workflowでpushするまでlocal only
 
 ## GitHub review links
