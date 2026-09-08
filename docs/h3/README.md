@@ -4,8 +4,8 @@
 
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
 将来の実装棚とReference Implementation evidenceを一か所から辿るための
-document hub です。現在は **H0.1 / model isolation and generation smoke** であり、
-H3 GUI、production generation backend、custom node、workflowの実装は開始していません。
+document hub です。現在は **H1A / minimum video skin and Native T2V vertical slice**
+であり、H0/H0.1 の model isolation と generation smoke は履歴として保持します。
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
@@ -25,10 +25,13 @@ H3 GUI、production generation backend、custom node、workflowの実装は開�
 | `docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md` | This groundwork report | CURRENT REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md` |
 | `docs/h3/reports/H3_GROUNDWORK_CLOSEOUT_REPORT.md` | Groundwork closeout and publication distinction | CURRENT CLOSEOUT REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_GROUNDWORK_CLOSEOUT_REPORT.md` |
 | `docs/h3/reports/H3_ASTRA_PREP_SEMANTIC_ALIGNMENT_REPORT.md` | Astra preparation semantic alignment report | CURRENT PREP REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_ASTRA_PREP_SEMANTIC_ALIGNMENT_REPORT.md` |
-| `docs/h3/evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md` | Candidate evidence index | CURRENT H0.1 GATE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md` |
-| `docs/h3/evidence/H3_MODEL_ACQUISITION_MANIFEST.md` | Official first-wave model provenance, license, size, and hash ledger | CURRENT H0.1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/H3_MODEL_ACQUISITION_MANIFEST.md` |
-| `docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_GENERATION_EVALUATION_REPORT.md` | Fixed-task generation comparison and H1 ingredient disposition | CURRENT H0.1 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_GENERATION_EVALUATION_REPORT.md` |
+| `docs/h3/evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md` | Candidate evidence index | HISTORICAL H0.1 GATE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md` |
+| `docs/h3/evidence/H3_MODEL_ACQUISITION_MANIFEST.md` | Official first-wave model provenance, license, size, and hash ledger | HISTORICAL H0.1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/H3_MODEL_ACQUISITION_MANIFEST.md` |
+| `docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_GENERATION_EVALUATION_REPORT.md` | Fixed-task generation comparison and H1 ingredient disposition | HISTORICAL H0.1 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_GENERATION_EVALUATION_REPORT.md` |
 | `docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md` | Historical H0 startup/source evaluation | HISTORICAL H0 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md` |
+| `docs/h3/reports/H1A_MINIMUM_VIDEO_SKIN_NATIVE_T2V_REPORT.md` | H1A implementation, Native runtime, browser UI, and closeout boundary | CURRENT H1A REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H1A_MINIMUM_VIDEO_SKIN_NATIVE_T2V_REPORT.md` |
+| `docs/h3/evidence/h1a/2026-09-08/README.md` | H1A browser/UI generation evidence and frame review | CURRENT H1A EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1a/2026-09-08/README.md` |
+| `docs/h3/evidence/h1a/2026-09-08/manifest.json` | Machine-readable H1A runtime/output manifest | CURRENT H1A EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1a/2026-09-08/manifest.json` |
 
 ## External master roadmap
 
@@ -95,6 +98,8 @@ implementation follows from that result automatically.
   — H0.1 model-backed generation comparison, memory/error record, and H1 ingredient disposition.
 - [H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md](reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md)
   — historical H0 Native, H3 Easy, onigirikiller, and AntaresAlice startup/source evaluation.
+- [H1A_MINIMUM_VIDEO_SKIN_NATIVE_T2V_REPORT.md](reports/H1A_MINIMUM_VIDEO_SKIN_NATIVE_T2V_REPORT.md)
+  — current H1A implementation, contract, verification, runtime result, and explicit non-scope.
 
 ## Evidence
 
@@ -107,16 +112,18 @@ implementation follows from that result automatically.
 - [Reference implementation evidence](evidence/reference-implementations/) — dated
   startup history plus H0.1 generation README, manifest, actual local screenshots,
   frame triplets, and contact sheets where generation succeeded.
+- [H1A evidence](evidence/h1a/2026-09-08/) — Native T2V API and browser UI
+  completion evidence, output hashes, UI screenshot, frame triplet, and contact sheet.
 - Production H3 output is isolated at `output/h3/video/`, with `debug/` and `tests/`
   alongside it. Existing `output/` content and Manga output are outside this slice.
 
-The historical groundwork reports remain historical records. The current gate is the
-H0.1 model manifest, evidence index, and generation report above; it does not imply
-that any candidate is adopted.
+The historical groundwork reports remain historical records. The current gate is
+the H1A report and evidence above; it does not imply Owner acceptance, public
+deployment, or adoption of a candidate implementation.
 
-## Empty implementation shelves
+## H1A implementation boundary
 
-These paths exist only to make the future H3 boundary visible:
+H1A owns the following narrow production paths:
 
 ```text
 h3/app/
@@ -124,10 +131,15 @@ h3/adapters/
 h3/config/
 h3/tests/
 workflows/h3/
+h3/run_h1a.bat
 ```
 
-They contain no implementation. Do not infer a schema or backend contract from
-their names.
+The local skin is a small vanilla UI plus a stdlib HTTP server. Native ComfyUI
+remains the execution, queue, history, and output authority. The semantic
+adapter is the only UI-to-workflow boundary, and the H1A workflow is the
+production materialization of the verified Native H3 recipe. Do not infer H1B,
+I2V, REF2VA, Still, Studio, Timeline, Storyboard, Cast, 3D, Manga, or a
+persistent project schema from these paths.
 
 ## Review recipe
 
@@ -140,12 +152,14 @@ their names.
    and H3 Manga remains later research.
 6. Review the visual language and Astra handoff as review boundaries, not
    implementation instructions.
-7. Review the empty directory boundary and confirm that existing Illustrious
-   files were not changed.
+7. Review the H1A implementation boundary and confirm that existing Illustrious
+   files, shared ComfyUI core/frontend, and Manga runtime were not changed.
 8. Read the H0.1 model manifest and generation evidence; verify that generation,
    startup, blocked, owner-action-required, and not-tested states are not conflated.
-9. Stop at the Web GPT H1 ingredient review gate; do not infer adoption or Owner
-   acceptance from a local generation result.
+9. Read the H1A report and dated evidence; verify the browser UI path separately
+   from direct API/runtime evidence.
+10. Stop at the Web GPT / Astra H1A review gate; do not infer Owner acceptance,
+    H1B, or public deployment from a local generation result.
 
 ## Evidence vocabulary
 
@@ -153,6 +167,11 @@ their names.
 - `VERIFIED LOCAL STARTUP`: a reproducible local startup/API/static result.
 - `VERIFIED LOCAL GENERATION`: a reproducible local output with hash and frame
   evidence; it does not imply quality or Owner acceptance.
+- `VERIFIED BROWSER UI GENERATION`: the prompt was submitted through the H1A
+  browser controls and the resulting job reached a visible completed Preview;
+  it does not replace runtime/media evidence or Owner acceptance.
+- `IMPLEMENTED`: the bounded H1A source and launcher are present and tested;
+  it does not mean the whole H3 roadmap is implemented.
 - `BLOCKED`: a concrete dependency, model, or scope boundary stopped the relevant
   runtime path.
 - `NOT TESTED`: the relevant path was not exercised and must not be inferred.
@@ -168,6 +187,6 @@ their names.
 ## Scope boundary
 
 This hub does not replace the existing ComfyUIPortable STATUS, planning SSOT,
-reports, or workflow index. It adds an H3-only path beside them. No existing
-Illustrious file, workflow, runtime, or canonical entry was edited for this
-groundwork.
+reports, or workflow index. It adds an H3-only path beside them. H1A did not
+modify the existing Illustrious file, workflow, runtime, Manga docs, or shared
+ComfyUI core/frontend.

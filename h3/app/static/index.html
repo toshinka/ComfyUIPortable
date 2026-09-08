@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="TEGAKI H3 minimum Native T2V video skin" />
+    <title>TEGAKI / Video</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="TEGAKI Video home">
+        <span class="brand-mark">T</span>
+        <span>TEGAKI</span>
+        <span class="brand-separator">/</span>
+        <span class="brand-mode">Video</span>
+      </a>
+      <div class="backend-pill connecting" id="backend-pill" aria-live="polite">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="backend-label">Connecting</span>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="preview-column" aria-labelledby="preview-heading">
+        <div class="section-kicker">Preview</div>
+        <div class="preview-card" id="preview-card">
+          <div class="preview-empty" id="preview-empty">
+            <div class="preview-icon" aria-hidden="true">▶</div>
+            <h1 id="preview-heading">Your video will appear here</h1>
+            <p>Enter a prompt and generate a short Native H3 video.</p>
+          </div>
+          <video id="preview-video" class="preview-video" controls playsinline preload="metadata" hidden></video>
+          <div class="preview-overlay" id="preview-overlay" hidden>
+            <span id="preview-state">Queued</span>
+            <span class="overlay-separator">·</span>
+            <span id="preview-elapsed">0.0s</span>
+          </div>
+        </div>
+        <div class="preview-meta" id="preview-meta">No generation in this session.</div>
+      </section>
+
+      <aside class="control-column" aria-label="Video controls">
+        <form id="generate-form" novalidate>
+          <div class="section-kicker">Create</div>
+          <label class="field-label" for="prompt">Prompt</label>
+          <textarea id="prompt" name="prompt" rows="7" maxlength="4000" placeholder="Describe the video..." required></textarea>
+          <div class="field-hint"><span>Prompt</span><span id="prompt-count">0 / 4000</span></div>
+
+          <div class="control-grid">
+            <div>
+              <label class="field-label" for="resolution">Resolution</label>
+              <select id="resolution" name="resolution">
+                <option value="608x352">608 x 352</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="duration">Duration</label>
+              <select id="duration" name="duration">
+                <option value="5">5 seconds</option>
+              </select>
+            </div>
+          </div>
+
+          <details class="advanced-panel">
+            <summary>Advanced</summary>
+            <div class="advanced-body">
+              <label class="field-label" for="seed">Seed</label>
+              <div class="seed-row">
+                <input id="seed" name="seed" type="number" min="0" max="9223372036854775807" placeholder="Random" />
+                <button class="quiet-button" id="random-seed" type="button">Random</button>
+              </div>
+              <label class="field-label" for="steps">Steps</label>
+              <input id="steps" name="steps" type="number" value="20" readonly aria-readonly="true" />
+              <div class="field-hint">Verified Native baseline</div>
+            </div>
+          </details>
+
+          <button class="primary-button" id="generate-button" type="submit" disabled>
+            <span>Generate</span>
+            <span class="button-arrow" aria-hidden="true">→</span>
+          </button>
+          <button class="cancel-button" id="cancel-button" type="button" hidden>Cancel current job</button>
+        </form>
+
+        <div class="details-panel" id="details-panel" hidden>
+          <div class="details-heading">Details</div>
+          <p id="details-text"></p>
+        </div>
+      </aside>
+    </main>
+
+    <section class="status-strip" aria-live="polite">
+      <div class="status-block">
+        <span class="status-label">Status</span>
+        <strong id="generation-status">Ready</strong>
+        <span class="status-detail" id="status-detail">Prompt is ready.</span>
+      </div>
+      <div class="status-block queue-block">
+        <span class="status-label">Queue</span>
+        <strong id="queue-count">0</strong>
+        <span class="status-detail">Native jobs</span>
+      </div>
+      <div class="status-block history-summary">
+        <span class="status-label">History</span>
+        <strong id="history-count">0</strong>
+        <span class="status-detail">This session</span>
+      </div>
+    </section>
+
+    <section class="history-section" aria-labelledby="history-heading">
+      <div class="history-heading-row">
+        <div>
+          <div class="section-kicker">Recent results</div>
+          <h2 id="history-heading">History</h2>
+        </div>
+        <span class="history-authority">Native ComfyUI history</span>
+      </div>
+      <div id="history-list" class="history-list">
+        <div class="history-empty">Completed results from this session will appear here.</div>
+      </div>
+    </section>
+
+    <footer class="footer-note">
+      <span>H1A / Native T2V</span>
+      <span>Model terms are separate from TEGAKI code. See the H3 model acquisition manifest.</span>
+    </footer>
+
+    <script type="module" src="/static/app.js"></script>
+  </body>
+</html>

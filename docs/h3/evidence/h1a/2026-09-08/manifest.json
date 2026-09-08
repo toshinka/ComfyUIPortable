@@ -1,0 +1,113 @@
+{
+  "schema": "tegaki.h3.h1a.evidence/v1",
+  "captured_at": "2026-09-08T23:50:56+09:00",
+  "status": [
+    "IMPLEMENTED",
+    "VERIFIED LOCAL STARTUP",
+    "VERIFIED LOCAL GENERATION",
+    "VERIFIED BROWSER UI GENERATION",
+    "OWNER ACCEPTANCE PENDING"
+  ],
+  "environment": {
+    "host_gpu": "NVIDIA GeForce RTX 4070",
+    "vram_total_bytes": 12878086144,
+    "native_backend": "ComfyUI 0.30.0",
+    "python": "3.13.14 embedded",
+    "pytorch": "2.13.0+cu130",
+    "dynamic_vram": true,
+    "async_offload_streams": 2,
+    "custom_nodes": "disabled",
+    "backend_url": "http://127.0.0.1:8188",
+    "skin_url": "http://127.0.0.1:8190"
+  },
+  "workflow": {
+    "path": "workflows/h3/H1A_NATIVE_T2V_BASE.json",
+    "schema": "tegaki.h3.h1a.native-t2v/v1",
+    "official_source": "https://github.com/Comfy-Org/workflow_templates/blob/main/templates/video_minimax_h3_t2v.json",
+    "official_workflow_commit": "7c25a3c586484601f94b7e8f8b14c23b2c95a096",
+    "official_workflow_sha256": "2400B01A7C8ACAE3FED038C0372F08BACB90D2CDF915FEBADBE7E3F9802506EA",
+    "resolution": [608, 352],
+    "duration_seconds": 5,
+    "frames": 124,
+    "fps": 24,
+    "steps": 20,
+    "sampler": "res_multistep",
+    "scheduler": "simple",
+    "turbo_lora": false
+  },
+  "model_store": {
+    "root": "h3/model_store/",
+    "shared_comfyui_models_used": false,
+    "files": [
+      {
+        "path": "h3/model_store/diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+        "bytes": 20970379616,
+        "sha256": "E889202C41DAFB67B10D67B97F0D8541508036A6090AF23425A5C2615D03C47A"
+      },
+      {
+        "path": "h3/model_store/text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+        "bytes": 15687142551,
+        "sha256": "35A88D51044231FE332301D7A62AA81E3F2CBA62FEBEB446E2C1E3E0EF76F2C6"
+      },
+      {
+        "path": "h3/model_store/vae/minimax_h3_video_vae_fp16.safetensors",
+        "bytes": 5207808496,
+        "sha256": "7C1F131492E7EDDACAAC9069A61B81BDD39DE5CC96561E677C5EAB1CDCE5E522"
+      },
+      {
+        "path": "h3/model_store/vae/minimax_h3_audio_vae_fp32.safetensors",
+        "bytes": 605254808,
+        "sha256": "8E505D95DD1561D47ABD43D4238FD40D9BB1AE9E147ED0A4CBA778D76AE4DB48"
+      }
+    ]
+  },
+  "runs": [
+    {
+      "route": "browser-ui",
+      "job_id": "2e2499055c9649c4a04fac111afa08d9",
+      "prompt_id": "903f28d5-659c-4dff-98ae-2f8780e0563f",
+      "seed": 7612416513579120808,
+      "elapsed_seconds": 114.0,
+      "output": {
+        "path": "output/h3/video/h1a_native_t2v_00002_.mp4",
+        "bytes": 565019,
+        "sha256": "14CAA00BAAA16F78CEBEF01F49092110C0FC78045F8F85B50E4D2B1CB7937A85"
+      },
+      "ffprobe": {
+        "video_codec": "h264",
+        "audio_codec": "aac",
+        "width": 608,
+        "height": 352,
+        "fps": 24,
+        "video_frames": 124,
+        "media_duration_seconds": 5.167
+      }
+    },
+    {
+      "route": "api-smoke",
+      "job_id": "ed5ca4ba7efb4c8289ec37a17f30b12b",
+      "prompt_id": "8bee07c8-c742-4e4a-b465-5cb8b97063c6",
+      "seed": 20260908,
+      "elapsed_seconds": 171.8,
+      "output": {
+        "path": "output/h3/video/h1a_native_t2v_00001_.mp4",
+        "bytes": 541855,
+        "sha256": "0C20302A70C1F48685360A2751AC30BBC1135DD8AF8EEFE68259E5675B6C6ABE"
+      },
+      "sampled_min_vram_free_bytes": 456707660,
+      "oom": false
+    }
+  ],
+  "evidence": {
+    "browser_screenshot": "screenshots/h1a_completed_wide.png",
+    "first_frame": "frames/first_frame.png",
+    "middle_frame": "frames/middle_frame.png",
+    "last_frame": "frames/last_frame.png",
+    "contact_sheet": "contact_sheet.png"
+  },
+  "media_commit_policy": {
+    "generated_mp4_committed": false,
+    "evidence_pngs_committed": true,
+    "model_weights_committed": false
+  }
+}

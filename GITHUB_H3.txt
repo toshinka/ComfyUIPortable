@@ -6,14 +6,17 @@ Updated: 2026-09-08 JST
 
 Current Stage
 -------------
-H0.1 / H3 model and dependency isolation / generation smoke
-Groundwork: PASS
-Semantic Alignment: PASS
-Astra bounded UI review: COMPLETED
+H1A / TEGAKI H3 minimum video skin / Native T2V vertical slice
+Groundwork: PASS (historical)
+Semantic Alignment: PASS (historical)
+Astra bounded UI review: COMPLETED (historical)
 H0 startup/source audit: HISTORICAL
 H0.1 model acquisition: TECHNICALLY PASS; OWNER LICENSE ACTION REQUIRED
-H0.1 generation smoke: 3 VERIFIED LOCAL GENERATION / 1 BLOCKED
-H3 implementation has not started.
+H0.1 generation smoke: 3 VERIFIED LOCAL GENERATION / 1 BLOCKED (historical)
+H1A implementation: IMPLEMENTED
+H1A Native generation: VERIFIED LOCAL GENERATION
+H1A browser UI generation: VERIFIED BROWSER UI GENERATION
+Owner acceptance: PENDING
 
 This entry is the starting point for external AI review of MiniMax H3 work. It
 is an index and boundary document, not an implementation instruction.
@@ -34,6 +37,9 @@ Read Order
 12. ComfyUIPortable/docs/h3/evidence/H3_MODEL_ACQUISITION_MANIFEST.md
 13. ComfyUIPortable/docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_GENERATION_EVALUATION_REPORT.md
 14. ComfyUIPortable/docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md (historical H0)
+15. ComfyUIPortable/docs/h3/reports/H1A_MINIMUM_VIDEO_SKIN_NATIVE_T2V_REPORT.md
+16. ComfyUIPortable/docs/h3/evidence/h1a/2026-09-08/README.md
+17. ComfyUIPortable/docs/h3/evidence/h1a/2026-09-08/manifest.json
 
 Master Roadmap
 --------------
@@ -88,28 +94,22 @@ remain outside H3 implementation scope. A later, separately authorized namespace
 task created GITHUB_MANGA.txt and converted GITHUB_ComfyUI.txt into a thin router;
 this navigation change does not merge H3 and Manga runtime semantics.
 
-The H3 production directories remain empty implementation shelves. H0.1 adds
-ignored local model/runtime working areas plus tracked evidence records only; it does not add a
-frontend framework, production backend, custom node, model/workflow to the shared
-runtime, schema, or GUI.
+H1A now owns the narrow implementation boundary under `h3/` and
+`workflows/h3/`: a local vanilla UI, a small HTTP adapter server, and the
+materialized Native T2V workflow. H1A keeps the H3 model store isolated and
+does not add a custom node, change ComfyUI core/frontend/shared models, or touch
+the Manga runtime. Generated MP4s and model weights remain ignored.
 
 Current Review Gate
 -------------------
-Groundwork and semantic alignment are PASS, and the bounded Astra UI review is
-complete. The current gate is H0.1 generation evidence review: the first-wave
-official assets are hash-verified in an isolated store; Native, H3 Easy, and
-onigirikiller produced fixed-task local outputs; Antares candidate-native
-generation is blocked by `MiniMaxH3AudioConditioningT8` not being present in the
-intentionally custom-node-free shared backend. Next gate: Web GPT evidence review
-and an explicit H1 ingredient decision. H3 implementation remains blocked until a
-later bounded implementation card releases it.
-
-Do not start H3 implementation until the H0.1 evidence review and a later bounded
-implementation card explicitly release it.
+H1A is implemented and has a Native backend result plus a browser UI result.
+The evidence is ready for Web GPT / Astra H1A review. Owner acceptance, license
+action, and push remain separate. H1B, I2V, REF2VA, Still, Studio, Timeline,
+Storyboard, Cast, 3D, and Manga are not started by this slice.
 
 Publication Note
 ----------------
-The expected GitHub URLs for the files added in this slice are listed in
-docs/h3/README.md and the closeout report. They become reviewable after the
-Owner publishes the relevant closeout commit to main. The historical
-groundwork report remains an initial-state record and is not rewritten.
+The expected GitHub URLs for the H1A files are listed in `docs/h3/README.md` and
+the H1A report. They become reviewable after the Owner publishes the H1A commit
+to main. Historical H0/H0.1 reports remain historical records and are not
+rewritten to claim H1A work.

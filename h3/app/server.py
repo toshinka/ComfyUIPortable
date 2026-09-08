@@ -1,0 +1,632 @@
+"""Small local HTTP server for the H1A Native H3 T2V vertical slice.
+
+The server owns only the local UI/session boundary. ComfyUI remains the source
+of truth for queue execution, history, and generated output. No project DB is
+created and no candidate custom node is loaded.
+"""
+
+from __future__ import annotations
+
+import argparse
+from collections import OrderedDict
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+import json
+import mimetypes
+import os
+from pathlib import Path
+import sys
+import threading
+import time
+from typing import Any, Iterable, Mapping
+from urllib.error import HTTPError, URLError
+from urllib.parse import quote, urlparse
+from urllib.request import Request as UrlRequest
+from urllib.request import urlopen
+from http import HTTPStatus
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+
+PORTABLE_ROOT = Path(__file__).resolve().parents[2]
+if str(PORTABLE_ROOT) not in sys.path:
+    sys.path.insert(0, str(PORTABLE_ROOT))
+
+from h3.adapters.native_t2v import (  # noqa: E402
+    H3Request,
+    RequestValidationError,
+    WorkflowIncompatibleError,
+    compile_workflow,
+    validate_request,
+    workflow_metadata,
+)
+
+
+STATE_LABELS = {
+    "READY": "Ready",
+    "QUEUED": "Queued",
+    "RUNNING": "Running",
+    "COMPLETED": "Completed",
+    "FAILED": "Failed",
+    "CANCELLED": "Cancelled",
+    "DISCONNECTED": "Backend disconnected",
+}
+TERMINAL_STATES = {"COMPLETED", "FAILED", "CANCELLED"}
+VIDEO_SUFFIXES = {".mp4", ".webm", ".mov", ".mkv"}
+
+
+class BackendError(RuntimeError):
+    """A backend request failed or returned an unusable response."""
+
+
+class BackendRejected(BackendError):
+    """ComfyUI rejected a validly shaped request."""
+
+
+class BackendClient:
+    def __init__(self, base_url: str, timeout: float = 8.0):
+        self.base_url = base_url.rstrip("/")
+        self.timeout = timeout
+
+    def _request(
+        self,
+        method: str,
+        path: str,
+        payload: Mapping[str, Any] | None = None,
+        timeout: float | None = None,
+    ) -> Any:
+        body = None
+        headers = {"Accept": "application/json"}
+        if payload is not None:
+            body = json.dumps(payload).encode("utf-8")
+            headers["Content-Type"] = "application/json"
+        request = UrlRequest(
+            f"{self.base_url}{path}",
+            data=body,
+            headers=headers,
+            method=method,
+        )
+        try:
+            with urlopen(request, timeout=timeout or self.timeout) as response:
+                raw = response.read()
+        except HTTPError as exc:
+            try:
+                detail = exc.read().decode("utf-8", errors="replace")[:800]
+            except OSError:
+                detail = ""
+            raise BackendError(
+                f"ComfyUI returned HTTP {exc.code}{(': ' + detail) if detail else ''}."
+            ) from exc
+        except (URLError, TimeoutError, OSError) as exc:
+            raise BackendError("Native backend unavailable.") from exc
+        if not raw:
+            return {}
+        try:
+            return json.loads(raw.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise BackendError("Native backend returned invalid JSON.") from exc
+
+    def status(self) -> dict[str, Any]:
+        stats = self._request("GET", "/system_stats")
+        queue = self._request("GET", "/queue")
+        return parse_backend_status(stats, queue)
+
+    def submit(self, graph: Mapping[str, Any], client_id: str) -> dict[str, Any]:
+        response = self._request(
+            "POST",
+            "/prompt",
+            {"prompt": graph, "client_id": client_id},
+            timeout=20.0,
+        )
+        node_errors = response.get("node_errors") if isinstance(response, dict) else None
+        if node_errors:
+            raise BackendRejected("Workflow rejected by Native ComfyUI.")
+        prompt_id = response.get("prompt_id") if isinstance(response, dict) else None
+        if not isinstance(prompt_id, str) or not prompt_id:
+            raise BackendRejected("Workflow rejected: ComfyUI did not return a prompt id.")
+        return response
+
+    def queue(self) -> dict[str, Any]:
+        return self._request("GET", "/queue")
+
+    def history(self, prompt_id: str) -> dict[str, Any] | None:
+        try:
+            response = self._request("GET", f"/history/{quote(prompt_id, safe='')}")
+        except BackendError as exc:
+            if "HTTP 404" in str(exc):
+                return None
+            raise
+        return response if isinstance(response, dict) else None
+
+    def delete_pending(self, prompt_id: str) -> None:
+        self._request("POST", "/queue", {"delete": [prompt_id]})
+
+    def interrupt(self, prompt_id: str) -> None:
+        self._request("POST", "/interrupt", {"prompt_id": prompt_id})
+
+
+def now_iso() -> str:
+    return datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
+
+
+def _contains_prompt(entries: Iterable[Any], prompt_id: str) -> bool:
+    def walk(value: Any) -> bool:
+        if isinstance(value, str):
+            return value == prompt_id
+        if isinstance(value, Mapping):
+            return any(walk(item) for item in value.values())
+        if isinstance(value, (list, tuple)):
+            return any(walk(item) for item in value)
+        return False
+
+    return any(walk(entry) for entry in entries)
+
+
+def parse_backend_status(stats: Mapping[str, Any], queue: Mapping[str, Any]) -> dict[str, Any]:
+    """Normalize Native ComfyUI system/queue payloads for the local skin."""
+    devices = stats.get("devices") if isinstance(stats, Mapping) else None
+    device = devices[0] if isinstance(devices, list) and devices else {}
+    pending = queue.get("queue_pending") if isinstance(queue, Mapping) else None
+    running = queue.get("queue_running") if isinstance(queue, Mapping) else None
+    pending = pending if isinstance(pending, list) else []
+    running = running if isinstance(running, list) else []
+    return {
+        "state": "READY",
+        "label": STATE_LABELS["READY"],
+        "queue_count": len(pending) + len(running),
+        "running_count": len(running),
+        "vram_total": device.get("vram_total") if isinstance(device, Mapping) else None,
+        "vram_free": device.get("vram_free") if isinstance(device, Mapping) else None,
+        "system_stats": stats,
+    }
+
+
+def map_queue_state(
+    queue: Mapping[str, Any],
+    prompt_id: str,
+    previous_state: str = "QUEUED",
+    cancel_requested: bool = False,
+) -> str:
+    """Map a Native queue snapshot without inventing progress."""
+    pending = queue.get("queue_pending") if isinstance(queue, Mapping) else None
+    running = queue.get("queue_running") if isinstance(queue, Mapping) else None
+    if _contains_prompt(running if isinstance(running, list) else [], prompt_id):
+        return "RUNNING"
+    if _contains_prompt(pending if isinstance(pending, list) else [], prompt_id):
+        return "QUEUED"
+    if cancel_requested:
+        return "CANCELLED"
+    return previous_state if previous_state in {"QUEUED", "RUNNING"} else "QUEUED"
+
+
+def map_history_state(history_entry: Any, cancel_requested: bool = False) -> str:
+    """Map a Native history status to the H1A state vocabulary."""
+    if not isinstance(history_entry, Mapping):
+        return "FAILED"
+    status = history_entry.get("status")
+    status_str = status.get("status_str") if isinstance(status, Mapping) else None
+    if cancel_requested and status_str in {"error", "failed"}:
+        return "CANCELLED"
+    if status_str in {"error", "failed"}:
+        return "FAILED"
+    if isinstance(status, Mapping) and status.get("completed"):
+        return "COMPLETED"
+    return "RUNNING"
+
+
+def _iter_media(value: Any) -> Iterable[dict[str, Any]]:
+    if isinstance(value, Mapping):
+        filename = value.get("filename")
+        if isinstance(filename, str) and Path(filename).suffix.lower() in VIDEO_SUFFIXES:
+            yield dict(value)
+        for child in value.values():
+            yield from _iter_media(child)
+    elif isinstance(value, (list, tuple)):
+        for child in value:
+            yield from _iter_media(child)
+
+
+def _error_text(history_entry: Mapping[str, Any]) -> str:
+    status = history_entry.get("status")
+    if isinstance(status, Mapping):
+        messages = status.get("messages")
+        if messages:
+            text = json.dumps(messages, ensure_ascii=False)
+            return text[:1200]
+        status_str = status.get("status_str")
+        if status_str:
+            return str(status_str)
+    return "Native ComfyUI job failed."
+
+
+@dataclass
+class Job:
+    job_id: str
+    request: H3Request
+    created_at: str
+    created_epoch: float
+    prompt_id: str | None = None
+    state: str = "QUEUED"
+    error: str | None = None
+    backend_error: str | None = None
+    cancel_requested: bool = False
+    completed_at: str | None = None
+    completed_epoch: float | None = None
+    output: dict[str, Any] | None = None
+    media_path: Path | None = None
+
+    def elapsed_seconds(self) -> float:
+        end = self.completed_epoch or time.time()
+        return round(max(0.0, end - self.created_epoch), 2)
+
+    def public(self) -> dict[str, Any]:
+        video_url = f"/api/jobs/{quote(self.job_id, safe='')}/video" if self.media_path else None
+        return {
+            "job_id": self.job_id,
+            "prompt_id": self.prompt_id,
+            "state": self.state,
+            "label": STATE_LABELS.get(self.state, self.state),
+            "request": self.request.public(),
+            "created_at": self.created_at,
+            "completed_at": self.completed_at,
+            "elapsed_seconds": self.elapsed_seconds(),
+            "error": self.error or self.backend_error,
+            "progress": None,
+            "output": self.output,
+            "video_url": video_url,
+            "thumbnail_url": video_url,
+            "cancel_available": self.state in {"QUEUED", "RUNNING"},
+        }
+
+
+class H1ASession:
+    def __init__(self, backend_url: str, output_root: Path):
+        self.backend = BackendClient(backend_url)
+        self.output_root = output_root.resolve()
+        self.client_id = f"tegaki-h1a-{os.getpid()}-{uuid_token()}"
+        self.jobs: OrderedDict[str, Job] = OrderedDict()
+        self.lock = threading.RLock()
+
+    def submit(self, payload: Mapping[str, Any]) -> Job:
+        request = validate_request(payload)
+        graph = compile_workflow(request)
+        job_id = uuid_token()
+        job = Job(job_id, request, now_iso(), time.time())
+        with self.lock:
+            self.jobs[job_id] = job
+        try:
+            response = self.backend.submit(graph, self.client_id)
+        except Exception:
+            with self.lock:
+                self.jobs.pop(job_id, None)
+            raise
+        with self.lock:
+            job.prompt_id = response["prompt_id"]
+            job.state = "QUEUED"
+        return job
+
+    def get_job(self, job_id: str) -> Job | None:
+        with self.lock:
+            return self.jobs.get(job_id)
+
+    def refresh_job(self, job: Job) -> Job:
+        if job.prompt_id is None or job.state in TERMINAL_STATES:
+            return job
+        try:
+            history = self.backend.history(job.prompt_id)
+            if history and job.prompt_id in history:
+                self._apply_history(job, history[job.prompt_id])
+                return job
+            queue = self.backend.queue()
+            job.state = map_queue_state(
+                queue,
+                job.prompt_id,
+                previous_state=job.state,
+                cancel_requested=job.cancel_requested,
+            )
+            if job.state == "CANCELLED":
+                job.completed_at = job.completed_at or now_iso()
+                job.completed_epoch = job.completed_epoch or time.time()
+            job.backend_error = None
+        except BackendError as exc:
+            job.backend_error = str(exc)
+            job.state = "DISCONNECTED"
+        return job
+
+    def _apply_history(self, job: Job, entry: Any) -> None:
+        if not isinstance(entry, Mapping):
+            job.state = "FAILED"
+            job.error = "Native ComfyUI returned malformed history."
+        else:
+            job.state = map_history_state(entry, cancel_requested=job.cancel_requested)
+            if job.state == "CANCELLED":
+                job.error = "Cancelled by user."
+            elif job.state == "FAILED":
+                job.error = _error_text(entry)
+            elif job.state == "COMPLETED":
+                media = next(_iter_media(entry.get("outputs")), None)
+                if media is None:
+                    job.state = "FAILED"
+                    job.error = "Job completed without a video output."
+                else:
+                    path = self._safe_media_path(media)
+                    if path is None or not path.is_file():
+                        job.state = "FAILED"
+                        job.error = "Job completed but the video output is unavailable."
+                    else:
+                        job.state = "COMPLETED"
+                        job.output = media
+                        job.media_path = path
+        if job.state in TERMINAL_STATES:
+            job.completed_at = job.completed_at or now_iso()
+            job.completed_epoch = job.completed_epoch or time.time()
+
+    def _safe_media_path(self, media: Mapping[str, Any]) -> Path | None:
+        filename = media.get("filename")
+        subfolder = media.get("subfolder") or ""
+        if not isinstance(filename, str) or not isinstance(subfolder, str):
+            return None
+        candidate = (self.output_root / subfolder / filename).resolve()
+        try:
+            candidate.relative_to(self.output_root)
+        except ValueError:
+            return None
+        return candidate
+
+    def cancel(self, job: Job) -> Job:
+        if job.state not in {"QUEUED", "RUNNING", "DISCONNECTED"}:
+            return job
+        job.cancel_requested = True
+        try:
+            if not job.prompt_id:
+                raise BackendError("Cancel was not dispatched safely: prompt id is missing.")
+            queue = self.backend.queue()
+            pending = queue.get("queue_pending") or []
+            running = queue.get("queue_running") or []
+            if _contains_prompt(pending, job.prompt_id):
+                self.backend.delete_pending(job.prompt_id)
+            elif _contains_prompt(running, job.prompt_id):
+                self.backend.interrupt(job.prompt_id)
+            else:
+                # Never fall back to global /interrupt: another job may have
+                # taken the worker between snapshots.
+                self.refresh_job(job)
+                if job.state in TERMINAL_STATES:
+                    return job
+                raise BackendError("Cancel was not dispatched safely: job is no longer visible in the Native queue.")
+            job.state = "CANCELLED"
+            job.completed_at = now_iso()
+            job.completed_epoch = time.time()
+            job.error = "Cancelled by user."
+        except BackendError as exc:
+            job.backend_error = str(exc)
+            job.state = "DISCONNECTED"
+        return job
+
+    def history(self) -> list[dict[str, Any]]:
+        with self.lock:
+            jobs = list(self.jobs.values())
+        for job in jobs:
+            self.refresh_job(job)
+        return [job.public() for job in reversed(jobs) if job.state in TERMINAL_STATES]
+
+
+def uuid_token() -> str:
+    import uuid
+
+    return uuid.uuid4().hex
+
+
+def json_bytes(value: Any) -> bytes:
+    return json.dumps(value, ensure_ascii=False).encode("utf-8")
+
+
+class H1AHandler(BaseHTTPRequestHandler):
+    server: "H1AServer"
+
+    def log_message(self, format: str, *args: Any) -> None:
+        print(f"[h1a] {self.address_string()} - {format % args}", flush=True)
+
+    def _send_json(self, status: int, value: Any) -> None:
+        body = json_bytes(value)
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _read_json(self) -> dict[str, Any]:
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError as exc:
+            raise RequestValidationError("Invalid request body length.") from exc
+        if length > 128 * 1024:
+            raise RequestValidationError("Request body is too large.")
+        raw = self.rfile.read(length)
+        try:
+            value = json.loads(raw.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise RequestValidationError("Request body must be valid JSON.") from exc
+        if not isinstance(value, dict):
+            raise RequestValidationError("Request body must be a JSON object.")
+        return value
+
+    def do_GET(self) -> None:  # noqa: N802
+        path = urlparse(self.path).path
+        if path == "/api/config":
+            self._send_json(
+                HTTPStatus.OK,
+                {
+                    "resolution_options": [{"label": "608 x 352", "width": 608, "height": 352}],
+                    "duration_options": [{"label": "5 seconds", "value": 5}],
+                    "default_steps": 20,
+                    "workflow": workflow_metadata(),
+                },
+            )
+            return
+        if path == "/api/status":
+            try:
+                self._send_json(HTTPStatus.OK, self.server.session.backend.status())
+            except BackendError as exc:
+                self._send_json(
+                    HTTPStatus.OK,
+                    {
+                        "state": "DISCONNECTED",
+                        "label": STATE_LABELS["DISCONNECTED"],
+                        "queue_count": 0,
+                        "running_count": 0,
+                        "error": str(exc),
+                    },
+                )
+            return
+        if path == "/api/history":
+            self._send_json(HTTPStatus.OK, {"entries": self.server.session.history()})
+            return
+        if path.startswith("/api/jobs/"):
+            segments = [segment for segment in path.split("/") if segment]
+            if len(segments) == 4 and segments[-1] == "video":
+                self._serve_job_video(segments[2])
+                return
+            if len(segments) == 3:
+                self._serve_job(segments[2])
+                return
+        if path == "/" or path == "/index.html":
+            self._serve_static("index.html")
+            return
+        if path.startswith("/static/"):
+            self._serve_static(path.removeprefix("/static/"))
+            return
+        self._send_json(HTTPStatus.NOT_FOUND, {"error": "Not found"})
+
+    def _serve_job(self, job_id: str) -> None:
+        job = self.server.session.get_job(job_id)
+        if job is None:
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Job not found"})
+            return
+        self.server.session.refresh_job(job)
+        self._send_json(HTTPStatus.OK, job.public())
+
+    def _serve_job_video(self, job_id: str) -> None:
+        job = self.server.session.get_job(job_id)
+        if job is None:
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Job not found"})
+            return
+        self.server.session.refresh_job(job)
+        if job.media_path is None or not job.media_path.is_file():
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Video is not available"})
+            return
+        try:
+            body = job.media_path.read_bytes()
+        except OSError:
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Video is not available"})
+            return
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", mimetypes.guess_type(job.media_path.name)[0] or "video/mp4")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _serve_static(self, relative_path: str) -> None:
+        static_root = (Path(__file__).resolve().parent / "static").resolve()
+        candidate = (static_root / relative_path).resolve()
+        try:
+            candidate.relative_to(static_root)
+        except ValueError:
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Not found"})
+            return
+        if not candidate.is_file():
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Not found"})
+            return
+        try:
+            body = candidate.read_bytes()
+        except OSError:
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Not found"})
+            return
+        self.send_response(HTTPStatus.OK)
+        content_type = mimetypes.guess_type(candidate.name)[0] or "application/octet-stream"
+        if content_type.startswith("text/") or content_type == "application/javascript":
+            content_type += "; charset=utf-8"
+        self.send_header("Content-Type", content_type)
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_POST(self) -> None:  # noqa: N802
+        path = urlparse(self.path).path
+        try:
+            if path == "/api/generate":
+                payload = self._read_json()
+                job = self.server.session.submit(payload)
+                self._send_json(HTTPStatus.ACCEPTED, {"job": job.public()})
+                return
+            if path.startswith("/api/jobs/") and path.endswith("/cancel"):
+                segments = [segment for segment in path.split("/") if segment]
+                if len(segments) == 4:
+                    job = self.server.session.get_job(segments[2])
+                    if job is None:
+                        self._send_json(HTTPStatus.NOT_FOUND, {"error": "Job not found"})
+                        return
+                    self.server.session.cancel(job)
+                    self._send_json(HTTPStatus.OK, {"job": job.public()})
+                    return
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Not found"})
+        except RequestValidationError as exc:
+            self._send_json(HTTPStatus.BAD_REQUEST, {"error": str(exc), "kind": "validation"})
+        except WorkflowIncompatibleError as exc:
+            self._send_json(
+                HTTPStatus.CONFLICT,
+                {"error": str(exc), "kind": "workflow_incompatible"},
+            )
+        except BackendRejected as exc:
+            self._send_json(HTTPStatus.BAD_GATEWAY, {"error": str(exc), "kind": "workflow_rejected"})
+        except BackendError as exc:
+            self._send_json(
+                HTTPStatus.SERVICE_UNAVAILABLE,
+                {"error": str(exc), "kind": "backend_unavailable"},
+            )
+        except Exception as exc:  # Keep local UI errors readable without exposing a traceback.
+            print(f"[h1a] internal error: {exc!r}", flush=True)
+            self._send_json(HTTPStatus.INTERNAL_SERVER_ERROR, {"error": "H1A server error."})
+
+
+class H1AServer(ThreadingHTTPServer):
+    daemon_threads = True
+    allow_reuse_address = True
+
+    def __init__(self, address: tuple[str, int], session: H1ASession):
+        super().__init__(address, H1AHandler)
+        self.session = session
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="TEGAKI H3 H1A local video skin")
+    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=8190)
+    parser.add_argument("--comfy-url", default="http://127.0.0.1:8188")
+    parser.add_argument("--output-dir", default="output/h3")
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    output_root = (PORTABLE_ROOT / args.output_dir).resolve()
+    output_root.mkdir(parents=True, exist_ok=True)
+    session = H1ASession(args.comfy_url, output_root)
+    server = H1AServer((args.host, args.port), session)
+    print(
+        f"TEGAKI H3 H1A UI listening on http://{args.host}:{args.port}/ "
+        f"(Native backend: {args.comfy_url})",
+        flush=True,
+    )
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+
+
+if __name__ == "__main__":
+    main()
