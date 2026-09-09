@@ -1,0 +1,57 @@
+{
+  "card": "M3B-LR2",
+  "date": "2026-09-10 JST",
+  "execution_baseline": {
+    "card_baseline": "1db61c19c076d8f66f18492f30157c53f6dac92f",
+    "final_head": "e65e484a59d2b50610a3b6a20ee79d40a95f7079",
+    "origin_main": "e65e484a59d2b50610a3b6a20ee79d40a95f7079",
+    "remote_drift": "H3-only commits after the Manga baseline; no Manga-file conflict"
+  },
+  "stage_0_publication_truth": "PASS",
+  "technical_ab": "BLOCKED",
+  "control_model": "CN-anytest4_illustrious2_A.safetensors (historical reference only; absent locally)",
+  "control_model_sha256": null,
+  "control_model_size_bytes": null,
+  "compatibility_basis": "No local model bytes; compatibility cannot be established without download or filename-only inference",
+  "candidates_found": [
+    {
+      "model": "CN-anytest4_illustrious2_A.safetensors",
+      "local_path": null,
+      "source_evidence": [
+        "workflows/manga/Archive/66_VERIFY_POSE_GUIDE_ONLY_INWARD.json",
+        "workflows/manga/Archive/67_VERIFY_HANDSHAKE_CANONICAL_PAIR_AND_FEATHER.json",
+        "workflows/manga/Archive/68_VERIFY_MAINLINE_SUBSCENE_CONFLICT_FRIENDSHIP.json",
+        "workflows/manga/Archive/69_VERIFY_MAINLINE_SUBSCENE_GEOMETRY_SWAP.json",
+        "workflows/manga/Archive/70_VERIFY_4PANEL_MIXED_SIMPLE_COMPLEX_PAGE.json",
+        "workflows/manga/Archive/71_VERIFY_EXTERNAL_REGIONAL_BACKEND_PARITY.json",
+        "docs/manga/reports/PHASE3I_CONTROLNET_LAYOUT_ASSIST_REPORT.md"
+      ],
+      "local_presence": "ABSENT",
+      "selectable": false
+    }
+  ],
+  "installed_controlnet_nodes": [
+    "ComfyUI built-in ControlNetLoader",
+    "ComfyUI built-in DiffControlNetLoader",
+    "ComfyUI built-in ControlNetApplyAdvanced",
+    "Advanced-ControlNet ACN_ControlNetLoaderAdvanced",
+    "Advanced-ControlNet ACN_DiffControlNetLoaderAdvanced",
+    "Advanced-ControlNet ACN_AdvancedControlNetApply_v2"
+  ],
+  "stage_1_control_inventory": "BLOCKED",
+  "stop_reason": "CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED",
+  "stage_2_ab_workflow": "NOT_RUN",
+  "seeds": [],
+  "strengths": [],
+  "technical_causality": "NOT_RUN",
+  "guide_placement_trend": "NOT_RUN",
+  "image_quality": "NOT_RUN",
+  "seed_variation": "NOT_RUN",
+  "canonical_regression": "NOT_RUN",
+  "lr1_regression": "NOT_RUN",
+  "generation_influence": "BLOCKED",
+  "production_integration": "NOT_PERFORMED",
+  "stopped_early": true,
+  "final_owner_product_review": "DEFERRED",
+  "publication": "LOCAL"
+}

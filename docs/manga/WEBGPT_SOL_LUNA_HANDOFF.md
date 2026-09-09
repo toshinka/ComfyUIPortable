@@ -20,13 +20,11 @@ Repository: `https://github.com/toshinka/tegaki`
 - M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`
 - M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`
 - Manga namespace/card migration publication: `ef7daa502f501211cd6b06f378e9024dbff6f284`
-- Latest SOL-verified public commit: `3be0ecb027c633a90aecd46b79f32ae47b5aab66`
-- M3A1-OA1 publication: PUBLISHED; SOL public-URL review: PASS.
+- Latest SOL-verified public commit: `1db61c19c076d8f66f18492f30157c53f6dac92f`
+- M3B-LR1 publication: PUBLISHED; SOL public-URL review: PASS.
 - Web GPT SOL public-URL review: PASS
-- Latest published Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3A1_OA1_OWNER_ACCEPTANCE_GATE_AND_REVIEW_TARGET_CLOSURE.md
-- Latest published report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3A1_OA1_OWNER_ACCEPTANCE_GATE_REPORT.md
-- Latest completed local Card (publication pending): https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_BATCH.md
-- Latest completed local report (publication pending): https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_REPORT.md
+- Latest published Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_BATCH.md
+- Latest published report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_REPORT.md
 
 repository HEADにはTegaki本体やH3の別作業も進むため、最新HEADをManga実装SHAと読み替えないこと。
 
@@ -48,9 +46,11 @@ Primary flowはScene-firstである。CAST、人物粗領域、ラフ人物/白�
 - M3A1-BC1 technical closure: B0-B9 PASS; routed to completed。
 - M3A1-OA1 gate: CLOSED; M3B eligibility OPEN。
 - Web GPT SOL public-URL review: PASS。
-- Latest completed operation: M3B-LR1 Rough Guide Foundation Long-Run Batch。
+- Latest completed operation: M3B-LR2 Rough Guide Generation Influence A/B Long-Run — BLOCKED at local ControlNet inventory。
+- M3B-LR2 stop reason: `CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED`。
 - Active LUNA Card: NONE。Next Card is not issued automatically。
-- M3B generation influence: NOT IMPLEMENTED。ControlNet: NOT ADDED。
+- M3B-LR1 generation influence: NOT IMPLEMENTED。M3B-LR2 generation influence: BLOCKED。
+- ControlNet production integration: NOT PERFORMED。
 - production output namespace移行: 未実施。`output/Tegaki`を維持する。
 
 証拠の注意:

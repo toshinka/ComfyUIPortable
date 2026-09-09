@@ -3,9 +3,10 @@
 Current and historical Manga reports are collected in this directory.
 
 Historical implementation report: [M3A.1 Frame Runtime Truth](M3A1_FRAME_RUNTIME_TRUTH_AND_BROWSER_CLOSURE_REPORT.md).
-Latest completed local operational report (publication pending): [M3B-LR1 Rough Guide Foundation Long-Run Batch Report](M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_REPORT.md).
-Latest published operational report: [M3A1-OA1 Owner Acceptance Gate Report](M3A1_OA1_OWNER_ACCEPTANCE_GATE_REPORT.md).
+Latest published operational report: [M3B-LR1 Rough Guide Foundation Long-Run Batch Report](M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_REPORT.md).
 M3A1-OA1 Owner Acceptance Gate Report remains the preceding milestone gate report.
+Latest completed local operational report (publication pending): [M3B-LR2 Rough Guide Generation Influence A/B Report](M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_REPORT.md).
+M3B-LR2 stopped before A/B generation because local ControlNet compatibility was not established.
 TF2.1 publication-truth report remains historical at [M3A1-TF2.1 Post-Push Publication Truth Closure Report](M3A1_TF2_1_POST_PUSH_PUBLICATION_TRUTH_CLOSURE_REPORT.md).
 
 Namespace work is recorded in

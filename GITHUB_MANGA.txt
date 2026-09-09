@@ -1,5 +1,5 @@
 ComfyUIPortable — Manga Authoring External AI Entry (canonical)
-Updated: 2026-09-09 JST
+Updated: 2026-09-10 JST
 Repository: https://github.com/toshinka/tegaki
 Branch: main
 Canonical path: ComfyUIPortable/GITHUB_MANGA.txt
@@ -18,24 +18,26 @@ Current state
 Minimum-Hand / Scene-first Manga Authoring.
 M0 through M2B.2 are complete. M3A.1 technical milestone acceptance is
 ACCEPTED_BY_DELEGATED_SOL from regression, runtime, Browser, and visual evidence.
-Final Owner product review is DEFERRED. M3B-LR1 is completed for its bounded
-foundation slice; Active Card is NONE. Web GPT SOL now leads Card design; a fresh
-local LUNA chat implements one published Card at a time when a next Card is issued.
+Final Owner product review is DEFERRED. M3B-LR1 is published and completed for its
+bounded foundation slice. M3B-LR2 completed as a bounded inventory stop because
+local ControlNet compatibility was not established. Active Card is NONE.
+Web GPT SOL leads Card design; a fresh local LUNA chat implements one published
+Card at a time.
 
 Latest completed operational work:
-M3B-LR1 — Rough Guide Foundation Long-Run Batch.
-This executes the bounded Rough Guide foundation stages without connecting Guide
-data to generation conditioning.
+M3B-LR2 — Rough Guide Generation Influence A/B Long-Run.
+Stopped at the local ControlNet inventory gate:
+CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED.
 
 Latest published operational work:
-M3A1-OA1 — Owner Acceptance Gate & Review Target Closure.
+M3B-LR1 — Rough Guide Foundation Long-Run Batch.
 Publication: PUBLISHED
-SOL public-URL review: PASS
+SOL review: PASS
 
 Latest operational handoff
 --------------------------
 Latest SOL-verified public commit:
-3be0ecb027c633a90aecd46b79f32ae47b5aab66
+1db61c19c076d8f66f18492f30157c53f6dac92f
 
 M3A.1 Core Implementation SHA:
 a7f0baaa89a2e315b0492573c9da19e50727928b
@@ -43,20 +45,14 @@ a7f0baaa89a2e315b0492573c9da19e50727928b
 M3A.1 Current Closure Review Target:
 ad91c9277715e998663e8c12b6c37cca16e53955
 
-Latest completed local Card (publication pending):
+Latest published Card:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_BATCH.md
 
-Latest completed local report (publication pending):
+Latest published report:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_REPORT.md
 
-Latest published Card:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3A1_OA1_OWNER_ACCEPTANCE_GATE_AND_REVIEW_TARGET_CLOSURE.md
-
-Latest published report:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3A1_OA1_OWNER_ACCEPTANCE_GATE_REPORT.md
-
 Latest published manifest:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3a1_browser/M3A1_BROWSER_CLOSURE_MANIFEST.json
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_lr1/M3B_LR1_MANIFEST.json
 
 Browser technical verification:
 PASS
@@ -64,10 +60,10 @@ PASS
 Visual evidence:
 PASS
 
-M3A1-OA1 publication:
+M3B-LR1 publication:
 PUBLISHED
 
-M3A1-OA1 SOL public-URL review:
+M3B-LR1 SOL public-URL review:
 PASS
 
 M3A.1 gate:
@@ -77,11 +73,14 @@ M3A.1 milestone acceptance:
 ACCEPTED_BY_DELEGATED_SOL
 Final Owner product review:
 DEFERRED
-M3B-LR1: COMPLETED
+M3B-LR1: PUBLISHED / COMPLETED
+M3B-LR1 generation influence: NOT IMPLEMENTED
+M3B-LR2: COMPLETED / BLOCKED
+M3B-LR2 generation influence: BLOCKED
 Active Card: NONE
 
 Next:
-No next Card is issued automatically. SOL reviews the completed LR1 evidence if further work is required.
+No next Card is issued automatically. SOL reviews the LR2 blocked inventory evidence.
 
 Completed review slice:
 M3B-LR1 — Rough Guide Foundation Long-Run Batch.

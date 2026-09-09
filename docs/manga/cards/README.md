@@ -1,6 +1,6 @@
 # Manga Execution Card Router
 
-更新: 2026-09-09 JST
+更新: 2026-09-10 JST
 
 このdirectoryはManga Authoringの実行Cardだけを扱う。戦略正本は
 [`ASTRA_MANGA_AUTHORING_MASTER_PLAN.md`](../plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md)、
@@ -10,15 +10,17 @@
 
 M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`.
 M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`.
-Latest SOL-verified public commit: `3be0ecb027c633a90aecd46b79f32ae47b5aab66`.
+Latest SOL-verified public commit: `1db61c19c076d8f66f18492f30157c53f6dac92f`.
 Latest published Card:
-[M3A1-OA1 — Owner Acceptance Gate & Review Target Closure](completed/M3A1_OA1_OWNER_ACCEPTANCE_GATE_AND_REVIEW_TARGET_CLOSURE.md)
-M3A1-OA1 publication: PUBLISHED; SOL public-URL review: PASS.
-Latest completed Card:
 [M3B-LR1 — Rough Guide Foundation Long-Run Batch](completed/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_BATCH.md)
-Stages 0-6: PASS; M3A.1 milestone acceptance: ACCEPTED_BY_DELEGATED_SOL; Final Owner product review: DEFERRED; Active Card: NONE.
+M3B-LR1 publication: PUBLISHED; SOL public-URL review: PASS.
+Latest completed Card:
+[M3B-LR2 — Rough Guide Generation Influence A/B Long-Run](completed/M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_LONG_RUN.md)
+Stage 1 inventory stop: BLOCKED (`CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED`); M3A.1 milestone acceptance: ACCEPTED_BY_DELEGATED_SOL; Final Owner product review: DEFERRED; Active Card: NONE.
 
-M3B-LR1 is closed for its bounded foundation slice. No next Card is issued automatically.
+M3B-LR1 is closed for its bounded foundation slice and remains the latest
+published Manga Card. M3B-LR2 is closed as a valid bounded inventory stop. No
+next Card is issued automatically.
 When work resumes, SOL audits [`WEBGPT_SOL_LUNA_HANDOFF.md`](../WEBGPT_SOL_LUNA_HANDOFF.md)
 and issues exactly one new limited Card in [`current/`](current/README.md). Do not copy a
 completed Card as a new instruction.
@@ -47,6 +49,7 @@ completed Card as a new instruction.
 | M3A1-BC1 | [`M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE.md`](completed/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE.md) |
 | M3A1-OA1 | [`M3A1_OA1_OWNER_ACCEPTANCE_GATE_AND_REVIEW_TARGET_CLOSURE.md`](completed/M3A1_OA1_OWNER_ACCEPTANCE_GATE_AND_REVIEW_TARGET_CLOSURE.md) |
 | M3B-LR1 | [`M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_BATCH.md`](completed/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_BATCH.md) |
+| M3B-LR2 | [`M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_LONG_RUN.md`](completed/M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_LONG_RUN.md) |
 
 ## Naming rule
 

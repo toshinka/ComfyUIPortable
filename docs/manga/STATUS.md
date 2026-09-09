@@ -1,16 +1,16 @@
 # ComfyUIPortable 現在地 (Status & Direction)
 
-更新: 2026-09-09 JST
+更新: 2026-09-10 JST
 M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`
 M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`
 Manga正本入口: [GITHUB_MANGA.txt](../../GITHUB_MANGA.txt)
-Latest SOL-verified public commit: `3be0ecb027c633a90aecd46b79f32ae47b5aab66`
-Latest published Card: [M3A1-OA1 — Owner Acceptance Gate & Review Target Closure](cards/completed/M3A1_OA1_OWNER_ACCEPTANCE_GATE_AND_REVIEW_TARGET_CLOSURE.md)
-Latest published report: [M3A1-OA1 Owner Acceptance Gate Report](reports/M3A1_OA1_OWNER_ACCEPTANCE_GATE_REPORT.md)
-M3A1-OA1 publication: PUBLISHED; SOL public-URL review: PASS
-Latest completed Card: [M3B-LR1 — Rough Guide Foundation Long-Run Batch](cards/completed/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_BATCH.md)
-Latest completed report: [M3B-LR1 Rough Guide Foundation Long-Run Batch Report](reports/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_REPORT.md)
-Regression: PASS / Runtime: PASS / Browser: PASS / Visual evidence: PASS / M3B-LR1: COMPLETED / M3A.1 milestone acceptance: ACCEPTED_BY_DELEGATED_SOL / Final Owner product review: DEFERRED / Active Card: NONE.
+Latest SOL-verified public commit: `1db61c19c076d8f66f18492f30157c53f6dac92f`
+Latest published Card: [M3B-LR1 — Rough Guide Foundation Long-Run Batch](cards/completed/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_BATCH.md)
+Latest published report: [M3B-LR1 Rough Guide Foundation Long-Run Batch Report](reports/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_REPORT.md)
+M3B-LR1 publication: PUBLISHED; SOL public-URL review: PASS
+Latest completed Card: [M3B-LR2 — Rough Guide Generation Influence A/B Long-Run](cards/completed/M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_LONG_RUN.md)
+Latest completed report: [M3B-LR2 Rough Guide Generation Influence A/B Report](reports/M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_REPORT.md)
+Regression: PASS / Runtime: PASS / Browser: PASS / Visual evidence: PASS / M3B-LR1: COMPLETED / M3B-LR1 generation influence: NOT IMPLEMENTED / M3B-LR2: COMPLETED / M3B-LR2 classification: BLOCKED / M3A.1 milestone acceptance: ACCEPTED_BY_DELEGATED_SOL / Final Owner product review: DEFERRED / Active Card: NONE.
 
 `GITHUB_ComfyUI.txt` はManga/H3を振り分けるCompatibility Routerへ変更した。
 今回のnamespace整理は文書/navigationのみで、Manga runtime・workflow・schema・outputを変更していない。
@@ -140,7 +140,11 @@ Scene-only Draft (M1) → CAST 複数出演 (M2) → Rough Guide (M3) → UX She
   - **LR1報告書**: [M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_REPORT.md](reports/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_REPORT.md)
   - **LR1 manifest**: [M3B_LR1_MANIFEST.json](verification/m3b_lr1/M3B_LR1_MANIFEST.json)
 
-- **次Card候補**: LR1完了後にWeb GPT SOLが公開SHAとevidenceをreviewして発行。LUNAは自動進行しない。
+- **完了Review Slice**: [M3B-LR2 — Rough Guide Generation Influence A/B Long-Run](cards/completed/M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_LONG_RUN.md)。Stage 1 inventory stop / BLOCKED。
+  - **Stop reason**: `CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED`
+  - **Report**: [M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_REPORT.md](reports/M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_REPORT.md)
+  - **Manifest**: [M3B_LR2_MANIFEST.json](verification/m3b_lr2/M3B_LR2_MANIFEST.json)
+- Active Card: NONE。次Cardは自動発行しない。
 
 
 ---
