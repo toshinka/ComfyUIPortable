@@ -5,7 +5,7 @@
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
 将来の実装棚とReference Implementation evidenceを一か所から辿るための
 document hub です。現在は **H1B.1 / Start + End Frame and Native FL2VA
-vertical slice + UX P0 Fix** であり、H0/H0.1/H1A/H1B の model isolation、generation
+vertical slice + UX P0/P1 Fixes** であり、H0/H0.1/H1A/H1B の model isolation、generation
 smoke、T2V skin、single-Start-Frame I2V は履歴と回帰対象として保持します。
 H1A implementation commit `925596b9d7fbd731290fe9869ea34a0006249130` is
 published on `main`. H1B, H1B.1, and the H1B.1 UX P0 fix are implemented and
@@ -45,6 +45,8 @@ pending.
 | `docs/h3/evidence/h1b1/2026-09-09/manifest.json` | Machine-readable H1B.1 runtime/output manifest | CURRENT H1B.1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1b1/2026-09-09/manifest.json` |
 | `docs/h3/reports/H1B1_UX_INTEGRITY_P0_FIX_REPORT.md` | H1B.1 Astra P0-A/P0-B UX integrity fix, verification, and deferred findings | CURRENT H1B.1 UX P0 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H1B1_UX_INTEGRITY_P0_FIX_REPORT.md` |
 | `docs/h3/evidence/h1b1-ux/2026-09-09/README.md` | H1B.1 UX P0 browser/static evidence and one bounded Native completion | CURRENT H1B.1 UX P0 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1b1-ux/2026-09-09/README.md` |
+| `docs/h3/reports/H1B1_UX_P1_PRIMARY_ACTION_VISIBILITY_REPORT.md` | H1B.1 primary Generate visibility, compactness, measurement, and deferred findings | CURRENT H1B.1 UX P1 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H1B1_UX_P1_PRIMARY_ACTION_VISIBILITY_REPORT.md` |
+| `docs/h3/evidence/h1b1-ux-p1/2026-09-09/README.md` | H1B.1 P1 layout measurements and Browser evidence | CURRENT H1B.1 UX P1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1b1-ux-p1/2026-09-09/README.md` |
 
 ## External master roadmap
 
@@ -122,6 +124,9 @@ implementation follows from that result automatically.
 - [H1B1_UX_INTEGRITY_P0_FIX_REPORT.md](reports/H1B1_UX_INTEGRITY_P0_FIX_REPORT.md)
   — H1B.1 Reference visibility and Active Job/History Preview integrity fix,
   bounded browser evidence, and deferred Astra findings.
+- [H1B1_UX_P1_PRIMARY_ACTION_VISIBILITY_REPORT.md](reports/H1B1_UX_P1_PRIMARY_ACTION_VISIBILITY_REPORT.md)
+  — H1B.1 primary Generate visibility, control-column compaction, measurements,
+  and P0 regression boundary.
 
 ## Evidence
 
@@ -144,6 +149,8 @@ implementation follows from that result automatically.
 - [H1B.1 UX P0 evidence](evidence/h1b1-ux/2026-09-09/) — empty Reference
   visibility, Active Job/Preview separation, one bounded browser completion,
   and explicit limits of the live History-during-Running replay.
+- [H1B.1 UX P1 evidence](evidence/h1b1-ux-p1/2026-09-09/) — initial viewport
+  layout measurements and live Generate visibility evidence without generation.
 - Production H3 output is isolated at `output/h3/video/`, with `debug/` and `tests/`
   alongside it. Existing `output/` content and Manga output are outside this slice.
 
@@ -196,7 +203,9 @@ Manga, or a persistent project schema from these paths.
     End-only, and text-only browser paths separately from Native media evidence.
 11. Read the H1B.1 UX P0 report and dated evidence; verify Reference hidden
     semantics and the separate Active Job/History Preview authorities.
-12. Stop at the Web GPT / Astra H1B.1 review gate; do not infer Owner
+12. Read the H1B.1 UX P1 report and dated evidence; verify the 1280 x 720
+    primary-action measurement and that Advanced remains optional.
+13. Stop at the Web GPT / Astra H1B.1 review gate; do not infer Owner
     acceptance, REF2VA, Still, Continuation, Studio, or production deployment
     from a local generation result.
 

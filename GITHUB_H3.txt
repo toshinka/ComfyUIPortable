@@ -29,6 +29,7 @@ H1B.1 End-only Native support: VERIFIED LOCAL GENERATION / VERIFIED BROWSER UI G
 H1B.1 T2V regression: VERIFIED BROWSER UI GENERATION
 H1B.1 evidence: CURRENT REVIEW EVIDENCE
 H1B.1 UX P0 fix: IMPLEMENTED / VERIFIED SOURCE AND BOUNDED BROWSER UI
+H1B.1 UX P1 primary-action visibility: IMPLEMENTED / VERIFIED
 Owner acceptance: PENDING
 
 This entry is the starting point for external AI review of MiniMax H3 work. It
@@ -61,6 +62,8 @@ Read Order
 23. ComfyUIPortable/docs/h3/evidence/h1b1/2026-09-09/manifest.json
 24. ComfyUIPortable/docs/h3/reports/H1B1_UX_INTEGRITY_P0_FIX_REPORT.md
 25. ComfyUIPortable/docs/h3/evidence/h1b1-ux/2026-09-09/README.md
+26. ComfyUIPortable/docs/h3/reports/H1B1_UX_P1_PRIMARY_ACTION_VISIBILITY_REPORT.md
+27. ComfyUIPortable/docs/h3/evidence/h1b1-ux-p1/2026-09-09/README.md
 
 Master Roadmap
 --------------
@@ -126,19 +129,21 @@ uploaded runtime inputs, and model weights remain ignored.
 
 Current Review Gate
 -------------------
-H1B.1 UX P0 Fix
+H1B.1 UX P1 Primary Action Visibility
 
 H1B.1 is implemented as the current bounded slice and has Start-only,
 Start+End, End-only, and text-only browser completion results plus Native media
 evidence. The H1B.1 UX P0 fix now closes the targeted Reference hidden-state
 bug and separates Active Job authority from History Preview selection. Its
-bounded evidence is ready for Web GPT / Astra review. The live Running plus
-older-History browser scenario remains explicitly recorded as not replayed
-after the local in-memory History reset; source/static evidence covers the
-path. Owner acceptance and license action remain separate; publication does
-not imply Owner acceptance. REF2VA, ordered generic multi-reference, Still,
-Continuation, Segment, Studio, Timeline, Storyboard, Cast, 3D, and Manga are
-not started by this slice.
+bounded evidence is ready for Web GPT / Astra review. The P1 follow-up closes
+Astra SHOULD ③ for the primary 1280 x 720 layout target by placing Generate
+before Advanced and applying modest control-column compaction; no sticky action
+was needed. The live Running plus older-History browser scenario from P0
+remains explicitly recorded as not replayed after the local in-memory History
+reset; source/static evidence covers that path. Owner acceptance and license
+action remain separate; publication does not imply Owner acceptance. REF2VA,
+ordered generic multi-reference, Still, Continuation, Segment, Studio,
+Timeline, Storyboard, Cast, 3D, and Manga are not started by this slice.
 
 Publication Note
 ----------------
@@ -152,4 +157,6 @@ implementation is recorded in `48adcb27cfc24d9c0f0e2b0b27f2284621a4a18d`; the
 dated evidence/report commit is recorded with the evidence package. The H1B.1
 UX P0 implementation is recorded in
 `12942d04e5baa8c882a265a1d21fc34bf910da58`; the UX evidence/report commit is
+recorded with the dated package. The H1B.1 UX P1 implementation is recorded in
+`247296b626f3e87e46e64c745180712497038f2a`; the P1 evidence/report commit is
 recorded with the dated package.
