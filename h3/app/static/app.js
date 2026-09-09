@@ -1,3 +1,6 @@
+import { activeStatusDetail, previewStatusDetail } from "./job-status-copy.js";
+import { resolveHistorySettings } from "./history-settings.js";
+
 const state = {
   backend: "CONNECTING",
   activeJob: null,
@@ -50,6 +53,7 @@ const previewMeta = $("preview-meta");
 const detailsPanel = $("details-panel");
 const detailsText = $("details-text");
 const historyList = $("history-list");
+const historyActionStatus = $("history-action-status");
 
 const TERMINAL = new Set(["COMPLETED", "FAILED", "CANCELLED"]);
 
@@ -131,7 +135,9 @@ function setReferenceSlotView(slot, reference) {
     return;
   }
   view.thumbnail.src = `${reference.preview_url}?v=${encodeURIComponent(reference.id)}`;
-  view.name.textContent = `${reference.width} x ${reference.height}`;
+  view.name.textContent = reference.width && reference.height
+    ? `${reference.width} x ${reference.height}`
+    : "Reference image";
   view.status.textContent = "";
   updateGenerateAvailability();
 }
@@ -184,10 +190,10 @@ function routeLabelFor(job) {
 
 function renderActiveJobStatus(job) {
   generationStatus.textContent = job.label || job.state;
-  statusDetail.textContent = job.error || (job.state === "COMPLETED" ? "Preview ready." : "Native backend is processing the job.");
+  statusDetail.textContent = activeStatusDetail(job);
   cancelButton.hidden = !job.cancel_available;
   if (job.state === "FAILED" || job.state === "DISCONNECTED") {
-    setDetails(job.error || "The Native backend is unavailable.");
+    setDetails(activeStatusDetail(job));
   } else {
     setDetails("");
   }
@@ -207,12 +213,8 @@ function showPreviewJob(job) {
       previewVideo.load();
     }
     previewMeta.textContent = `${routeLabelFor(job)} · Completed in ${Number(job.elapsed_seconds || 0).toFixed(1)}s · ${job.request.width} x ${job.request.height} · ${job.request.duration}s`;
-  } else if (job.state === "FAILED" || job.state === "DISCONNECTED") {
-    previewMeta.textContent = "Inputs are retained. Correct the issue or try Generate again.";
-  } else if (job.state === "CANCELLED") {
-    previewMeta.textContent = "Job cancelled. Inputs are retained.";
   } else {
-    previewMeta.textContent = "Native ComfyUI is preparing the preview.";
+    previewMeta.textContent = previewStatusDetail(job);
   }
 }
 
@@ -309,6 +311,53 @@ function formatTime(value) {
   try { return new Date(value).toLocaleString(); } catch { return value; }
 }
 
+function setHistoryActionStatus(message, isError = false) {
+  historyActionStatus.hidden = !message;
+  historyActionStatus.textContent = message;
+  historyActionStatus.classList.toggle("error", isError);
+}
+
+async function verifyHistoryReference(reference, slot) {
+  const label = slot === "start_frame" ? "Start Frame" : "End Frame";
+  let response;
+  try {
+    response = await fetch(reference.preview_url, { cache: "no-store" });
+  } catch {
+    throw new Error(`${label} reference could not be verified.`);
+  }
+  if (!response.ok) {
+    throw new Error(`${label} reference is no longer available.`);
+  }
+}
+
+function applyHistorySettings(settings) {
+  promptInput.value = settings.prompt;
+  resolutionInput.value = settings.resolution;
+  durationInput.value = settings.duration;
+  seedInput.value = settings.seed;
+  stepsInput.value = settings.steps;
+  setReferenceSlotView("start_frame", settings.references.start_frame);
+  setReferenceSlotView("end_frame", settings.references.end_frame);
+  updatePromptCount();
+}
+
+async function useHistorySettings(entry) {
+  setHistoryActionStatus("Checking saved settings…");
+  try {
+    const settings = await resolveHistorySettings(entry, {
+      resolutionValues: Array.from(resolutionInput.options, (option) => option.value),
+      durationValues: Array.from(durationInput.options, (option) => option.value),
+      stepsValue: stepsInput.value,
+      maxPromptLength: promptInput.maxLength,
+      verifyReference: verifyHistoryReference,
+    });
+    applyHistorySettings(settings);
+    setHistoryActionStatus("Settings loaded.");
+  } catch (error) {
+    setHistoryActionStatus(`Settings were not changed. ${error.message}`, true);
+  }
+}
+
 function createHistoryCard(entry) {
   const card = document.createElement("article");
   card.className = "history-card";
@@ -350,7 +399,13 @@ function createHistoryCard(entry) {
   const time = document.createElement("time");
   time.className = "history-time";
   time.textContent = formatTime(entry.completed_at || entry.created_at);
-  content.append(open, prompt, time);
+  const useSettings = document.createElement("button");
+  useSettings.type = "button";
+  useSettings.className = "quiet-button history-use-settings";
+  useSettings.textContent = "Use settings";
+  useSettings.setAttribute("aria-label", `Use settings from ${routeLabel} History result`);
+  useSettings.addEventListener("click", () => useHistorySettings(entry));
+  content.append(open, prompt, time, useSettings);
   card.append(content);
   return card;
 }
@@ -385,6 +440,15 @@ async function loadConfig() {
         option.value = `${item.width}x${item.height}`;
         option.textContent = item.label;
         resolutionInput.append(option);
+      });
+    }
+    if (config.duration_options?.length) {
+      durationInput.replaceChildren();
+      config.duration_options.forEach((item) => {
+        const option = document.createElement("option");
+        option.value = String(item.value);
+        option.textContent = item.label;
+        durationInput.append(option);
       });
     }
   } catch (error) {
