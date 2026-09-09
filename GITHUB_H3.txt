@@ -39,6 +39,7 @@ H1C P2 Start+End Use settings: VERIFIED BROWSER UI
 H1C Continue bridge preparation: VERIFIED BROWSER UI
 H1C Native continuation: VERIFIED LOCAL GENERATION / VERIFIED BROWSER UI
 H1C evidence: CURRENT REVIEW EVIDENCE
+H1C evidence/docs commit: 4df2f2a5f29957a9f4ba429ddd8796d13de5de3b
 H1C publication: LOCAL MAIN / OWNER PUSH PENDING
 Owner acceptance: PENDING
 
