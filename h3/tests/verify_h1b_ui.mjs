@@ -15,22 +15,34 @@ for (const marker of [
   'id="reference-thumbnail"',
   'id="reference-replace"',
   'id="reference-remove"',
+  'id="end-reference-file"',
+  'id="end-reference-add"',
+  'id="end-reference-thumbnail"',
+  'id="end-reference-replace"',
+  'id="end-reference-remove"',
+  'id="reference-empty">No keyframes selected',
   'accept="image/png,image/jpeg,image/webp',
 ]) {
   assert.ok(html.includes(marker), `Reference UI marker missing: ${marker}`);
 }
 
 for (const marker of [
+  'body.append("slot", slot)',
   'body.append("reference", file, file.name)',
   'fetch("/api/references"',
-  'setReferenceView(result.reference)',
-  'referenceRemove.addEventListener',
+  'setReferenceSlotView(slot, result.reference)',
   'setReferenceView(null)',
-  'reference: state.reference ? { id: state.reference.id, role: state.reference.role } : null',
-  'const routeLabel = job.route_label || (job.reference_used ? "Start Frame" : "T2V")',
+  'endReferenceRemove.addEventListener',
+  'references: {',
+  'start_frame: state.references.start_frame',
+  'end_frame: state.references.end_frame',
+  'job.references?.start_frame && job.references?.end_frame',
+  'const routeLabel = job.route_label',
 ]) {
   assert.ok(app.includes(marker), `H1B browser behavior missing: ${marker}`);
 }
 
+assert.equal(app.includes('value="T2V"'), false, "No explicit route selector is allowed.");
+assert.equal(app.includes('value="I2V"'), false, "No explicit route selector is allowed.");
 assert.equal(app.includes("fallback"), false, "I2V must not silently fall back to T2V.");
-console.log("H1B UI smoke: 13 PASS");
+console.log("H1B.1 UI smoke: 23 PASS");

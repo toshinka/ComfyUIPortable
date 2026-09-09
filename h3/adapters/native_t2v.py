@@ -1,9 +1,9 @@
-"""Semantic adapter for the verified Native ComfyUI MiniMax H3 T2V route.
+"""Semantic adapter for the bounded Native ComfyUI MiniMax H3 routes.
 
 The browser-facing app speaks in prompt, size, seconds, seed, and steps. This
-module is the only place that knows the ComfyUI node IDs and the H1A workflow
-graph. The graph is validated before a request can be submitted so a stale or
-partially edited workflow fails closed.
+module owns the request/reference vocabulary and route resolver. Workflow node
+IDs remain in the route-specific adapters. Graphs are validated before a
+request can be submitted so a stale or partially edited workflow fails closed.
 """
 
 from __future__ import annotations
@@ -28,6 +28,8 @@ MAX_PROMPT_LENGTH = 4000
 MIN_DURATION_SECONDS = 0.2
 MAX_DURATION_SECONDS = 15.0
 REFERENCE_ROLE_START_FRAME = "start_frame"
+REFERENCE_ROLE_END_FRAME = "end_frame"
+REFERENCE_ROLES = (REFERENCE_ROLE_START_FRAME, REFERENCE_ROLE_END_FRAME)
 ROUTE_T2V = "native_t2v"
 ROUTE_I2V = "native_i2v"
 REFERENCE_ID_PATTERN = re.compile(r"^[0-9a-f]{32}$")
@@ -43,13 +45,34 @@ class WorkflowIncompatibleError(RuntimeError):
 
 @dataclass(frozen=True)
 class H3Reference:
-    """The bounded H1B reference contract; the server owns the local asset."""
+    """A server-issued reference; the server owns the local asset."""
 
     id: str
     role: str = REFERENCE_ROLE_START_FRAME
 
     def public(self) -> dict[str, str]:
         return {"id": self.id, "role": self.role}
+
+
+@dataclass(frozen=True)
+class H3ReferenceSlots:
+    """The fixed H1B.1 keyframe slots, not a generic ordered reference list."""
+
+    start_frame: H3Reference | None = None
+    end_frame: H3Reference | None = None
+
+    def public(self) -> dict[str, dict[str, str] | None]:
+        return {
+            REFERENCE_ROLE_START_FRAME: self.start_frame.public()
+            if self.start_frame
+            else None,
+            REFERENCE_ROLE_END_FRAME: self.end_frame.public()
+            if self.end_frame
+            else None,
+        }
+
+    def any(self) -> bool:
+        return self.start_frame is not None or self.end_frame is not None
 
 
 @dataclass(frozen=True)
@@ -61,6 +84,20 @@ class H3Request:
     seed: int | None = None
     steps: int = DEFAULT_STEPS
     reference: H3Reference | None = None
+    references: H3ReferenceSlots | None = None
+    legacy_reference: bool = False
+
+    def __post_init__(self) -> None:
+        slots = self.references
+        if slots is None:
+            slots = H3ReferenceSlots(start_frame=self.reference)
+        elif self.reference is not None and slots.start_frame is None:
+            slots = H3ReferenceSlots(
+                start_frame=self.reference,
+                end_frame=slots.end_frame,
+            )
+        object.__setattr__(self, "references", slots)
+        object.__setattr__(self, "reference", slots.start_frame)
 
     def public(self) -> dict[str, Any]:
         return {
@@ -71,28 +108,90 @@ class H3Request:
             "seed": self.seed,
             "steps": self.steps,
             "reference": self.reference.public() if self.reference else None,
+            "references": self.references.public(),
         }
 
 
-def validate_reference(value: Any) -> H3Reference | None:
+def _reference_from_value(value: Any, expected_role: str | None = None) -> H3Reference | None:
     if value in (None, ""):
         return None
-    if not isinstance(value, Mapping):
+    if isinstance(value, H3Reference):
+        reference_id = value.id
+        role = value.role
+    elif isinstance(value, Mapping):
+        reference_id = value.get("id")
+        role = value.get("role")
+    else:
         raise RequestValidationError("Reference must be an object.")
-    reference_id = value.get("id")
     if not isinstance(reference_id, str) or not REFERENCE_ID_PATTERN.fullmatch(reference_id):
         raise RequestValidationError("Reference id is invalid.")
-    role = value.get("role")
-    if role != REFERENCE_ROLE_START_FRAME:
+    if role not in REFERENCE_ROLES:
         raise RequestValidationError("Reference role is unsupported.")
+    if expected_role is not None and role != expected_role:
+        raise RequestValidationError(
+            f"Reference role must be {expected_role}."
+        )
     return H3Reference(reference_id, role)
 
 
-def resolve_route(reference: H3Reference | Mapping[str, Any] | None) -> str:
-    """Resolve the only two H1B routes without a user-facing mode selector."""
+def validate_reference(value: Any) -> H3Reference | None:
+    return _reference_from_value(value)
 
-    normalized = reference if isinstance(reference, H3Reference) else validate_reference(reference)
-    return ROUTE_T2V if normalized is None else ROUTE_I2V
+
+def validate_reference_slots(value: Any) -> H3ReferenceSlots:
+    if value in (None, ""):
+        return H3ReferenceSlots()
+    if not isinstance(value, Mapping):
+        raise RequestValidationError("References must be an object.")
+    unknown = set(value).difference(REFERENCE_ROLES)
+    if unknown:
+        raise RequestValidationError("Reference slots are unsupported.")
+    return H3ReferenceSlots(
+        start_frame=_reference_from_value(
+            value.get(REFERENCE_ROLE_START_FRAME), REFERENCE_ROLE_START_FRAME
+        ),
+        end_frame=_reference_from_value(
+            value.get(REFERENCE_ROLE_END_FRAME), REFERENCE_ROLE_END_FRAME
+        ),
+    )
+
+
+def normalize_reference_slots(
+    value: Any,
+) -> H3ReferenceSlots:
+    """Normalize canonical slots or one legacy H1B reference."""
+
+    if isinstance(value, H3Reference):
+        if value.role == REFERENCE_ROLE_START_FRAME:
+            return H3ReferenceSlots(start_frame=_reference_from_value(value))
+        if value.role == REFERENCE_ROLE_END_FRAME:
+            return H3ReferenceSlots(end_frame=_reference_from_value(value))
+        raise RequestValidationError("Reference role is unsupported.")
+    if isinstance(value, H3ReferenceSlots):
+        return value
+    if isinstance(value, Mapping) and "id" in value:
+        return normalize_reference_slots(_reference_from_value(value))
+    return validate_reference_slots(value)
+
+
+def resolve_route(
+    references: H3ReferenceSlots | H3Reference | Mapping[str, Any] | None,
+) -> str:
+    """Resolve fixed-slot presence without a user-facing mode selector."""
+
+    normalized = normalize_reference_slots(references)
+    return ROUTE_I2V if normalized.any() else ROUTE_T2V
+
+
+def reference_route_label(references: H3ReferenceSlots | None) -> str:
+    slots = references or H3ReferenceSlots()
+    if slots.start_frame and slots.end_frame:
+        return "Start + End"
+    if slots.start_frame:
+        return "Start Frame"
+    if slots.end_frame:
+        return "End Frame"
+    return "Text only"
 
 
 def duration_to_frames(duration_seconds: float) -> int:
@@ -169,7 +268,27 @@ def validate_request(payload: Mapping[str, Any]) -> H3Request:
         if not 0 <= seed <= 2**63 - 1:
             raise RequestValidationError("Seed must be between 0 and 2^63-1.")
 
-    reference = validate_reference(payload.get("reference"))
+    canonical_references = payload.get("references", None)
+    has_canonical_references = "references" in payload
+    has_legacy_reference = "reference" in payload
+    if has_canonical_references:
+        if has_legacy_reference and payload.get("reference") not in (None, ""):
+            raise RequestValidationError(
+                "Use canonical references slots instead of legacy reference."
+            )
+        references = validate_reference_slots(canonical_references)
+        legacy_reference = False
+    elif has_legacy_reference:
+        legacy_reference_value = payload.get("reference")
+        references = H3ReferenceSlots(
+            start_frame=_reference_from_value(
+                legacy_reference_value, REFERENCE_ROLE_START_FRAME
+            )
+        )
+        legacy_reference = True
+    else:
+        references = H3ReferenceSlots()
+        legacy_reference = False
 
     return H3Request(
         prompt=prompt,
@@ -178,7 +297,9 @@ def validate_request(payload: Mapping[str, Any]) -> H3Request:
         duration=duration,
         seed=seed,
         steps=steps,
-        reference=reference,
+        reference=references.start_frame,
+        references=references,
+        legacy_reference=legacy_reference,
     )
 
 

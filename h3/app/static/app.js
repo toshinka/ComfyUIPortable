@@ -1,8 +1,9 @@
 const state = {
   backend: "CONNECTING",
   currentJob: null,
+  references: { start_frame: null, end_frame: null },
   reference: null,
-  referenceUploading: false,
+  referenceUploading: { start_frame: false, end_frame: false },
   pollTimer: null,
   backendTimer: null,
 };
@@ -19,6 +20,15 @@ const referenceSelected = $("reference-selected");
 const referenceThumbnail = $("reference-thumbnail");
 const referenceName = $("reference-name");
 const referenceStatus = $("reference-status");
+const endReferenceFile = $("end-reference-file");
+const endReferenceAdd = $("end-reference-add");
+const endReferenceReplace = $("end-reference-replace");
+const endReferenceRemove = $("end-reference-remove");
+const endReferenceEmpty = $("end-reference-empty");
+const endReferenceSelected = $("end-reference-selected");
+const endReferenceThumbnail = $("end-reference-thumbnail");
+const endReferenceName = $("end-reference-name");
+const endReferenceStatus = $("end-reference-status");
 const resolutionInput = $("resolution");
 const durationInput = $("duration");
 const seedInput = $("seed");
@@ -63,7 +73,8 @@ function setBackendStatus(next, message = "") {
 }
 
 function updateGenerateAvailability() {
-  generateButton.disabled = !promptInput.value.trim() || state.referenceUploading || Boolean(state.currentJob && !TERMINAL.has(state.currentJob.state));
+  const uploading = Object.values(state.referenceUploading).some(Boolean);
+  generateButton.disabled = !promptInput.value.trim() || uploading || Boolean(state.currentJob && !TERMINAL.has(state.currentJob.state));
 }
 
 function setDetails(message) {
@@ -81,46 +92,86 @@ function updatePromptCount() {
   updateGenerateAvailability();
 }
 
-function setReferenceView(reference) {
-  state.reference = reference;
-  referenceSelected.hidden = !reference;
-  referenceEmpty.hidden = Boolean(reference);
+const referenceViews = {
+  start_frame: {
+    file: referenceFile,
+    add: referenceAdd,
+    replace: referenceReplace,
+    remove: referenceRemove,
+    empty: $("reference-empty-start"),
+    selected: referenceSelected,
+    thumbnail: referenceThumbnail,
+    name: referenceName,
+    status: referenceStatus,
+  },
+  end_frame: {
+    file: endReferenceFile,
+    add: endReferenceAdd,
+    replace: endReferenceReplace,
+    remove: endReferenceRemove,
+    empty: endReferenceEmpty,
+    selected: endReferenceSelected,
+    thumbnail: endReferenceThumbnail,
+    name: endReferenceName,
+    status: endReferenceStatus,
+  },
+};
+
+function updateReferenceEmpty() {
+  referenceEmpty.hidden = Object.values(state.references).some(Boolean);
+}
+
+function setReferenceSlotView(slot, reference) {
+  const view = referenceViews[slot];
+  state.references[slot] = reference;
+  if (slot === "start_frame") state.reference = reference;
+  view.selected.hidden = !reference;
+  view.empty.hidden = Boolean(reference);
   if (!reference) {
-    referenceThumbnail.removeAttribute("src");
-    referenceName.textContent = "";
-    referenceStatus.textContent = "";
+    view.thumbnail.removeAttribute("src");
+    view.name.textContent = "";
+    view.status.textContent = "";
+    updateReferenceEmpty();
     updateGenerateAvailability();
     return;
   }
-  referenceThumbnail.src = `${reference.preview_url}?v=${encodeURIComponent(reference.id)}`;
-  referenceName.textContent = `${reference.width} x ${reference.height}`;
-  referenceStatus.textContent = "";
+  view.thumbnail.src = `${reference.preview_url}?v=${encodeURIComponent(reference.id)}`;
+  view.name.textContent = `${reference.width} x ${reference.height}`;
+  view.status.textContent = "";
+  updateReferenceEmpty();
   updateGenerateAvailability();
 }
 
-async function uploadReference(file) {
+// Keep the H1B start-slot helper name for old browser smoke and compatibility.
+function setReferenceView(reference) {
+  setReferenceSlotView("start_frame", reference);
+}
+
+async function uploadReference(slot, file) {
   if (!file) return;
+  const view = referenceViews[slot];
   const body = new FormData();
+  body.append("slot", slot);
   body.append("reference", file, file.name);
-  state.referenceUploading = true;
-  referenceAdd.disabled = true;
-  referenceReplace.disabled = true;
-  referenceStatus.textContent = "Uploading reference…";
+  state.referenceUploading[slot] = true;
+  view.add.disabled = true;
+  view.replace.disabled = true;
+  view.status.textContent = "Uploading reference…";
   updateGenerateAvailability();
   try {
     const response = await fetch("/api/references", { method: "POST", body, cache: "no-store" });
     let result = {};
     try { result = await response.json(); } catch { result = {}; }
     if (!response.ok) throw new Error(result.error || `Reference upload failed (${response.status})`);
-    setReferenceView(result.reference);
+    setReferenceSlotView(slot, result.reference);
   } catch (error) {
-    referenceStatus.textContent = error.message;
+    view.status.textContent = error.message;
     setDetails(error.message);
   } finally {
-    state.referenceUploading = false;
-    referenceAdd.disabled = false;
-    referenceReplace.disabled = false;
-    referenceFile.value = "";
+    state.referenceUploading[slot] = false;
+    view.add.disabled = false;
+    view.replace.disabled = false;
+    view.file.value = "";
     updateGenerateAvailability();
   }
 }
@@ -140,7 +191,15 @@ function setJobView(job) {
       previewVideo.src = `${job.video_url}?v=${encodeURIComponent(job.job_id)}`;
       previewVideo.load();
     }
-    const routeLabel = job.route_label || (job.reference_used ? "Start Frame" : "T2V");
+    const routeLabel = job.route_label || (
+      job.references?.start_frame && job.references?.end_frame
+        ? "Start + End"
+        : job.references?.end_frame
+          ? "End Frame"
+          : job.reference_used
+            ? "Start Frame"
+            : "Text only"
+    );
     previewMeta.textContent = `${routeLabel} · Completed in ${Number(job.elapsed_seconds || 0).toFixed(1)}s · ${job.request.width} x ${job.request.height} · ${job.request.duration}s`;
     setDetails("");
   } else if (job.state === "FAILED" || job.state === "DISCONNECTED") {
@@ -187,7 +246,14 @@ async function submitGeneration(event) {
         duration: Number(durationInput.value),
         seed,
         steps: Number(stepsInput.value),
-        reference: state.reference ? { id: state.reference.id, role: state.reference.role } : null,
+        references: {
+          start_frame: state.references.start_frame
+            ? { id: state.references.start_frame.id, role: "start_frame" }
+            : null,
+          end_frame: state.references.end_frame
+            ? { id: state.references.end_frame.id, role: "end_frame" }
+            : null,
+        },
       }),
     });
     setJobView(body.job);
@@ -256,7 +322,16 @@ function createHistoryCard(entry) {
   content.className = "history-content";
   const open = document.createElement("button");
   open.type = "button";
-  open.textContent = `${entry.label || entry.state} · ${entry.route_label || (entry.reference_used ? "Start Frame" : "T2V")}`;
+  const routeLabel = entry.route_label || (
+    entry.references?.start_frame && entry.references?.end_frame
+      ? "Start + End"
+      : entry.references?.end_frame
+        ? "End Frame"
+        : entry.reference_used
+          ? "Start Frame"
+          : "Text only"
+  );
+  open.textContent = `${entry.label || entry.state} · ${routeLabel}`;
   open.addEventListener("click", () => { state.currentJob = entry; setJobView(entry); window.scrollTo({ top: 0, behavior: "smooth" }); });
   const prompt = document.createElement("div");
   prompt.className = "history-prompt";
@@ -312,10 +387,16 @@ cancelButton.addEventListener("click", cancelGeneration);
 $("random-seed").addEventListener("click", () => { seedInput.value = ""; seedInput.focus(); });
 referenceAdd.addEventListener("click", () => referenceFile.click());
 referenceReplace.addEventListener("click", () => referenceFile.click());
-referenceFile.addEventListener("change", () => uploadReference(referenceFile.files?.[0]));
+referenceFile.addEventListener("change", () => uploadReference("start_frame", referenceFile.files?.[0]));
 referenceRemove.addEventListener("click", () => setReferenceView(null));
+endReferenceAdd.addEventListener("click", () => endReferenceFile.click());
+endReferenceReplace.addEventListener("click", () => endReferenceFile.click());
+endReferenceFile.addEventListener("change", () => uploadReference("end_frame", endReferenceFile.files?.[0]));
+endReferenceRemove.addEventListener("click", () => setReferenceSlotView("end_frame", null));
 
 updatePromptCount();
+setReferenceSlotView("start_frame", null);
+setReferenceSlotView("end_frame", null);
 loadConfig();
 loadHistory();
 pollBackend();

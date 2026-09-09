@@ -1,4 +1,4 @@
-"""Small local HTTP server for the H3 Native T2V / Start Frame skin.
+"""Small local HTTP server for the H3 Native T2V / Start-End Frame skin.
 
 The server owns only the local UI/session boundary. ComfyUI remains the source
 of truth for queue execution, history, and generated output. No project DB is
@@ -40,18 +40,23 @@ if str(PORTABLE_ROOT) not in sys.path:
 from h3.adapters.native_t2v import (  # noqa: E402
     H3Reference,
     H3Request,
+    REFERENCE_ROLE_END_FRAME,
+    REFERENCE_ROLES,
     REFERENCE_ROLE_START_FRAME,
     RequestValidationError,
     ROUTE_I2V,
     ROUTE_T2V,
     WorkflowIncompatibleError,
     resolve_route,
+    reference_route_label,
     validate_request,
     workflow_metadata,
 )
 from h3.adapters.native_t2v import compile_workflow as compile_t2v  # noqa: E402
 from h3.adapters.native_i2v import (  # noqa: E402
     compile_workflow as compile_i2v,
+    compile_fl2va_workflow,
+    fl2va_workflow_metadata,
     workflow_metadata as i2v_workflow_metadata,
 )
 
@@ -305,6 +310,7 @@ class Job:
     created_epoch: float
     route: str = ROUTE_T2V
     reference: dict[str, Any] | None = None
+    references: dict[str, dict[str, Any] | None] | None = None
     prompt_id: str | None = None
     state: str = "QUEUED"
     error: str | None = None
@@ -321,15 +327,24 @@ class Job:
 
     def public(self) -> dict[str, Any]:
         video_url = f"/api/jobs/{quote(self.job_id, safe='')}/video" if self.media_path else None
+        references = self.references or {
+            REFERENCE_ROLE_START_FRAME: None,
+            REFERENCE_ROLE_END_FRAME: None,
+        }
+        has_start_frame = references.get(REFERENCE_ROLE_START_FRAME) is not None
+        has_end_frame = references.get(REFERENCE_ROLE_END_FRAME) is not None
         return {
             "job_id": self.job_id,
             "prompt_id": self.prompt_id,
             "state": self.state,
             "label": STATE_LABELS.get(self.state, self.state),
             "route": self.route,
-            "route_label": "Start Frame" if self.route == ROUTE_I2V else "T2V",
-            "reference_used": self.reference is not None,
+            "route_label": reference_route_label(self.request.references),
+            "reference_used": has_start_frame or has_end_frame,
             "reference": self.reference,
+            "references": references,
+            "has_start_frame": has_start_frame,
+            "has_end_frame": has_end_frame,
             "request": self.request.public(),
             "created_at": self.created_at,
             "completed_at": self.completed_at,
@@ -354,9 +369,16 @@ class H1ASession:
         self.references: dict[str, ReferenceAsset] = {}
         self.lock = threading.RLock()
 
-    def upload_reference(self, filename: str, body: bytes) -> ReferenceAsset:
+    def upload_reference(
+        self,
+        filename: str,
+        body: bytes,
+        role: str = REFERENCE_ROLE_START_FRAME,
+    ) -> ReferenceAsset:
         if not isinstance(body, bytes) or not body:
             raise ReferenceRequestError("Reference upload is empty.")
+        if role not in REFERENCE_ROLES:
+            raise ReferenceRequestError("Reference slot is unsupported.")
         if len(body) > REFERENCE_MAX_BYTES:
             raise ReferenceTooLargeError(
                 f"Reference image must be {REFERENCE_MAX_BYTES // (1024 * 1024)} MB or smaller."
@@ -422,7 +444,7 @@ class H1ASession:
             raise ReferenceRequestError("Reference upload could not be stored.") from exc
 
         asset = ReferenceAsset(
-            reference=H3Reference(reference_id, REFERENCE_ROLE_START_FRAME),
+            reference=H3Reference(reference_id, role),
             path=path,
             filename=safe_filename,
             content_type=content_types[actual_format],
@@ -439,23 +461,46 @@ class H1ASession:
 
     def submit(self, payload: Mapping[str, Any]) -> Job:
         request = validate_request(payload)
-        route = resolve_route(request.reference)
-        asset = None
-        if request.reference is not None:
-            asset = self.get_reference(request.reference.id)
+        route = resolve_route(request.references)
+        assets: dict[str, ReferenceAsset] = {}
+        if route == ROUTE_T2V:
+            graph = compile_t2v(request)
+        elif request.legacy_reference and request.references.start_frame is not None:
+            reference = request.references.start_frame
+            asset = self.get_reference(reference.id)
             if asset is None or not asset.path.is_file():
-                raise ReferenceAssetMissingError("Reference asset is missing.")
+                raise ReferenceAssetMissingError("Start Frame asset is missing.")
+            assets[REFERENCE_ROLE_START_FRAME] = asset
             graph = compile_i2v(request, f"inputs/{asset.filename}")
         else:
-            graph = compile_t2v(request)
+            reference_paths: dict[str, str] = {}
+            for role, reference in (
+                (REFERENCE_ROLE_START_FRAME, request.references.start_frame),
+                (REFERENCE_ROLE_END_FRAME, request.references.end_frame),
+            ):
+                if reference is None:
+                    continue
+                asset = self.get_reference(reference.id)
+                if asset is None or not asset.path.is_file():
+                    raise ReferenceAssetMissingError(f"{role} asset is missing.")
+                assets[role] = asset
+                reference_paths[role] = f"inputs/{asset.filename}"
+            graph = compile_fl2va_workflow(request, reference_paths)
         job_id = uuid_token()
+        references_public = {
+            role: assets[role].public() if role in assets else None
+            for role in REFERENCE_ROLES
+        }
         job = Job(
             job_id,
             request,
             now_iso(),
             time.time(),
             route=route,
-            reference=asset.public() if asset else None,
+            reference=assets[REFERENCE_ROLE_START_FRAME].public()
+            if REFERENCE_ROLE_START_FRAME in assets
+            else None,
+            references=references_public,
         )
         with self.lock:
             self.jobs[job_id] = job
@@ -617,7 +662,7 @@ class H1AHandler(BaseHTTPRequestHandler):
             raise RequestValidationError("Request body must be a JSON object.")
         return value
 
-    def _read_multipart_reference(self) -> tuple[str, bytes]:
+    def _read_multipart_reference(self) -> tuple[str, str, bytes]:
         try:
             length = int(self.headers.get("Content-Length", "0"))
         except ValueError as exc:
@@ -643,18 +688,29 @@ class H1AHandler(BaseHTTPRequestHandler):
             raise ReferenceRequestError("Reference upload could not be parsed.") from exc
         if not message.is_multipart():
             raise ReferenceRequestError("Reference upload must contain a file part.")
+        role = REFERENCE_ROLE_START_FRAME
+        file_part: tuple[str, bytes] | None = None
         for part in message.walk():
             if part.is_multipart():
                 continue
             disposition = part.get("Content-Disposition", "")
             name = part.get_param("name", header="content-disposition")
-            if name not in {"reference", "file"} or "filename" not in disposition:
+            if name == "slot" and "filename" not in disposition:
+                slot_body = part.get_payload(decode=True)
+                if isinstance(slot_body, bytes):
+                    try:
+                        role = slot_body.decode("utf-8").strip()
+                    except UnicodeDecodeError as exc:
+                        raise ReferenceRequestError("Reference slot is malformed.") from exc
                 continue
-            filename = part.get_filename()
-            body = part.get_payload(decode=True)
-            if not isinstance(filename, str) or not isinstance(body, bytes):
-                raise ReferenceRequestError("Reference upload file is malformed.")
-            return filename, body
+            if name in {"reference", "file"} and "filename" in disposition:
+                filename = part.get_filename()
+                body = part.get_payload(decode=True)
+                if not isinstance(filename, str) or not isinstance(body, bytes):
+                    raise ReferenceRequestError("Reference upload file is malformed.")
+                file_part = (filename, body)
+        if file_part is not None:
+            return role, file_part[0], file_part[1]
         raise ReferenceRequestError("Reference upload file is missing.")
 
     def do_GET(self) -> None:  # noqa: N802
@@ -668,8 +724,10 @@ class H1AHandler(BaseHTTPRequestHandler):
                     "default_steps": 20,
                     "workflow": workflow_metadata(),
                     "i2v_workflow": i2v_workflow_metadata(),
+                    "fl2va_workflow": fl2va_workflow_metadata(),
                     "reference": {
-                        "roles": [REFERENCE_ROLE_START_FRAME],
+                        "roles": list(REFERENCE_ROLES),
+                        "schema": "h3.references/v1",
                         "extensions": [".png", ".jpg", ".jpeg", ".webp"],
                         "max_bytes": REFERENCE_MAX_BYTES,
                     },
@@ -791,8 +849,8 @@ class H1AHandler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         try:
             if path == "/api/references":
-                filename, body = self._read_multipart_reference()
-                asset = self.server.session.upload_reference(filename, body)
+                role, filename, body = self._read_multipart_reference()
+                asset = self.server.session.upload_reference(filename, body, role=role)
                 self._send_json(HTTPStatus.CREATED, {"reference": asset.public()})
                 return
             if path == "/api/generate":

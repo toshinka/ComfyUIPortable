@@ -243,8 +243,15 @@ textarea::placeholder, input::placeholder { color: #a58a82; }
 .reference-heading-row .field-label { margin-bottom: 4px; }
 .reference-helper { color: var(--light-maroon); font-size: 0.76rem; line-height: 1.45; }
 .reference-helper span { color: var(--muted); }
-.reference-add { min-height: 36px; padding: 0 11px; white-space: nowrap; }
 .reference-empty { margin-top: 11px; color: var(--muted); font-size: 0.76rem; }
+.reference-slots { display: grid; gap: 8px; margin-top: 11px; }
+.reference-slot { padding: 10px 11px 9px; border: 1px solid var(--soft-line); border-radius: 8px; background: #fffaf5; }
+.reference-slot-heading { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
+.reference-slot-heading > div { display: grid; gap: 2px; min-width: 0; }
+.reference-slot-heading strong { color: var(--ink); font-size: 0.8rem; }
+.reference-slot-heading span { color: var(--muted); font-size: 0.7rem; }
+.reference-add { min-height: 32px; padding: 0 10px; white-space: nowrap; font-size: 0.74rem; }
+.reference-slot-empty { margin-top: 8px; color: var(--muted); font-size: 0.72rem; }
 .reference-selected { display: flex; align-items: center; gap: 11px; margin-top: 11px; }
 .reference-thumbnail { width: 78px; height: 54px; flex: 0 0 auto; border: 1px solid var(--line); border-radius: 6px; background: #f7eae2; object-fit: cover; }
 .reference-selected-body { min-width: 0; display: grid; gap: 3px; }
