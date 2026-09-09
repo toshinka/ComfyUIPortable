@@ -1,6 +1,7 @@
 const state = {
   backend: "CONNECTING",
-  currentJob: null,
+  activeJob: null,
+  previewJob: null,
   references: { start_frame: null, end_frame: null },
   reference: null,
   referenceUploading: { start_frame: false, end_frame: false },
@@ -69,12 +70,12 @@ function setBackendStatus(next, message = "") {
   state.backend = next;
   backendPill.className = `backend-pill ${next.toLowerCase()}`;
   backendLabel.textContent = next === "READY" ? "Ready" : next === "DISCONNECTED" ? "Backend disconnected" : "Connecting";
-  if (message && !state.currentJob) statusDetail.textContent = message;
+  if (message && !state.activeJob) statusDetail.textContent = message;
 }
 
 function updateGenerateAvailability() {
   const uploading = Object.values(state.referenceUploading).some(Boolean);
-  generateButton.disabled = !promptInput.value.trim() || uploading || Boolean(state.currentJob && !TERMINAL.has(state.currentJob.state));
+  generateButton.disabled = !promptInput.value.trim() || uploading || Boolean(state.activeJob && !TERMINAL.has(state.activeJob.state));
 }
 
 function setDetails(message) {
@@ -176,49 +177,70 @@ async function uploadReference(slot, file) {
   }
 }
 
-function setJobView(job) {
-  state.currentJob = job;
+function routeLabelFor(job) {
+  return job.route_label || (
+    job.references?.start_frame && job.references?.end_frame
+      ? "Start + End"
+      : job.references?.end_frame
+        ? "End Frame"
+        : job.reference_used
+          ? "Start Frame"
+          : "Text only"
+  );
+}
+
+function renderActiveJobStatus(job) {
   generationStatus.textContent = job.label || job.state;
-  previewState.textContent = job.label || job.state;
-  previewElapsed.textContent = `${Number(job.elapsed_seconds || 0).toFixed(1)}s`;
   statusDetail.textContent = job.error || (job.state === "COMPLETED" ? "Preview ready." : "Native backend is processing the job.");
-  previewOverlay.hidden = TERMINAL.has(job.state) && job.state !== "COMPLETED";
   cancelButton.hidden = !job.cancel_available;
-  if (job.state === "COMPLETED" && job.video_url) {
-    previewEmpty.hidden = true;
-    previewVideo.hidden = false;
-    if (!previewVideo.src.endsWith(job.video_url)) {
-      previewVideo.src = `${job.video_url}?v=${encodeURIComponent(job.job_id)}`;
-      previewVideo.load();
-    }
-    const routeLabel = job.route_label || (
-      job.references?.start_frame && job.references?.end_frame
-        ? "Start + End"
-        : job.references?.end_frame
-          ? "End Frame"
-          : job.reference_used
-            ? "Start Frame"
-            : "Text only"
-    );
-    previewMeta.textContent = `${routeLabel} · Completed in ${Number(job.elapsed_seconds || 0).toFixed(1)}s · ${job.request.width} x ${job.request.height} · ${job.request.duration}s`;
-    setDetails("");
-  } else if (job.state === "FAILED" || job.state === "DISCONNECTED") {
-    previewMeta.textContent = "Inputs are retained. Correct the issue or try Generate again.";
+  if (job.state === "FAILED" || job.state === "DISCONNECTED") {
     setDetails(job.error || "The Native backend is unavailable.");
-  } else if (job.state === "CANCELLED") {
-    previewMeta.textContent = "Job cancelled. Inputs are retained.";
-    setDetails("");
   } else {
-    previewMeta.textContent = "Native ComfyUI is preparing the preview.";
+    setDetails("");
   }
   updateGenerateAvailability();
 }
 
+function showPreviewJob(job) {
+  state.previewJob = job;
+  previewState.textContent = job.label || job.state;
+  previewElapsed.textContent = `${Number(job.elapsed_seconds || 0).toFixed(1)}s`;
+  previewOverlay.hidden = TERMINAL.has(job.state) && job.state !== "COMPLETED";
+  if (job.state === "COMPLETED" && job.video_url) {
+    previewEmpty.hidden = true;
+    previewVideo.hidden = false;
+    if (!previewVideo.src.includes(job.video_url)) {
+      previewVideo.src = `${job.video_url}?v=${encodeURIComponent(job.job_id)}`;
+      previewVideo.load();
+    }
+    previewMeta.textContent = `${routeLabelFor(job)} · Completed in ${Number(job.elapsed_seconds || 0).toFixed(1)}s · ${job.request.width} x ${job.request.height} · ${job.request.duration}s`;
+  } else if (job.state === "FAILED" || job.state === "DISCONNECTED") {
+    previewMeta.textContent = "Inputs are retained. Correct the issue or try Generate again.";
+  } else if (job.state === "CANCELLED") {
+    previewMeta.textContent = "Job cancelled. Inputs are retained.";
+  } else {
+    previewMeta.textContent = "Native ComfyUI is preparing the preview.";
+  }
+}
+
+function setActiveJob(job, { selectPreview = false } = {}) {
+  state.activeJob = job;
+  renderActiveJobStatus(job);
+  if (selectPreview) showPreviewJob(job);
+}
+
+function updateActiveJob(job) {
+  setActiveJob(job);
+  if (job.state === "COMPLETED" || state.previewJob?.job_id === job.job_id) showPreviewJob(job);
+}
+
 async function pollJob() {
-  if (!state.currentJob?.job_id) return;
+  const activeJobId = state.activeJob?.job_id;
+  if (!activeJobId) return;
   try {
-    const job = await requestJson(`/api/jobs/${encodeURIComponent(state.currentJob.job_id)}`);
-    setJobView(job);
+    const job = await requestJson(`/api/jobs/${encodeURIComponent(activeJobId)}`);
+    if (state.activeJob?.job_id !== activeJobId) return;
+    updateActiveJob(job);
     if (TERMINAL.has(job.state)) {
       await loadHistory();
       return;
@@ -256,10 +278,10 @@ async function submitGeneration(event) {
         },
       }),
     });
-    setJobView(body.job);
+    setActiveJob(body.job, { selectPreview: true });
     await pollJob();
   } catch (error) {
-    state.currentJob = null;
+    state.activeJob = null;
     generationStatus.textContent = "Failed";
     statusDetail.textContent = "Generation was not submitted.";
     setDetails(error.message);
@@ -268,10 +290,10 @@ async function submitGeneration(event) {
 }
 
 async function cancelGeneration() {
-  if (!state.currentJob?.job_id) return;
+  if (!state.activeJob?.job_id) return;
   try {
-    const body = await requestJson(`/api/jobs/${encodeURIComponent(state.currentJob.job_id)}/cancel`, { method: "POST" });
-    setJobView(body.job);
+    const body = await requestJson(`/api/jobs/${encodeURIComponent(state.activeJob.job_id)}/cancel`, { method: "POST" });
+    setActiveJob(body.job, { selectPreview: true });
     await loadHistory();
   } catch (error) {
     setDetails(error.message);
@@ -306,11 +328,7 @@ function createHistoryCard(entry) {
     video.preload = "metadata";
     video.addEventListener("mouseenter", () => video.play().catch(() => {}));
     video.addEventListener("mouseleave", () => { video.pause(); video.currentTime = 0; });
-    video.addEventListener("click", () => {
-      state.currentJob = entry;
-      setJobView(entry);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
+    video.addEventListener("click", () => { showPreviewJob(entry); window.scrollTo({ top: 0, behavior: "smooth" }); });
     card.append(video);
   } else {
     const failed = document.createElement("div");
@@ -332,7 +350,7 @@ function createHistoryCard(entry) {
           : "Text only"
   );
   open.textContent = `${entry.label || entry.state} · ${routeLabel}`;
-  open.addEventListener("click", () => { state.currentJob = entry; setJobView(entry); window.scrollTo({ top: 0, behavior: "smooth" }); });
+  open.addEventListener("click", () => { showPreviewJob(entry); window.scrollTo({ top: 0, behavior: "smooth" }); });
   const prompt = document.createElement("div");
   prompt.className = "history-prompt";
   prompt.textContent = entry.request?.prompt || "";
@@ -357,7 +375,7 @@ async function loadHistory() {
       return;
     }
     body.entries.forEach((entry) => historyList.append(createHistoryCard(entry)));
-    if (!state.currentJob) setJobView(body.entries[0]);
+    if (!state.previewJob) showPreviewJob(body.entries[0]);
   } catch (error) {
     historyCount.textContent = "—";
     statusDetail.textContent = error.message;
