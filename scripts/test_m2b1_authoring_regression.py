@@ -169,7 +169,7 @@ class TestM2B1AuthoringRegression(unittest.TestCase):
 
     def test_06_canonical_workflow_widget_order_and_values(self):
         """Root Cause B & C Guard: Canonical workflow editor node must have exactly 4 serialized widgets in correct order."""
-        wf_path = os.path.join(_ROOT, "workflows", "MINIMUM_HAND_MANGA_DRAFT.json")
+        wf_path = os.path.join(_ROOT, "workflows", "manga", "MINIMUM_HAND_MANGA_DRAFT.json")
         with open(wf_path, "r", encoding="utf-8") as f:
             wf = json.load(f)
         editor_node = next((n for n in wf.get("nodes", []) if n.get("type") == "TegakiMinimumHandSceneEditor"), None)

@@ -33,28 +33,28 @@
     },
     "canonical_workflows": {
       "WF40": {
-        "file": "workflows/40_VERIFY_CN_AUTHORING_REFERENCE_PAIR.json",
+        "file": "workflows/manga/Archive/40_VERIFY_CN_AUTHORING_REFERENCE_PAIR.json",
         "description": "ControlNet Authoring Reference Pair (Alice Left, Bob Right, Euler 20s, CN 0.75/0.80, Base-Only)",
         "runtime_status": "PASS",
         "visual_semantic_status": "FAIL",
         "observed_finding": "Latents collapsed into architectural background with miniature student; 0/2 target characters rendered"
       },
       "WF41": {
-        "file": "workflows/41_VERIFY_CN_STRENGTH_SANITY.json",
+        "file": "workflows/manga/Archive/41_VERIFY_CN_STRENGTH_SANITY.json",
         "description": "ControlNet Strength Sanity (CN 0.50 / End 0.60 vs 0.75 / 0.80)",
         "runtime_status": "PASS",
         "visual_semantic_status": "FAIL",
         "observed_finding": "Identical architectural collapse with miniature student; softening base CN did not resolve regional suppression"
       },
       "WF42": {
-        "file": "workflows/42_VERIFY_REGIONAL_CN_PROPAGATION_AB.json",
+        "file": "workflows/manga/Archive/42_VERIFY_REGIONAL_CN_PROPAGATION_AB.json",
         "description": "Regional ControlNet Propagation Prototype (propagate_controlnet_to_regions: True)",
         "runtime_status": "PASS",
         "visual_semantic_status": "PARTIAL",
         "observed_finding": "BOTH regions rendered at full scale, but severe mannequin overconstraint: literal wooden mannequins in frames"
       },
       "WF43": {
-        "file": "workflows/43_VERIFY_BROWSER_STAGING_CAUSALITY.json",
+        "file": "workflows/manga/Archive/43_VERIFY_BROWSER_STAGING_CAUSALITY.json",
         "description": "Browser Staging Interaction Causality (Alice moved right, Fast Draft 12)",
         "runtime_status": "PASS",
         "visual_semantic_status": "FAIL",

@@ -15,7 +15,7 @@
 
 ## 読む順序とトークン節約
 
-1. `GITHUB_MANGA.txt` → `docs/STATUS.md` → `docs/manga/README.md`。
+1. `GITHUB_MANGA.txt` → `docs/manga/STATUS.md` → `docs/manga/README.md`。
 2. `ASTRA_MANGA_AUTHORING_MASTER_PLAN.md`。既読後はrevisionと変更節だけ。
 3. 今回のUX節/棚卸し該当行→current card。
 4. 対象file header・関数・関連testと直近reportだけ。
@@ -43,7 +43,7 @@ M0は契約文書＋fixture提案のみ。SOLがschema/旧import表を確定し�
 
 ## Geminiの更新義務（毎カード）
 
-- 開始時にgit statusを確認し既存差分を保持。カード開始時と終了時、重大発見時に `docs/STATUS.md` の現在地を更新する。
+- 開始時にgit statusを確認し既存差分を保持。カード開始時と終了時、重大発見時に `docs/manga/STATUS.md` の現在地を更新する。
 - **計画書を適時更新すること。** 実装と計画の差、判明した制限、gate結果は該当計画節と棚卸しへ反映。戦略変更が必要なら「提案/未承認」とし正本の決定を勝手に置換しない。
 - reportは変更/検証command/結果/未実施/画像path/次の一件だけ。大量の過去履歴をSTATUSへ積まない。
 - 実行失敗、途中timeout、未閲覧画像をPASSにしない。構文、schema、実node実行、画像評価、Owner受入を別欄にする。

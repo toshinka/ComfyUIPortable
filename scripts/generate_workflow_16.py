@@ -450,7 +450,7 @@ def build_workflow_16():
         "version": 0.4
     }
 
-    out_path = os.path.join(PROJECT_ROOT, "workflows", "16_MANGA_VARIABLE_N_REGION_LAYOUT_FUSION_POC.json")
+    out_path = os.path.join(PROJECT_ROOT, "workflows", "manga", "Archive", "16_MANGA_VARIABLE_N_REGION_LAYOUT_FUSION_POC.json")
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(workflow, f, indent=2, ensure_ascii=False)
     print(f"Generated Workflow 16 at: {out_path}")

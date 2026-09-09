@@ -92,11 +92,11 @@
     "output/Tegaki/Phase3J1/canonical/Phase3J1_Mask_Diagnostic.png"
   ],
   "canonical_workflows": [
-    "workflows/54_VERIFY_ALICE_LEFT_PROMPT_TRUTH_REMAINDER.json",
-    "workflows/55_VERIFY_ALICE_RIGHT_PROMPT_TRUTH_REMAINDER.json",
-    "workflows/56_VERIFY_BOB_LEFT_PROMPT_TRUTH_REMAINDER.json",
-    "workflows/57_VERIFY_BOB_RIGHT_PROMPT_TRUTH_REMAINDER.json",
-    "workflows/58_VERIFY_TWO_CHARACTER_PROMPT_TRUTH_LR.json",
-    "workflows/59_VERIFY_TWO_CHARACTER_PROMPT_TRUTH_SWAP.json"
+    "workflows/manga/Archive/54_VERIFY_ALICE_LEFT_PROMPT_TRUTH_REMAINDER.json",
+    "workflows/manga/Archive/55_VERIFY_ALICE_RIGHT_PROMPT_TRUTH_REMAINDER.json",
+    "workflows/manga/Archive/56_VERIFY_BOB_LEFT_PROMPT_TRUTH_REMAINDER.json",
+    "workflows/manga/Archive/57_VERIFY_BOB_RIGHT_PROMPT_TRUTH_REMAINDER.json",
+    "workflows/manga/Archive/58_VERIFY_TWO_CHARACTER_PROMPT_TRUTH_LR.json",
+    "workflows/manga/Archive/59_VERIFY_TWO_CHARACTER_PROMPT_TRUTH_SWAP.json"
   ]
 }

@@ -16,9 +16,9 @@
 ## Geminiが行う限定整理
 
 1. STATUSとMaster Planを読み、git statusを確認。
-2. `docs/WORKFLOW_INDEX.md`を用途分類（Product / Oracle / Research / Future）へ整える。過去番号とpathは維持。
+2. `docs/manga/references/WORKFLOW_INDEX.md`を用途分類（Product / Oracle / Research / Future）へ整える。過去番号とpathは維持。
 3. READMEの古い最大6枠/Phase説明を「現行legacy機能」と区別し、計画を実装済みと書かない。
-4. `docs/DOCUMENT_REGISTER.md`へ現行契約/新計画/履歴/検証の分類を追加。旧Phase reportは研究証拠として保持。
+4. `docs/manga/DOCUMENT_REGISTER.md`へ現行契約/新計画/履歴/検証の分類を追加。旧Phase reportは研究証拠として保持。
 5. 旧workflow/adapterを物理移動する必要がある時だけ、`rg`でimport、node登録、generator、test、doc、保存workflowからの参照を調べる。移動一覧と新旧pathを先にSOLへ提示する。
 6. 移動は本project内のArchiveに限定し、各絶対pathがworkspace内であることを検証してからPowerShellのLiteralPathで行う。未解決参照があれば移動しない。runtime sourceはこのカードでは移動/削除しない。
 7. Archiveへ格納したものは削除しない。出力画像/モデル/環境一式をコピーしない。Owner退避物のBackup等、他projectは探索しない。

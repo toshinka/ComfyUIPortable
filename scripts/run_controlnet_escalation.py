@@ -13,7 +13,7 @@ from typing import Dict, Any, List
 from PIL import Image
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-DOCS_DIR = os.path.join(ROOT_DIR, "docs", "verification", "m2a1")
+DOCS_DIR = os.path.join(ROOT_DIR, "docs", "manga", "verification", "m2a1")
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
@@ -69,7 +69,7 @@ def main():
             "visual_status": "PENDING_INSPECTION",
             "review_method": "DIRECT_IMAGE_INSPECTION",
             "elapsed_seconds": round(elapsed, 2),
-            "output_path": f"docs/verification/m2a1/{cid}.png",
+            "output_path": f"docs/manga/verification/m2a1/{cid}.png",
         })
 
     manifest["conditions_total"] = len(manifest["entries"])

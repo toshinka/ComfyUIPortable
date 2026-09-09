@@ -32,9 +32,9 @@ if CUSTOM_NODES_DIR not in sys.path:
 from scripts import comfy_runtime_helper
 from tegaki_manga_nodes.generation_profile import apply_profile_to_prompt
 
-WORKFLOWS_DIR = os.path.join(ROOT_DIR, "workflows")
+WORKFLOWS_DIR = os.path.join(ROOT_DIR, "workflows", "manga", "Archive")
 OUTPUT_DIR = os.path.join(ROOT_DIR, "output", "Tegaki", "Phase3H", "canonical")
-MANIFEST_PATH = os.path.join(ROOT_DIR, "docs", "verification", "PHASE3H_CANONICAL_VERIFICATION_MANIFEST.json")
+MANIFEST_PATH = os.path.join(ROOT_DIR, "docs", "manga", "verification", "PHASE3H_CANONICAL_VERIFICATION_MANIFEST.json")
 
 
 def fetch_all_object_info() -> Dict[str, Any]:

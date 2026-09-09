@@ -91,11 +91,11 @@
     "output/Tegaki/Phase3J/Phase3J_Sheet_T_Shot_Types.png"
   ],
   "canonical_workflows": [
-    "workflows/48_VERIFY_BASE_BACKGROUND_ONLY_CHARACTER_PRESENCE.json",
-    "workflows/49_VERIFY_ALICE_LEFT_ONLY_HYPER12.json",
-    "workflows/50_VERIFY_ALICE_RIGHT_ONLY_HYPER12.json",
-    "workflows/51_VERIFY_BOB_LEFT_ONLY_HYPER12.json",
-    "workflows/52_VERIFY_BOB_RIGHT_ONLY_HYPER12.json",
-    "workflows/53_VERIFY_HYPER12_PER_REGION_HINT_SWAP.json"
+    "workflows/manga/Archive/48_VERIFY_BASE_BACKGROUND_ONLY_CHARACTER_PRESENCE.json",
+    "workflows/manga/Archive/49_VERIFY_ALICE_LEFT_ONLY_HYPER12.json",
+    "workflows/manga/Archive/50_VERIFY_ALICE_RIGHT_ONLY_HYPER12.json",
+    "workflows/manga/Archive/51_VERIFY_BOB_LEFT_ONLY_HYPER12.json",
+    "workflows/manga/Archive/52_VERIFY_BOB_RIGHT_ONLY_HYPER12.json",
+    "workflows/manga/Archive/53_VERIFY_HYPER12_PER_REGION_HINT_SWAP.json"
   ]
 }

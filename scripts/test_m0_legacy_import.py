@@ -394,12 +394,9 @@ class TestWorkflowStructuralRegression(unittest.TestCase):
         Structural regression: verify that workflow JSON files exist and
         are valid JSON (we haven't broken them). We do NOT modify them.
         """
-        workflows_dir = os.path.join(
-            os.path.dirname(__file__), "..", "ComfyUIPortable", "workflows"
-        )
-        # Resolve relative to scripts/
+        # Resolve the historical Manga workflow archive relative to scripts/.
         workflows_dir = os.path.abspath(os.path.join(
-            os.path.dirname(__file__), "..", "workflows"
+            os.path.dirname(__file__), "..", "workflows", "manga", "Archive"
         ))
 
         if not os.path.isdir(workflows_dir):

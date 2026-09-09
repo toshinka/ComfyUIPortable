@@ -1,7 +1,7 @@
 """
 Generate Workflow 21: Manga Impact Recurrent Cast POC (Phase 3E)
 ================================================================
-Builds workflows/21_MANGA_IMPACT_RECURRENT_CAST_POC.json.
+Builds workflows/manga/Archive/21_MANGA_IMPACT_RECURRENT_CAST_POC.json.
 
 Integrates:
 - Tegaki Manga Cast Master (Alice & Bob definitions)
@@ -27,7 +27,7 @@ if CUSTOM_NODES_PATH not in sys.path:
 from tegaki_manga_nodes.panel_layout_spec import get_default_panel_layout_spec
 from tegaki_manga_nodes.cast_master import get_default_cast_spec
 
-WORKFLOW_FILE = os.path.join(PROJECT_ROOT, "workflows", "21_MANGA_IMPACT_RECURRENT_CAST_POC.json")
+WORKFLOW_FILE = os.path.join(PROJECT_ROOT, "workflows", "manga", "Archive", "21_MANGA_IMPACT_RECURRENT_CAST_POC.json")
 
 
 def build_workflow_21():

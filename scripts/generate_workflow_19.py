@@ -1,7 +1,7 @@
 """
 Generate Workflow 19: Two Region Semantic Binding Oracle (Phase 3D.2)
 ====================================================================
-Builds workflows/19_TWO_REGION_SEMANTIC_BINDING_ORACLE.json.
+Builds workflows/manga/Archive/19_TWO_REGION_SEMANTIC_BINDING_ORACLE.json.
 Uses Impact RegionalSampler with:
 - TegakiTwoRegionCoupleEditor (A=White Dog, B=Black Cat)
 - Region A & Region B KSamplerAdvancedProviders
@@ -14,7 +14,7 @@ import os
 import sys
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-WORKFLOW_FILE = os.path.join(PROJECT_ROOT, "workflows", "19_TWO_REGION_SEMANTIC_BINDING_ORACLE.json")
+WORKFLOW_FILE = os.path.join(PROJECT_ROOT, "workflows", "manga", "Archive", "19_TWO_REGION_SEMANTIC_BINDING_ORACLE.json")
 
 
 def build_workflow_19():

@@ -22,8 +22,8 @@ Executes 16 Empirical Conditions:
 Produces:
 - Contact Sheets Z1 to Z5
 - output/Tegaki/Phase3K/phase3k_pose_results.json
-- docs/verification/PHASE3K_CANONICAL_VERIFICATION_MANIFEST.json
-- docs/verification/PHASE3K_PRESENCE_EVALUATION.json
+- docs/manga/verification/PHASE3K_CANONICAL_VERIFICATION_MANIFEST.json
+- docs/manga/verification/PHASE3K_PRESENCE_EVALUATION.json
 """
 
 import os
@@ -61,10 +61,10 @@ from scripts.generate_phase3k_workflows import (
     PANEL_SCENE_PROMPT
 )
 
-WORKFLOWS_DIR = os.path.join(ROOT_DIR, "workflows")
+WORKFLOWS_DIR = os.path.join(ROOT_DIR, "workflows", "manga", "Archive")
 OUTPUT_BASE = os.path.join(ROOT_DIR, "output", "Tegaki", "Phase3K")
 OUTPUT_CANONICAL = os.path.join(OUTPUT_BASE, "canonical")
-DOCS_VERIFICATION_DIR = os.path.join(ROOT_DIR, "docs", "verification")
+DOCS_VERIFICATION_DIR = os.path.join(ROOT_DIR, "docs", "manga", "verification")
 
 # Alice prompt strictly free of shot-type tokens for pure causality testing
 ALICE_CAUSALITY_PROMPT = "1girl, blonde twin tails, blue eyes, school uniform, pleated skirt"

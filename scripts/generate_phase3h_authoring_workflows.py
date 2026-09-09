@@ -24,7 +24,7 @@ if CUSTOM_NODES_PATH not in sys.path:
 
 from tegaki_manga_nodes.panel_layout_spec import get_default_panel_layout_spec
 
-WORKFLOWS_DIR = os.path.join(PROJECT_ROOT, "workflows")
+WORKFLOWS_DIR = os.path.join(PROJECT_ROOT, "workflows", "manga", "Archive")
 
 GLOBAL_STYLE = "manga illustration, monochrome expressive linework, high quality"
 SCENE_PROMPT = f"{GLOBAL_STYLE}, simple school courtyard, two students standing"

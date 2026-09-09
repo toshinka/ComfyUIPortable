@@ -24,9 +24,9 @@ if ROOT_DIR not in sys.path:
 
 from scripts import comfy_runtime_helper
 
-WORKFLOWS_DIR = os.path.join(ROOT_DIR, "workflows")
+WORKFLOWS_DIR = os.path.join(ROOT_DIR, "workflows", "manga", "Archive")
 OUTPUT_DIR = os.path.join(ROOT_DIR, "output", "Tegaki", "Phase3G", "canonical")
-MANIFEST_PATH = os.path.join(ROOT_DIR, "docs", "verification", "PHASE3G_CANONICAL_VERIFICATION_MANIFEST.json")
+MANIFEST_PATH = os.path.join(ROOT_DIR, "docs", "manga", "verification", "PHASE3G_CANONICAL_VERIFICATION_MANIFEST.json")
 
 
 def fetch_all_object_info() -> Dict[str, Any]:

@@ -67,7 +67,7 @@
     "CondA": {
       "id": "CondA",
       "name": "Native Reference 20s (Euler 20s, CFG 7.0, base_only=2, no LoRA)",
-      "workflow": "workflows/40_VERIFY_CN_AUTHORING_REFERENCE_PAIR.json",
+      "workflow": "workflows/manga/Archive/40_VERIFY_CN_AUTHORING_REFERENCE_PAIR.json",
       "elapsed_sec": 52.09,
       "vram_mb": 9285,
       "runtime_status": "PASS",
@@ -77,7 +77,7 @@
     "CondB": {
       "id": "CondB",
       "name": "Native Short 12s (Euler 12s, CFG 6.0, base_only=2, no LoRA)",
-      "workflow": "workflows/45_VERIFY_NATIVE12_CONTROL.json",
+      "workflow": "workflows/manga/Archive/45_VERIFY_NATIVE12_CONTROL.json",
       "elapsed_sec": 28.05,
       "vram_mb": 9285,
       "runtime_status": "PASS",
@@ -97,7 +97,7 @@
     "CondD": {
       "id": "CondD",
       "name": "Hyper 12s Control (Euler 12s, CFG 6.0, base_only=2, Hyper-SDXL LoRA)",
-      "workflow": "workflows/46_VERIFY_HYPER12_CAUSAL_CONTROL.json",
+      "workflow": "workflows/manga/Archive/46_VERIFY_HYPER12_CAUSAL_CONTROL.json",
       "elapsed_sec": 34.58,
       "vram_mb": 9250,
       "runtime_status": "PASS",
@@ -107,7 +107,7 @@
     "CondE": {
       "id": "CondE",
       "name": "Native 20s Base-Only 0 (Euler 20s, CFG 7.0, base_only=0, no LoRA)",
-      "workflow": "workflows/44_VERIFY_NATIVE20_BASEONLY_ZERO.json",
+      "workflow": "workflows/manga/Archive/44_VERIFY_NATIVE20_BASEONLY_ZERO.json",
       "elapsed_sec": 50.23,
       "vram_mb": 9152,
       "runtime_status": "PASS",
@@ -127,7 +127,7 @@
     "CondG": {
       "id": "CondG",
       "name": "Regional Control - Per-Region Hint 0.35 (Euler 20s, CFG 7.0, per_region_hint 0.35)",
-      "workflow": "workflows/47_VERIFY_PER_REGION_HINT_ATTENUATED.json",
+      "workflow": "workflows/manga/Archive/47_VERIFY_PER_REGION_HINT_ATTENUATED.json",
       "elapsed_sec": 72.54,
       "vram_mb": 9186,
       "runtime_status": "PASS",

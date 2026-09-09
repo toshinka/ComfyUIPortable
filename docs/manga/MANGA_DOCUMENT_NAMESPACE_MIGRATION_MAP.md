@@ -38,3 +38,23 @@ PASS/FAIL、観察も現在構造へ合わせて書き換えない。
 
 `MANGA_VERIFICATION_NAMESPACE_MIGRATION`はoutput移行と同じCardに混ぜず、生成script、
 manifest、report、GitHub URLの更新が一つの検証可能なsliceになる場合だけ行う。
+
+## 2026-09-09 superseding decision
+
+Ownerの明示指示により、上表で`NO / LATER`としていた文書・Workflow namespaceを実施した。
+現在の配置は次の通り。
+
+| Previous path | Current path | Status |
+|---|---|---|
+| `docs/STATUS.md` | `docs/manga/STATUS.md` | MOVED |
+| `docs/DOCUMENT_REGISTER.md` | `docs/manga/DOCUMENT_REGISTER.md` | MOVED |
+| `docs/plans/` | `docs/manga/plans/` | MOVED |
+| `docs/reports/` | `docs/manga/reports/` | MOVED |
+| `docs/verification/` | `docs/manga/verification/` | MOVED; current generators/manifests updated |
+| Manga contracts/references at `docs/*.md` | `docs/manga/contracts/`, `docs/manga/references/` | MOVED |
+| `workflows/Archive/` | `workflows/manga/Archive/` | Owner move published in `77de3c48` |
+| `workflows/MINIMUM_HAND_MANGA_DRAFT.json` | `workflows/manga/MINIMUM_HAND_MANGA_DRAFT.json` | Owner move published in `77de3c48` |
+
+実施内容とURL判断は
+[`MANGA_DOCS_WORKFLOW_NAMESPACE_MIGRATION_REPORT.md`](reports/MANGA_DOCS_WORKFLOW_NAMESPACE_MIGRATION_REPORT.md)
+をcurrent recordとする。output namespaceは引き続き別gateである。

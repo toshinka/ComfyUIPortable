@@ -3,7 +3,7 @@ import os
 import sys
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-WORKFLOWS_DIR = os.path.join(ROOT_DIR, "workflows")
+WORKFLOWS_DIR = os.path.join(ROOT_DIR, "workflows", "manga", "Archive")
 
 TARGET_WORKFLOWS = [
     "07_MANGA_REGION_EDITOR_UI_TEST.json",

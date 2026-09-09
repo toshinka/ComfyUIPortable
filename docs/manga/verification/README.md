@@ -1,11 +1,9 @@
 # Manga Verification Index
 
-Manga verification evidence remains in [`docs/verification/`](../../verification/).
+Manga verification evidence is collected in this directory.
 The tree contains 316 tracked files (about 303 MB at the 2026-09-08 audit), and
-11 current scripts directly name paths under it. It is therefore retained until
-a dedicated evidence migration card can update generators, manifests, reports,
-and review links together.
+Current generators and manifests use the `docs/manga/verification/` namespace.
 
 Do not equate file presence with Owner acceptance. Consult
-[`docs/STATUS.md`](../../STATUS.md) and the relevant report for HEADLESS_TEST,
+[`docs/manga/STATUS.md`](../STATUS.md) and the relevant report for HEADLESS_TEST,
 LIVE_RUNTIME, structural pixel, LIVE_BROWSER, and Owner status separately.

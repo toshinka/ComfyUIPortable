@@ -194,7 +194,7 @@
         }
       ]
     },
-    "oracle_contact_sheet": "docs/verification/m3a/M3A_VISUAL_FRAME_ORACLE.png",
+    "oracle_contact_sheet": "docs/manga/verification/m3a/M3A_VISUAL_FRAME_ORACLE.png",
     "live_browser_product_e2e": {
       "status": "PENDING (OWNER MANUAL CHECK REQUIRED)",
       "evidence_type": "LIVE_BROWSER",

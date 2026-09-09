@@ -1,8 +1,8 @@
 # ComfyUI Portable 漫画制作環境 (Tegaki Manga Edition)
 
-外部AIの共通routerは [GITHUB_ComfyUI.txt](GITHUB_ComfyUI.txt)、Manga正本入口は [GITHUB_MANGA.txt](GITHUB_MANGA.txt)、H3正本入口は [GITHUB_H3.txt](GITHUB_H3.txt)です。Mangaの現在地は [docs/STATUS.md](docs/STATUS.md)。
+外部AIの共通routerは [GITHUB_ComfyUI.txt](GITHUB_ComfyUI.txt)、Manga正本入口は [GITHUB_MANGA.txt](GITHUB_MANGA.txt)、H3正本入口は [GITHUB_H3.txt](GITHUB_H3.txt)です。Mangaの現在地は [docs/manga/STATUS.md](docs/manga/STATUS.md)。
 新規Web GPT SOLからlocal LUNAへ引き継ぐ場合は [WEBGPT_SOL_LUNA_HANDOFF.md](docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md) を使用します。
-2026-09-06の [Astra Master Plan](docs/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md) が新しい戦略正本です。
+2026-09-06の [Astra Master Plan](docs/manga/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md) が新しい戦略正本です。
 Scene-first実装はM3A.1まで進んでいますが、Owner live-browser acceptanceは未完了です。以下には旧環境の説明も含まれるため、現在地判断はSTATUSを優先してください。
 
 Windowsローカル環境に、漫画・イラスト制作向けに特化して構築された **ComfyUI Portable環境** です。
@@ -65,44 +65,16 @@ D:\GitHub\tegaki\ComfyUIPortable\
  ├─ GITHUB_H3.txt                         # MiniMax H3正本入口
  ├─ configs/
  │   └─ extra_model_paths.yaml              # 外部モデルパス定義テンプレート
- ├─ docs/                                   # 漫画制作データ契約・仕様書・設計資料集
- │   ├─ MANGA_SCENE_DATA_CONTRACT.md        # 漫画シーンデータ契約総合仕様書 (PAGE/KOMA/CAST)
- │   ├─ CAST_SPEC_V1.md                     # キャラクターマスター定義仕様書 (CAST_SPEC v1)
- │   ├─ COMPILE_PLAN_V1.md                  # コマ実行計画仕様書 (COMPILE_PLAN v1)
- │   ├─ LORA_ENTRY_V1.md                    # Canonical LoRA Entry仕様書 (v1)
- │   ├─ KNOWN_ISSUES.md                     # 既知の課題・解決済み履歴
- │   ├─ WORKFLOW_INDEX.md                   # ワークフロー解説・索引
- │   ├─ DEPENDENCIES.md                     # パッケージ・ハードウェア環境仕様
- │   ├─ manga/references/RESEARCH_REFERENCES.md # Manga参照リポジトリ・ライセンス
- │   ├─ CUSTOM_NODE_MANIFEST.md             # 外部Custom Nodeコミット追跡
- │   ├─ verification/                           # 正準検証マニフェスト (PHASE3G / PHASE3H / PHASE3I / PHASE3J / PHASE3J.1)
- │   └─ reports/                            # 開発フェーズ完了報告書・検証記録集
- │       ├─ PHASE3J_1_CHARACTER_PROMPT_AND_REGION_ISOLATION_REPORT.md
- │       ├─ PHASE3J_SEMANTIC_PRESENCE_AND_ADAPTIVE_GUIDE_REPORT.md
- │       ├─ PHASE3I_2_REFERENCE_FAST_CAUSAL_AND_PER_REGION_CONTROL_REPORT.md
- │       ├─ PHASE3I_1_CONTROLNET_VISUAL_TRUTH_AND_INTERACTION_REPORT.md
- │       ├─ PHASE3I_CONTROLNET_LAYOUT_ASSIST_REPORT.md
- │       ├─ PHASE3H_SUBJECT_EXCLUSIVITY_AND_AUTHORING_CAUSALITY_REPORT.md
- │       ├─ PHASE3G_CANONICAL_VERIFICATION_AND_FAST_MODE_REPORT.md
- │       ├─ PHASE3F_ZERO_TOUCH_AND_PROGRESSIVE_AUTHORING_REPORT.md
- │       ├─ PHASE3E_IMPACT_MANGA_REINTEGRATION_AND_PROGRESSIVE_AUTHORING_REPORT.md
- │       ├─ PHASE3D_2_REGIONAL_SEMANTICS_FIRST_REPORT.md
- │       ├─ PHASE3D_1_REGIONAL_LOCALITY_AND_CAST_MASTER_REPORT.md
- │       ├─ PHASE3D_VARIABLE_N_REGION_MANGA_INTEGRATION_REPORT.md
- │       ├─ PHASE3C_1_2_FRONTEND_BACKEND_GEOMETRY_PARITY_REPORT.md
- │       ├─ PHASE3C_1_1_PANEL_TOPOLOGY_AND_CONTROLNET_FUSION_REPORT.md
- │       ├─ PHASE3C_1_SEMANTIC_REGION_AND_PANEL_LAYOUT_REPORT.md
- │       ├─ PHASE3C_TWO_REGION_COUPLE_ORACLE_REPORT.md
- │       ├─ PHASE3B_1_1_WORKFLOW_COMPATIBILITY_HOTFIX_REPORT.md
- │       ├─ PHASE3B_1_REGIONAL_CONTROL_EXPANSION_REPORT.md
- │       ├─ PHASE3B_END_TO_END_REGIONAL_GENERATION_REPORT.md
- │       ├─ PHASE3A_1_SCENE_CONTRACT_HARDENING_REPORT.md
- │       ├─ PHASE3A_SCENE_DATA_CONTRACT_REPORT.md
- │       ├─ PHASE2_1_1_REGRESSION_FIX_REPORT.md
- │       ├─ PHASE2_1_STABILIZATION_REPORT.md
- │       ├─ PHASE2_MRP_UI_REPORT.md
- │       ├─ BUILD_REPORT.md
- │       └─ PHASE2_1_UI_TEST_CHECKLIST.md
+ ├─ docs/                                   # domain別文書router
+ │   ├─ README.md                            # Manga / H3文書入口
+ │   ├─ manga/                               # Manga正本・契約・計画・報告・検証
+ │   │   ├─ STATUS.md
+ │   │   ├─ contracts/
+ │   │   ├─ plans/
+ │   │   ├─ references/
+ │   │   ├─ reports/
+ │   │   └─ verification/
+ │   └─ h3/                                  # MiniMax H3文書Hub・計画・報告・evidence
  ├─ custom_nodes_custom/
  │   └─ tegaki_manga_nodes/                 # 独自LoRA記法・Region Editor・Scene/Page Compiler・Mask/Conditioning・Panel Layout API・Cast Masterノード
  ├─ scripts/
@@ -144,7 +116,10 @@ D:\GitHub\tegaki\ComfyUIPortable\
  │   ├─ test_i2i.py                         # 実機I2Iパイプライン検証スクリプト
  │   └─ test_wildcards.py                   # Wildcard/Dynamic Prompts検証
  ├─ patches/                                # 外部Custom Node向けローカルパッチ集
- ├─ workflows/                              # 漫画制作向けワークフローJSON (53種)
+ ├─ workflows/                              # domain別Workflow router
+ │   ├─ README.md
+ │   ├─ manga/                               # canonical + historical Archive
+ │   └─ h3/                                  # H1A / H1B / H1B.1
  ├─ python_embeded/                         # [Git除外] Python 3.13 組み込み環境
  └─ ComfyUI/                                # [Git除外] ComfyUI本体 & 外部Custom Nodes
 ```
@@ -153,7 +128,7 @@ D:\GitHub\tegaki\ComfyUIPortable\
 
 ## 4. ワークフローの使い方
 
-ComfyUIをブラウザで開いた後、画面右上の「Load」または画面上へ `workflows/` フォルダ内の `.json` ファイルをドラッグ＆ドロップしてください。
+ComfyUIをブラウザで開き、Mangaの現行正本 `workflows/manga/MINIMUM_HAND_MANGA_DRAFT.json` をLoadまたはドラッグ＆ドロップします。以下の番号付きWorkflowは `workflows/manga/Archive/` の歴史・検証用です。
 
 - `01_BASIC_ILLUSTRIOUS_TXT2IMG.json`: まず最初に試すべき基本生成ワークフロー (STABLE)
 - `02_ILLUSTRIOUS_I2I.json`: 生成画像のディテールアップ・修正用 (STABLE)

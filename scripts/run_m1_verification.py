@@ -10,7 +10,7 @@ Executes the empirical verification suite for M1:
 
 Generates:
 - output/Tegaki/M1/ raw generations
-- docs/verification/m1/ verified images, previews, manifest, and contact sheet.
+- docs/manga/verification/m1/ verified images, previews, manifest, and contact sheet.
 """
 
 import os
@@ -66,7 +66,7 @@ generate_scene_regions_preview_image = _aeb.generate_scene_regions_preview_image
 create_default_m1_document = _mse.create_default_m1_document
 
 OUTPUT_DIR = os.path.join(ROOT_DIR, "output", "Tegaki", "M1")
-DOCS_DIR = os.path.join(ROOT_DIR, "docs", "verification", "m1")
+DOCS_DIR = os.path.join(ROOT_DIR, "docs", "manga", "verification", "m1")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(DOCS_DIR, exist_ok=True)
 

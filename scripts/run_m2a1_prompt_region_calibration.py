@@ -14,7 +14,7 @@ Empirical verification runner for Milestone M2A.1:
 
 Generates:
 - output/Tegaki/M2A1/ raw outputs
-- docs/verification/m2a1/ verified outputs, manifest, and contact sheets:
+- docs/manga/verification/m2a1/ verified outputs, manifest, and contact sheets:
   - M2A1_TWO_CHARACTER_PROMPT_REGION.png
   - M2A1_DEPTH_PROMPT_REGION.png
   - M2A1_THREE_CHARACTER_PROMPT_REGION.png
@@ -71,7 +71,7 @@ generate_scene_regions_preview_image = _aeb.generate_scene_regions_preview_image
 compile_document_to_page_plan = _aeb.compile_document_to_page_plan
 
 OUTPUT_DIR = os.path.join(ROOT_DIR, "output", "Tegaki", "M2A1")
-DOCS_DIR = os.path.join(ROOT_DIR, "docs", "verification", "m2a1")
+DOCS_DIR = os.path.join(ROOT_DIR, "docs", "manga", "verification", "m2a1")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(DOCS_DIR, exist_ok=True)
 
@@ -693,7 +693,7 @@ def main():
                 "effective_scene_prompt": p0.get("compiled_prompt"),
                 "characters": char_debug,
                 "elapsed_seconds": round(elapsed, 2),
-                "output_path": f"docs/verification/m2a1/{cid}.png",
+                "output_path": f"docs/manga/verification/m2a1/{cid}.png",
             })
         except Exception as e:
             elapsed = time.time() - t0
@@ -764,7 +764,7 @@ def main():
                 "visual_status": "PENDING_INSPECTION",
                 "review_method": "DIRECT_IMAGE_INSPECTION",
                 "elapsed_seconds": round(elapsed, 2),
-                "output_path": f"docs/verification/m2a1/{cid}.png",
+                "output_path": f"docs/manga/verification/m2a1/{cid}.png",
             })
         except Exception as e:
             print(f"    ERROR: {e}")

@@ -1,7 +1,7 @@
 """
 Generate Workflow 24: Single Panel Progressive SubScene Impact (Phase 3F)
 =========================================================================
-Builds workflows/24_SINGLE_PANEL_PROGRESSIVE_SUBSCENE_IMPACT.json.
+Builds workflows/manga/Archive/24_SINGLE_PANEL_PROGRESSIVE_SUBSCENE_IMPACT.json.
 
 Architecture:
 - 1 Visible Manga Panel
@@ -25,7 +25,7 @@ if CUSTOM_NODES_PATH not in sys.path:
 
 from tegaki_manga_nodes.panel_layout_spec import get_default_panel_layout_spec
 
-WORKFLOW_FILE = os.path.join(PROJECT_ROOT, "workflows", "24_SINGLE_PANEL_PROGRESSIVE_SUBSCENE_IMPACT.json")
+WORKFLOW_FILE = os.path.join(PROJECT_ROOT, "workflows", "manga", "Archive", "24_SINGLE_PANEL_PROGRESSIVE_SUBSCENE_IMPACT.json")
 
 
 def build_workflow_24():

@@ -21,7 +21,7 @@ LUNAの未commit・未push差分は対象外である。
 ## Card発行前のSOL監査
 
 1. `GITHUB_MANGA.txt` の最新入口を読む。
-2. 入口が指定する `docs/STATUS.md`、handoff、Master Plan、UX、Card Routerを読む。
+2. 入口が指定する `docs/manga/STATUS.md`、handoff、Master Plan、UX、Card Routerを読む。
 3. `main`の最新commitとManga implementation Review Targetを区別する。
 4. 直前Card、report、verification、対象sourceだけを固定SHAで確認する。
 5. technical/runtime/visual/Owner acceptanceを別々に判定する。
@@ -63,7 +63,7 @@ LUNAが次の作業を誤推定しないようCard内で順序とstop条件を�
 終了時:
 
 - 変更内容、理由、検証commandと結果、未実施、risk、Owner確認項目をreportする。
-- `docs/STATUS.md`には現在地と次の一件だけを置き、長い履歴を積まない。
+- `docs/manga/STATUS.md`には現在地と次の一件だけを置き、長い履歴を積まない。
 - 計画との差、判明した制限、gate結果を該当計画へ反映する。
 - 実画像を見ていない場合はvisual PASSにしない。Browser未実施をPASSにしない。
 - 実装Review Targetとnavigation-only commitを混同しない。

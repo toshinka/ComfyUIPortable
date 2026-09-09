@@ -17,7 +17,7 @@ Repository: `https://github.com/toshinka/tegaki`
 - This handoff raw URL: `https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md`
 - H3 external entry: `ComfyUIPortable/GITHUB_H3.txt`
 - Domain router: `ComfyUIPortable/GITHUB_ComfyUI.txt`
-- Manga implementation Review Target: `a7f0baaad6e7f5d82c39b1042e8a3c4e9f1a7d5b`
+- Manga implementation Review Target: `a7f0baaa89a2e315b0492573c9da19e50727928b`
 - Manga namespace/card migration publication: `ef7daa502f501211cd6b06f378e9024dbff6f284`
 - 2026-09-09監査時のrepository HEAD / `origin/main`: `145807e1`
 
@@ -68,13 +68,13 @@ domain別に維持する。H3 Mangaは後段の別gateであり、今回のManga
 
 1. `ComfyUIPortable/GITHUB_MANGA.txt`
 2. `ComfyUIPortable/docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md`
-3. `ComfyUIPortable/docs/STATUS.md`
+3. `ComfyUIPortable/docs/manga/STATUS.md`
 4. `ComfyUIPortable/docs/manga/README.md`
-5. `ComfyUIPortable/docs/DOCUMENT_REGISTER.md`
-6. `ComfyUIPortable/docs/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md`
-7. `ComfyUIPortable/docs/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md`
-8. `ComfyUIPortable/docs/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md`
-9. `ComfyUIPortable/docs/plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md`
+5. `ComfyUIPortable/docs/manga/DOCUMENT_REGISTER.md`
+6. `ComfyUIPortable/docs/manga/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md`
+7. `ComfyUIPortable/docs/manga/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md`
+8. `ComfyUIPortable/docs/manga/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md`
+9. `ComfyUIPortable/docs/manga/plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md`
 10. `ComfyUIPortable/docs/manga/cards/README.md`
 11. M3A.1 report、verification、必要なsourceだけをReview Target SHAで読む。
 12. 統合判断が関係する時だけ `GITHUB_H3.txt` と `docs/h3/README.md` を読む。

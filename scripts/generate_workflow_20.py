@@ -1,7 +1,7 @@
 """
 Generate Workflow 20: Two Region Layout Assist Oracle (Phase 3D.2)
 ==================================================================
-Builds workflows/20_TWO_REGION_LAYOUT_ASSIST_ORACLE.json.
+Builds workflows/manga/Archive/20_TWO_REGION_LAYOUT_ASSIST_ORACLE.json.
 Combines:
 - Impact RegionalSampler
 - TegakiTwoRegionLayoutGuide (generates simple black/white rectangular layout guide)
@@ -14,7 +14,7 @@ import os
 import sys
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-WORKFLOW_FILE = os.path.join(PROJECT_ROOT, "workflows", "20_TWO_REGION_LAYOUT_ASSIST_ORACLE.json")
+WORKFLOW_FILE = os.path.join(PROJECT_ROOT, "workflows", "manga", "Archive", "20_TWO_REGION_LAYOUT_ASSIST_ORACLE.json")
 
 
 def build_workflow_20():

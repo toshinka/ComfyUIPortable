@@ -1,7 +1,7 @@
 {
   "schema_version": "m2b2_live_ui_smoke_manifest_v1",
   "timestamp": "2026-09-06T13:30:00+09:00",
-  "target_workflow": "workflows/MINIMUM_HAND_MANGA_DRAFT.json",
+  "target_workflow": "workflows/manga/MINIMUM_HAND_MANGA_DRAFT.json",
   "review_target_baseline": "1b3bd2246c6a2f440d7a7f810a8a75a798fb9bc2",
   "custom_dom_loaded": "PASS / OWNER PENDING",
   "app_import_ok": true,

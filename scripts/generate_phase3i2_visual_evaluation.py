@@ -2,7 +2,7 @@
 Phase 3I.2: Visual Evaluation JSON Generator
 ============================================
 Generates:
-- docs/verification/PHASE3I_2_VISUAL_EVALUATION.json
+- docs/manga/verification/PHASE3I_2_VISUAL_EVALUATION.json
 with strict provenance metadata:
   evaluation_source: AI_VISUAL_ANNOTATION
   measurement_method: approximate_manual_bbox
@@ -13,7 +13,7 @@ import os
 import json
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-VERIF_DIR = os.path.join(ROOT_DIR, "docs", "verification")
+VERIF_DIR = os.path.join(ROOT_DIR, "docs", "manga", "verification")
 os.makedirs(VERIF_DIR, exist_ok=True)
 
 

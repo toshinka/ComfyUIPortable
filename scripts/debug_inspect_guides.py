@@ -17,8 +17,8 @@ out_dir = os.path.join("output", "debug_guides")
 os.makedirs(out_dir, exist_ok=True)
 
 for num in [35, 36, 37, 38, 39]:
-    wf_fn = [f for f in os.listdir("workflows") if f.startswith(str(num))][0]
-    wf = json.load(open(os.path.join("workflows", wf_fn), encoding="utf-8"))
+    wf_fn = [f for f in os.listdir(os.path.join("workflows", "manga", "Archive")) if f.startswith(str(num))][0]
+    wf = json.load(open(os.path.join("workflows", "manga", "Archive", wf_fn), encoding="utf-8"))
 
     cast_w = next(n for n in wf["nodes"] if n["type"] == "TegakiMangaCastMaster")["widgets_values"][0]
     content_w = next(n for n in wf["nodes"] if n["type"] == "TegakiMangaPanelContentEditor")["widgets_values"][0]

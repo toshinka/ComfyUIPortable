@@ -49,7 +49,7 @@ from scripts.generate_phase3j_workflows import (
     PANEL_SCENE_PROMPT
 )
 
-WORKFLOWS_DIR = os.path.join(ROOT_DIR, "workflows")
+WORKFLOWS_DIR = os.path.join(ROOT_DIR, "workflows", "manga", "Archive")
 OUTPUT_DIR = os.path.join(ROOT_DIR, "output", "Tegaki", "Phase3J", "canonical")
 
 

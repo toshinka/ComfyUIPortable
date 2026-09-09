@@ -22,9 +22,9 @@ live repositoryを再監査して新しい限定指示書を発行する。
 ## 再開時の読み順
 
 1. `GITHUB_MANGA.txt`
-2. `docs/STATUS.md`
+2. `docs/manga/STATUS.md`
 3. `docs/manga/README.md`
-4. `docs/DOCUMENT_REGISTER.md`
+4. `docs/manga/DOCUMENT_REGISTER.md`
 5. M3A.1 reportとOwner browser結果
 6. Astra Master Planの該当節
 7. SOLが新規発行した一枚のCard

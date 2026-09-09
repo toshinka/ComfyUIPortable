@@ -12,7 +12,7 @@ if ROOT_DIR not in sys.path:
 
 from custom_nodes.tegaki_manga_nodes.conditioning_builder import TegakiMangaConditioningBuilder
 
-WORKFLOWS_DIR = os.path.join(ROOT_DIR, "workflows")
+WORKFLOWS_DIR = os.path.join(ROOT_DIR, "workflows", "manga", "Archive")
 
 
 def migrate_conditioning_builder_widgets_python(wv):

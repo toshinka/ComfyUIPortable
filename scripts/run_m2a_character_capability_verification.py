@@ -14,7 +14,7 @@ Executes the empirical verification suite for M2A Character Spatial Capability L
 
 Produces:
 - output/Tegaki/M2A/ raw generations
-- docs/verification/m2a/ verified images, mask preview images, manifest, and contact sheets:
+- docs/manga/verification/m2a/ verified images, mask preview images, manifest, and contact sheets:
   - M2A_TWO_CHARACTER_ORACLE.png
   - M2A_DEPTH_ORACLE.png
   - M2A_REPEATED_CAST_ORACLE.png
@@ -72,7 +72,7 @@ make_area = _ac.make_area
 generate_scene_regions_preview_image = _aeb.generate_scene_regions_preview_image
 
 OUTPUT_DIR = os.path.join(ROOT_DIR, "output", "Tegaki", "M2A")
-DOCS_DIR = os.path.join(ROOT_DIR, "docs", "verification", "m2a")
+DOCS_DIR = os.path.join(ROOT_DIR, "docs", "manga", "verification", "m2a")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 os.makedirs(DOCS_DIR, exist_ok=True)
 
@@ -476,7 +476,7 @@ def main():
             if not raw_path or not os.path.exists(raw_path):
                 raise RuntimeError(f"Output image for {cid} not found in outputs!")
 
-            # Copy to docs/verification/m2a/
+            # Copy to docs/manga/verification/m2a/
             doc_img_path = os.path.join(DOCS_DIR, f"{cid}.png")
             shutil.copyfile(raw_path, doc_img_path)
             print(f"[Runner] Condition {cid} completed in {elapsed:.1f}s -> Saved: {doc_img_path}")
@@ -522,8 +522,8 @@ def main():
             "runtime_status": "PASS",
             "visual_status": "PENDING_INSPECTION",
             "review_method": "DIRECT_IMAGE_INSPECTION",
-            "output_path": f"docs/verification/m2a/{cid}.png",
-            "preview_path": f"docs/verification/m2a/{cid}_preview.png",
+            "output_path": f"docs/manga/verification/m2a/{cid}.png",
+            "preview_path": f"docs/manga/verification/m2a/{cid}_preview.png",
             "elapsed_seconds": round(elapsed, 2),
         })
 

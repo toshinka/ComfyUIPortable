@@ -7,8 +7,8 @@ Generates pixel-oracle verification images for M3A.1 corrections:
 - V2: 2 frames with different per-frame thickness (2px/8px)
 - V3: Area-only frame after JSON roundtrip (no shape drift)
 
-Produces contact sheet docs/verification/m3a1/M3A1_FRAME_GUTTER_AND_THICKNESS_ORACLE.png
-and manifest docs/verification/m3a1/M3A1_FRAME_RUNTIME_MANIFEST.json.
+Produces contact sheet docs/manga/verification/m3a1/M3A1_FRAME_GUTTER_AND_THICKNESS_ORACLE.png
+and manifest docs/manga/verification/m3a1/M3A1_FRAME_RUNTIME_MANIFEST.json.
 
 Manifest uses separated runtime_status / structural_frame_status / visual_status
 (visual_status=PENDING unless directly reviewed by Gemini).
@@ -53,7 +53,7 @@ _render_single_pil_overlay = _avfb._render_single_pil_overlay
 derive_panel_layout_spec_from_frames = _avfb.derive_panel_layout_spec_from_frames
 TegakiMangaFrameOverlay = _fo.TegakiMangaFrameOverlay
 
-OUT_DIR = os.path.join(_ROOT, "docs", "verification", "m3a1")
+OUT_DIR = os.path.join(_ROOT, "docs", "manga", "verification", "m3a1")
 os.makedirs(OUT_DIR, exist_ok=True)
 
 W, H = 240, 350  # Oracle canvas size
@@ -362,7 +362,7 @@ def main():
                 "checks_total": 19
             },
             "pixel_oracle_tasks": entries,
-            "oracle_contact_sheet": "docs/verification/m3a1/M3A1_FRAME_GUTTER_AND_THICKNESS_ORACLE.png",
+            "oracle_contact_sheet": "docs/manga/verification/m3a1/M3A1_FRAME_GUTTER_AND_THICKNESS_ORACLE.png",
             "live_browser_frame_edit": {
                 "runtime_status": "PENDING",
                 "visual_status": "PENDING",

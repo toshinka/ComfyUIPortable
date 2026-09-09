@@ -5,12 +5,13 @@ Branch: main
 Canonical path: ComfyUIPortable/GITHUB_MANGA.txt
 Latest Entry: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB_MANGA.txt
 
-Review Target Commit SHA: a7f0baaad6e7f5d82c39b1042e8a3c4e9f1a7d5b
+Review Target Commit SHA: a7f0baaa89a2e315b0492573c9da19e50727928b
 Review Target: M3A.1 implementation (published on main)
 Navigation Commit SHA: dfe944c6
 Strategic Planning Commit SHA: 261a3d7297455931d391e62f2d8a1335193d8d90
 Namespace/card migration publication: ef7daa502f501211cd6b06f378e9024dbff6f284
-SOL/LUNA handoff publication: LOCAL PENDING OWNER COMMIT/PUSH
+SOL/LUNA handoff and Manga workflow namespace: 77de3c48
+Docs namespace consolidation publication: LOCAL PENDING OWNER COMMIT/PUSH
 
 Current state
 -------------
@@ -39,40 +40,40 @@ Reading order
 -------------
 1. ComfyUIPortable/GITHUB_MANGA.txt
 2. ComfyUIPortable/docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md
-3. ComfyUIPortable/docs/STATUS.md
+3. ComfyUIPortable/docs/manga/STATUS.md
 4. ComfyUIPortable/docs/manga/README.md
-5. ComfyUIPortable/docs/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md
-6. ComfyUIPortable/docs/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md
-7. ComfyUIPortable/docs/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md
-8. ComfyUIPortable/docs/plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md
+5. ComfyUIPortable/docs/manga/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md
+6. ComfyUIPortable/docs/manga/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md
+7. ComfyUIPortable/docs/manga/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md
+8. ComfyUIPortable/docs/manga/plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md
 9. ComfyUIPortable/docs/manga/cards/README.md
 10. Current report, then only relevant source/workflows/tests.
 
 Current review documents
 ------------------------
 Status:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/STATUS.md
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/STATUS.md
 Manga document hub:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/README.md
 SOL/LUNA new-chat handoff:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md
-M3A.1 report at the implementation review target:
-https://raw.githubusercontent.com/toshinka/tegaki/a7f0baaad6e7f5d82c39b1042e8a3c4e9f1a7d5b/ComfyUIPortable/docs/reports/M3A1_FRAME_RUNTIME_TRUTH_AND_BROWSER_CLOSURE_REPORT.md
+M3A.1 report at the implementation review target (historical path at that SHA):
+https://raw.githubusercontent.com/toshinka/tegaki/a7f0baaa89a2e315b0492573c9da19e50727928b/ComfyUIPortable/docs/reports/M3A1_FRAME_RUNTIME_TRUTH_AND_BROWSER_CLOSURE_REPORT.md
 Document register:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/DOCUMENT_REGISTER.md
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/DOCUMENT_REGISTER.md
 Card router:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/README.md
 
 Strategic SSOT
 --------------
 Master plan:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md
 UX blueprint:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md
 Asset/workflow inventory:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md
 SOL/LUNA protocol:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md
 
 Evidence cautions
 -----------------
@@ -103,6 +104,8 @@ Migration map:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/MANGA_DOCUMENT_NAMESPACE_MIGRATION_MAP.md
 Migration report:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/MANGA_DOCUMENT_NAMESPACE_MIGRATION_REPORT.md
+Docs/workflow consolidation report:
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/MANGA_DOCS_WORKFLOW_NAMESPACE_MIGRATION_REPORT.md
 
 Production outputs remain at output/Tegaki and output/debug_guides for now.
 They were audited but not moved. A later MANGA_OUTPUT_NAMESPACE_MIGRATION card

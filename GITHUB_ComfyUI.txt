@@ -4,6 +4,7 @@ Repository: https://github.com/toshinka/tegaki
 Branch: main
 Canonical router path: ComfyUIPortable/GITHUB_ComfyUI.txt
 Router/namespace publication: ef7daa502f501211cd6b06f378e9024dbff6f284
+Docs domain consolidation: LOCAL PENDING OWNER COMMIT/PUSH
 
 This file routes external AI readers to the domain-specific canonical entry.
 Do not maintain detailed project status, Review Target SHA, plans, or evidence here.

@@ -31,7 +31,7 @@ from tegaki_manga_nodes.authoring_contract import validate_document
 class TestM1_1CanonicalWorkflowWiring(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.workflows_dir = os.path.join(ROOT_DIR, "workflows")
+        cls.workflows_dir = os.path.join(ROOT_DIR, "workflows", "manga")
         cls.canonical_wf_path = os.path.join(cls.workflows_dir, "MINIMUM_HAND_MANGA_DRAFT.json")
         with open(cls.canonical_wf_path, "r", encoding="utf-8") as f:
             cls.raw_text = f.read()

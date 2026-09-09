@@ -1,7 +1,7 @@
 """
 Generate Workflow 17 (Phase 3D.1-D)
 ===================================
-Generates workflows/17_MANGA_CAST_MASTER_AND_LOCALITY_VALIDATION.json:
+Generates workflows/manga/Archive/17_MANGA_CAST_MASTER_AND_LOCALITY_VALIDATION.json:
 Integrated pipeline with:
 - CheckpointLoaderSimple + TegakiLoraPromptLoader
 - TegakiMangaCastMaster (Centralized Character Master)
@@ -451,7 +451,7 @@ def build_workflow_17():
         "version": 0.4
     }
 
-    out_path = os.path.join(PROJECT_ROOT, "workflows", "17_MANGA_CAST_MASTER_AND_LOCALITY_VALIDATION.json")
+    out_path = os.path.join(PROJECT_ROOT, "workflows", "manga", "Archive", "17_MANGA_CAST_MASTER_AND_LOCALITY_VALIDATION.json")
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(workflow, f, indent=2, ensure_ascii=False)
     print(f"[Workflow 17] Generated successfully -> {out_path}")

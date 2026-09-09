@@ -31,7 +31,7 @@ if ROOT_DIR not in sys.path:
 
 from scripts import comfy_runtime_helper
 
-WORKFLOWS_DIR = os.path.join(ROOT_DIR, "workflows")
+WORKFLOWS_DIR = os.path.join(ROOT_DIR, "workflows", "manga", "Archive")
 OUTPUT_DIR = os.path.join(ROOT_DIR, "output", "Tegaki", "Phase3G", "hypersd")
 
 # Local Hyper-SD LoRA assets discovered in D:\Models\Lora\調整\

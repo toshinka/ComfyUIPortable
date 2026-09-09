@@ -1,13 +1,13 @@
 # ComfyUIPortable 現在地 (Status & Direction)
 
 更新: 2026-09-09 JST
-Review Target Commit SHA: `a7f0baaad6e7f5d82c39b1042e8a3c4e9f1a7d5b` (M3A.1 implementation, published)
-Manga正本入口: [GITHUB_MANGA.txt](../GITHUB_MANGA.txt)
+Review Target Commit SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b` (M3A.1 implementation, published)
+Manga正本入口: [GITHUB_MANGA.txt](../../GITHUB_MANGA.txt)
 
 `GITHUB_ComfyUI.txt` はManga/H3を振り分けるCompatibility Routerへ変更した。
 今回のnamespace整理は文書/navigationのみで、Manga runtime・workflow・schema・outputを変更していない。
-今後はWeb GPT SOLが[新規チャット引き継ぎ](manga/WEBGPT_SOL_LUNA_HANDOFF.md)からGitHubを監査し、
-[Card Router](manga/cards/README.md)と[現行プロトコル](plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md)に従って
+今後はWeb GPT SOLが[新規チャット引き継ぎ](WEBGPT_SOL_LUNA_HANDOFF.md)からGitHubを監査し、
+[Card Router](cards/README.md)と[現行プロトコル](plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md)に従って
 ローカルLUNAへ新しい限定Cardを発行する。現在、active LUNA implementation Cardはない。
 
 ---
@@ -100,7 +100,7 @@ Scene-only Draft (M1) → CAST 複数出演 (M2) → Rough Guide (M3) → UX She
 
 - **完了Card**: **M2B / 3M-2B — Minimum-Hand CAST & Character Staging Product UI (Option A+)** — COMPLETED & VERIFIED
   - **Option A+ Product UI統合**: `TegakiMinimumHandSceneEditor`（表示名: `Tegaki Minimum-Hand Manga Authoring (Draft)`）の単一ノード内に、GLOBAL設定、CAST Master登録、Character Rough Region直接操作、自由記述Acting Prompt、3+/4+警告バッジを統合。
-  - **Canonical Workflow 安定名化**: `workflows/MINIMUM_HAND_MANGA_DRAFT.json` をroot 1本化。
+  - **Canonical Workflow 安定名化**: `workflows/manga/MINIMUM_HAND_MANGA_DRAFT.json` をroot 1本化。
 
 - **完了Card**: **M2B.1 — CAST Placement Semantics & Live Browser Closure** — COMPLETED (Backend/Headless) / FAIL (Owner Live Browser Check)
   - **Finding A（選択CAST配置の因果性）解消**: `minimum_hand_scene_editor.js` の剰余サイクリング（modulo arithmetic）を廃止し、選択されたCAST（`selectedCastId`）を厳格に配置するセマンティクスへ修正。単一CAST登録時は自動選択、複数CAST登録かつ未選択時は非サイレントに選択を促すブロックを実施。
@@ -109,7 +109,7 @@ Scene-only Draft (M1) → CAST 複数出演 (M2) → Rough Guide (M3) → UX She
   - **DOM Injection 防止**: `< > & " '` を含む表示名・プロンプトに対する安全な DOM 構築・プロパティ設定を徹底。
   - **Finding B（検証分類の厳格化 & Owner検証結果）**: E2E分類を `HEADLESS_TEST`（JS 13件 / Python 165件 100% PASS）、`LIVE_RUNTIME`（実機GPU 3条件完走 PASS）、`LIVE_BROWSER`（Owner実機確認によりFAIL判定）へ整理。
   - **報告書**: [M2B1_CAST_PLACEMENT_AND_BROWSER_CLOSURE_REPORT.md](reports/M2B1_CAST_PLACEMENT_AND_BROWSER_CLOSURE_REPORT.md)
-  - **Manifest**: `docs/verification/m2b1/M2B1_PRODUCT_E2E_MANIFEST.json`
+  - **Manifest**: `docs/manga/verification/m2b1/M2B1_PRODUCT_E2E_MANIFEST.json`
 
 - **完了Card**: **M3A / 3M-3A — Visual Panel Frame Layer & Frame Guide Integration** — PASS (Headless) / OWNER ACCEPTANCE PENDING (Browser)
   - `page.visual_frames` SSOT、3-layer Edit UI、Frame独立操作、TegakiMangaFrameOverlay node、0-frame pass-through、V0-V4 PASS。
@@ -136,6 +136,6 @@ Scene-only Draft (M1) → CAST 複数出演 (M2) → Rough Guide (M3) → UX She
 - 戦略SSOT: [ASTRA_MANGA_AUTHORING_MASTER_PLAN.md](plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md)
 - UX詳細: [ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md](plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md)
 - 資産棚卸し: [ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md](plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md)
-- SOL/LUNA引き継ぎ: [WEBGPT_SOL_LUNA_HANDOFF.md](manga/WEBGPT_SOL_LUNA_HANDOFF.md)
+- SOL/LUNA引き継ぎ: [WEBGPT_SOL_LUNA_HANDOFF.md](WEBGPT_SOL_LUNA_HANDOFF.md)
 - 実行プロトコル: [ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md](plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md)
 - 文書登録簿: [DOCUMENT_REGISTER.md](DOCUMENT_REGISTER.md)

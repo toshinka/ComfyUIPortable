@@ -4,7 +4,7 @@
 **Status**: ACCEPTED / GREEN  
 **Author**: Antigravity Assistant (Gemini 3.8)  
 **Target Milestone**: Phase 3M-1.1 (M1.1) — Canonical Workflow Wiring & UI SSOT Truth Fix  
-**Reference Document**: [`M1_1_CANONICAL_WORKFLOW_WIRING_AND_UI_SSOT_TRUTH_FIX.md`](../manga/cards/completed/M1_1_CANONICAL_WORKFLOW_WIRING_AND_UI_SSOT_TRUTH_FIX.md)
+**Reference Document**: [`M1_1_CANONICAL_WORKFLOW_WIRING_AND_UI_SSOT_TRUTH_FIX.md`](../cards/completed/M1_1_CANONICAL_WORKFLOW_WIRING_AND_UI_SSOT_TRUTH_FIX.md)
 **Review Target Baseline**: `c9a8dc1b937b97866a49ff41affc929a1fb8f9a3`  
 **Single Source of Truth**: `TEGAKI_AUTHORING_DOCUMENT` v1.0.0  
 

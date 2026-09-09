@@ -36,7 +36,7 @@ if CUSTOM_NODES_DIR not in sys.path:
 from scripts import comfy_runtime_helper
 from scripts.generate_phase3i2_workflows import build_phase3i2_workflow
 
-WORKFLOWS_DIR = os.path.join(ROOT_DIR, "workflows")
+WORKFLOWS_DIR = os.path.join(ROOT_DIR, "workflows", "manga", "Archive")
 OUTPUT_DIR = os.path.join(ROOT_DIR, "output", "Tegaki", "Phase3I2", "canonical")
 
 

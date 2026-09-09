@@ -1,7 +1,7 @@
 import json
 import os
 
-workflows_dir = os.path.abspath("workflows")
+workflows_dir = os.path.abspath(os.path.join("workflows", "manga", "Archive"))
 os.makedirs(workflows_dir, exist_ok=True)
 
 def create_txt2img_workflow():

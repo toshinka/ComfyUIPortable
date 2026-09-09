@@ -25,7 +25,7 @@ import os
 import sys
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-WORKFLOWS_DIR = os.path.join(PROJECT_ROOT, "workflows")
+WORKFLOWS_DIR = os.path.join(PROJECT_ROOT, "workflows", "manga", "Archive")
 
 GLOBAL_STYLE = "manga illustration, monochrome expressive linework, high quality"
 BASE_POSITIVE = f"{GLOBAL_STYLE}, clean empty white background, simple blank manga background, no focal subject"

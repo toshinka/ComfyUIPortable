@@ -22,9 +22,9 @@
 
 - Local HEAD: `743ce53a5d3f02554699ebc7afa4859a9e6d2716`。
 - 実装Review Target: `5eee2d4f7fa342e40add6c48fcb1ae7e8f1867b8`。ローカル旧入口と公開rawを照合。同SHAからHEADまで本projectの `custom_nodes_custom/ workflows/ scripts/ docs/` に差分なし。
-- 旧入口はPhase 3L完了を宣言。ただし `docs/verification/PHASE3L_PRESENCE_EVALUATION.json` の視覚評価はPENDING。`all_passed`は制作受入を意味しない。
+- 旧入口はPhase 3L完了を宣言。ただし `docs/manga/verification/PHASE3L_PRESENCE_EVALUATION.json` の視覚評価はPENDING。`all_passed`は制作受入を意味しない。
 - 既存の型・compiler・workflowは再利用候補。Backend採用報告、Workflow配線、実行ログ、画像、Owner評価を別々に読む。監査詳細は[棚卸し](ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md)。本ターンは生成/Browser検証をしていない。
-- 本projectに `docs/STATUS.md` / `docs/TECHNICAL.md` は作業開始時存在しなかった。Tegaki本体のPhaseへ接続しない。今後の現在地は今回追加の `docs/STATUS.md`。
+- 本projectに `docs/manga/STATUS.md` / `docs/TECHNICAL.md` は作業開始時存在しなかった。Tegaki本体のPhaseへ接続しない。今後の現在地は今回追加の `docs/manga/STATUS.md`。
 
 ## 3. ユーザーの概念
 

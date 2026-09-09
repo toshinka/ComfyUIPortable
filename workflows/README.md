@@ -1,24 +1,22 @@
-# Tegaki Manga Workflows Directory
+# ComfyUIPortable Workflow Router
 
-This directory contains the ComfyUI workflows for Tegaki Manga Authoring and Generation.
+更新: 2026-09-09 JST。
 
-## Canonical Active Workflow
+`workflows/`直下はdomain routerであり、実Workflow JSONを直接置かない。
 
-- **`MINIMUM_HAND_MANGA_DRAFT.json`**
-  - **Status**: Active (Phase 3M-2B / M2B Canonical)
-  - **Purpose**: Minimum-Hand Manga Draft pipeline. Provides interactive scene rectangle authoring, recurrent CAST Master registration, character rough region staging, free-text acting prompts, and seed control without requiring manual masks or ControlNet.
-  - **SSOT**: Powered by `TEGAKI_AUTHORING_DOCUMENT` v1.0.0 backed by `TegakiMinimumHandSceneEditor` (displayed as `Tegaki Minimum-Hand Manga Authoring (Draft)`) and `TegakiMangaConditioningBuilder`.
-  - **Architecture Boundary**:
-    - **User Workspace**: `TegakiMinimumHandSceneEditor` + `PreviewImage` (region layout preview) + `SaveImage` (draft output).
-    - **Internal Pipeline**: `CheckpointLoaderSimple` -> `TegakiMangaConditioningBuilder` -> `KSampler` -> `VAEDecode`.
+## Manga Authoring
 
----
+- Canonical active workflow: [`manga/MINIMUM_HAND_MANGA_DRAFT.json`](manga/MINIMUM_HAND_MANGA_DRAFT.json)
+- Historical/oracle workflows: [`manga/Archive/`](manga/Archive/)
 
-## Historical Archive (`Archive/`)
+`manga/Archive/`は過去の研究、比較、検証用Workflowを保持する。現在の製品入口として使わず、
+新しいManga production workflowはSOLが発行した限定Cardで`workflows/manga/`へ追加する。
 
-All workflows within the `Archive/` directory are preserved historical research, exploration, and oracle verification workflows from earlier iterations (e.g. 01–50+ experiment series).
+## MiniMax H3
 
-- **Policy**:
-  - `Archive/` is **read-only historical provenance**.
-  - Do not edit, delete, or move files out of `Archive/` to the root directory without explicit user instruction.
-  - All new production and milestone workflows are authored directly in the root `workflows/` directory.
+- H1A Native T2V: [`h3/H1A_NATIVE_T2V_BASE.json`](h3/H1A_NATIVE_T2V_BASE.json)
+- H1B Native I2V: [`h3/H1B_NATIVE_I2V_BASE.json`](h3/H1B_NATIVE_I2V_BASE.json)
+- H1B.1 Native FL2VA: [`h3/H1B1_NATIVE_FL2VA_BASE.json`](h3/H1B1_NATIVE_FL2VA_BASE.json)
+
+MangaとH3のworkflow、adapter、保存意味を相互流用しない。共通TEGAKI shellは上位tabを所有するが、
+domain workflowを統合する場合は別のShell Integration Cardと両系統の回帰確認を必要とする。

@@ -4,7 +4,7 @@
 **Status**: ACCEPTED / GREEN  
 **Author**: Antigravity Assistant  
 **Target Milestone**: Phase 3M-1 (M1) — Scene-Only Minimum-Hand Draft  
-**Reference Document**: [`M1_SCENE_ONLY_MINIMUM_HAND_DRAFT.md`](../manga/cards/completed/M1_SCENE_ONLY_MINIMUM_HAND_DRAFT.md)
+**Reference Document**: [`M1_SCENE_ONLY_MINIMUM_HAND_DRAFT.md`](../cards/completed/M1_SCENE_ONLY_MINIMUM_HAND_DRAFT.md)
 **Single Source of Truth**: `TEGAKI_AUTHORING_DOCUMENT` v1.0.0  
 
 ---

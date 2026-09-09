@@ -9,8 +9,8 @@ Executes the M3A verification suite:
 - V4: 2 Scenes + 1 Frame configuration.
 - Optional C0/C1/C2 ControlNet benchmarks when live model is active.
 
-Produces contact sheet docs/verification/m3a/M3A_VISUAL_FRAME_ORACLE.png
-and manifest docs/verification/m3a/M3A_VISUAL_FRAME_MANIFEST.json.
+Produces contact sheet docs/manga/verification/m3a/M3A_VISUAL_FRAME_ORACLE.png
+and manifest docs/manga/verification/m3a/M3A_VISUAL_FRAME_MANIFEST.json.
 """
 import os
 import sys
@@ -65,7 +65,7 @@ generate_scene_regions_preview_image = _aeb.generate_scene_regions_preview_image
 render_deterministic_frame_overlay = _avfb.render_deterministic_frame_overlay
 
 CKPT_NAME = r"♃CN_Skeb\waiIllustriousSDXL_v170.safetensors"
-OUT_DIR = os.path.join(ROOT_DIR, "docs", "verification", "m3a")
+OUT_DIR = os.path.join(ROOT_DIR, "docs", "manga", "verification", "m3a")
 os.makedirs(OUT_DIR, exist_ok=True)
 
 
@@ -363,7 +363,7 @@ def main():
                 "runner": "scripts/run_m3a_visual_frame_verification.py",
                 "tasks": manifest_entries
             },
-            "oracle_contact_sheet": "docs/verification/m3a/M3A_VISUAL_FRAME_ORACLE.png",
+            "oracle_contact_sheet": "docs/manga/verification/m3a/M3A_VISUAL_FRAME_ORACLE.png",
             "live_browser_product_e2e": {
                 "status": "PENDING (OWNER MANUAL CHECK REQUIRED)",
                 "evidence_type": "LIVE_BROWSER",

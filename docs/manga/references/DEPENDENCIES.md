@@ -19,7 +19,7 @@
 ---
 
 ## 3. インストール済み Custom Nodes
-詳細なコミットハッシュおよびパッチ状況は [CUSTOM_NODE_MANIFEST.md](file:///d:/GitHub/tegaki/ComfyUIPortable/CUSTOM_NODE_MANIFEST.md) を参照してください。
+詳細なコミットハッシュおよびパッチ状況は [CUSTOM_NODE_MANIFEST.md](CUSTOM_NODE_MANIFEST.md) を参照してください。
 
 | Node名 | リポジトリ / ソース | 概要・用途 |
 |---|---|---|

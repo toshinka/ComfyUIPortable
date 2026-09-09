@@ -23,7 +23,7 @@ if CUSTOM_NODES_PATH not in sys.path:
 
 from tegaki_manga_nodes.panel_layout_spec import get_default_panel_layout_spec
 
-WORKFLOWS_DIR = os.path.join(PROJECT_ROOT, "workflows")
+WORKFLOWS_DIR = os.path.join(PROJECT_ROOT, "workflows", "manga", "Archive")
 CHECKPOINT_NAME = "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors"
 HYPER_SD_LORA_NAME = "調整\\Hyper-SDXL-12steps-CFG-lora.safetensors"
 CONTROLNET_NAME = "CN-anytest4_illustrious2_A.safetensors"

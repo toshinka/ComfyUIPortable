@@ -47,7 +47,7 @@
         }
       ],
       "elapsed_seconds": 28.04,
-      "output_path": "docs/verification/m2a1/B0_baseline_s42.png"
+      "output_path": "docs/manga/verification/m2a1/B0_baseline_s42.png"
     },
     {
       "condition_id": "B1_horiz_s42",
@@ -80,7 +80,7 @@
         }
       ],
       "elapsed_seconds": 24.25,
-      "output_path": "docs/verification/m2a1/B1_horiz_s42.png"
+      "output_path": "docs/manga/verification/m2a1/B1_horiz_s42.png"
     },
     {
       "condition_id": "B2_presence_s42",
@@ -113,7 +113,7 @@
         }
       ],
       "elapsed_seconds": 24.08,
-      "output_path": "docs/verification/m2a1/B2_presence_s42.png"
+      "output_path": "docs/manga/verification/m2a1/B2_presence_s42.png"
     },
     {
       "condition_id": "B0_baseline_s77",
@@ -146,7 +146,7 @@
         }
       ],
       "elapsed_seconds": 24.12,
-      "output_path": "docs/verification/m2a1/B0_baseline_s77.png"
+      "output_path": "docs/manga/verification/m2a1/B0_baseline_s77.png"
     },
     {
       "condition_id": "B1_horiz_s77",
@@ -179,7 +179,7 @@
         }
       ],
       "elapsed_seconds": 24.17,
-      "output_path": "docs/verification/m2a1/B1_horiz_s77.png"
+      "output_path": "docs/manga/verification/m2a1/B1_horiz_s77.png"
     },
     {
       "condition_id": "B2_presence_s77",
@@ -212,7 +212,7 @@
         }
       ],
       "elapsed_seconds": 26.04,
-      "output_path": "docs/verification/m2a1/B2_presence_s77.png"
+      "output_path": "docs/manga/verification/m2a1/B2_presence_s77.png"
     },
     {
       "condition_id": "B0_baseline_s101",
@@ -245,7 +245,7 @@
         }
       ],
       "elapsed_seconds": 24.44,
-      "output_path": "docs/verification/m2a1/B0_baseline_s101.png"
+      "output_path": "docs/manga/verification/m2a1/B0_baseline_s101.png"
     },
     {
       "condition_id": "B1_horiz_s101",
@@ -278,7 +278,7 @@
         }
       ],
       "elapsed_seconds": 24.32,
-      "output_path": "docs/verification/m2a1/B1_horiz_s101.png"
+      "output_path": "docs/manga/verification/m2a1/B1_horiz_s101.png"
     },
     {
       "condition_id": "B2_presence_s101",
@@ -311,7 +311,7 @@
         }
       ],
       "elapsed_seconds": 24.35,
-      "output_path": "docs/verification/m2a1/B2_presence_s101.png"
+      "output_path": "docs/manga/verification/m2a1/B2_presence_s101.png"
     },
     {
       "condition_id": "B0_baseline_s133",
@@ -344,7 +344,7 @@
         }
       ],
       "elapsed_seconds": 24.06,
-      "output_path": "docs/verification/m2a1/B0_baseline_s133.png"
+      "output_path": "docs/manga/verification/m2a1/B0_baseline_s133.png"
     },
     {
       "condition_id": "B1_horiz_s133",
@@ -377,7 +377,7 @@
         }
       ],
       "elapsed_seconds": 24.05,
-      "output_path": "docs/verification/m2a1/B1_horiz_s133.png"
+      "output_path": "docs/manga/verification/m2a1/B1_horiz_s133.png"
     },
     {
       "condition_id": "B2_presence_s133",
@@ -410,7 +410,7 @@
         }
       ],
       "elapsed_seconds": 24.06,
-      "output_path": "docs/verification/m2a1/B2_presence_s133.png"
+      "output_path": "docs/manga/verification/m2a1/B2_presence_s133.png"
     },
     {
       "condition_id": "B0_baseline_s202",
@@ -443,7 +443,7 @@
         }
       ],
       "elapsed_seconds": 24.14,
-      "output_path": "docs/verification/m2a1/B0_baseline_s202.png"
+      "output_path": "docs/manga/verification/m2a1/B0_baseline_s202.png"
     },
     {
       "condition_id": "B1_horiz_s202",
@@ -476,7 +476,7 @@
         }
       ],
       "elapsed_seconds": 24.15,
-      "output_path": "docs/verification/m2a1/B1_horiz_s202.png"
+      "output_path": "docs/manga/verification/m2a1/B1_horiz_s202.png"
     },
     {
       "condition_id": "B2_presence_s202",
@@ -509,7 +509,7 @@
         }
       ],
       "elapsed_seconds": 24.19,
-      "output_path": "docs/verification/m2a1/B2_presence_s202.png"
+      "output_path": "docs/manga/verification/m2a1/B2_presence_s202.png"
     },
     {
       "condition_id": "B0_baseline_s303",
@@ -542,7 +542,7 @@
         }
       ],
       "elapsed_seconds": 24.06,
-      "output_path": "docs/verification/m2a1/B0_baseline_s303.png"
+      "output_path": "docs/manga/verification/m2a1/B0_baseline_s303.png"
     },
     {
       "condition_id": "B1_horiz_s303",
@@ -575,7 +575,7 @@
         }
       ],
       "elapsed_seconds": 24.1,
-      "output_path": "docs/verification/m2a1/B1_horiz_s303.png"
+      "output_path": "docs/manga/verification/m2a1/B1_horiz_s303.png"
     },
     {
       "condition_id": "B2_presence_s303",
@@ -608,7 +608,7 @@
         }
       ],
       "elapsed_seconds": 24.2,
-      "output_path": "docs/verification/m2a1/B2_presence_s303.png"
+      "output_path": "docs/manga/verification/m2a1/B2_presence_s303.png"
     },
     {
       "condition_id": "B0_baseline_s404",
@@ -641,7 +641,7 @@
         }
       ],
       "elapsed_seconds": 24.26,
-      "output_path": "docs/verification/m2a1/B0_baseline_s404.png"
+      "output_path": "docs/manga/verification/m2a1/B0_baseline_s404.png"
     },
     {
       "condition_id": "B1_horiz_s404",
@@ -674,7 +674,7 @@
         }
       ],
       "elapsed_seconds": 24.04,
-      "output_path": "docs/verification/m2a1/B1_horiz_s404.png"
+      "output_path": "docs/manga/verification/m2a1/B1_horiz_s404.png"
     },
     {
       "condition_id": "B2_presence_s404",
@@ -707,7 +707,7 @@
         }
       ],
       "elapsed_seconds": 26.02,
-      "output_path": "docs/verification/m2a1/B2_presence_s404.png"
+      "output_path": "docs/manga/verification/m2a1/B2_presence_s404.png"
     },
     {
       "condition_id": "B0_baseline_s505",
@@ -740,7 +740,7 @@
         }
       ],
       "elapsed_seconds": 24.37,
-      "output_path": "docs/verification/m2a1/B0_baseline_s505.png"
+      "output_path": "docs/manga/verification/m2a1/B0_baseline_s505.png"
     },
     {
       "condition_id": "B1_horiz_s505",
@@ -773,7 +773,7 @@
         }
       ],
       "elapsed_seconds": 24.19,
-      "output_path": "docs/verification/m2a1/B1_horiz_s505.png"
+      "output_path": "docs/manga/verification/m2a1/B1_horiz_s505.png"
     },
     {
       "condition_id": "B2_presence_s505",
@@ -806,7 +806,7 @@
         }
       ],
       "elapsed_seconds": 24.35,
-      "output_path": "docs/verification/m2a1/B2_presence_s505.png"
+      "output_path": "docs/manga/verification/m2a1/B2_presence_s505.png"
     },
     {
       "condition_id": "B0_swap_s42",
@@ -839,7 +839,7 @@
         }
       ],
       "elapsed_seconds": 24.21,
-      "output_path": "docs/verification/m2a1/B0_swap_s42.png"
+      "output_path": "docs/manga/verification/m2a1/B0_swap_s42.png"
     },
     {
       "condition_id": "B1_swap_s42",
@@ -872,7 +872,7 @@
         }
       ],
       "elapsed_seconds": 24.26,
-      "output_path": "docs/verification/m2a1/B1_swap_s42.png"
+      "output_path": "docs/manga/verification/m2a1/B1_swap_s42.png"
     },
     {
       "condition_id": "B2_swap_s42",
@@ -905,7 +905,7 @@
         }
       ],
       "elapsed_seconds": 24.12,
-      "output_path": "docs/verification/m2a1/B2_swap_s42.png"
+      "output_path": "docs/manga/verification/m2a1/B2_swap_s42.png"
     },
     {
       "condition_id": "B0_swap_s101",
@@ -938,7 +938,7 @@
         }
       ],
       "elapsed_seconds": 24.1,
-      "output_path": "docs/verification/m2a1/B0_swap_s101.png"
+      "output_path": "docs/manga/verification/m2a1/B0_swap_s101.png"
     },
     {
       "condition_id": "B1_swap_s101",
@@ -971,7 +971,7 @@
         }
       ],
       "elapsed_seconds": 24.21,
-      "output_path": "docs/verification/m2a1/B1_swap_s101.png"
+      "output_path": "docs/manga/verification/m2a1/B1_swap_s101.png"
     },
     {
       "condition_id": "B2_swap_s101",
@@ -1004,7 +1004,7 @@
         }
       ],
       "elapsed_seconds": 24.06,
-      "output_path": "docs/verification/m2a1/B2_swap_s101.png"
+      "output_path": "docs/manga/verification/m2a1/B2_swap_s101.png"
     },
     {
       "condition_id": "B0_swap_s202",
@@ -1037,7 +1037,7 @@
         }
       ],
       "elapsed_seconds": 24.2,
-      "output_path": "docs/verification/m2a1/B0_swap_s202.png"
+      "output_path": "docs/manga/verification/m2a1/B0_swap_s202.png"
     },
     {
       "condition_id": "B1_swap_s202",
@@ -1070,7 +1070,7 @@
         }
       ],
       "elapsed_seconds": 24.11,
-      "output_path": "docs/verification/m2a1/B1_swap_s202.png"
+      "output_path": "docs/manga/verification/m2a1/B1_swap_s202.png"
     },
     {
       "condition_id": "B2_swap_s202",
@@ -1103,7 +1103,7 @@
         }
       ],
       "elapsed_seconds": 24.1,
-      "output_path": "docs/verification/m2a1/B2_swap_s202.png"
+      "output_path": "docs/manga/verification/m2a1/B2_swap_s202.png"
     },
     {
       "condition_id": "C0_long_s42",
@@ -1136,7 +1136,7 @@
         }
       ],
       "elapsed_seconds": 24.19,
-      "output_path": "docs/verification/m2a1/C0_long_s42.png"
+      "output_path": "docs/manga/verification/m2a1/C0_long_s42.png"
     },
     {
       "condition_id": "C1_short_s42",
@@ -1169,7 +1169,7 @@
         }
       ],
       "elapsed_seconds": 24.07,
-      "output_path": "docs/verification/m2a1/C1_short_s42.png"
+      "output_path": "docs/manga/verification/m2a1/C1_short_s42.png"
     },
     {
       "condition_id": "C2_geom_s42",
@@ -1202,7 +1202,7 @@
         }
       ],
       "elapsed_seconds": 24.08,
-      "output_path": "docs/verification/m2a1/C2_geom_s42.png"
+      "output_path": "docs/manga/verification/m2a1/C2_geom_s42.png"
     },
     {
       "condition_id": "C3_depth_hint_s42",
@@ -1235,7 +1235,7 @@
         }
       ],
       "elapsed_seconds": 24.11,
-      "output_path": "docs/verification/m2a1/C3_depth_hint_s42.png"
+      "output_path": "docs/manga/verification/m2a1/C3_depth_hint_s42.png"
     },
     {
       "condition_id": "C0_long_s77",
@@ -1268,7 +1268,7 @@
         }
       ],
       "elapsed_seconds": 24.04,
-      "output_path": "docs/verification/m2a1/C0_long_s77.png"
+      "output_path": "docs/manga/verification/m2a1/C0_long_s77.png"
     },
     {
       "condition_id": "C1_short_s77",
@@ -1301,7 +1301,7 @@
         }
       ],
       "elapsed_seconds": 24.1,
-      "output_path": "docs/verification/m2a1/C1_short_s77.png"
+      "output_path": "docs/manga/verification/m2a1/C1_short_s77.png"
     },
     {
       "condition_id": "C2_geom_s77",
@@ -1334,7 +1334,7 @@
         }
       ],
       "elapsed_seconds": 24.04,
-      "output_path": "docs/verification/m2a1/C2_geom_s77.png"
+      "output_path": "docs/manga/verification/m2a1/C2_geom_s77.png"
     },
     {
       "condition_id": "C3_depth_hint_s77",
@@ -1367,7 +1367,7 @@
         }
       ],
       "elapsed_seconds": 24.14,
-      "output_path": "docs/verification/m2a1/C3_depth_hint_s77.png"
+      "output_path": "docs/manga/verification/m2a1/C3_depth_hint_s77.png"
     },
     {
       "condition_id": "C0_long_s101",
@@ -1400,7 +1400,7 @@
         }
       ],
       "elapsed_seconds": 24.06,
-      "output_path": "docs/verification/m2a1/C0_long_s101.png"
+      "output_path": "docs/manga/verification/m2a1/C0_long_s101.png"
     },
     {
       "condition_id": "C1_short_s101",
@@ -1433,7 +1433,7 @@
         }
       ],
       "elapsed_seconds": 24.04,
-      "output_path": "docs/verification/m2a1/C1_short_s101.png"
+      "output_path": "docs/manga/verification/m2a1/C1_short_s101.png"
     },
     {
       "condition_id": "C2_geom_s101",
@@ -1466,7 +1466,7 @@
         }
       ],
       "elapsed_seconds": 26.03,
-      "output_path": "docs/verification/m2a1/C2_geom_s101.png"
+      "output_path": "docs/manga/verification/m2a1/C2_geom_s101.png"
     },
     {
       "condition_id": "C3_depth_hint_s101",
@@ -1499,7 +1499,7 @@
         }
       ],
       "elapsed_seconds": 24.33,
-      "output_path": "docs/verification/m2a1/C3_depth_hint_s101.png"
+      "output_path": "docs/manga/verification/m2a1/C3_depth_hint_s101.png"
     },
     {
       "condition_id": "C0_long_s133",
@@ -1532,7 +1532,7 @@
         }
       ],
       "elapsed_seconds": 24.38,
-      "output_path": "docs/verification/m2a1/C0_long_s133.png"
+      "output_path": "docs/manga/verification/m2a1/C0_long_s133.png"
     },
     {
       "condition_id": "C1_short_s133",
@@ -1565,7 +1565,7 @@
         }
       ],
       "elapsed_seconds": 24.42,
-      "output_path": "docs/verification/m2a1/C1_short_s133.png"
+      "output_path": "docs/manga/verification/m2a1/C1_short_s133.png"
     },
     {
       "condition_id": "C2_geom_s133",
@@ -1598,7 +1598,7 @@
         }
       ],
       "elapsed_seconds": 24.22,
-      "output_path": "docs/verification/m2a1/C2_geom_s133.png"
+      "output_path": "docs/manga/verification/m2a1/C2_geom_s133.png"
     },
     {
       "condition_id": "C3_depth_hint_s133",
@@ -1631,7 +1631,7 @@
         }
       ],
       "elapsed_seconds": 24.04,
-      "output_path": "docs/verification/m2a1/C3_depth_hint_s133.png"
+      "output_path": "docs/manga/verification/m2a1/C3_depth_hint_s133.png"
     },
     {
       "condition_id": "C0_long_s202",
@@ -1664,7 +1664,7 @@
         }
       ],
       "elapsed_seconds": 24.02,
-      "output_path": "docs/verification/m2a1/C0_long_s202.png"
+      "output_path": "docs/manga/verification/m2a1/C0_long_s202.png"
     },
     {
       "condition_id": "C1_short_s202",
@@ -1697,7 +1697,7 @@
         }
       ],
       "elapsed_seconds": 24.05,
-      "output_path": "docs/verification/m2a1/C1_short_s202.png"
+      "output_path": "docs/manga/verification/m2a1/C1_short_s202.png"
     },
     {
       "condition_id": "C2_geom_s202",
@@ -1730,7 +1730,7 @@
         }
       ],
       "elapsed_seconds": 24.07,
-      "output_path": "docs/verification/m2a1/C2_geom_s202.png"
+      "output_path": "docs/manga/verification/m2a1/C2_geom_s202.png"
     },
     {
       "condition_id": "C3_depth_hint_s202",
@@ -1763,7 +1763,7 @@
         }
       ],
       "elapsed_seconds": 24.07,
-      "output_path": "docs/verification/m2a1/C3_depth_hint_s202.png"
+      "output_path": "docs/manga/verification/m2a1/C3_depth_hint_s202.png"
     },
     {
       "condition_id": "C0_long_s303",
@@ -1796,7 +1796,7 @@
         }
       ],
       "elapsed_seconds": 24.04,
-      "output_path": "docs/verification/m2a1/C0_long_s303.png"
+      "output_path": "docs/manga/verification/m2a1/C0_long_s303.png"
     },
     {
       "condition_id": "C1_short_s303",
@@ -1829,7 +1829,7 @@
         }
       ],
       "elapsed_seconds": 24.07,
-      "output_path": "docs/verification/m2a1/C1_short_s303.png"
+      "output_path": "docs/manga/verification/m2a1/C1_short_s303.png"
     },
     {
       "condition_id": "C2_geom_s303",
@@ -1862,7 +1862,7 @@
         }
       ],
       "elapsed_seconds": 24.09,
-      "output_path": "docs/verification/m2a1/C2_geom_s303.png"
+      "output_path": "docs/manga/verification/m2a1/C2_geom_s303.png"
     },
     {
       "condition_id": "C3_depth_hint_s303",
@@ -1895,7 +1895,7 @@
         }
       ],
       "elapsed_seconds": 24.06,
-      "output_path": "docs/verification/m2a1/C3_depth_hint_s303.png"
+      "output_path": "docs/manga/verification/m2a1/C3_depth_hint_s303.png"
     },
     {
       "condition_id": "C0_long_s404",
@@ -1928,7 +1928,7 @@
         }
       ],
       "elapsed_seconds": 24.02,
-      "output_path": "docs/verification/m2a1/C0_long_s404.png"
+      "output_path": "docs/manga/verification/m2a1/C0_long_s404.png"
     },
     {
       "condition_id": "C1_short_s404",
@@ -1961,7 +1961,7 @@
         }
       ],
       "elapsed_seconds": 24.05,
-      "output_path": "docs/verification/m2a1/C1_short_s404.png"
+      "output_path": "docs/manga/verification/m2a1/C1_short_s404.png"
     },
     {
       "condition_id": "C2_geom_s404",
@@ -1994,7 +1994,7 @@
         }
       ],
       "elapsed_seconds": 24.4,
-      "output_path": "docs/verification/m2a1/C2_geom_s404.png"
+      "output_path": "docs/manga/verification/m2a1/C2_geom_s404.png"
     },
     {
       "condition_id": "C3_depth_hint_s404",
@@ -2027,7 +2027,7 @@
         }
       ],
       "elapsed_seconds": 24.17,
-      "output_path": "docs/verification/m2a1/C3_depth_hint_s404.png"
+      "output_path": "docs/manga/verification/m2a1/C3_depth_hint_s404.png"
     },
     {
       "condition_id": "C0_long_s505",
@@ -2060,7 +2060,7 @@
         }
       ],
       "elapsed_seconds": 24.12,
-      "output_path": "docs/verification/m2a1/C0_long_s505.png"
+      "output_path": "docs/manga/verification/m2a1/C0_long_s505.png"
     },
     {
       "condition_id": "C1_short_s505",
@@ -2093,7 +2093,7 @@
         }
       ],
       "elapsed_seconds": 24.06,
-      "output_path": "docs/verification/m2a1/C1_short_s505.png"
+      "output_path": "docs/manga/verification/m2a1/C1_short_s505.png"
     },
     {
       "condition_id": "C2_geom_s505",
@@ -2126,7 +2126,7 @@
         }
       ],
       "elapsed_seconds": 24.05,
-      "output_path": "docs/verification/m2a1/C2_geom_s505.png"
+      "output_path": "docs/manga/verification/m2a1/C2_geom_s505.png"
     },
     {
       "condition_id": "C3_depth_hint_s505",
@@ -2159,7 +2159,7 @@
         }
       ],
       "elapsed_seconds": 24.09,
-      "output_path": "docs/verification/m2a1/C3_depth_hint_s505.png"
+      "output_path": "docs/manga/verification/m2a1/C3_depth_hint_s505.png"
     },
     {
       "condition_id": "H0_baseline_s42",
@@ -2201,7 +2201,7 @@
         }
       ],
       "elapsed_seconds": 32.06,
-      "output_path": "docs/verification/m2a1/H0_baseline_s42.png"
+      "output_path": "docs/manga/verification/m2a1/H0_baseline_s42.png"
     },
     {
       "condition_id": "H1_horiz_s42",
@@ -2243,7 +2243,7 @@
         }
       ],
       "elapsed_seconds": 32.06,
-      "output_path": "docs/verification/m2a1/H1_horiz_s42.png"
+      "output_path": "docs/manga/verification/m2a1/H1_horiz_s42.png"
     },
     {
       "condition_id": "H2_presence_s42",
@@ -2285,7 +2285,7 @@
         }
       ],
       "elapsed_seconds": 32.06,
-      "output_path": "docs/verification/m2a1/H2_presence_s42.png"
+      "output_path": "docs/manga/verification/m2a1/H2_presence_s42.png"
     },
     {
       "condition_id": "H0_baseline_s77",
@@ -2327,7 +2327,7 @@
         }
       ],
       "elapsed_seconds": 32.05,
-      "output_path": "docs/verification/m2a1/H0_baseline_s77.png"
+      "output_path": "docs/manga/verification/m2a1/H0_baseline_s77.png"
     },
     {
       "condition_id": "H1_horiz_s77",
@@ -2369,7 +2369,7 @@
         }
       ],
       "elapsed_seconds": 32.07,
-      "output_path": "docs/verification/m2a1/H1_horiz_s77.png"
+      "output_path": "docs/manga/verification/m2a1/H1_horiz_s77.png"
     },
     {
       "condition_id": "H2_presence_s77",
@@ -2411,7 +2411,7 @@
         }
       ],
       "elapsed_seconds": 32.12,
-      "output_path": "docs/verification/m2a1/H2_presence_s77.png"
+      "output_path": "docs/manga/verification/m2a1/H2_presence_s77.png"
     },
     {
       "condition_id": "H0_baseline_s101",
@@ -2453,7 +2453,7 @@
         }
       ],
       "elapsed_seconds": 32.06,
-      "output_path": "docs/verification/m2a1/H0_baseline_s101.png"
+      "output_path": "docs/manga/verification/m2a1/H0_baseline_s101.png"
     },
     {
       "condition_id": "H1_horiz_s101",
@@ -2495,7 +2495,7 @@
         }
       ],
       "elapsed_seconds": 32.05,
-      "output_path": "docs/verification/m2a1/H1_horiz_s101.png"
+      "output_path": "docs/manga/verification/m2a1/H1_horiz_s101.png"
     },
     {
       "condition_id": "H2_presence_s101",
@@ -2537,7 +2537,7 @@
         }
       ],
       "elapsed_seconds": 32.04,
-      "output_path": "docs/verification/m2a1/H2_presence_s101.png"
+      "output_path": "docs/manga/verification/m2a1/H2_presence_s101.png"
     },
     {
       "condition_id": "H0_baseline_s133",
@@ -2579,7 +2579,7 @@
         }
       ],
       "elapsed_seconds": 32.05,
-      "output_path": "docs/verification/m2a1/H0_baseline_s133.png"
+      "output_path": "docs/manga/verification/m2a1/H0_baseline_s133.png"
     },
     {
       "condition_id": "H1_horiz_s133",
@@ -2621,7 +2621,7 @@
         }
       ],
       "elapsed_seconds": 32.05,
-      "output_path": "docs/verification/m2a1/H1_horiz_s133.png"
+      "output_path": "docs/manga/verification/m2a1/H1_horiz_s133.png"
     },
     {
       "condition_id": "H2_presence_s133",
@@ -2663,7 +2663,7 @@
         }
       ],
       "elapsed_seconds": 32.03,
-      "output_path": "docs/verification/m2a1/H2_presence_s133.png"
+      "output_path": "docs/manga/verification/m2a1/H2_presence_s133.png"
     },
     {
       "condition_id": "H0_baseline_s202",
@@ -2705,7 +2705,7 @@
         }
       ],
       "elapsed_seconds": 32.05,
-      "output_path": "docs/verification/m2a1/H0_baseline_s202.png"
+      "output_path": "docs/manga/verification/m2a1/H0_baseline_s202.png"
     },
     {
       "condition_id": "H1_horiz_s202",
@@ -2747,7 +2747,7 @@
         }
       ],
       "elapsed_seconds": 32.03,
-      "output_path": "docs/verification/m2a1/H1_horiz_s202.png"
+      "output_path": "docs/manga/verification/m2a1/H1_horiz_s202.png"
     },
     {
       "condition_id": "H2_presence_s202",
@@ -2789,7 +2789,7 @@
         }
       ],
       "elapsed_seconds": 32.05,
-      "output_path": "docs/verification/m2a1/H2_presence_s202.png"
+      "output_path": "docs/manga/verification/m2a1/H2_presence_s202.png"
     },
     {
       "condition_id": "H0_baseline_s303",
@@ -2831,7 +2831,7 @@
         }
       ],
       "elapsed_seconds": 32.05,
-      "output_path": "docs/verification/m2a1/H0_baseline_s303.png"
+      "output_path": "docs/manga/verification/m2a1/H0_baseline_s303.png"
     },
     {
       "condition_id": "H1_horiz_s303",
@@ -2873,7 +2873,7 @@
         }
       ],
       "elapsed_seconds": 32.03,
-      "output_path": "docs/verification/m2a1/H1_horiz_s303.png"
+      "output_path": "docs/manga/verification/m2a1/H1_horiz_s303.png"
     },
     {
       "condition_id": "H2_presence_s303",
@@ -2915,7 +2915,7 @@
         }
       ],
       "elapsed_seconds": 32.08,
-      "output_path": "docs/verification/m2a1/H2_presence_s303.png"
+      "output_path": "docs/manga/verification/m2a1/H2_presence_s303.png"
     },
     {
       "condition_id": "H0_baseline_s404",
@@ -2957,7 +2957,7 @@
         }
       ],
       "elapsed_seconds": 32.06,
-      "output_path": "docs/verification/m2a1/H0_baseline_s404.png"
+      "output_path": "docs/manga/verification/m2a1/H0_baseline_s404.png"
     },
     {
       "condition_id": "H1_horiz_s404",
@@ -2999,7 +2999,7 @@
         }
       ],
       "elapsed_seconds": 32.08,
-      "output_path": "docs/verification/m2a1/H1_horiz_s404.png"
+      "output_path": "docs/manga/verification/m2a1/H1_horiz_s404.png"
     },
     {
       "condition_id": "H2_presence_s404",
@@ -3041,7 +3041,7 @@
         }
       ],
       "elapsed_seconds": 32.05,
-      "output_path": "docs/verification/m2a1/H2_presence_s404.png"
+      "output_path": "docs/manga/verification/m2a1/H2_presence_s404.png"
     },
     {
       "condition_id": "H0_baseline_s505",
@@ -3083,7 +3083,7 @@
         }
       ],
       "elapsed_seconds": 32.03,
-      "output_path": "docs/verification/m2a1/H0_baseline_s505.png"
+      "output_path": "docs/manga/verification/m2a1/H0_baseline_s505.png"
     },
     {
       "condition_id": "H1_horiz_s505",
@@ -3125,7 +3125,7 @@
         }
       ],
       "elapsed_seconds": 32.11,
-      "output_path": "docs/verification/m2a1/H1_horiz_s505.png"
+      "output_path": "docs/manga/verification/m2a1/H1_horiz_s505.png"
     },
     {
       "condition_id": "H2_presence_s505",
@@ -3167,7 +3167,7 @@
         }
       ],
       "elapsed_seconds": 32.05,
-      "output_path": "docs/verification/m2a1/H2_presence_s505.png"
+      "output_path": "docs/manga/verification/m2a1/H2_presence_s505.png"
     },
     {
       "condition_id": "F_cross_scene_s42",
@@ -3191,7 +3191,7 @@
         }
       ],
       "elapsed_seconds": 28.04,
-      "output_path": "docs/verification/m2a1/F_cross_scene_s42.png"
+      "output_path": "docs/manga/verification/m2a1/F_cross_scene_s42.png"
     },
     {
       "condition_id": "F_cross_scene_s77",
@@ -3215,7 +3215,7 @@
         }
       ],
       "elapsed_seconds": 28.04,
-      "output_path": "docs/verification/m2a1/F_cross_scene_s77.png"
+      "output_path": "docs/manga/verification/m2a1/F_cross_scene_s77.png"
     },
     {
       "condition_id": "F_cross_scene_s101",
@@ -3239,7 +3239,7 @@
         }
       ],
       "elapsed_seconds": 30.03,
-      "output_path": "docs/verification/m2a1/F_cross_scene_s101.png"
+      "output_path": "docs/manga/verification/m2a1/F_cross_scene_s101.png"
     },
     {
       "condition_id": "F_cross_scene_s133",
@@ -3263,7 +3263,7 @@
         }
       ],
       "elapsed_seconds": 30.03,
-      "output_path": "docs/verification/m2a1/F_cross_scene_s133.png"
+      "output_path": "docs/manga/verification/m2a1/F_cross_scene_s133.png"
     },
     {
       "condition_id": "I_crowd_s42",
@@ -3314,7 +3314,7 @@
         }
       ],
       "elapsed_seconds": 44.08,
-      "output_path": "docs/verification/m2a1/I_crowd_s42.png"
+      "output_path": "docs/manga/verification/m2a1/I_crowd_s42.png"
     },
     {
       "condition_id": "I_crowd_s77",
@@ -3365,7 +3365,7 @@
         }
       ],
       "elapsed_seconds": 46.59,
-      "output_path": "docs/verification/m2a1/I_crowd_s77.png"
+      "output_path": "docs/manga/verification/m2a1/I_crowd_s77.png"
     },
     {
       "condition_id": "I_crowd_s101",
@@ -3416,7 +3416,7 @@
         }
       ],
       "elapsed_seconds": 46.25,
-      "output_path": "docs/verification/m2a1/I_crowd_s101.png"
+      "output_path": "docs/manga/verification/m2a1/I_crowd_s101.png"
     },
     {
       "condition_id": "I_crowd_s133",
@@ -3467,7 +3467,7 @@
         }
       ],
       "elapsed_seconds": 46.28,
-      "output_path": "docs/verification/m2a1/I_crowd_s133.png"
+      "output_path": "docs/manga/verification/m2a1/I_crowd_s133.png"
     },
     {
       "condition_id": "H_CN020_s101",
@@ -3479,7 +3479,7 @@
       "visual_status": "PENDING_INSPECTION",
       "review_method": "DIRECT_IMAGE_INSPECTION",
       "elapsed_seconds": 60.1,
-      "output_path": "docs/verification/m2a1/H_CN020_s101.png"
+      "output_path": "docs/manga/verification/m2a1/H_CN020_s101.png"
     },
     {
       "condition_id": "H_CN035_s101",
@@ -3491,7 +3491,7 @@
       "visual_status": "PENDING_INSPECTION",
       "review_method": "DIRECT_IMAGE_INSPECTION",
       "elapsed_seconds": 52.05,
-      "output_path": "docs/verification/m2a1/H_CN035_s101.png"
+      "output_path": "docs/manga/verification/m2a1/H_CN035_s101.png"
     },
     {
       "condition_id": "H_CN020_s202",
@@ -3503,7 +3503,7 @@
       "visual_status": "PENDING_INSPECTION",
       "review_method": "DIRECT_IMAGE_INSPECTION",
       "elapsed_seconds": 56.33,
-      "output_path": "docs/verification/m2a1/H_CN020_s202.png"
+      "output_path": "docs/manga/verification/m2a1/H_CN020_s202.png"
     },
     {
       "condition_id": "H_CN035_s202",
@@ -3515,7 +3515,7 @@
       "visual_status": "PENDING_INSPECTION",
       "review_method": "DIRECT_IMAGE_INSPECTION",
       "elapsed_seconds": 46.04,
-      "output_path": "docs/verification/m2a1/H_CN035_s202.png"
+      "output_path": "docs/manga/verification/m2a1/H_CN035_s202.png"
     }
   ]
 }

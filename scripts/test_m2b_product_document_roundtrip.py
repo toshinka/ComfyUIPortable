@@ -8,7 +8,7 @@ Covers M2B Requirements in Card §92–§98:
 4. Seed synchronization and random seed handling
 5. Canonical workflow JSON structure:
    - Root active workflow count == 1
-   - Canonical name: workflows/MINIMUM_HAND_MANGA_DRAFT.json
+   - Canonical name: workflows/manga/MINIMUM_HAND_MANGA_DRAFT.json
    - No user-facing 'spatial_hint_mode' widget exposed in canonical workflow
    - Node display name in __init__.py is 'Tegaki Minimum-Hand Manga Authoring (Draft)'
 """
@@ -133,12 +133,12 @@ class TestM2BProductDocumentRoundtrip(unittest.TestCase):
         self.assertNotIn("spatial_hint_mode", optional)
 
     def test_05_canonical_workflow_invariants(self):
-        """Canonical workflow at workflows/MINIMUM_HAND_MANGA_DRAFT.json satisfies all invariants."""
-        wf_path = os.path.join(_ROOT_DIR, "workflows", "MINIMUM_HAND_MANGA_DRAFT.json")
+        """Canonical workflow at workflows/manga/MINIMUM_HAND_MANGA_DRAFT.json satisfies all invariants."""
+        wf_path = os.path.join(_ROOT_DIR, "workflows", "manga", "MINIMUM_HAND_MANGA_DRAFT.json")
         self.assertTrue(os.path.exists(wf_path), f"Canonical workflow missing: {wf_path}")
 
         # Check only 1 json file at workflows root
-        wf_dir = os.path.join(_ROOT_DIR, "workflows")
+        wf_dir = os.path.join(_ROOT_DIR, "workflows", "manga")
         root_jsons = [f for f in os.listdir(wf_dir) if f.endswith(".json") and os.path.isfile(os.path.join(wf_dir, f))]
         self.assertEqual(root_jsons, ["MINIMUM_HAND_MANGA_DRAFT.json"], f"Found unexpected root workflows: {root_jsons}")
 

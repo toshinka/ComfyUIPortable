@@ -115,7 +115,7 @@ Do not modify the existing Illustrious Manga implementation, canonical
 documents, workflows, or planning structure unless explicitly instructed in a
 separate task.
 
-The existing Manga runtime, docs/STATUS.md, docs/plans/, and Manga workflows
+The existing Manga runtime, docs/manga/STATUS.md, docs/manga/plans/, and Manga workflows
 remain outside H3 implementation scope. A later, separately authorized namespace
 task created GITHUB_MANGA.txt and converted GITHUB_ComfyUI.txt into a thin router;
 this navigation change does not merge H3 and Manga runtime semantics.

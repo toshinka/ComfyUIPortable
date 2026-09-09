@@ -20,7 +20,7 @@ import os
 import sys
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-WORKFLOWS_DIR = os.path.join(PROJECT_ROOT, "workflows")
+WORKFLOWS_DIR = os.path.join(PROJECT_ROOT, "workflows", "manga", "Archive")
 
 
 def build_two_region_impact_workflow(

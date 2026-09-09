@@ -3,8 +3,8 @@
 更新: 2026-09-09 JST
 
 このdirectoryはManga Authoringの実行Cardだけを扱う。戦略正本は
-[`ASTRA_MANGA_AUTHORING_MASTER_PLAN.md`](../../plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md)、
-現在地は [`docs/STATUS.md`](../../STATUS.md) であり、Cardは確定した限定sliceの実行契約である。
+[`ASTRA_MANGA_AUTHORING_MASTER_PLAN.md`](../plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md)、
+現在地は [`docs/manga/STATUS.md`](../STATUS.md) であり、Cardは確定した限定sliceの実行契約である。
 
 ## Current
 

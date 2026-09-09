@@ -17,7 +17,7 @@ import json
 from typing import Dict, Any, List
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-WORKFLOWS_DIR = os.path.join(ROOT_DIR, "workflows")
+WORKFLOWS_DIR = os.path.join(ROOT_DIR, "workflows", "manga", "Archive")
 
 TARGET_WORKFLOWS = [
     "12_TWO_REGION_IMPACT_COUPLE_ORACLE.json",

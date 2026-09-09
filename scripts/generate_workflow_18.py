@@ -1,7 +1,7 @@
 """
 Generate Workflow 18: Single Region Placement Core vs Impact Oracle (Phase 3D.2)
 ================================================================================
-Builds workflows/18_SINGLE_REGION_PLACEMENT_CORE_VS_IMPACT_ORACLE.json.
+Builds workflows/manga/Archive/18_SINGLE_REGION_PLACEMENT_CORE_VS_IMPACT_ORACLE.json.
 Contains:
 - Unified Checkpoint + Latent + Single-Region TegakiTwoRegionCoupleEditor (A=Top-Left, B=Disabled)
 - Branch 1: Core Masked Conditioning (TegakiTwoRegionCoreConditioner + KSampler + VAE + SaveImage)
@@ -13,7 +13,7 @@ import os
 import sys
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-WORKFLOW_FILE = os.path.join(PROJECT_ROOT, "workflows", "18_SINGLE_REGION_PLACEMENT_CORE_VS_IMPACT_ORACLE.json")
+WORKFLOW_FILE = os.path.join(PROJECT_ROOT, "workflows", "manga", "Archive", "18_SINGLE_REGION_PLACEMENT_CORE_VS_IMPACT_ORACLE.json")
 
 
 def build_workflow_18():

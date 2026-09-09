@@ -20,8 +20,8 @@ Executes 14 Empirical Conditions:
 Produces:
 - Contact Sheets AA to AF
 - output/Tegaki/Phase3L/phase3l_results.json
-- docs/verification/PHASE3L_CANONICAL_VERIFICATION_MANIFEST.json
-- docs/verification/PHASE3L_PRESENCE_EVALUATION.json
+- docs/manga/verification/PHASE3L_CANONICAL_VERIFICATION_MANIFEST.json
+- docs/manga/verification/PHASE3L_PRESENCE_EVALUATION.json
 """
 
 import os
@@ -60,7 +60,7 @@ from scripts.generate_phase3l_workflows import (
 
 OUTPUT_BASE = os.path.join(ROOT_DIR, "output", "Tegaki", "Phase3L")
 OUTPUT_CANONICAL = os.path.join(OUTPUT_BASE, "canonical")
-DOCS_VERIFICATION_DIR = os.path.join(ROOT_DIR, "docs", "verification")
+DOCS_VERIFICATION_DIR = os.path.join(ROOT_DIR, "docs", "manga", "verification")
 
 # Pure prompt: strictly zero pose, zero shot, zero directional tokens
 ALICE_PURE_PROMPT = "1girl, blonde twin tails, school uniform, standing calmly"

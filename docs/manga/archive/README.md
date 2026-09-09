@@ -12,7 +12,7 @@
 | `plans/` | 旧中間計画、GUI分離追補、将来構想 | 4 | 現行Astra計画との差分調査時のみ |
 | `duplicates/` | M1.1依頼書のbyte-identical複製 | 1 | provenance保全のみ |
 
-新しい作業判断は [`docs/STATUS.md`](../../STATUS.md)、
+新しい作業判断は [`docs/manga/STATUS.md`](../STATUS.md)、
 [`GITHUB_MANGA.txt`](../../../GITHUB_MANGA.txt)、
 [`Manga Execution Card Router`](../cards/README.md) の順に確認する。
 

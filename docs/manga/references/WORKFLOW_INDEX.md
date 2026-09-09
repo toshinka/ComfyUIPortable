@@ -1,7 +1,9 @@
 # WORKFLOW_INDEX.md — 漫画制作ワークフロー解説
 
 ComfyUIPortableに同梱されている漫画制作向けワークフロー一覧です。
-すべてのワークフローは `workflows/` ディレクトリに格納されており、ComfyUIのUI画面へドラッグ＆ドロップすることで読み込めます。
+現行Manga workflowは `workflows/manga/MINIMUM_HAND_MANGA_DRAFT.json`。本書の番号付き旧Workflowは
+`workflows/manga/Archive/` に格納され、ComfyUIのUI画面へドラッグ＆ドロップして参照できます。
+H3 workflowは `workflows/h3/` に分離され、本書の対象外です。
 
 ---
 
@@ -795,7 +797,6 @@ ComfyUIPortableに同梱されている漫画制作向けワークフロー一�
   `09_MANGA_REGIONAL_GENERATION_POC.json`、`10`〜`20`、`21`〜`24`、正準空間検証セット `25`〜`28`、被写体排他・オーサリング因果セット `29`〜`34`、ControlNet スケール拘束セット `35`〜`39`、Phase 3I.1 検証セット `40`〜`43`、Phase 3I.2 因果・領域制御セット `44`〜`47`、Phase 3J 存在安定化・Shot Typeセット `48`〜`53`、Phase 3J.1 プロンプト契約修復・領域単離セット `54`〜`59`、および Phase 3K ポーズ・対話・被写界構図セット `60`〜`65`（全65件、うちターゲット49件）は、ComfyUI 起動後に新規ロードして **一切の手動修正なし（Zero-Touch）** でそのまま Queue して処理・生成が正常完了することが実機検証されています。
 - **Visual Semantic Status 分離 (Phase 3I.1 〜 3K)**:
   実行完全性（Zero-Touch PASS）と画像意味的成否（Visual Semantic Status）を厳格に分離。Phase 3K では人物方向性ポーズ（`facing_left`, `facing_right`）、着席ポーズ（`sitting`）、相互向き構図、対話握手ガイド、およびコマ被写界距離（`near`, `medium`, `far`）の end-to-end メタデータ伝播と幾何生成を確立しました。
-
 
 
 

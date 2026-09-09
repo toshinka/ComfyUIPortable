@@ -6,7 +6,7 @@ Executes the M2B.1 closure conditions on ComfyUI standalone runtime:
 2. M2B1_two_cast_explicit.png: Alice left, Bob right in scene 1
 3. M2B1_repeated_alice_multi_scene.png: Alice appearing across scene 1 and scene 2
 
-Generates artifacts in docs/verification/m2b1/ and produces M2B1_PRODUCT_E2E_MANIFEST.json
+Generates artifacts in docs/manga/verification/m2b1/ and produces M2B1_PRODUCT_E2E_MANIFEST.json
 with strict evidence_type tags (HEADLESS_TEST, LIVE_RUNTIME, LIVE_BROWSER).
 """
 import os
@@ -59,7 +59,7 @@ generate_scene_regions_preview_image = _aeb.generate_scene_regions_preview_image
 get_execution_debug_info = _aeb.get_execution_debug_info
 
 CKPT_NAME = r"♃CN_Skeb\waiIllustriousSDXL_v170.safetensors"
-OUT_DIR = os.path.join(ROOT_DIR, "docs", "verification", "m2b1")
+OUT_DIR = os.path.join(ROOT_DIR, "docs", "manga", "verification", "m2b1")
 os.makedirs(OUT_DIR, exist_ok=True)
 
 

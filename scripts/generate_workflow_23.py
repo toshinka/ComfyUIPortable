@@ -1,7 +1,7 @@
 """
 Generate Workflow 23: Manga Progressive Panel Authoring Impact (Phase 3F)
 ========================================================================
-Builds workflows/23_MANGA_PROGRESSIVE_PANEL_AUTHORING_IMPACT.json.
+Builds workflows/manga/Archive/23_MANGA_PROGRESSIVE_PANEL_AUTHORING_IMPACT.json.
 
 Architecture:
 - 01 GLOBAL: CheckpointLoader, Latent, Global Prompts, ToBasicPipe (clip connected), KSamplerAdvancedProvider
@@ -25,7 +25,7 @@ if CUSTOM_NODES_PATH not in sys.path:
 from tegaki_manga_nodes.panel_layout_spec import get_default_panel_layout_spec
 from tegaki_manga_nodes.panel_content_editor import DEFAULT_RECURRENT_PANELS_CONTENT
 
-WORKFLOW_FILE = os.path.join(PROJECT_ROOT, "workflows", "23_MANGA_PROGRESSIVE_PANEL_AUTHORING_IMPACT.json")
+WORKFLOW_FILE = os.path.join(PROJECT_ROOT, "workflows", "manga", "Archive", "23_MANGA_PROGRESSIVE_PANEL_AUTHORING_IMPACT.json")
 
 
 def build_workflow_23():

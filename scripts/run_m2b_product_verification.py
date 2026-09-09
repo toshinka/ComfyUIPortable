@@ -7,7 +7,7 @@ Executes runtime conditions on ComfyUI standalone runtime to produce:
 3. M2B_depth_seed404.png (Alice foreground, Bob background, auto hint: spatial_depth)
 4. M2B_same_cast_multi_scene.png (Alice across 2 scenes, auto hint: off)
 
-Also generates UI preview artifacts and docs/verification/m2b/M2B_PRODUCT_PATH_MANIFEST.json.
+Also generates UI preview artifacts and docs/manga/verification/m2b/M2B_PRODUCT_PATH_MANIFEST.json.
 """
 import os
 import sys
@@ -59,7 +59,7 @@ generate_scene_regions_preview_image = _aeb.generate_scene_regions_preview_image
 get_execution_debug_info = _aeb.get_execution_debug_info
 
 CKPT_NAME = r"♃CN_Skeb\waiIllustriousSDXL_v170.safetensors"
-OUT_DIR = os.path.join(ROOT_DIR, "docs", "verification", "m2b")
+OUT_DIR = os.path.join(ROOT_DIR, "docs", "manga", "verification", "m2b")
 os.makedirs(OUT_DIR, exist_ok=True)
 
 
