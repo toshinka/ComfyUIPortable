@@ -3,10 +3,15 @@
 更新: 2026-09-09 JST
 Review Target Commit SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b` (M3A.1 implementation, published)
 Manga正本入口: [GITHUB_MANGA.txt](../../GITHUB_MANGA.txt)
-Current repository publication: db7611c120af35504425872e896dc0229216b8c9
-Latest operational Card: [M3A1-TF2 — External AI Publication Traceability Closure](cards/current/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md)
-Latest operational report: [M3A1-TF2 External AI Publication Traceability Report](reports/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_REPORT.md)
-Publication state: LOCAL; Owner push required; Web GPT verification is blocked until push.
+Current repository publication: 5c9da782316b99ceeb6ecfb85695bb6965d3bf35
+Latest published Card: [M3A1-TF2 — External AI Publication Traceability Closure](cards/completed/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md)
+Latest published report: [M3A1-TF2 External AI Publication Traceability Report](reports/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_REPORT.md)
+M3A1-TF2 publication: PUBLISHED
+SOL public-URL review: PASS
+Verified public commit: 5c9da782316b99ceeb6ecfb85695bb6965d3bf35
+Current local Card: [M3A1-TF2.1 — Post-Push Publication Truth Closure](cards/current/M3A1_TF2_1_POST_PUSH_PUBLICATION_TRUTH_CLOSURE.md)
+Current local report: [M3A1-TF2.1 Post-Push Publication Truth Closure Report](reports/M3A1_TF2_1_POST_PUSH_PUBLICATION_TRUTH_CLOSURE_REPORT.md)
+TF2.1 publication: LOCAL; Owner push required.
 Current gates: Browser PENDING / Visual PENDING / Owner acceptance PENDING / M3B authorization NO.
 
 `GITHUB_ComfyUI.txt` はManga/H3を振り分けるCompatibility Routerへ変更した。

@@ -22,14 +22,20 @@ automatically. Web GPT SOL now leads bounded Card design; a fresh local LUNA cha
 implements one published Card at a time.
 
 Latest operational work:
+M3A1-TF2.1 — Post-Push Publication Truth Closure.
+This updates current authority to the already published TF2 state only; it does
+not change Manga implementation, workflow, runtime, schema, Browser, or Owner
+acceptance.
+
+Latest published operational work:
 M3A1-TF2 — External AI Publication Traceability Closure.
-This is documentation/publication traceability only; it does not change Manga
-implementation, workflow, runtime, schema, Browser, or Owner acceptance.
+Publication: PUBLISHED
+SOL public-URL review: PASS
 
 Latest operational handoff
 --------------------------
 Current repository publication:
-db7611c120af35504425872e896dc0229216b8c9
+5c9da782316b99ceeb6ecfb85695bb6965d3bf35
 
 Current Manga implementation Review Target:
 a7f0baaa89a2e315b0492573c9da19e50727928b
@@ -38,10 +44,22 @@ Active implementation Card:
 NONE
 
 Latest operational Card:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/current/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md
 
 Latest operational report:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_REPORT.md
+
+Current local operational Card (TF2.1; Publication LOCAL):
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/current/M3A1_TF2_1_POST_PUSH_PUBLICATION_TRUTH_CLOSURE.md
+
+Current local operational report (TF2.1; Publication LOCAL):
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3A1_TF2_1_POST_PUSH_PUBLICATION_TRUTH_CLOSURE_REPORT.md
+
+M3A1-TF2 publication:
+PUBLISHED
+
+M3A1-TF2 SOL public-URL review:
+PASS
 
 Current Browser / Visual / Owner gate:
 Browser: PENDING

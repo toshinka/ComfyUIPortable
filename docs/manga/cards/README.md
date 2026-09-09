@@ -8,9 +8,12 @@
 
 ## Current
 
-Latest operational Card:
-[M3A1_TF2 — External AI Publication Traceability Closure](current/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md)
-Publication state: LOCAL; Owner push and SOL public-URL review remain pending.
+Latest published Card:
+[M3A1_TF2 — External AI Publication Traceability Closure](completed/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md)
+M3A1-TF2 publication: PUBLISHED; SOL public-URL review: PASS.
+Current local Card:
+[M3A1-TF2.1 — Post-Push Publication Truth Closure](current/M3A1_TF2_1_POST_PUSH_PUBLICATION_TRUTH_CLOSURE.md)
+TF2.1 publication state: LOCAL; Owner push remains required.
 
 現在、実行中Cardはない。M3A.1のOwner live-browser acceptanceが未完了。
 再開時は [`WEBGPT_SOL_LUNA_HANDOFF.md`](../WEBGPT_SOL_LUNA_HANDOFF.md) をSOLが監査し、
@@ -35,6 +38,7 @@ Publication state: LOCAL; Owner push and SOL public-URL review remain pending.
 | M2B.2 | [`M2B2_LIVE_UI_BOOTSTRAP_WIDGET_SERIALIZATION_AND_OWNER_WORKFLOW_REPAIR.md`](completed/M2B2_LIVE_UI_BOOTSTRAP_WIDGET_SERIALIZATION_AND_OWNER_WORKFLOW_REPAIR.md) |
 | M3A | [`M3A_VISUAL_PANEL_FRAME_LAYER_AND_FRAME_GUIDE_INTEGRATION.md`](completed/M3A_VISUAL_PANEL_FRAME_LAYER_AND_FRAME_GUIDE_INTEGRATION.md) |
 | M3A.1 | [`M3A1_FRAME_RUNTIME_TRUTH_GUTTERS_AND_LIVE_BROWSER_CLOSURE.md`](completed/M3A1_FRAME_RUNTIME_TRUTH_GUTTERS_AND_LIVE_BROWSER_CLOSURE.md) |
+| M3A1-TF2 | [`M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md`](completed/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md) |
 
 ## Naming rule
 
