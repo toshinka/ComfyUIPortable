@@ -8,14 +8,15 @@
 
 ## Current
 
+Latest SOL-verified public commit: `399b4d5f973c389f42cb1912be3abe153ad08678`.
 Latest published Card:
 [M3A1_TF2 — External AI Publication Traceability Closure](completed/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md)
 M3A1-TF2 publication: PUBLISHED; SOL public-URL review: PASS.
-Current local Card:
-[M3A1-TF2.1 — Post-Push Publication Truth Closure](current/M3A1_TF2_1_POST_PUSH_PUBLICATION_TRUTH_CLOSURE.md)
-TF2.1 publication state: LOCAL; Owner push remains required.
+Current operational Card:
+[M3A1-BC1 — Owner Live-Browser Closure and Publication Model Cleanup](current/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE.md)
+Browser technical verification: PASS; Visual evidence: PASS; Owner acceptance: PENDING; M3B authorization: NO.
 
-現在、実行中Cardはない。M3A.1のOwner live-browser acceptanceが未完了。
+現在の実行対象はM3A1-BC1。Browser/VisualはPASS、Owner live-browser acceptanceが未完了。
 再開時は [`WEBGPT_SOL_LUNA_HANDOFF.md`](../WEBGPT_SOL_LUNA_HANDOFF.md) をSOLが監査し、
 新しいCardを [`current/`](current/README.md) に1件だけ発行する。`completed/` のCardをコピーして再開指示にしない。
 
@@ -39,6 +40,7 @@ TF2.1 publication state: LOCAL; Owner push remains required.
 | M3A | [`M3A_VISUAL_PANEL_FRAME_LAYER_AND_FRAME_GUIDE_INTEGRATION.md`](completed/M3A_VISUAL_PANEL_FRAME_LAYER_AND_FRAME_GUIDE_INTEGRATION.md) |
 | M3A.1 | [`M3A1_FRAME_RUNTIME_TRUTH_GUTTERS_AND_LIVE_BROWSER_CLOSURE.md`](completed/M3A1_FRAME_RUNTIME_TRUTH_GUTTERS_AND_LIVE_BROWSER_CLOSURE.md) |
 | M3A1-TF2 | [`M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md`](completed/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md) |
+| M3A1-TF2.1 | [`M3A1_TF2_1_POST_PUSH_PUBLICATION_TRUTH_CLOSURE.md`](completed/M3A1_TF2_1_POST_PUSH_PUBLICATION_TRUTH_CLOSURE.md) |
 
 ## Naming rule
 

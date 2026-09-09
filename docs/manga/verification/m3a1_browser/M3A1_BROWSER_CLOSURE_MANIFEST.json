@@ -1,0 +1,30 @@
+{
+  "card": "M3A1-BC1",
+  "date": "2026-09-09 JST",
+  "baseline": "399b4d5f973c389f42cb1912be3abe153ad08678",
+  "execution_baseline": "a92237fe3eeb0f53e16c69d37763d388fedf2145",
+  "implementation_review_target": "a7f0baaa89a2e315b0492573c9da19e50727928b",
+  "implementation_changed": true,
+  "implementation_files": [
+    "workflows/manga/MINIMUM_HAND_MANGA_DRAFT.json"
+  ],
+  "browser_workflow": "M3A1_BC1_BROWSER",
+  "tests": {
+    "B0": {"status": "PASS", "evidence": "M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE_REPORT.md#b0"},
+    "B1": {"status": "PASS", "evidence": "B1_VISUAL_FRAME_LAYER.png"},
+    "B2": {"status": "PASS", "evidence": "B2_TWO_FRAMES_CREATED.png"},
+    "B3": {"status": "PASS", "evidence": "B3_FRAME_DRAG_RESIZE.png"},
+    "B4": {"status": "PASS", "evidence": "B4_FINAL_WHITE_GUTTER_BLACK_FRAMES.png"},
+    "B5": {"status": "PASS", "evidence": "B5_FINAL_2PX_8PX.png"},
+    "B6": {"status": "PASS", "evidence": "B6_AFTER_SAVE_RELOAD.png"},
+    "B7": {"status": "PASS", "evidence": "B7_POST_RELOAD_DRAG_FINAL_OUTPUT.png"},
+    "B8": {"status": "PASS", "evidence": "B8_ZERO_FRAME_PASS_THROUGH.png"},
+    "B9": {"status": "PASS", "evidence": "B9_CAST_REGRESSION.png"}
+  },
+  "luna_browser_verdict": "PASS",
+  "visual_evidence": "PASS",
+  "owner_acceptance": "PENDING",
+  "m3b_authorization": "NO",
+  "publication": "LOCAL",
+  "owner_push_required": true
+}

@@ -19,14 +19,14 @@ Repository: `https://github.com/toshinka/tegaki`
 - Domain router: `ComfyUIPortable/GITHUB_ComfyUI.txt`
 - Manga implementation Review Target: `a7f0baaa89a2e315b0492573c9da19e50727928b`
 - Manga namespace/card migration publication: `ef7daa502f501211cd6b06f378e9024dbff6f284`
-- Current repository publication: `5c9da782316b99ceeb6ecfb85695bb6965d3bf35`
+- Latest SOL-verified public commit: `399b4d5f973c389f42cb1912be3abe153ad08678`
 - Manga implementation Review Target: `a7f0baaa89a2e315b0492573c9da19e50727928b`
-- M3A1-TF2 publication: PUBLISHED at `5c9da782316b99ceeb6ecfb85695bb6965d3bf35`
+- M3A1-TF2 publication: PUBLISHED; SOL public-URL review: PASS.
 - Web GPT SOL public-URL review: PASS
 - Latest published Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md
 - Latest published report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_REPORT.md
-- Current local Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/current/M3A1_TF2_1_POST_PUSH_PUBLICATION_TRUTH_CLOSURE.md
-- Current local report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3A1_TF2_1_POST_PUSH_PUBLICATION_TRUTH_CLOSURE_REPORT.md
+- Current operational Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/current/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE.md
+- Current operational report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE_REPORT.md
 
 repository HEADにはTegaki本体やH3の別作業も進むため、最新HEADをManga実装SHAと読み替えないこと。
 
@@ -44,11 +44,11 @@ Primary flowはScene-firstである。CAST、人物粗領域、ラフ人物/白�
 - M0〜M2B.2: 完了。
 - M3A / M3A.1: Visual Panel Frameとruntime framingを実装済み。
 - M3A.1: headless testとstructural pixel oracleはPASS。
-- M3A.1 Owner live-browser acceptance: PENDINGとして扱う。
-- M3A1-TF2 publication: PUBLISHED at 5c9da782316b99ceeb6ecfb85695bb6965d3bf35。
+- M3A.1 Owner live-browser acceptance: Browser/Visual PASS、Owner acceptance PENDINGとして扱う。
+- M3A1-BC1 live-browser closure: B0-B9 PASS; Owner acceptance remains PENDING。
 - Web GPT SOL public-URL review: PASS。
-- Current local operation: M3A1-TF2.1 Post-Push Publication Truth Closure。TF2.1 publication is LOCAL.
-- Active LUNA implementation Card: なし。
+- Current operation: M3A1-BC1 Owner Live-Browser Closure and Publication Model Cleanup。
+- Active LUNA implementation Card: M3A1-BC1。
 - M3B候補: Rough Manga / White-Dummy Character Guide Integration。Owner browser gate前に開始しない。
 - production output namespace移行: 未実施。`output/Tegaki`を維持する。
 

@@ -2,9 +2,10 @@
 
 Current and historical Manga reports are collected in this directory.
 
-Current implementation report: [M3A.1 Frame Runtime Truth](M3A1_FRAME_RUNTIME_TRUTH_AND_BROWSER_CLOSURE_REPORT.md).
+Historical implementation report: [M3A.1 Frame Runtime Truth](M3A1_FRAME_RUNTIME_TRUTH_AND_BROWSER_CLOSURE_REPORT.md).
 Latest published operational report: [M3A1-TF2 External AI Publication Traceability Report](M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_REPORT.md).
-Current local operational report: [M3A1-TF2.1 Post-Push Publication Truth Closure Report](M3A1_TF2_1_POST_PUSH_PUBLICATION_TRUTH_CLOSURE_REPORT.md).
+Current operational report: [M3A1-BC1 Owner Live-Browser Closure and Publication Model Cleanup Report](M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE_REPORT.md).
+TF2.1 publication-truth report remains historical at [M3A1-TF2.1 Post-Push Publication Truth Closure Report](M3A1_TF2_1_POST_PUSH_PUBLICATION_TRUTH_CLOSURE_REPORT.md).
 
 Namespace work is recorded in
 [MANGA_DOCUMENT_NAMESPACE_MIGRATION_REPORT.md](MANGA_DOCUMENT_NAMESPACE_MIGRATION_REPORT.md).

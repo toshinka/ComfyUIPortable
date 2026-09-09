@@ -2,7 +2,9 @@
 
 更新: 2026-09-09 JST。
 
-Active implementation Card: **NONE**。
+Active implementation Card: **M3A1-BC1 — Owner Live-Browser Closure and Publication Model Cleanup**。
+
+[M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE.md](M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE.md)
 
 Latest published Card:
 [M3A1-TF2 — External AI Publication Traceability Closure](../completed/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md)
@@ -10,14 +12,12 @@ Latest published Card:
 Latest published report:
 [M3A1-TF2 External AI Publication Traceability Report](../../reports/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_REPORT.md)
 
-Current local Card:
-[M3A1-TF2.1 — Post-Push Publication Truth Closure](M3A1_TF2_1_POST_PUSH_PUBLICATION_TRUTH_CLOSURE.md)
+Current operational report:
+[M3A1-BC1 Owner Live-Browser Closure and Publication Model Cleanup Report](../../reports/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE_REPORT.md)
 
-Current local report:
-[M3A1-TF2.1 Post-Push Publication Truth Closure Report](../../reports/M3A1_TF2_1_POST_PUSH_PUBLICATION_TRUTH_CLOSURE_REPORT.md)
-
-TF2 publication: **PUBLISHED**。SOL public-URL review: **PASS**。
-TF2.1 publication: **LOCAL**。Owner push required; Web GPT verification is blocked until push.
+Latest SOL-verified public commit: `399b4d5f973c389f42cb1912be3abe153ad08678`。
+Browser technical verification: **PASS**。Visual evidence: **PASS**。
+Owner acceptance: **PENDING**。M3B authorization: **NO**。
 
 Web GPT SOLがGitHubのlive stateを監査して発行したCardを、このdirectoryへ1件だけ置く。
 LUNAはCard ID、baseline SHA、own files、acceptance、stop条件が揃うまで実装を開始しない。
