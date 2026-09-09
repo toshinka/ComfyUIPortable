@@ -1,0 +1,132 @@
+{
+  "schema": "tegaki.h3.h2b.source-anchored-still/v1",
+  "source": {
+    "basis_workflow": "workflows/h3/H2A_NATIVE_STILL_BASE.json",
+    "official_conditioning_source": "ComfyUI/comfy_extras/nodes_minimax_h3.py",
+    "adaptation": "H2B feasibility-only adaptation of the verified Native H3 still path: one LoadImage source bound to MiniMaxH3ImageToVideo.first_frame, minimum five-frame temporal packet, video VAE decode, and one selected frame. No reference array, REF2VA node, source-strength control, audio decode, video container, custom node, or production UI is introduced."
+  },
+  "baseline": {
+    "route": "native_source_anchored_still",
+    "anchor_role": "first_frame",
+    "source_contract": ["one", "png", "jpeg"],
+    "width": 608,
+    "height": 352,
+    "packet_frames": 5,
+    "selected_frame_index": 0,
+    "fps": 24,
+    "steps": 20,
+    "sampler": "res_multistep",
+    "scheduler": "simple",
+    "output_prefix": "still/h2b_source_anchor",
+    "prompt_only_output_prefix": "still/h2b_prompt_only",
+    "source_resize": "Native MiniMaxH3ImageToVideo resizes first_frame[:1] to 608x352 with crop=disabled (plain stretch).",
+    "source_temporal_placement": "frame 0",
+    "source_strength": "NOT APPLICABLE; the existing Native node exposes no bounded strength/fidelity input.",
+    "model": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+    "text_encoder": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+    "video_vae": "minimax_h3_video_vae_fp16.safetensors",
+    "audio_vae": null
+  },
+  "semantic_nodes": {
+    "save_image": {"id": "92", "class_type": "SaveImage"},
+    "video_vae": {"id": "119", "class_type": "VAELoader"},
+    "video_decode": {"id": "122", "class_type": "VAEDecode"},
+    "sampler_select": {"id": "123", "class_type": "KSamplerSelect"},
+    "scheduler": {"id": "124", "class_type": "BasicScheduler"},
+    "sampler": {"id": "125", "class_type": "SamplerCustomAdvanced"},
+    "guider": {"id": "126", "class_type": "BasicGuider"},
+    "model": {"id": "127", "class_type": "UNETLoader"},
+    "text_encoder": {"id": "128", "class_type": "CLIPLoader"},
+    "noise": {"id": "129", "class_type": "RandomNoise"},
+    "conditioning_latent": {"id": "131", "class_type": "MiniMaxH3ImageToVideo"},
+    "select_frame": {"id": "132", "class_type": "ImageFromBatch"},
+    "source_image_loader": {"id": "133", "class_type": "LoadImage"}
+  },
+  "prompt": {
+    "92": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": ["132", 0],
+        "filename_prefix": "still/h2b_source_anchor"
+      }
+    },
+    "119": {
+      "class_type": "VAELoader",
+      "inputs": {"vae_name": "minimax_h3_video_vae_fp16.safetensors"}
+    },
+    "122": {
+      "class_type": "VAEDecode",
+      "inputs": {"samples": ["125", 0], "vae": ["119", 0]}
+    },
+    "123": {
+      "class_type": "KSamplerSelect",
+      "inputs": {"sampler_name": "res_multistep"}
+    },
+    "124": {
+      "class_type": "BasicScheduler",
+      "inputs": {
+        "model": ["127", 0],
+        "scheduler": "simple",
+        "steps": 20,
+        "denoise": 1
+      }
+    },
+    "125": {
+      "class_type": "SamplerCustomAdvanced",
+      "inputs": {
+        "noise": ["129", 0],
+        "guider": ["126", 0],
+        "sampler": ["123", 0],
+        "sigmas": ["124", 0],
+        "latent_image": ["131", 1]
+      }
+    },
+    "126": {
+      "class_type": "BasicGuider",
+      "inputs": {"model": ["127", 0], "conditioning": ["131", 0]}
+    },
+    "127": {
+      "class_type": "UNETLoader",
+      "inputs": {
+        "unet_name": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+        "weight_dtype": "default"
+      }
+    },
+    "128": {
+      "class_type": "CLIPLoader",
+      "inputs": {
+        "clip_name": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+        "type": "minimax",
+        "device": "default"
+      }
+    },
+    "129": {
+      "class_type": "RandomNoise",
+      "inputs": {"noise_seed": 20260910, "control_after_generate": "fixed"}
+    },
+    "131": {
+      "class_type": "MiniMaxH3ImageToVideo",
+      "inputs": {
+        "clip": ["128", 0],
+        "vae": ["119", 0],
+        "prompt": "",
+        "width": 608,
+        "height": 352,
+        "length": 5,
+        "first_frame": ["133", 0]
+      }
+    },
+    "132": {
+      "class_type": "ImageFromBatch",
+      "inputs": {
+        "image": ["122", 0],
+        "batch_index": 0,
+        "length": 1
+      }
+    },
+    "133": {
+      "class_type": "LoadImage",
+      "inputs": {"image": "inputs/h2b_source.png"}
+    }
+  }
+}
