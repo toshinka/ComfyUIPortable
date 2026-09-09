@@ -4,13 +4,14 @@
 M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`
 M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`
 Manga正本入口: [GITHUB_MANGA.txt](../../GITHUB_MANGA.txt)
-Latest SOL-verified public commit: `1db61c19c076d8f66f18492f30157c53f6dac92f`
-Latest published Card: [M3B-LR1 — Rough Guide Foundation Long-Run Batch](cards/completed/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_BATCH.md)
-Latest published report: [M3B-LR1 Rough Guide Foundation Long-Run Batch Report](reports/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_REPORT.md)
-M3B-LR1 publication: PUBLISHED; SOL public-URL review: PASS
-Latest completed Card: [M3B-LR2 — Rough Guide Generation Influence A/B Long-Run](cards/completed/M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_LONG_RUN.md)
-Latest completed report: [M3B-LR2 Rough Guide Generation Influence A/B Report](reports/M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_REPORT.md)
-Regression: PASS / Runtime: PASS / Browser: PASS / Visual evidence: PASS / M3B-LR1: COMPLETED / M3B-LR1 generation influence: NOT IMPLEMENTED / M3B-LR2: COMPLETED / M3B-LR2 classification: BLOCKED / M3A.1 milestone acceptance: ACCEPTED_BY_DELEGATED_SOL / Final Owner product review: DEFERRED / Active Card: NONE.
+Latest SOL-verified public commit: `35b130b9e314128573bc5cbb7651048b0e43e260`
+Latest published Card: [M3B-LR2 — Rough Guide Generation Influence A/B Long-Run](cards/completed/M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_LONG_RUN.md)
+Latest published report: [M3B-LR2 Rough Guide Generation Influence A/B Report](reports/M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_REPORT.md)
+M3B-LR2 publication: PUBLISHED; SOL public-URL review: PASS; classification: BLOCKED
+Latest completed Card: [M3B-LR2R1 — AnyTest v4 Acquisition & A/B Resume Long-Run](cards/completed/M3B_LR2R1_ANYTEST_V4_ACQUISITION_AND_AB_RESUME_LONG_RUN.md)
+Latest completed report: [M3B-LR2R1 AnyTest v4 Acquisition & A/B Resume Long-Run Report](reports/M3B_LR2R1_ANYTEST_V4_ACQUISITION_AND_AB_RESUME_REPORT.md)
+Latest local manifest: [M3B_LR2R1 Manifest](verification/m3b_lr2r1/M3B_LR2R1_MANIFEST.json)
+Regression: PASS / Runtime: PASS / Browser: PASS / Visual evidence: PASS / M3B-LR1: COMPLETED / M3B-LR1 generation influence: NOT IMPLEMENTED / M3B-LR2: PUBLISHED / SOL REVIEWED / BLOCKED / M3B-LR2 stop: CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED / M3B-LR2R1: LOCAL COMPLETED / generation influence: VERIFIED FOR RESEARCH GRAPH / quality: WEAK PROVISIONAL / M3A.1 milestone acceptance: ACCEPTED_BY_DELEGATED_SOL / Final Owner product review: DEFERRED / Active Card: NONE.
 
 `GITHUB_ComfyUI.txt` はManga/H3を振り分けるCompatibility Routerへ変更した。
 今回のnamespace整理は文書/navigationのみで、Manga runtime・workflow・schema・outputを変更していない。
@@ -140,11 +141,9 @@ Scene-only Draft (M1) → CAST 複数出演 (M2) → Rough Guide (M3) → UX She
   - **LR1報告書**: [M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_REPORT.md](reports/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_REPORT.md)
   - **LR1 manifest**: [M3B_LR1_MANIFEST.json](verification/m3b_lr1/M3B_LR1_MANIFEST.json)
 
-- **完了Review Slice**: [M3B-LR2 — Rough Guide Generation Influence A/B Long-Run](cards/completed/M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_LONG_RUN.md)。Stage 1 inventory stop / BLOCKED。
-  - **Stop reason**: `CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED`
-  - **Report**: [M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_REPORT.md](reports/M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_REPORT.md)
-  - **Manifest**: [M3B_LR2_MANIFEST.json](verification/m3b_lr2/M3B_LR2_MANIFEST.json)
-- Active Card: NONE。次Cardは自動発行しない。
+- **Latest local closeout**: [M3B-LR2R1 — AnyTest v4 Acquisition & A/B Resume Long-Run](cards/completed/M3B_LR2R1_ANYTEST_V4_ACQUISITION_AND_AB_RESUME_LONG_RUN.md)。既存reForge共有ControlNet storageを検証し、pinned modelの再利用、A/B 8本、canonical no-Guide、LR1/M2B回帰をPASS。Production integrationは未実施。
+- **Active Card**: NONE。LR2R1のSOL publication reviewとOwner pushを待つ。
+- LR2R1完了後の次Cardは自動発行しない。
 
 
 ---

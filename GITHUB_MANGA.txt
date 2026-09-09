@@ -19,25 +19,27 @@ Minimum-Hand / Scene-first Manga Authoring.
 M0 through M2B.2 are complete. M3A.1 technical milestone acceptance is
 ACCEPTED_BY_DELEGATED_SOL from regression, runtime, Browser, and visual evidence.
 Final Owner product review is DEFERRED. M3B-LR1 is published and completed for its
-bounded foundation slice. M3B-LR2 completed as a bounded inventory stop because
-local ControlNet compatibility was not established. Active Card is NONE.
+bounded foundation slice. M3B-LR2 is published, SOL-reviewed, and BLOCKED at its
+local model inventory gate. M3B-LR2R1 is locally completed for its bounded
+acquisition/A-B research slice; SOL publication review and Owner push remain
+pending.
 Web GPT SOL leads Card design; a fresh local LUNA chat implements one published
 Card at a time.
 
 Latest completed operational work:
-M3B-LR2 — Rough Guide Generation Influence A/B Long-Run.
-Stopped at the local ControlNet inventory gate:
-CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED.
+M3B-LR2R1 — AnyTest v4 Acquisition & A/B Resume Long-Run.
+The pinned model was reused from the verified reForge shared ControlNet store;
+the bounded A/B graph and canonical no-Guide regression completed locally.
 
 Latest published operational work:
-M3B-LR1 — Rough Guide Foundation Long-Run Batch.
+M3B-LR2 — Rough Guide Generation Influence A/B Long-Run.
 Publication: PUBLISHED
-SOL review: PASS
+SOL review: PASS / BLOCKED classification
 
 Latest operational handoff
 --------------------------
 Latest SOL-verified public commit:
-1db61c19c076d8f66f18492f30157c53f6dac92f
+35b130b9e314128573bc5cbb7651048b0e43e260
 
 M3A.1 Core Implementation SHA:
 a7f0baaa89a2e315b0492573c9da19e50727928b
@@ -46,13 +48,22 @@ M3A.1 Current Closure Review Target:
 ad91c9277715e998663e8c12b6c37cca16e53955
 
 Latest published Card:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_BATCH.md
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_LONG_RUN.md
 
 Latest published report:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_REPORT.md
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_REPORT.md
 
 Latest published manifest:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_lr1/M3B_LR1_MANIFEST.json
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_lr2/M3B_LR2_MANIFEST.json
+
+Latest local Card:
+docs/manga/cards/completed/M3B_LR2R1_ANYTEST_V4_ACQUISITION_AND_AB_RESUME_LONG_RUN.md
+
+Latest local report:
+docs/manga/reports/M3B_LR2R1_ANYTEST_V4_ACQUISITION_AND_AB_RESUME_REPORT.md
+
+Latest local manifest:
+docs/manga/verification/m3b_lr2r1/M3B_LR2R1_MANIFEST.json
 
 Browser technical verification:
 PASS
@@ -75,12 +86,15 @@ Final Owner product review:
 DEFERRED
 M3B-LR1: PUBLISHED / COMPLETED
 M3B-LR1 generation influence: NOT IMPLEMENTED
-M3B-LR2: COMPLETED / BLOCKED
+M3B-LR2: PUBLISHED / SOL REVIEWED / BLOCKED
 M3B-LR2 generation influence: BLOCKED
+M3B-LR2 stop: CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED
+M3B-LR2R1: LOCAL COMPLETED / TECHNICAL PASS / QUALITY WEAK PROVISIONAL
+M3B-LR2R1 generation influence: VERIFIED FOR RESEARCH GRAPH
 Active Card: NONE
 
 Next:
-No next Card is issued automatically. SOL reviews the LR2 blocked inventory evidence.
+No next Card is issued automatically. SOL reviews LR2R1 evidence after completion.
 
 Completed review slice:
 M3B-LR1 — Rough Guide Foundation Long-Run Batch.
@@ -96,6 +110,15 @@ M3B-LR1 — Rough Guide Foundation Long-Run Batch.
 
 Do not start another Card automatically after LR1. Web GPT SOL reviews the
 completed LR1 evidence and issues the next bounded Card if required.
+
+M3B-LR2R1 closeout:
+- Existing reForge shared ControlNet storage was established by junction target
+  inspection before model reuse.
+- The pinned model matched expected size and SHA256 and remained outside Git.
+- ComfyUI ControlNetLoader loaded the external selector and eight A/B outputs
+  completed.
+- Canonical no-Guide generation and LR1/M2B regressions passed.
+- ControlNet remains research-only; production integration was not performed.
 
 Reading order
 -------------

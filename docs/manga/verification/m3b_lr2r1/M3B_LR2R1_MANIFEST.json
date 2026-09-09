@@ -1,0 +1,235 @@
+{
+  "card": "M3B-LR2R1",
+  "date_jst": "2026-09-10",
+  "publication": "LOCAL",
+  "execution": {
+    "expected_manga_baseline": "35b130b9e314128573bc5cbb7651048b0e43e260",
+    "final_head": "469623a6f7523c3423a5088f46e86a832fd06611",
+    "origin_main": "469623a6f7523c3423a5088f46e86a832fd06611",
+    "baseline_drift": "H3-only; no Manga conflict",
+    "owner_push_required": true,
+    "owner_product_review": "DEFERRED"
+  },
+  "model": {
+    "name": "CN-anytest4_illustrious2_A.safetensors",
+    "source": {
+      "repository": "2vXpSwA7/iroiro-lora",
+      "revision": "bb4a39142275ac975ae4e6a64d1df218f672e0f0",
+      "path": "test_controlnet2/CN-anytest4_illustrious2_A.safetensors",
+      "provider": "Hugging Face",
+      "commit_url": "https://huggingface.co/2vXpSwA7/iroiro-lora/commit/bb4a39142275ac975ae4e6a64d1df218f672e0f0"
+    },
+    "expected_bytes": 2502139104,
+    "actual_bytes": 2502139104,
+    "expected_sha256": "e069d496cc111740716b833238d9bea9cdd59f8623aa85a78d362d088b1f67b8",
+    "actual_sha256": "E069D496CC111740716B833238D9BEA9CDD59F8623AA85A78D362D088B1F67B8",
+    "identity": "PASS",
+    "acquisition": "REUSED",
+    "selected_storage": "E:\\EasyReforge\\Model\\ControlNet\\CN-anytest_v4",
+    "selected_file": "E:\\EasyReforge\\Model\\ControlNet\\CN-anytest_v4\\CN-anytest4_illustrious2_A.safetensors",
+    "reForge_path": "E:\\EasyReforge\\stable-diffusion-webui-reForge\\models\\ControlNet",
+    "reForge_path_link_type": "Junction",
+    "reForge_path_target": "E:\\EasyReforge\\Model\\ControlNet",
+    "configured_roots": [
+      "E:\\Data\\Models\\ControlNet",
+      "E:\\EasyReforge\\Model\\ControlNet"
+    ],
+    "internal_comfyui_destination_used": false,
+    "internal_comfyui_path": "ComfyUI\\models\\controlnet\\CN-anytest4_illustrious2_A.safetensors",
+    "internal_comfyui_path_exists": false,
+    "tracked_by_git": false,
+    "new_junction_or_symlink": false,
+    "disk_free_requirement": "PASS"
+  },
+  "loader": {
+    "node": "ControlNetLoader",
+    "selector": "CN-anytest_v4\\CN-anytest4_illustrious2_A.safetensors",
+    "object_info_visible": true,
+    "apply_node": "ControlNetApplyAdvanced",
+    "research_prompt_id": "dfa09463-4982-4489-be2f-8b17d41c77ee",
+    "queue_status": "success",
+    "node_errors": []
+  },
+  "pairing": {
+    "checkpoint": "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors",
+    "checkpoint_path_observed": "E:\\Data\\Models\\StableDiffusion\\♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors",
+    "checkpoint_bytes_observed": 6938040682,
+    "vae": "CheckpointLoaderSimple output 2 (checkpoint VAE)",
+    "resolution": "832x1216",
+    "steps": 20,
+    "cfg": 7.0,
+    "sampler": "euler",
+    "scheduler": "normal",
+    "start_percent": 0.0,
+    "end_percent": 1.0,
+    "preprocessor": "none",
+    "guide_fixture": "ComfyUI/input/tegaki_manga_guides/rough_guide_live.png",
+    "guide_sha256": "4416CDF252166D99AE49E801075362437D1D45224C14AE21BB1008599A232643"
+  },
+  "ab": {
+    "workflow": "workflows/manga/research/M3B_LR2R1_ANYTEST_AB.json",
+    "prompt_id": "dfa09463-4982-4489-be2f-8b17d41c77ee",
+    "seeds": [
+      42,
+      77
+    ],
+    "strengths": [
+      "OFF",
+      0.25,
+      0.5,
+      0.75
+    ],
+    "output_count": 8,
+    "invariants": [
+      "checkpoint",
+      "checkpoint VAE",
+      "prompt and negative",
+      "resolution",
+      "seed",
+      "latent",
+      "steps",
+      "CFG",
+      "sampler",
+      "scheduler",
+      "regional plan",
+      "Guide image"
+    ],
+    "technical_causality": "PASS",
+    "same_seed_on_off_hashes_differ": true,
+    "seed_variation_hashes_differ": true,
+    "generation_influence": "VERIFIED"
+  },
+  "outputs": [
+    {
+      "seed": 42,
+      "strength": "OFF",
+      "mode": "OFF",
+      "filename": "SEED_A_OFF.png",
+      "source_output": "M3B_LR2R1_SEED_A_OFF_00001_.png",
+      "bytes": 1544343,
+      "sha256": "043536568A10D5F50321121B7338FF9555214795079632147934A8522FA598B1",
+      "dimensions": "832x1216",
+      "queue_status": "success"
+    },
+    {
+      "seed": 42,
+      "strength": 0.25,
+      "mode": "ON",
+      "filename": "SEED_A_025.png",
+      "source_output": "M3B_LR2R1_SEED_A_025_00001_.png",
+      "bytes": 2042561,
+      "sha256": "7F411248E83F8521465096515F4AE682BFBDFA9F26EFC195453C08408136839D",
+      "dimensions": "832x1216",
+      "queue_status": "success"
+    },
+    {
+      "seed": 42,
+      "strength": 0.5,
+      "mode": "ON",
+      "filename": "SEED_A_050.png",
+      "source_output": "M3B_LR2R1_SEED_A_050_00001_.png",
+      "bytes": 1874156,
+      "sha256": "7D628C9CED20B7FBCB989BB9EB4F7C343E23B59F6FA6707312CD41A8826C10B6",
+      "dimensions": "832x1216",
+      "queue_status": "success"
+    },
+    {
+      "seed": 42,
+      "strength": 0.75,
+      "mode": "ON",
+      "filename": "SEED_A_075.png",
+      "source_output": "M3B_LR2R1_SEED_A_075_00001_.png",
+      "bytes": 2153792,
+      "sha256": "255D0300954057213CF7EB99402A49A632914FBCC0C754A647CCD1D07AD0B5D6",
+      "dimensions": "832x1216",
+      "queue_status": "success"
+    },
+    {
+      "seed": 77,
+      "strength": "OFF",
+      "mode": "OFF",
+      "filename": "SEED_B_OFF.png",
+      "source_output": "M3B_LR2R1_SEED_B_OFF_00001_.png",
+      "bytes": 1688966,
+      "sha256": "70144939D1433BB787A9BE67E5572FD6C2543CF54BA45AE541E77E471B46E18C",
+      "dimensions": "832x1216",
+      "queue_status": "success"
+    },
+    {
+      "seed": 77,
+      "strength": 0.25,
+      "mode": "ON",
+      "filename": "SEED_B_025.png",
+      "source_output": "M3B_LR2R1_SEED_B_025_00001_.png",
+      "bytes": 2258382,
+      "sha256": "96F76E6BC55F9462DD33002BED80224C09003D5431BC63C87BEA29C5A1372018",
+      "dimensions": "832x1216",
+      "queue_status": "success"
+    },
+    {
+      "seed": 77,
+      "strength": 0.5,
+      "mode": "ON",
+      "filename": "SEED_B_050.png",
+      "source_output": "M3B_LR2R1_SEED_B_050_00001_.png",
+      "bytes": 2413995,
+      "sha256": "F2D0E24335F429D885390E6E668D7425473F2A2F030C0A77C9247B71828610E5",
+      "dimensions": "832x1216",
+      "queue_status": "success"
+    },
+    {
+      "seed": 77,
+      "strength": 0.75,
+      "mode": "ON",
+      "filename": "SEED_B_075.png",
+      "source_output": "M3B_LR2R1_SEED_B_075_00001_.png",
+      "bytes": 2428718,
+      "sha256": "4F65431FC0F2713C9BCCE686518DC7826C6905C1FCF27523479FB74AEEBF2C40",
+      "dimensions": "832x1216",
+      "queue_status": "success"
+    }
+  ],
+  "canonical_no_guide": {
+    "prompt_id": "b35ccc27-29c1-4520-86e1-32f93348ab14",
+    "workflow": "workflows/manga/MINIMUM_HAND_MANGA_DRAFT.json",
+    "api_equivalent_queue": true,
+    "queue_status": "success",
+    "output": "CANONICAL_NO_GUIDE.png",
+    "output_sha256": "8281D47FDAF5CDEC80595C8EAFCB9C573D452755D21CC39D89038D193F1BBA7E",
+    "controlnet_dependency": false,
+    "result": "PASS"
+  },
+  "regression": {
+    "m3b_lr1_contract": "12/12 PASS",
+    "m3b_lr1_guide_ops": "PASS",
+    "m3b_lr1_runtime_bridge": "5/5 PASS",
+    "m2b_minimum_hand_editor": "19/19 PASS"
+  },
+  "browser_checks": {
+    "E0_research_workflow_loads": "PASS",
+    "E1_seed_a_off": "PASS",
+    "E2_seed_a_on_025": "PASS",
+    "E3_seed_a_on_050": "PASS",
+    "E4_seed_a_on_075": "PASS",
+    "E5_seed_b_off": "PASS",
+    "E6_seed_b_on_sweep": "PASS",
+    "E7_canonical_no_guide": "PASS",
+    "live_comfyui_output_view": "PASS"
+  },
+  "visual_review": {
+    "contact_sheet": "docs/manga/verification/m3b_lr2r1/M3B_LR2R1_AB_CONTACT_SHEET.png",
+    "guide_placement_trend": "DEGRADED",
+    "image_quality": "DEGRADED",
+    "seed_variation": "PRESENT",
+    "annotation": "Geometric Guide influence is visible, strongest at 0.75 and especially Seed B, but the line/box structure can become intrusive. Lower strengths preserve usable pages but placement benefit is weak."
+  },
+  "classification": {
+    "provisional": "QUALITY WEAK",
+    "final_sol_classification": "PENDING",
+    "production_integration": "NOT PERFORMED",
+    "final_owner_product_review": "DEFERRED"
+  },
+  "stopped_early": false,
+  "stop_reason": "",
+  "local_closeout": true
+}
