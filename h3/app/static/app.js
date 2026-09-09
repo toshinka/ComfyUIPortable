@@ -372,12 +372,27 @@ function captureContinuationFrame(sourceUrl) {
     video.preload = "auto";
     video.muted = true;
     video.playsInline = true;
+    video.setAttribute("aria-hidden", "true");
+    video.style.position = "fixed";
+    video.style.left = "-10000px";
+    video.style.width = "1px";
+    video.style.height = "1px";
+    video.style.opacity = "0";
+    video.style.pointerEvents = "none";
+    document.body.append(video);
     let settled = false;
+    let finalFrameTarget = null;
+    let forcedFinalSeek = false;
+    let frameWaitTimer = null;
+    let frameStabilityTimer = null;
 
     const cleanup = () => {
+      if (frameWaitTimer !== null) window.clearTimeout(frameWaitTimer);
+      if (frameStabilityTimer !== null) window.clearTimeout(frameStabilityTimer);
       video.pause();
       video.removeAttribute("src");
       video.load();
+      video.remove();
     };
     const fail = (message) => {
       if (settled) return;
@@ -391,7 +406,7 @@ function captureContinuationFrame(sourceUrl) {
       cleanup();
       resolve(value);
     };
-    const capture = () => {
+    const capture = (capturedCurrentTime = video.currentTime) => {
       if (!video.videoWidth || !video.videoHeight) {
         fail("The source video has no decodable frame.");
         return;
@@ -410,6 +425,7 @@ function captureContinuationFrame(sourceUrl) {
         fail("The final frame could not be drawn.");
         return;
       }
+      const captureTime = Number.isFinite(capturedCurrentTime) ? capturedCurrentTime : video.currentTime;
       canvas.toBlob((blob) => {
         if (!blob || blob.type !== "image/png") {
           fail("The final frame could not be encoded as PNG.");
@@ -418,24 +434,85 @@ function captureContinuationFrame(sourceUrl) {
         finish({
           blob,
           duration: video.duration,
-          currentTime: video.currentTime,
+          currentTime: captureTime,
           width: video.videoWidth,
           height: video.videoHeight,
         });
       }, "image/png");
     };
+    const seekTolerance = Math.max(0.05, 1 / 24);
+    const captureAtFinalFrame = (frameTime) => {
+      if (finalFrameTarget > 0 && frameTime < finalFrameTarget - seekTolerance) {
+        captureDecodedFrame(frameTime);
+        return;
+      }
+      video.pause();
+      capture(frameTime);
+    };
+    const scheduleNextFrame = () => {
+      if (typeof video.requestVideoFrameCallback === "function") {
+        video.requestVideoFrameCallback((_now, metadata) => {
+          const frameTime = Number.isFinite(metadata.mediaTime) ? metadata.mediaTime : video.currentTime;
+          captureDecodedFrame(frameTime);
+        });
+        return;
+      }
+      frameStabilityTimer = window.setTimeout(() => captureDecodedFrame(video.currentTime), 50);
+    };
+    function captureDecodedFrame(observedTime) {
+      if (!Number.isFinite(finalFrameTarget)) {
+        fail("The source video final frame target could not be determined.");
+        return;
+      }
+      const frameTime = Number.isFinite(observedTime) ? observedTime : video.currentTime;
+      if (finalFrameTarget > 0 && frameTime < finalFrameTarget - seekTolerance) {
+        if (!forcedFinalSeek) {
+          forcedFinalSeek = true;
+          try {
+            video.currentTime = finalFrameTarget;
+          } catch {
+            fail("The source video could not seek to its final frame.");
+            return;
+          }
+        }
+        scheduleNextFrame();
+        return;
+      }
+      if (video.readyState < 2) {
+        scheduleNextFrame();
+        return;
+      }
+      if (typeof video.requestVideoFrameCallback === "function") {
+        video.requestVideoFrameCallback((_now, metadata) => {
+          const decodedTime = Number.isFinite(metadata.mediaTime) ? metadata.mediaTime : video.currentTime;
+          captureAtFinalFrame(decodedTime);
+        });
+        return;
+      }
+      frameStabilityTimer = window.setTimeout(() => captureAtFinalFrame(video.currentTime), 100);
+    }
     video.addEventListener("loadedmetadata", () => {
       if (!Number.isFinite(video.duration) || video.duration <= 0) {
         fail("The source video duration could not be read.");
         return;
       }
       try {
-        video.currentTime = Math.max(0, video.duration - 0.05);
+        finalFrameTarget = Math.max(0, video.duration - 0.05);
+        video.currentTime = finalFrameTarget;
+        frameWaitTimer = window.setTimeout(
+          () => fail("The source video could not seek to its final frame."),
+          Math.max(10000, (video.duration + 2) * 1000),
+        );
+        const playback = video.play();
+        if (playback && typeof playback.then === "function") {
+          playback.then(scheduleNextFrame).catch(() => fail("The source video could not be played."));
+        } else {
+          scheduleNextFrame();
+        }
       } catch {
         fail("The source video could not seek to its final frame.");
       }
     }, { once: true });
-    video.addEventListener("seeked", capture, { once: true });
     video.addEventListener("error", () => fail("The source video could not be read."), { once: true });
     video.src = sourceUrl;
     video.load();
