@@ -156,7 +156,12 @@ selected frame.
 The pair was observed close to the 12GB boundary. In this matched pair the
 source-anchored run did not exceed the prompt-only peak, but the result is not
 a memory-stability matrix or a guarantee for other source sizes, prompts, or
-runtime states. The accepted source-anchored job was submitted once.
+runtime states. H2A's earlier text-only run observed `9736 MiB` peak used;
+H2B observed higher absolute peaks for both the prompt-only control and the
+anchored run. Because the matched prompt-only control reached `11488 MiB`,
+this one pair does not isolate a source-conditioning-specific increase. The
+accepted source-anchored job was submitted once, and the near-limit behavior
+is retained as a limitation rather than hidden.
 
 ## 6. Verification and scope audit
 

@@ -38,7 +38,9 @@ isolated H3 runtime on port `8189`, GPU `NVIDIA GeForce RTX 4070`, VRAM total
 `12282 MiB`, system RAM total `68476002304 bytes`, with custom nodes disabled.
 The pair ran close to the 12GB boundary; the source-anchored run did not
 exceed the matched prompt-only peak in this observation, but this is not a
-stability or memory-matrix claim.
+stability or memory-matrix claim. H2A's earlier text-only peak was `9736 MiB`;
+H2B's absolute peaks were higher for both matched runs, so this pair does not
+isolate a source-conditioning-specific increase.
 
 ## Source influence review
 
