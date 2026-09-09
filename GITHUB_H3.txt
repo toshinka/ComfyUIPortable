@@ -212,3 +212,4 @@ recorded with the dated package and are published on `main`. H2A is recorded as
 published on `main`; its publication wording correction is in `67a8bd47`. H2B
 implementation is recorded in `8a6b74f4`; its evidence/report/canonical-doc
 package remains local pending Owner push. Owner acceptance remains `PENDING`.
+H2B evidence/report/canonical-doc commit: `828524e8700d4c36906e692e3153ed9e17772ee5`.

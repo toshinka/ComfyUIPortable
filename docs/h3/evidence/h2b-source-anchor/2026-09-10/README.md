@@ -97,6 +97,8 @@ The prompt-only control uses the same H2B workflow basis after removing node
 - Shared ComfyUI core/frontend change: `NONE`.
 - Manga change: `NONE`.
 - Production Still UI: `NONE`; Browser UI is `N/A` by design.
+- Implementation commit: `8a6b74f4fef2c9437ce07dd8fb85eb85bcda5971`.
+- Evidence/docs commit: `828524e8700d4c36906e692e3153ed9e17772ee5`.
 
 ## Regression checks
 

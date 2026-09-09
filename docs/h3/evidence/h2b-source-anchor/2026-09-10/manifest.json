@@ -11,6 +11,8 @@
   "route": "native_source_anchored_still",
   "workflow": "workflows/h3/H2B_SOURCE_ANCHORED_STILL_BASE.json",
   "workflow_schema": "tegaki.h3.h2b.source-anchored-still/v1",
+  "implementation_commit": "8a6b74f4fef2c9437ce07dd8fb85eb85bcda5971",
+  "evidence_docs_commit": "828524e8700d4c36906e692e3153ed9e17772ee5",
   "source": {
     "source_path": "output/h3/tests/reference_robot_v1.png",
     "evidence_path": "docs/h3/evidence/h2b-source-anchor/2026-09-10/source.png",

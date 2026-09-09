@@ -203,7 +203,7 @@ Implementation commit:
 8a6b74f4fef2c9437ce07dd8fb85eb85bcda5971
 
 Evidence/docs commit:
-<recorded by the follow-up identity commit>
+828524e8700d4c36906e692e3153ed9e17772ee5
 
 Selected anchor route:
 one LoadImage source → first_frame → five-frame packet → selected frame 0
