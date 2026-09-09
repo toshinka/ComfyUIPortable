@@ -28,6 +28,7 @@ H1B.1 Start + End generation: VERIFIED LOCAL GENERATION / VERIFIED BROWSER UI GE
 H1B.1 End-only Native support: VERIFIED LOCAL GENERATION / VERIFIED BROWSER UI GENERATION
 H1B.1 T2V regression: VERIFIED BROWSER UI GENERATION
 H1B.1 evidence: CURRENT REVIEW EVIDENCE
+H1B.1 UX P0 fix: IMPLEMENTED / VERIFIED SOURCE AND BOUNDED BROWSER UI
 Owner acceptance: PENDING
 
 This entry is the starting point for external AI review of MiniMax H3 work. It
@@ -58,6 +59,8 @@ Read Order
 21. ComfyUIPortable/docs/h3/reports/H1B1_START_END_FRAME_NATIVE_FL2VA_REPORT.md
 22. ComfyUIPortable/docs/h3/evidence/h1b1/2026-09-09/README.md
 23. ComfyUIPortable/docs/h3/evidence/h1b1/2026-09-09/manifest.json
+24. ComfyUIPortable/docs/h3/reports/H1B1_UX_INTEGRITY_P0_FIX_REPORT.md
+25. ComfyUIPortable/docs/h3/evidence/h1b1-ux/2026-09-09/README.md
 
 Master Roadmap
 --------------
@@ -123,13 +126,19 @@ uploaded runtime inputs, and model weights remain ignored.
 
 Current Review Gate
 -------------------
+H1B.1 UX P0 Fix
+
 H1B.1 is implemented as the current bounded slice and has Start-only,
 Start+End, End-only, and text-only browser completion results plus Native media
-evidence. The evidence is ready for Web GPT / Astra H1B.1 review. Owner
-acceptance and license action remain separate; publication does not imply Owner
-acceptance. REF2VA, ordered generic multi-reference, Still, Continuation,
-Segment, Studio, Timeline, Storyboard, Cast, 3D, and Manga are not started by
-this slice.
+evidence. The H1B.1 UX P0 fix now closes the targeted Reference hidden-state
+bug and separates Active Job authority from History Preview selection. Its
+bounded evidence is ready for Web GPT / Astra review. The live Running plus
+older-History browser scenario remains explicitly recorded as not replayed
+after the local in-memory History reset; source/static evidence covers the
+path. Owner acceptance and license action remain separate; publication does
+not imply Owner acceptance. REF2VA, ordered generic multi-reference, Still,
+Continuation, Segment, Studio, Timeline, Storyboard, Cast, 3D, and Manga are
+not started by this slice.
 
 Publication Note
 ----------------
@@ -140,4 +149,7 @@ root path is present in `origin/main` at `47056a7c972f187f0ce9686db1ae7bb93ce8ac
 Publication does not imply Owner acceptance. Historical H0/H0.1/H1A reports
 remain historical records and are not rewritten to claim later work. H1B.1
 implementation is recorded in `48adcb27cfc24d9c0f0e2b0b27f2284621a4a18d`; the
-dated evidence/report commit is recorded with the evidence package.
+dated evidence/report commit is recorded with the evidence package. The H1B.1
+UX P0 implementation is recorded in
+`12942d04e5baa8c882a265a1d21fc34bf910da58`; the UX evidence/report commit is
+recorded with the dated package.
