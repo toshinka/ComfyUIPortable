@@ -1,0 +1,158 @@
+{
+  "card": "H2B",
+  "title": "Source-Anchored Still / Single Reference I2I Feasibility",
+  "evidence_date": "2026-09-10",
+  "generated_at": "2026-09-10T07:07:29+09:00",
+  "status": "PASS",
+  "classification": "SOURCE ANCHOR FEASIBLE WITH LIMITS",
+  "publication": "LOCAL MAIN / OWNER PUSH PENDING",
+  "owner_acceptance": "PENDING",
+  "browser_ui": "N/A",
+  "route": "native_source_anchored_still",
+  "workflow": "workflows/h3/H2B_SOURCE_ANCHORED_STILL_BASE.json",
+  "workflow_schema": "tegaki.h3.h2b.source-anchored-still/v1",
+  "source": {
+    "source_path": "output/h3/tests/reference_robot_v1.png",
+    "evidence_path": "docs/h3/evidence/h2b-source-anchor/2026-09-10/source.png",
+    "staged_runtime_path": "inputs/h2b_source_43d29d07b5d0b4a2.png",
+    "format": "PNG",
+    "dimensions": [608, 352],
+    "bytes": 206821,
+    "sha256": "43D29D07B5D0B4A2C4650A2C840AE6CF07980714008FDDB1D1008B0E08CF030E"
+  },
+  "matched_settings": {
+    "prompt": "Retain the same small service robot, pose, and overall greenhouse composition from the source image; change the lighting to warm late-afternoon sunlight with a gentle golden atmosphere while preserving the framing.",
+    "resolution": "608x352",
+    "seed": 20260910,
+    "steps": 20,
+    "sampler": "res_multistep",
+    "scheduler": "simple",
+    "packet_frames": 5,
+    "selected_frame_index": 0,
+    "fps": 24
+  },
+  "runs": [
+    {
+      "mode": "prompt-only",
+      "route": "native_prompt_only_still_control",
+      "prompt_id": "7a821bbb-dcbb-4486-9899-2cbb7a4cc09e",
+      "elapsed_seconds": 52.27,
+      "output": {
+        "path": "output/h3/still/h2b_prompt_only_00001_.png",
+        "evidence_path": "docs/h3/evidence/h2b-source-anchor/2026-09-10/prompt_only.png",
+        "format": "PNG",
+        "dimensions": [608, 352],
+        "bytes": 372035,
+        "sha256": "A1485D07555F756CE7810341E29C082BD383C013153F1F489C4482D3341539FB"
+      },
+      "conditioning": {
+        "node": "131",
+        "class_type": "MiniMaxH3ImageToVideo",
+        "first_frame": null,
+        "source_loader_node": null
+      },
+      "telemetry": {
+        "gpu": "NVIDIA GeForce RTX 4070",
+        "vram_total_mib": 12282,
+        "peak_observed_vram_used_mib": 11488,
+        "minimum_observed_vram_free_mib": 525,
+        "system_ram_total_bytes": 68476002304,
+        "peak_native_working_set_bytes": 39984459776,
+        "native_process_id": 49540,
+        "native_port": 8189,
+        "oom_count": 0,
+        "retry_count": 0,
+        "sample_count": 28
+      }
+    },
+    {
+      "mode": "anchored",
+      "route": "native_source_anchored_still",
+      "prompt_id": "5b4dc931-f6d6-4fbe-9a97-56ec8294328e",
+      "elapsed_seconds": 29.34,
+      "output": {
+        "path": "output/h3/still/h2b_source_anchor_00001_.png",
+        "evidence_path": "docs/h3/evidence/h2b-source-anchor/2026-09-10/anchored.png",
+        "format": "PNG",
+        "dimensions": [608, 352],
+        "bytes": 283098,
+        "sha256": "1EC4ACA74707C74F13ABCFADBB00304B9F1611787C593455A459A8D0543B49F5"
+      },
+      "conditioning": {
+        "node": "131",
+        "class_type": "MiniMaxH3ImageToVideo",
+        "source_loader_node": "133",
+        "first_frame": ["133", 0],
+        "source_path": "inputs/h2b_source_43d29d07b5d0b4a2.png",
+        "resize": "plain stretch to 608x352; crop=disabled",
+        "temporal_frame": 0,
+        "strength": "NOT APPLICABLE"
+      },
+      "telemetry": {
+        "gpu": "NVIDIA GeForce RTX 4070",
+        "vram_total_mib": 12282,
+        "peak_observed_vram_used_mib": 11449,
+        "minimum_observed_vram_free_mib": 564,
+        "system_ram_total_bytes": 68476002304,
+        "peak_native_working_set_bytes": 40173133824,
+        "native_process_id": 49540,
+        "native_port": 8189,
+        "oom_count": 0,
+        "retry_count": 0,
+        "sample_count": 17
+      }
+    }
+  ],
+  "source_influence": {
+    "status": "PASS",
+    "method": "bounded qualitative visual comparison",
+    "retains": [
+      "subject layout",
+      "major silhouette",
+      "pose/orientation",
+      "coarse color relationships",
+      "composition"
+    ],
+    "identity_score": "NOT MEASURED",
+    "fidelity_percentage": "NOT MEASURED"
+  },
+  "optional_source_strength": "NOT APPLICABLE",
+  "verification": {
+    "h2a_tests": "4 tests OK",
+    "h2b_tests": "5 tests OK",
+    "python_unittest": "41 tests OK",
+    "h1c_continuation": "38 PASS",
+    "p2": "44 PASS",
+    "h1b_ui": "36 PASS",
+    "javascript_syntax": "PASS",
+    "compileall": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "artifacts": {
+    "source": {
+      "path": "docs/h3/evidence/h2b-source-anchor/2026-09-10/source.png",
+      "sha256": "43D29D07B5D0B4A2C4650A2C840AE6CF07980714008FDDB1D1008B0E08CF030E"
+    },
+    "prompt_only": {
+      "path": "docs/h3/evidence/h2b-source-anchor/2026-09-10/prompt_only.png",
+      "sha256": "A1485D07555F756CE7810341E29C082BD383C013153F1F489C4482D3341539FB"
+    },
+    "anchored": {
+      "path": "docs/h3/evidence/h2b-source-anchor/2026-09-10/anchored.png",
+      "sha256": "1EC4ACA74707C74F13ABCFADBB00304B9F1611787C593455A459A8D0543B49F5"
+    },
+    "comparison_contact_sheet": {
+      "path": "docs/h3/evidence/h2b-source-anchor/2026-09-10/comparison_contact_sheet.png",
+      "sha256": "030415A2405927B46D966FD93B77BCFD3A8FC1261DA7964AE676199427240EE6"
+    }
+  },
+  "scope_audit": {
+    "workflow_changes": "one H3-only H2B source-anchor workflow",
+    "model_changes": "NONE",
+    "dependency_changes": "NONE",
+    "custom_node_changes": "NONE",
+    "shared_comfyui_changes": "NONE",
+    "manga_changes": "NONE",
+    "production_still_ui": "NONE"
+  }
+}

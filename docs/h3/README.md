@@ -4,7 +4,7 @@
 
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
 将来の実装棚とReference Implementation evidenceを一か所から辿るための
-document hub です。現在は **H2A / H3 Still Native Feasibility** であり、
+document hub です。現在は **H2B / Source-Anchored Still / Single Reference I2I Feasibility** であり、
 H1C / Frame-Bridged Continuation は回帰基盤として保持し、
 H1B.1 / Start + End Frame and Native FL2VA vertical slice + UX P0/P1/P2
 Fixes は履歴と回帰対象として保持します。H0/H0.1/H1A/H1B の model
@@ -16,7 +16,9 @@ pending. H1C evidence/report/canonical docs are recorded in commit `4df2f2a5f299
 and are published on GitHub `main`; Owner acceptance remains pending. H2A
 still feasibility is implemented and locally verified through a bounded
 Native route; no production Still UI was added and H2A is published on GitHub
-`main`. Owner acceptance remains pending.
+`main`. H2B source-anchored Still feasibility is implemented and locally
+verified through a matched Native pair; its new commits remain local pending
+Owner push. Owner acceptance remains pending.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
@@ -61,6 +63,9 @@ Native route; no production Still UI was added and H2A is published on GitHub
 | `docs/h3/reports/H2A_H3_STILL_NATIVE_FEASIBILITY_REPORT.md` | H2A bounded Native still feasibility route, telemetry, visual review, and closeout boundary | CURRENT H2A REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H2A_H3_STILL_NATIVE_FEASIBILITY_REPORT.md` |
 | `docs/h3/evidence/h2a-still/2026-09-09/README.md` | H2A Native still output and runtime evidence | CURRENT H2A EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2a-still/2026-09-09/README.md` |
 | `docs/h3/evidence/h2a-still/2026-09-09/manifest.json` | Machine-readable H2A still/runtime/output manifest | CURRENT H2A EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2a-still/2026-09-09/manifest.json` |
+| `docs/h3/reports/H2B_SOURCE_ANCHORED_STILL_FEASIBILITY_REPORT.md` | H2B single-source anchored Still feasibility route, matched comparison, telemetry, and closeout boundary | CURRENT H2B REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H2B_SOURCE_ANCHORED_STILL_FEASIBILITY_REPORT.md` |
+| `docs/h3/evidence/h2b-source-anchor/2026-09-10/README.md` | H2B source image, prompt-only/anchored outputs, source-influence review, and runtime evidence | CURRENT H2B EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2b-source-anchor/2026-09-10/README.md` |
+| `docs/h3/evidence/h2b-source-anchor/2026-09-10/manifest.json` | Machine-readable H2B source/runtime/output manifest | CURRENT H2B EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2b-source-anchor/2026-09-10/manifest.json` |
 
 ## External master roadmap
 
@@ -147,6 +152,9 @@ implementation follows from that result automatically.
 - [H1C_FRAME_BRIDGED_CONTINUATION_REPORT.md](reports/H1C_FRAME_BRIDGED_CONTINUATION_REPORT.md)
   — H1C same-origin near-final frame bridge, atomic Start/End preparation,
   Native continuation, evidence, and explicit non-scope.
+- [H2B_SOURCE_ANCHORED_STILL_FEASIBILITY_REPORT.md](reports/H2B_SOURCE_ANCHORED_STILL_FEASIBILITY_REPORT.md)
+  — H2B one-source anchored Still feasibility, matched prompt-only comparison,
+  Native conditioning semantics, source influence, and explicit non-scope.
 
 ## Evidence
 
@@ -177,11 +185,14 @@ implementation follows from that result automatically.
 - [H1C evidence](evidence/h1c/2026-09-09/) — source output, Browser canvas
   bridge provenance, atomic continuation form result, Native continuation, and
   extracted media/contact-sheet evidence.
+- [H2B evidence](evidence/h2b-source-anchor/2026-09-10/) — one source image,
+  matched prompt-only and anchored Still outputs, contact sheet, hashes, and
+  RTX 4070 telemetry.
 - Production H3 output is isolated at `output/h3/video/`, with `debug/` and `tests/`
   alongside it. Existing `output/` content and Manga output are outside this slice.
 
 The historical groundwork reports remain historical records. The current gate is
-the H1C report and evidence above; it does not imply Owner acceptance, public
+the H2B report and evidence above; it does not imply Owner acceptance, public
 production deployment, or adoption of a candidate implementation.
 
 ## H3 implementation boundary
@@ -238,9 +249,12 @@ generic multi-reference, Still, Segment, Studio, Timeline, Storyboard, Cast,
 14. Read the H1C report and dated evidence; verify the source video URL,
     near-final capture time, bridge Reference provenance, atomic Start/End
     result, and one manual Native continuation separately.
-15. Stop at the Web GPT / Astra H1C review gate; do not infer Owner
-    acceptance, REF2VA, Still, Segment, Studio, or production deployment from a
-    local generation result.
+15. Read the H2B report and dated evidence; verify the single source path,
+    matched prompt-only comparison, Native first-frame binding, source
+    influence, and 12GB telemetry separately.
+16. Stop at the H2B feasibility gate; do not infer Owner acceptance, production
+    Still UI, REF2VA, ordered multi-reference, Segment, Studio, or production
+    deployment from a local generation result.
 
 ## Evidence vocabulary
 
@@ -269,5 +283,5 @@ generic multi-reference, Still, Segment, Studio, Timeline, Storyboard, Cast,
 
 This hub does not replace the existing ComfyUIPortable STATUS, planning SSOT,
 reports, or workflow index. It adds an H3-only path beside them. H1A/H1B/H1B.1/
-H1C did not modify the existing Illustrious file, workflow, runtime, Manga
-docs, or shared ComfyUI core/frontend.
+H1C/H2A/H2B did not modify the existing Illustrious file, workflow, runtime,
+Manga docs, or shared ComfyUI core/frontend.

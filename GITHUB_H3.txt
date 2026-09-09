@@ -6,7 +6,7 @@ Updated: 2026-09-10 JST
 
 Current Stage
 -------------
-H2A / H3 Still Native Feasibility vertical slice
+H2B / Source-Anchored Still / Single Reference I2I Feasibility vertical slice
 H1C / Frame-Bridged Continuation: IMPLEMENTED / VERIFIED (regression foundation)
 Groundwork: PASS (historical)
 Semantic Alignment: PASS (historical)
@@ -49,6 +49,14 @@ H2A local still generation: VERIFIED LOCAL GENERATION
 H2A Browser UI: N/A (feasibility path intentionally has no new Still UI)
 H2A evidence: CURRENT FEASIBILITY EVIDENCE
 H2A publication: PUBLISHED ON MAIN
+H2B implementation: IMPLEMENTED
+H2B implementation commit: 8a6b74f4
+H2B selected route: one source image → first_frame → short temporal packet → selected frame
+H2B local Still comparison: VERIFIED LOCAL GENERATION
+H2B source influence: OBSERVED / PASS
+H2B Browser UI: N/A (feasibility path intentionally has no new Still UI)
+H2B evidence: CURRENT FEASIBILITY EVIDENCE
+H2B publication: LOCAL MAIN / OWNER PUSH PENDING
 Owner acceptance: PENDING
 
 This entry is the starting point for external AI review of MiniMax H3 work. It
@@ -146,10 +154,10 @@ this navigation change does not merge H3 and Manga runtime semantics.
 The shared shell/tab goal is recorded in the Manga SOL/LUNA handoff. It is a
 separate future integration Card; H1B.1 does not authorize Manga or shared-shell edits.
 
-H1A/H1B/H1B.1 now own the narrow implementation boundary under `h3/` and
-`workflows/h3/`: a local vanilla UI, a small HTTP adapter server, and separate
-materialized Native T2V, historical single-Start-Frame I2V, and fixed-slot
-Start/End FL2VA workflows. H1B.1 accepts only the named `start_frame` and
+H1A/H1B/H1B.1/H1C own the narrow Video implementation boundary under `h3/` and
+`workflows/h3/`. H2A/H2B add separate H3-only Still feasibility adapters,
+workflows, and local runners without adding a production Still UI. H1B.1
+accepts only the named `start_frame` and
 `end_frame` slots and binds them to optional `first_frame` / `last_frame`
 edges. The H3 model store remains isolated; no custom node, ComfyUI
 core/frontend/shared model, or Manga runtime change was made. Generated MP4s,
@@ -157,7 +165,7 @@ uploaded runtime inputs, and model weights remain ignored.
 
 Current Review Gate
 -------------------
-H1C Frame-Bridged Continuation
+H2B Source-Anchored Still / Single Reference I2I Feasibility
 
 H1B.1 remains implemented as the regression foundation and has Start-only,
 Start+End, End-only, and text-only browser completion results plus Native media
@@ -169,14 +177,17 @@ compaction. The P2 follow-up closes Astra SHOULD ④ with state-specific copy an
 SHOULD ⑤ with a session-scoped History `Use settings` bridge that validates all
 inputs and existing Reference assets before atomic form application.
 
-H1C now records a live Start+End `Use settings` restore, a same-origin Browser
-capture of the source output near-final decoded frame, upload through the
-existing `/api/references` route, atomic Start=bridge / End=empty preparation,
-and one real Native continuation. The H1C report distinguishes source/logic,
-Browser, local generation, publication, and Owner acceptance. Owner acceptance
-and license action remain separate; publication does not imply Owner
-acceptance. REF2VA, ordered generic multi-reference, Still, Segment, Studio,
-Timeline, Storyboard, Cast, 3D, and Manga are not started by this slice.
+H1C remains the verified Video regression foundation and records a live
+Start+End `Use settings` restore, a same-origin Browser capture of the source
+output near-final decoded frame, upload through the existing `/api/references`
+route, atomic Start=bridge / End=empty preparation, and one real Native
+continuation. H2B adds one local PNG/JPEG source to the existing Native
+`first_frame` conditioning edge, compares it with a matched prompt-only Still,
+and records bounded source influence. The H2B report distinguishes
+source/logic, local generation, Browser UI N/A, publication, and Owner
+acceptance. REF2VA, ordered generic multi-reference, production Still UI,
+Segment, Studio, Timeline, Storyboard, Cast, 3D, and Manga are not started by
+this slice.
 
 Publication Note
 ----------------
@@ -197,5 +208,7 @@ recorded with the dated package. H1B.1 UX P2 implementation is recorded in
 recorded with the dated package. H1C base implementation is recorded in
 `a92237fe3eeb0f53e16c69d37763d388fedf2145`; its bounded final-frame capture
 fix is recorded in `ff577a0c`. The H1C evidence/report/canonical-doc commit is
-recorded with the dated package and are published on `main`. Owner acceptance
-remains `PENDING`.
+recorded with the dated package and are published on `main`. H2A is recorded as
+published on `main`; its publication wording correction is in `67a8bd47`. H2B
+implementation is recorded in `8a6b74f4`; its evidence/report/canonical-doc
+package remains local pending Owner push. Owner acceptance remains `PENDING`.
