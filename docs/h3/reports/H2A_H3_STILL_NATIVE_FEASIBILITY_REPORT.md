@@ -183,9 +183,12 @@ H2A STILL FEASIBILITY: PASS
 
 Publication correction: PASS
 
-Implementation commit: 6e81ce95, 0b8615f9
+Implementation commits:
+`6e81ce95fd67e1a8ce89855ee26647fedb1b6905`,
+`0b8615f9ac7d54b009059e4e50faaab127b2eacd`
 
-Evidence/docs commit: pending in this working tree
+Evidence/docs commit:
+`c3b15a9468b6423148b2760c0ea08953eb71c96c`
 
 Selected Still route: B. short temporal packet → selected frame
 
