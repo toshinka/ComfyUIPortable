@@ -6,7 +6,7 @@ Updated: 2026-09-09 JST
 
 Current Stage
 -------------
-H1B / Single Reference / Native I2V vertical slice
+H1B.1 / Start + End Frame / Native FL2VA vertical slice
 Groundwork: PASS (historical)
 Semantic Alignment: PASS (historical)
 Astra bounded UI review: COMPLETED (historical)
@@ -22,6 +22,12 @@ H1B implementation: IMPLEMENTED
 H1B T2V regression: VERIFIED BROWSER UI GENERATION
 H1B Native I2V generation: VERIFIED LOCAL GENERATION
 H1B browser UI I2V generation: VERIFIED BROWSER UI GENERATION
+H1B.1 implementation: IMPLEMENTED
+H1B.1 Start-only generation: VERIFIED BROWSER UI GENERATION
+H1B.1 Start + End generation: VERIFIED LOCAL GENERATION / VERIFIED BROWSER UI GENERATION
+H1B.1 End-only Native support: VERIFIED LOCAL GENERATION / VERIFIED BROWSER UI GENERATION
+H1B.1 T2V regression: VERIFIED BROWSER UI GENERATION
+H1B.1 evidence: CURRENT REVIEW EVIDENCE
 Owner acceptance: PENDING
 
 This entry is the starting point for external AI review of MiniMax H3 work. It
@@ -49,6 +55,9 @@ Read Order
 18. ComfyUIPortable/docs/h3/reports/H1B_SINGLE_REFERENCE_NATIVE_I2V_REPORT.md
 19. ComfyUIPortable/docs/h3/evidence/h1b/2026-09-09/README.md
 20. ComfyUIPortable/docs/h3/evidence/h1b/2026-09-09/manifest.json
+21. ComfyUIPortable/docs/h3/reports/H1B1_START_END_FRAME_NATIVE_FL2VA_REPORT.md
+22. ComfyUIPortable/docs/h3/evidence/h1b1/2026-09-09/README.md
+23. ComfyUIPortable/docs/h3/evidence/h1b1/2026-09-09/manifest.json
 
 Master Roadmap
 --------------
@@ -103,21 +112,24 @@ remain outside H3 implementation scope. A later, separately authorized namespace
 task created GITHUB_MANGA.txt and converted GITHUB_ComfyUI.txt into a thin router;
 this navigation change does not merge H3 and Manga runtime semantics.
 
-H1A/H1B now own the narrow implementation boundary under `h3/` and
+H1A/H1B/H1B.1 now own the narrow implementation boundary under `h3/` and
 `workflows/h3/`: a local vanilla UI, a small HTTP adapter server, and separate
-materialized Native T2V and single-Start-Frame I2V workflows. H1B accepts one
-validated uploaded reference and binds it only to `first_frame`. The H3 model
-store remains isolated; no custom node, ComfyUI core/frontend/shared model, or
-Manga runtime change was made. Generated MP4s, uploaded runtime inputs, and
-model weights remain ignored.
+materialized Native T2V, historical single-Start-Frame I2V, and fixed-slot
+Start/End FL2VA workflows. H1B.1 accepts only the named `start_frame` and
+`end_frame` slots and binds them to optional `first_frame` / `last_frame`
+edges. The H3 model store remains isolated; no custom node, ComfyUI
+core/frontend/shared model, or Manga runtime change was made. Generated MP4s,
+uploaded runtime inputs, and model weights remain ignored.
 
 Current Review Gate
 -------------------
-H1B is implemented as the next bounded slice and has a T2V regression result,
-Native I2V result, and browser UI I2V result. The evidence is ready for Web GPT
-/ Astra H1B review. Owner acceptance and license action remain separate;
-publication does not imply Owner acceptance. H1B.1, REF2VA, Still, Studio,
-Timeline, Storyboard, Cast, 3D, and Manga are not started by this slice.
+H1B.1 is implemented as the current bounded slice and has Start-only,
+Start+End, End-only, and text-only browser completion results plus Native media
+evidence. The evidence is ready for Web GPT / Astra H1B.1 review. Owner
+acceptance and license action remain separate; publication does not imply Owner
+acceptance. REF2VA, ordered generic multi-reference, Still, Continuation,
+Segment, Studio, Timeline, Storyboard, Cast, 3D, and Manga are not started by
+this slice.
 
 Publication Note
 ----------------
@@ -126,4 +138,6 @@ The H1A files are published on `main` in implementation commit
 are recorded in the H1B report and dated evidence directory. The current Rev.3
 root path is present in `origin/main` at `47056a7c972f187f0ce9686db1ae7bb93ce8aca3`.
 Publication does not imply Owner acceptance. Historical H0/H0.1/H1A reports
-remain historical records and are not rewritten to claim later work.
+remain historical records and are not rewritten to claim later work. H1B.1
+implementation is recorded in `48adcb27cfc24d9c0f0e2b0b27f2284621a4a18d`; the
+dated evidence/report commit is recorded with the evidence package.

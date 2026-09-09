@@ -1,9 +1,10 @@
 # TEGAKI H3
 
 This directory contains the H3 production namespace. H1A is the no-reference
-T2V route and H1B is the bounded single-Start-Frame I2V route: a small local
-Python server and static vanilla UI that submit separate verified Native
-ComfyUI H3 workflows without exposing the node graph.
+T2V route, H1B is the historical single-Start-Frame I2V route, and H1B.1 is the
+bounded fixed Start/End Frame FL2VA route: a small local Python server and
+static vanilla UI that submit separate verified Native ComfyUI H3 workflows
+without exposing the node graph.
 
 ## Canonical launcher
 
@@ -27,15 +28,18 @@ baseline.
 
 - UI: `h3/app/` — static HTML/CSS/vanilla JavaScript plus a small Python server.
 - T2V adapter: `h3/adapters/native_t2v.py`.
-- Single-reference I2V adapter: `h3/adapters/native_i2v.py`.
+- Single-reference and fixed-slot FL2VA adapter: `h3/adapters/native_i2v.py`.
 - Production workflow contracts: `workflows/h3/H1A_NATIVE_T2V_BASE.json` and
-  `workflows/h3/H1B_NATIVE_I2V_BASE.json`.
+  `workflows/h3/H1B_NATIVE_I2V_BASE.json` plus
+  `workflows/h3/H1B1_NATIVE_FL2VA_BASE.json`.
 - Local output: `output/h3/video/`.
 - Reference uploads are server-issued assets in the ignored
   `output/h3/inputs/` namespace; the browser never supplies a filesystem path.
 - Session history is backed by ComfyUI history; H1A/H1B do not create a project DB.
-- H1B binds exactly one validated `Start Frame` to `first_frame`; no end frame,
-  multi-reference, REF2VA, Still, Studio, Timeline, or Project/Shot/Take path is
+- H1B keeps exactly one validated legacy `Start Frame` bound to `first_frame`.
+  H1B.1 adds exactly two named slots, `start_frame` and `end_frame`, bound to
+  optional `first_frame` and `last_frame`; no ordered generic multi-reference,
+  REF2VA, Still, Continuation, Studio, Timeline, or Project/Shot/Take path is
   exposed.
 - Turbo/PDD/FastH3, H3 Easy, Antares, onigirikiller vendoring, and Manga
   integration are deferred.

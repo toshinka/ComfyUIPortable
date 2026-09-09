@@ -4,12 +4,12 @@
 
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
 将来の実装棚とReference Implementation evidenceを一か所から辿るための
-document hub です。現在は **H1B / Single Reference and Native I2V vertical slice**
-であり、H0/H0.1/H1A の model isolation、generation smoke、T2V skin は履歴と
-回帰対象として保持します。
+document hub です。現在は **H1B.1 / Start + End Frame and Native FL2VA
+vertical slice** であり、H0/H0.1/H1A/H1B の model isolation、generation
+smoke、T2V skin、single-Start-Frame I2V は履歴と回帰対象として保持します。
 H1A implementation commit `925596b9d7fbd731290fe9869ea34a0006249130` is
-published on `main`. H1B is implemented and locally/browser verified; Owner
-acceptance remains pending.
+published on `main`. H1B and H1B.1 are implemented and locally/browser
+verified; Owner acceptance remains pending.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
@@ -39,6 +39,9 @@ acceptance remains pending.
 | `docs/h3/reports/H1B_SINGLE_REFERENCE_NATIVE_I2V_REPORT.md` | H1B implementation, single-reference contract, Native runtime, browser UI, and closeout boundary | CURRENT H1B REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H1B_SINGLE_REFERENCE_NATIVE_I2V_REPORT.md` |
 | `docs/h3/evidence/h1b/2026-09-09/README.md` | H1B T2V regression, reference controls, Native I2V, and media evidence | CURRENT H1B EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1b/2026-09-09/README.md` |
 | `docs/h3/evidence/h1b/2026-09-09/manifest.json` | Machine-readable H1B runtime/output manifest | CURRENT H1B EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1b/2026-09-09/manifest.json` |
+| `docs/h3/reports/H1B1_START_END_FRAME_NATIVE_FL2VA_REPORT.md` | H1B.1 fixed-slot Start/End implementation, Native runtime, browser UI, and closeout boundary | CURRENT H1B.1 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H1B1_START_END_FRAME_NATIVE_FL2VA_REPORT.md` |
+| `docs/h3/evidence/h1b1/2026-09-09/README.md` | H1B.1 Start-only, Start+End, End-only, T2V regression, and media evidence | CURRENT H1B.1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1b1/2026-09-09/README.md` |
+| `docs/h3/evidence/h1b1/2026-09-09/manifest.json` | Machine-readable H1B.1 runtime/output manifest | CURRENT H1B.1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1b1/2026-09-09/manifest.json` |
 
 ## External master roadmap
 
@@ -110,6 +113,9 @@ implementation follows from that result automatically.
   — current H1A implementation, contract, verification, runtime result, and explicit non-scope.
 - [H1B_SINGLE_REFERENCE_NATIVE_I2V_REPORT.md](reports/H1B_SINGLE_REFERENCE_NATIVE_I2V_REPORT.md)
   — current H1B single-Start-Frame implementation, verification, runtime result, and explicit non-scope.
+- [H1B1_START_END_FRAME_NATIVE_FL2VA_REPORT.md](reports/H1B1_START_END_FRAME_NATIVE_FL2VA_REPORT.md)
+  — current H1B.1 fixed Start/End slot implementation, Native/browser generation,
+  evidence, and explicit non-scope.
 
 ## Evidence
 
@@ -126,6 +132,9 @@ implementation follows from that result automatically.
   completion evidence, output hashes, UI screenshot, frame triplet, and contact sheet.
 - [H1B evidence](evidence/h1b/2026-09-09/) — T2V regression, single-reference
   controls, Native I2V browser run, output hashes, frame triplet, and contact sheet.
+- [H1B.1 evidence](evidence/h1b1/2026-09-09/) — fixed Start/End controls,
+  Start-only, Start+End, End-only, and T2V browser runs, output hashes, Native
+  prompt binding, frame triplet, and contact sheet.
 - Production H3 output is isolated at `output/h3/video/`, with `debug/` and `tests/`
   alongside it. Existing `output/` content and Manga output are outside this slice.
 
@@ -135,7 +144,7 @@ production deployment, or adoption of a candidate implementation.
 
 ## H1A / H1B implementation boundary
 
-H1A and H1B own the following narrow production paths:
+H1A, H1B, and H1B.1 own the following narrow production paths:
 
 ```text
 h3/app/
@@ -150,9 +159,11 @@ h3/run_h1a.bat  (compatibility wrapper)
 The local skin is a small vanilla UI plus a stdlib HTTP server. Native ComfyUI
 remains the execution, queue, history, and output authority. The semantic
 adapter is the only UI-to-workflow boundary. H1A remains the no-reference T2V
-route; H1B adds one validated `Start Frame` reference and binds it only to
-`first_frame`. `h3/run_h3.bat` is canonical and `run_h1a.bat` delegates to it.
-Do not infer H1B.1, REF2VA, Still, Studio, Timeline, Storyboard, Cast, 3D,
+route; historical H1B keeps its single legacy Start Frame route; H1B.1 adds
+only the fixed `start_frame` / `end_frame` slots and binds them to optional
+`first_frame` / `last_frame` edges. `h3/run_h3.bat` is canonical and
+`run_h1a.bat` delegates to it. Do not infer REF2VA, ordered generic
+multi-reference, Still, Continuation, Studio, Timeline, Storyboard, Cast, 3D,
 Manga, or a persistent project schema from these paths.
 
 ## Review recipe
@@ -172,8 +183,11 @@ Manga, or a persistent project schema from these paths.
    startup, blocked, owner-action-required, and not-tested states are not conflated.
 9. Read the H1A and H1B reports and dated evidence; verify the browser UI path
    separately from direct API/runtime evidence.
-10. Stop at the Web GPT / Astra H1B review gate; do not infer Owner acceptance,
-    H1B.1, REF2VA, or production deployment from a local generation result.
+10. Read the H1B.1 report and dated evidence; verify Start-only, Start+End,
+    End-only, and text-only browser paths separately from Native media evidence.
+11. Stop at the Web GPT / Astra H1B.1 review gate; do not infer Owner
+    acceptance, REF2VA, Still, Continuation, Studio, or production deployment
+    from a local generation result.
 
 ## Evidence vocabulary
 
@@ -201,6 +215,6 @@ Manga, or a persistent project schema from these paths.
 ## Scope boundary
 
 This hub does not replace the existing ComfyUIPortable STATUS, planning SSOT,
-reports, or workflow index. It adds an H3-only path beside them. H1A/H1B did not
-modify the existing Illustrious file, workflow, runtime, Manga docs, or shared
-ComfyUI core/frontend.
+reports, or workflow index. It adds an H3-only path beside them. H1A/H1B/H1B.1
+did not modify the existing Illustrious file, workflow, runtime, Manga docs, or
+shared ComfyUI core/frontend.
