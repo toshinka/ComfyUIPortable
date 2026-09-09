@@ -21,11 +21,13 @@ for (const marker of [
   'id="end-reference-thumbnail"',
   'id="end-reference-replace"',
   'id="end-reference-remove"',
-  'id="reference-empty">No keyframes selected',
   'accept="image/png,image/jpeg,image/webp',
 ]) {
   assert.ok(html.includes(marker), `Reference UI marker missing: ${marker}`);
 }
+
+assert.equal(html.includes('No keyframes selected'), false, "Duplicate parent Reference empty text must be removed.");
+assert.ok(html.indexOf('id="generate-button"') < html.indexOf('class="advanced-panel"'), "Generate must precede Advanced.");
 
 for (const marker of [
   'body.append("slot", slot)',
@@ -52,6 +54,7 @@ for (const marker of [
 for (const marker of [
   '.reference-slot-empty[hidden]',
   '.reference-selected[hidden]',
+  '.primary-button',
 ]) {
   assert.ok(styles.includes(marker), `Reference visibility rule missing: ${marker}`);
 }
@@ -60,4 +63,4 @@ assert.equal(app.includes('state.currentJob'), false, "Active job must not be re
 assert.equal(app.includes('value="T2V"'), false, "No explicit route selector is allowed.");
 assert.equal(app.includes('value="I2V"'), false, "No explicit route selector is allowed.");
 assert.equal(app.includes("fallback"), false, "I2V must not silently fall back to T2V.");
-console.log("H1B.1 UX integrity smoke: 34 PASS");
+console.log("H1B.1 UX P1 layout smoke: 36 PASS");

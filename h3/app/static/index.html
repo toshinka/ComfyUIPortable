@@ -44,7 +44,7 @@
         <form id="generate-form" novalidate>
           <div class="section-kicker">Create</div>
           <label class="field-label" for="prompt">Prompt</label>
-          <textarea id="prompt" name="prompt" rows="7" maxlength="4000" placeholder="Describe the video..." required></textarea>
+          <textarea id="prompt" name="prompt" rows="5" maxlength="4000" placeholder="Describe the video..." required></textarea>
           <div class="field-hint"><span>Prompt</span><span id="prompt-count">0 / 4000</span></div>
 
           <section class="reference-card" aria-labelledby="reference-heading">
@@ -54,7 +54,6 @@
                 <div class="reference-helper">Optional keyframes<br /><span>Leave both empty to generate from text only.</span></div>
               </div>
             </div>
-            <div class="reference-empty" id="reference-empty">No keyframes selected</div>
             <div class="reference-slots">
               <div class="reference-slot" data-reference-slot="start_frame">
                 <div class="reference-slot-heading">
@@ -120,6 +119,12 @@
             </div>
           </div>
 
+          <button class="primary-button" id="generate-button" type="submit" disabled>
+            <span>Generate</span>
+            <span class="button-arrow" aria-hidden="true">→</span>
+          </button>
+          <button class="cancel-button" id="cancel-button" type="button" hidden>Cancel current job</button>
+
           <details class="advanced-panel">
             <summary>Advanced</summary>
             <div class="advanced-body">
@@ -133,12 +138,6 @@
               <div class="field-hint">Verified Native baseline</div>
             </div>
           </details>
-
-          <button class="primary-button" id="generate-button" type="submit" disabled>
-            <span>Generate</span>
-            <span class="button-arrow" aria-hidden="true">→</span>
-          </button>
-          <button class="cancel-button" id="cancel-button" type="button" hidden>Cancel current job</button>
         </form>
 
         <div class="details-panel" id="details-panel" hidden>

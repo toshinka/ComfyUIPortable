@@ -16,7 +16,6 @@ const referenceFile = $("reference-file");
 const referenceAdd = $("reference-add");
 const referenceReplace = $("reference-replace");
 const referenceRemove = $("reference-remove");
-const referenceEmpty = $("reference-empty");
 const referenceSelected = $("reference-selected");
 const referenceThumbnail = $("reference-thumbnail");
 const referenceName = $("reference-name");
@@ -118,10 +117,6 @@ const referenceViews = {
   },
 };
 
-function updateReferenceEmpty() {
-  referenceEmpty.hidden = Object.values(state.references).some(Boolean);
-}
-
 function setReferenceSlotView(slot, reference) {
   const view = referenceViews[slot];
   state.references[slot] = reference;
@@ -132,14 +127,12 @@ function setReferenceSlotView(slot, reference) {
     view.thumbnail.removeAttribute("src");
     view.name.textContent = "";
     view.status.textContent = "";
-    updateReferenceEmpty();
     updateGenerateAvailability();
     return;
   }
   view.thumbnail.src = `${reference.preview_url}?v=${encodeURIComponent(reference.id)}`;
   view.name.textContent = `${reference.width} x ${reference.height}`;
   view.status.textContent = "";
-  updateReferenceEmpty();
   updateGenerateAvailability();
 }
 

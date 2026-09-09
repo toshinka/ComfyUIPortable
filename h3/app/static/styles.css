@@ -187,7 +187,7 @@ button { cursor: pointer; }
 .preview-meta { min-height: 22px; padding: 10px 2px 0; color: var(--muted); font-size: 0.82rem; }
 
 .control-column {
-  padding: 24px;
+  padding: 20px 24px 24px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: #fffaf5;
@@ -212,7 +212,7 @@ textarea, input, select {
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
-textarea { min-height: 150px; resize: vertical; padding: 12px 13px; line-height: 1.5; }
+textarea { min-height: 132px; resize: vertical; padding: 12px 13px; line-height: 1.5; }
 input, select { min-height: 42px; padding: 9px 11px; }
 textarea:focus, input:focus, select:focus { border-color: var(--maroon); box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1); }
 textarea::placeholder, input::placeholder { color: #a58a82; }
@@ -226,8 +226,8 @@ textarea::placeholder, input::placeholder { color: #a58a82; }
 }
 
 .reference-card {
-  margin-top: 18px;
-  padding: 13px 14px 14px;
+  margin-top: 14px;
+  padding: 10px 14px 10px;
   border: 1px solid var(--soft-line);
   border-radius: 9px;
   background: #fffdf9;
@@ -243,15 +243,14 @@ textarea::placeholder, input::placeholder { color: #a58a82; }
 .reference-heading-row .field-label { margin-bottom: 4px; }
 .reference-helper { color: var(--light-maroon); font-size: 0.76rem; line-height: 1.45; }
 .reference-helper span { color: var(--muted); }
-.reference-empty { margin-top: 11px; color: var(--muted); font-size: 0.76rem; }
-.reference-slots { display: grid; gap: 8px; margin-top: 11px; }
-.reference-slot { padding: 10px 11px 9px; border: 1px solid var(--soft-line); border-radius: 8px; background: #fffaf5; }
+.reference-slots { display: grid; gap: 5px; margin-top: 8px; }
+.reference-slot { padding: 7px 11px 4px; border: 1px solid var(--soft-line); border-radius: 8px; background: #fffaf5; }
 .reference-slot-heading { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
 .reference-slot-heading > div { display: grid; gap: 2px; min-width: 0; }
 .reference-slot-heading strong { color: var(--ink); font-size: 0.8rem; }
 .reference-slot-heading span { color: var(--muted); font-size: 0.7rem; }
 .reference-add { min-height: 32px; padding: 0 10px; white-space: nowrap; font-size: 0.74rem; }
-.reference-slot-empty { margin-top: 8px; color: var(--muted); font-size: 0.72rem; }
+.reference-slot-empty { margin-top: 4px; color: var(--muted); font-size: 0.72rem; }
 .reference-slot-empty[hidden], .reference-selected[hidden] { display: none; }
 .reference-selected { display: flex; align-items: center; gap: 11px; margin-top: 11px; }
 .reference-thumbnail { width: 78px; height: 54px; flex: 0 0 auto; border: 1px solid var(--line); border-radius: 6px; background: #f7eae2; object-fit: cover; }
@@ -260,9 +259,9 @@ textarea::placeholder, input::placeholder { color: #a58a82; }
 .reference-name { overflow: hidden; color: var(--muted); font-size: 0.7rem; text-overflow: ellipsis; white-space: nowrap; }
 .reference-actions { display: flex; gap: 7px; margin-top: 4px; }
 .reference-actions .quiet-button { min-height: 30px; padding: 0 9px; font-size: 0.74rem; }
-.reference-status { min-height: 15px; margin-top: 7px; color: var(--danger); font-size: 0.72rem; }
+.reference-status { min-height: 0; margin-top: 0; color: var(--danger); font-size: 0.72rem; }
 
-.control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+.control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
 
 .advanced-panel {
   margin-top: 19px;
@@ -299,7 +298,7 @@ textarea::placeholder, input::placeholder { color: #a58a82; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 22px;
+  margin-top: 12px;
   padding: 0 16px 0 18px;
   border: 1px solid var(--maroon);
   border-radius: 8px;
