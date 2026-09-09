@@ -106,7 +106,7 @@ Promptは全CASTをGlobalへ連結しない。必要なScene/instanceごとにen
 | M2 / 3M-2 | CAST/複数instance。同じsurfaceを拡張 | 同一CASTが1/3/4へ出演、2人同Scene、simple/cast混在 | ID維持、mode往復、swap/重複mask、prompt局所性 |
 | M3 / 3M-3 | ユーザー漫画ラフ入力と適合ControlNet | 白ハゲA→CAST A、B→Bの誘導比較 | guide fit、入力hash、control on/off、実ACN経路があればその比較 |
 | M4 / 3N | polygon等の変形＋必要部分のRefine | 非矩形領域を保存して生成、遠近補助を任意表示 | shape migration、mask一致、未対応adapterの明示拒否 |
-| M5 / 3O | 必要性を測ってskin拡張、候補管理 | 初回/反復手数を削減 | 同じdocument・queue bridgeを再利用 |
+| M5 / 3O | 必要性を測ってskin拡張、候補管理、H3共通shellへのManga tab接続 | 初回/反復手数を削減し同一GUIからManga/Videoを切替 | 同じdocument・queue bridgeを再利用しdomain stateを混同しない |
 | Later | Pose asset、SubScene、Interaction、local LoRA | 利用者が必要な時のみ | 機能ごとの契約・画像評価 |
 
 順序はM0→M1→M2→M3。M1に任意コマ枠画像の既存ControlNet経路を含め、M3まで枠入力を待たせない。M1/M2を一枚の巨大カードにまとめない。M3と形状/skinの優先を変えるのはOwnerの実操作結果を受けたSOL判断でよい。
@@ -142,4 +142,4 @@ Promptは全CASTをGlobalへ連結しない。必要なScene/instanceごとにen
 
 ## 10. SOLが次に作る一枚
 
-M0だけを発行する。読む範囲は本書→UX→棚卸しの契約ギャップ→該当source。成果はversioned document提案、2 Scene/独立Frame/空CAST/繰返し出演のJSON fixture、旧形式移行表、M1対象file一覧。実装変更・Sampler変更・Pose追加を含めない。承認はSOLの技術レビューで進め、製品方針の変更だけAstra/Ownerへ戻す。詳細運用は[実行プロトコル](ASTRA_WEBGPT_ANTIGRAVITY_EXECUTION_PROTOCOL.md)。
+M0だけを発行する。読む範囲は本書→UX→棚卸しの契約ギャップ→該当source。成果はversioned document提案、2 Scene/独立Frame/空CAST/繰返し出演のJSON fixture、旧形式移行表、M1対象file一覧。実装変更・Sampler変更・Pose追加を含めない。承認はSOLの技術レビューで進め、製品方針の変更だけAstra/Ownerへ戻す。詳細運用は[実行プロトコル](ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md)。

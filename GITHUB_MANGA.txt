@@ -1,5 +1,5 @@
 ComfyUIPortable — Manga Authoring External AI Entry (canonical)
-Updated: 2026-09-08 JST
+Updated: 2026-09-09 JST
 Repository: https://github.com/toshinka/tegaki
 Branch: main
 Canonical path: ComfyUIPortable/GITHUB_MANGA.txt
@@ -9,19 +9,18 @@ Review Target Commit SHA: a7f0baaad6e7f5d82c39b1042e8a3c4e9f1a7d5b
 Review Target: M3A.1 implementation (published on main)
 Navigation Commit SHA: dfe944c6
 Strategic Planning Commit SHA: 261a3d7297455931d391e62f2d8a1335193d8d90
-Namespace migration publication: LOCAL PENDING OWNER COMMIT/PUSH
-
-The new GITHUB_MANGA.txt and docs/manga paths do not exist on public main until
-the Owner commits and pushes this migration. Use local files for review before publication.
+Namespace/card migration publication: ef7daa502f501211cd6b06f378e9024dbff6f284
+SOL/LUNA handoff publication: LOCAL PENDING OWNER COMMIT/PUSH
 
 Current state
 -------------
 Minimum-Hand / Scene-first Manga Authoring.
 M0 through M2B.2 are complete. M3A.1 is PASS for headless tests and structural
 pixel oracles; Owner live-browser acceptance remains PENDING. Do not start M3B
-automatically while Gemini is paused.
+automatically. Web GPT SOL now leads bounded Card design; a fresh local LUNA chat
+implements one published Card at a time.
 
-Current review slice (no active Gemini execution card):
+Current review slice (no active LUNA implementation Card):
 M3A.1 — Frame Runtime Truth, Gutter Semantics & Live Browser Closure.
 - page.visual_frames remains independent from Semantic Scenes and Characters.
 - comic_panels uses white gutters and per-frame border_thickness.
@@ -33,20 +32,21 @@ M3A.1 — Frame Runtime Truth, Gutter Semantics & Live Browser Closure.
 
 Next candidate after Owner acceptance:
 M3B / 3M-3B — Rough Manga / White-Dummy Character Guide Integration.
-Issue a new bounded Gemini instruction from the live repository state before
+Issue a new bounded LUNA Card from the live repository state before
 resuming. Do not reuse an old Phase request as the active instruction.
 
 Reading order
 -------------
 1. ComfyUIPortable/GITHUB_MANGA.txt
-2. ComfyUIPortable/docs/STATUS.md
-3. ComfyUIPortable/docs/manga/README.md
-4. ComfyUIPortable/docs/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md
-5. ComfyUIPortable/docs/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md
-6. ComfyUIPortable/docs/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md
-7. ComfyUIPortable/docs/plans/ASTRA_WEBGPT_ANTIGRAVITY_EXECUTION_PROTOCOL.md
-8. ComfyUIPortable/docs/manga/cards/README.md
-9. Current report, then only relevant source/workflows/tests.
+2. ComfyUIPortable/docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md
+3. ComfyUIPortable/docs/STATUS.md
+4. ComfyUIPortable/docs/manga/README.md
+5. ComfyUIPortable/docs/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md
+6. ComfyUIPortable/docs/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md
+7. ComfyUIPortable/docs/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md
+8. ComfyUIPortable/docs/plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md
+9. ComfyUIPortable/docs/manga/cards/README.md
+10. Current report, then only relevant source/workflows/tests.
 
 Current review documents
 ------------------------
@@ -54,6 +54,8 @@ Status:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/STATUS.md
 Manga document hub:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/README.md
+SOL/LUNA new-chat handoff:
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md
 M3A.1 report at the implementation review target:
 https://raw.githubusercontent.com/toshinka/tegaki/a7f0baaad6e7f5d82c39b1042e8a3c4e9f1a7d5b/ComfyUIPortable/docs/reports/M3A1_FRAME_RUNTIME_TRUTH_AND_BROWSER_CLOSURE_REPORT.md
 Document register:
@@ -69,8 +71,8 @@ UX blueprint:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md
 Asset/workflow inventory:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md
-SOL/Gemini protocol:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/plans/ASTRA_WEBGPT_ANTIGRAVITY_EXECUTION_PROTOCOL.md
+SOL/LUNA protocol:
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md
 
 Evidence cautions
 -----------------
@@ -90,8 +92,10 @@ runtime semantics, and canonical External AI entries.
 MiniMax H3 entry:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB_H3.txt
 
-Long term, both may share a TEGAKI shell after each is independently usable.
-This is not a current implementation requirement. H3 Manga remains deferred.
+The target product uses one TEGAKI shell/skin with top-level `Video (H3)` and
+`Manga` tabs. Shell integration gets its own later Card after both domain flows
+can be regressed independently; it does not merge their schemas or runtimes.
+H3 Manga remains deferred.
 
 Namespace migration
 -------------------

@@ -1,13 +1,14 @@
 # ComfyUIPortable 現在地 (Status & Direction)
 
-更新: 2026-09-08 JST
+更新: 2026-09-09 JST
 Review Target Commit SHA: `a7f0baaad6e7f5d82c39b1042e8a3c4e9f1a7d5b` (M3A.1 implementation, published)
 Manga正本入口: [GITHUB_MANGA.txt](../GITHUB_MANGA.txt)
 
 `GITHUB_ComfyUI.txt` はManga/H3を振り分けるCompatibility Routerへ変更した。
 今回のnamespace整理は文書/navigationのみで、Manga runtime・workflow・schema・outputを変更していない。
-Gemini再開時は[再開コンテキスト](manga/MANGA_GEMINI_RESTART_CONTEXT.md)から現状を確認し、
-[Card Router](manga/cards/README.md)の規則に従ってSOLが新しい限定Cardを発行する。
+今後はWeb GPT SOLが[新規チャット引き継ぎ](manga/WEBGPT_SOL_LUNA_HANDOFF.md)からGitHubを監査し、
+[Card Router](manga/cards/README.md)と[現行プロトコル](plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md)に従って
+ローカルLUNAへ新しい限定Cardを発行する。現在、active LUNA implementation Cardはない。
 
 ---
 
@@ -114,7 +115,7 @@ Scene-only Draft (M1) → CAST 複数出演 (M2) → Rough Guide (M3) → UX She
   - `page.visual_frames` SSOT、3-layer Edit UI、Frame独立操作、TegakiMangaFrameOverlay node、0-frame pass-through、V0-V4 PASS。
   - **報告書**: [M3A_VISUAL_PANEL_FRAME_AND_FRAME_GUIDE_REPORT.md](reports/M3A_VISUAL_PANEL_FRAME_AND_FRAME_GUIDE_REPORT.md)
 
-- **現行Card**: **M3A.1 / 3M-3A.1 — Frame Runtime Truth, Gutter Semantics & Live Browser Closure** — PASS (Headless) / OWNER ACCEPTANCE PENDING (Browser)
+- **現行Review Slice（active実装Cardなし）**: **M3A.1 / 3M-3A.1 — Frame Runtime Truth, Gutter Semantics & Live Browser Closure** — PASS (Headless) / OWNER ACCEPTANCE PENDING (Browser)
   - **Finding A (fail-closed)**: invalid JSON / out-of-range page_index → ERROR status (fail-closed)。0 frames → pass-through PASS (legal)。
   - **Finding B (white gutter)**: comic_panels semantics: 白キャンバス + source paste inside frames + 黒枠線。Frame外 = 純白 gutter。
   - **Finding C (per-frame thickness)**: `border_thickness` per-frame honored、global `line_thickness` は fallback のみ。
@@ -135,5 +136,6 @@ Scene-only Draft (M1) → CAST 複数出演 (M2) → Rough Guide (M3) → UX She
 - 戦略SSOT: [ASTRA_MANGA_AUTHORING_MASTER_PLAN.md](plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md)
 - UX詳細: [ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md](plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md)
 - 資産棚卸し: [ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md](plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md)
-- 実行プロトコル: [ASTRA_WEBGPT_ANTIGRAVITY_EXECUTION_PROTOCOL.md](plans/ASTRA_WEBGPT_ANTIGRAVITY_EXECUTION_PROTOCOL.md)
+- SOL/LUNA引き継ぎ: [WEBGPT_SOL_LUNA_HANDOFF.md](manga/WEBGPT_SOL_LUNA_HANDOFF.md)
+- 実行プロトコル: [ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md](plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md)
 - 文書登録簿: [DOCUMENT_REGISTER.md](DOCUMENT_REGISTER.md)

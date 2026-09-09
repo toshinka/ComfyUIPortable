@@ -90,7 +90,8 @@ Rev.3 direction, summarized:
 - Keep the initial base able to accept H3 Still routes and ordered references.
 - Grow toward Studio / Storyboard / Previz only after a practical video path.
 - Complete the existing Illustrious Manga line independently of H3.
-- Consider Manga / Video shell integration only after both sides work.
+- Target one TEGAKI shell/skin with top-level Video and Manga tabs after both
+  domain flows can be regressed independently.
 - Start H3 MANGA last; it is not part of this groundwork.
 - Keep Base Quality, Stable Fast, and Experimental runtime profiles separate.
 - Apply the GUI principles of cognitive level, cognitive lenses, progressive
@@ -118,6 +119,9 @@ The existing Manga runtime, docs/STATUS.md, docs/plans/, and Manga workflows
 remain outside H3 implementation scope. A later, separately authorized namespace
 task created GITHUB_MANGA.txt and converted GITHUB_ComfyUI.txt into a thin router;
 this navigation change does not merge H3 and Manga runtime semantics.
+
+The shared shell/tab goal is recorded in the Manga SOL/LUNA handoff. It is a
+separate future integration Card; H1B.1 does not authorize Manga or shared-shell edits.
 
 H1A/H1B/H1B.1 now own the narrow implementation boundary under `h3/` and
 `workflows/h3/`: a local vanilla UI, a small HTTP adapter server, and separate

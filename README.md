@@ -1,8 +1,9 @@
 # ComfyUI Portable 漫画制作環境 (Tegaki Manga Edition)
 
 外部AIの共通routerは [GITHUB_ComfyUI.txt](GITHUB_ComfyUI.txt)、Manga正本入口は [GITHUB_MANGA.txt](GITHUB_MANGA.txt)、H3正本入口は [GITHUB_H3.txt](GITHUB_H3.txt)です。Mangaの現在地は [docs/STATUS.md](docs/STATUS.md)。
+新規Web GPT SOLからlocal LUNAへ引き継ぐ場合は [WEBGPT_SOL_LUNA_HANDOFF.md](docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md) を使用します。
 2026-09-06の [Astra Master Plan](docs/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md) が新しい戦略正本です。
-以下は既存環境の説明を含み、新計画のScene-first UIが実装済みという意味ではありません。
+Scene-first実装はM3A.1まで進んでいますが、Owner live-browser acceptanceは未完了です。以下には旧環境の説明も含まれるため、現在地判断はSTATUSを優先してください。
 
 Windowsローカル環境に、漫画・イラスト制作向けに特化して構築された **ComfyUI Portable環境** です。
 Illustrious / SDXL系モデルを主力とし、構図・ポーズ探索、複数LoRAブレンド、コマ・Region単位のPrompt/LoRA制御、I2I修正、ControlNet構図制御、Wildcards/Dynamic Promptsによるアイデア出し、および最大6コマの視覚的Region Editorを支援します。
@@ -311,6 +312,5 @@ ComfyUIをブラウザで開いた後、画面右上の「Load」または画面
   - パネル属性として `near`、`medium`、`far` を定義し、`explicit staging > camera default` 契約のもとで未指定人物の自動フレーミングを制御（Contact Sheet Z5）。
 - **Zero-Touch 互換性**:
   - Workflows 60〜65（全6件）を新規策定し、対象全49ワークフローのライブスキーマ適合性 100% PASS を達成。
-
 
 

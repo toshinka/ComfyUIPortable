@@ -1,6 +1,6 @@
 # Manga Execution Card Router
 
-更新: 2026-09-08 JST
+更新: 2026-09-09 JST
 
 このdirectoryはManga Authoringの実行Cardだけを扱う。戦略正本は
 [`ASTRA_MANGA_AUTHORING_MASTER_PLAN.md`](../../plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md)、
@@ -8,9 +8,9 @@
 
 ## Current
 
-現在、実行中Cardはない。Geminiは停止中で、M3A.1のOwner live-browser acceptanceが未完了。
-再開時は [`MANGA_GEMINI_RESTART_CONTEXT.md`](../MANGA_GEMINI_RESTART_CONTEXT.md) をSOLが監査し、
-新しいCardを `current/` に1件だけ発行する。`completed/` のCardをコピーして再開指示にしない。
+現在、実行中Cardはない。M3A.1のOwner live-browser acceptanceが未完了。
+再開時は [`WEBGPT_SOL_LUNA_HANDOFF.md`](../WEBGPT_SOL_LUNA_HANDOFF.md) をSOLが監査し、
+新しいCardを [`current/`](current/README.md) に1件だけ発行する。`completed/` のCardをコピーして再開指示にしない。
 
 ## Completed
 

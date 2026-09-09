@@ -1,6 +1,6 @@
 # Manga Authoring Document Hub
 
-更新: 2026-09-08 JST
+更新: 2026-09-09 JST
 
 このHubは `ComfyUIPortable` 内のManga Authoring専用入口です。MiniMax H3と
 Portable基盤を共有しますが、現在はplanning、runtime semantics、workflow、
@@ -16,14 +16,15 @@ evidence、External AI Entryを分離します。
 | Strategic SSOT | [`ASTRA_MANGA_AUTHORING_MASTER_PLAN.md`](../plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md) |
 | Current UX design | [`ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md`](../plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md) |
 | Asset/workflow audit | [`ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md`](../plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md) |
-| SOL/Gemini process | [`ASTRA_WEBGPT_ANTIGRAVITY_EXECUTION_PROTOCOL.md`](../plans/ASTRA_WEBGPT_ANTIGRAVITY_EXECUTION_PROTOCOL.md) |
+| New-chat handoff | [`WEBGPT_SOL_LUNA_HANDOFF.md`](WEBGPT_SOL_LUNA_HANDOFF.md) |
+| SOL/LUNA process | [`ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md`](../plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md) |
 | Card routing | [`docs/manga/cards/README.md`](cards/README.md) |
 
 Current implementation review target is M3A.1 commit
 `a7f0baaad6e7f5d82c39b1042e8a3c4e9f1a7d5b`. Headless and structural pixel
-checks passed; Owner live-browser acceptance remains pending. Gemini is paused.
-Before resuming, read the [restart context](MANGA_GEMINI_RESTART_CONTEXT.md) and
-have SOL issue a fresh bounded card from the live state.
+checks passed; Owner live-browser acceptance remains pending. There is no active
+LUNA implementation Card. Start a new Web GPT SOL chat with the
+[handoff](WEBGPT_SOL_LUNA_HANDOFF.md), then have SOL issue one fresh bounded Card.
 
 ## Execution cards and historical instructions
 
@@ -32,7 +33,7 @@ have SOL issue a fresh bounded card from the live state.
 
 旧 `GPTからの指示書/` は役割が曖昧で、完了Cardと旧戦略が同じ階層に混在していたため廃止した。
 完了Cardは `cards/completed/`、旧Phase指示と構想資料は `archive/` に分離している。
-Gemini再開時は完了Cardを再利用せず、live stateを監修したSOLが `cards/current/` に新しい限定Cardを発行する。
+LUNA開始時は完了Cardを再利用せず、live stateを監修したSOLが `cards/current/` に新しい限定Cardを発行する。
 
 ## Reports and verification
 
@@ -60,8 +61,8 @@ Historical pinned URLs and historical report wording retain their old paths.
 Manga Authoring and H3 are separate production subsystems. Namespace separation
 does not merge their runtime semantics. H3 Manga is deferred; a possible future
 hierarchy is `docs/h3/manga/`, `workflows/h3/manga/`, and `output/h3/manga/`
-only after its own gate. A common TEGAKI shell is a long-term possibility after
-both subsystems are independently usable.
+only after its own gate. The product target is a common TEGAKI shell/skin with
+top-level Manga and Video (H3) tabs after both domain flows are independently regressable.
 
 Production output remains in legacy paths pending a separate migration card.
 Selected review evidence may later use `docs/manga/evidence/`, but no evidence

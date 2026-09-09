@@ -72,6 +72,11 @@ CAST選択時のInspectorはMasterを編集するボタンと今回の演技欄�
 
 M1でsurfaceを作る際、nodeの内部を寄せ集めた別々のstateを書かない。ComfyUIのgraphは「詳細/Workflowを開く」へ戻せる。後のskinもdocument/compiler/queue adapterを共用する。first draftのために複数nodeのPrompt欄へ移動するならsurface gateは未達。
 
+長期の製品surfaceは、H3動画ツールと同じTEGAKI shell/skin内に置き、上位tabで
+`Manga`と`Video (H3)`を切り替える。共通化するのはnavigation、visual language、workspace入口から始め、
+Manga document/compilerとH3 job/runtime stateは各tabが所有する。tab切替で入力を失わない契約と
+両domainの独立回帰が揃うまで、共通shell実装をM3/M4の機能Cardへ混ぜない。
+
 ## 後段の出現条件
 
 - CAST: ユーザーが反復登場/個別配置を必要とした時。

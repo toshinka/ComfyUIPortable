@@ -2,6 +2,10 @@
 
 更新: 2026-09-08 JST。これは実装指示書ではない。
 
+> **SUPERSEDED / HISTORICAL SNAPSHOT**: 現行の引き継ぎは
+> [`WEBGPT_SOL_LUNA_HANDOFF.md`](WEBGPT_SOL_LUNA_HANDOFF.md)。本書のH3状態と担当AIは停止時点の記録であり、
+> 新しいCard発行や現在地判断には使わない。
+
 Geminiは約5日停止予定。再起動時に古いPhase/Cardを自動継続せず、SOLが
 live repositoryを再監査して新しい限定指示書を発行する。
 

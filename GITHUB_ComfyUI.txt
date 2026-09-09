@@ -1,13 +1,12 @@
 ComfyUIPortable — External AI Router / Compatibility Entry
-Updated: 2026-09-08 JST
+Updated: 2026-09-09 JST
 Repository: https://github.com/toshinka/tegaki
 Branch: main
 Canonical router path: ComfyUIPortable/GITHUB_ComfyUI.txt
-Router update publication: LOCAL PENDING OWNER COMMIT/PUSH
+Router/namespace publication: ef7daa502f501211cd6b06f378e9024dbff6f284
 
 This file routes external AI readers to the domain-specific canonical entry.
 Do not maintain detailed project status, Review Target SHA, plans, or evidence here.
-The new Manga route becomes public only after the Owner commits and pushes it.
 
 Manga Authoring
 ---------------
@@ -31,5 +30,7 @@ Manga Authoring and H3 share the repository and Portable base, but currently
 have separate feature namespaces, runtime semantics, planning, evidence, and
 External AI entries. Read the relevant canonical entry before reviewing work.
 
-Future common TEGAKI shell/skin integration is not a current implementation
-requirement. H3 Manga remains deferred.
+The target product uses one TEGAKI shell/skin with top-level Manga and Video
+(H3) tabs. Until a separate Shell Integration Card is authorized, each domain
+keeps its own state, runtime, workflow, evidence, and output contracts. H3 Manga
+remains deferred.
