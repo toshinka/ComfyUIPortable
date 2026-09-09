@@ -40,7 +40,7 @@ H1C Continue bridge preparation: VERIFIED BROWSER UI
 H1C Native continuation: VERIFIED LOCAL GENERATION / VERIFIED BROWSER UI
 H1C evidence: CURRENT REVIEW EVIDENCE
 H1C evidence/docs commit: 4df2f2a5f29957a9f4ba429ddd8796d13de5de3b
-H1C publication: LOCAL MAIN / OWNER PUSH PENDING
+H1C publication: PUBLISHED ON MAIN
 Owner acceptance: PENDING
 
 This entry is the starting point for external AI review of MiniMax H3 work. It
@@ -189,5 +189,5 @@ recorded with the dated package. H1B.1 UX P2 implementation is recorded in
 recorded with the dated package. H1C base implementation is recorded in
 `a92237fe3eeb0f53e16c69d37763d388fedf2145`; its bounded final-frame capture
 fix is recorded in `ff577a0c`. The H1C evidence/report/canonical-doc commit is
-recorded with the dated package. No push was performed; Owner acceptance
+recorded with the dated package and are published on `main`. Owner acceptance
 remains `PENDING`.

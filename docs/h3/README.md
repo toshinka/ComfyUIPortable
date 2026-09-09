@@ -12,7 +12,7 @@ H1A implementation commit `925596b9d7fbd731290fe9869ea34a0006249130` is
 published on `main`. H1B, H1B.1, and the H1B.1 UX P0/P1/P2 fixes are implemented and
 locally/browser verified within their recorded bounds; Owner acceptance remains
 pending. H1C evidence/report/canonical docs are recorded in commit `4df2f2a5f29957a9f4ba429ddd8796d13de5de3b`
-on local `main`; no push was performed.
+and are published on GitHub `main`; Owner acceptance remains pending.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。

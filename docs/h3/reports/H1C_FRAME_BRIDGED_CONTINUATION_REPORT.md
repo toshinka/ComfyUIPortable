@@ -20,7 +20,7 @@ Owner acceptance: `PENDING`
 | `VERIFIED SOURCE/LOGIC` | `PASS` | H1C source/logic smoke and all required static checks pass. |
 | `VERIFIED BROWSER UI` | `PASS` | P2 Start+End reuse and H1C Continue were exercised in the local Browser. |
 | `VERIFIED LOCAL GENERATION` | `PASS` | A real Native continuation completed on the verified RTX 4070 stack. |
-| `PUBLISHED ON MAIN` | `LOCAL MAIN / NOT PUSHED` | Local commits are on `main`; no push was performed. |
+| `PUBLISHED ON MAIN` | `PASS` | The H1C implementation, fix, evidence, and canonical docs are present on GitHub `main`. |
 | `OWNER ACCEPTED` | `PENDING` | Technical and Browser evidence do not replace Owner acceptance. |
 
 ## Summary
@@ -234,5 +234,6 @@ Manifest: `docs/h3/evidence/h1c/2026-09-09/manifest.json`
 Visual comparison: `docs/h3/evidence/h1c/2026-09-09/contact_sheet.png`
 
 Canonical H3 entry and document hub were advanced to the H1C gate only after
-the Browser and real Native continuation checks above passed. Owner acceptance
-remains `PENDING`; no push was performed.
+the Browser and real Native continuation checks above passed. The H1C
+implementation, fix, evidence, and canonical docs are published on GitHub
+`main`; Owner acceptance remains `PENDING`.
