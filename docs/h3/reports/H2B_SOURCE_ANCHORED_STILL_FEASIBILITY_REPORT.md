@@ -35,7 +35,7 @@ one matched pair, and no production Still UI was added.
 | `VERIFIED LOCAL STILL GENERATION` | `PASS` | Both matched prompt-only and source-anchored Native PNGs completed locally. |
 | `SOURCE INFLUENCE OBSERVED` | `PASS` | The anchored output visibly retains source structure while prompt-only does not. |
 | `VERIFIED BROWSER UI` | `N/A` | This feasibility Card intentionally adds no production Still control. |
-| `PUBLISHED ON MAIN` | `LOCAL MAIN / OWNER PUSH PENDING` | H2B implementation and evidence/docs are local; no H2B push is claimed. |
+| `PUBLISHED ON MAIN` | `PUBLISHED ON MAIN` | H2B implementation and evidence/docs are present on GitHub `main`; Owner acceptance remains separate. |
 | `OWNER ACCEPTED` | `PENDING` | Technical evidence does not replace Owner acceptance. |
 
 The H2A publication wording correction is `PASS` in commit `67a8bd47`:
@@ -202,7 +202,7 @@ H2B SOURCE-ANCHORED STILL: PASS
 
 Publication correction: PASS
 H2A publication: PUBLISHED ON MAIN
-H2B publication: LOCAL MAIN / OWNER PUSH PENDING
+H2B publication: PUBLISHED ON MAIN
 
 Implementation commit:
 8a6b74f4fef2c9437ce07dd8fb85eb85bcda5971

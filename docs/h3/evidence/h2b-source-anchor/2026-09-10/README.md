@@ -114,6 +114,6 @@ The prompt-only control uses the same H2B workflow basis after removing node
 - Python `compileall` — `PASS`.
 - `git diff --check` — `PASS`.
 
-Publication: `LOCAL MAIN / OWNER PUSH PENDING` for H2B. H2A publication is
-`PUBLISHED ON MAIN` after the wording correction. Owner acceptance remains
+Publication: `PUBLISHED ON MAIN` for H2B. H2A publication is also
+`PUBLISHED ON MAIN`. Owner acceptance remains
 `PENDING`.

@@ -9,10 +9,14 @@ if not exist "%PORTABLE_ROOT%\output\h3\tests" mkdir "%PORTABLE_ROOT%\output\h3\
 if not exist "%PORTABLE_ROOT%\output\h3\h3_native_user" mkdir "%PORTABLE_ROOT%\output\h3\h3_native_user"
 if not exist "%PORTABLE_ROOT%\output\h3\h3_native_temp" mkdir "%PORTABLE_ROOT%\output\h3\h3_native_temp"
 
-start "TEGAKI H3 Native Backend" /b "%PORTABLE_ROOT%\python_embeded\python.exe" "%PORTABLE_ROOT%\ComfyUI\main.py" ^
+set "H3_MODEL_PATHS_CONFIG=%PORTABLE_ROOT%\h3\config\extra_model_paths.yaml"
+if exist "%PORTABLE_ROOT%\h3\config\extra_model_paths.local.yaml" set "H3_MODEL_PATHS_CONFIG=%PORTABLE_ROOT%\h3\config\extra_model_paths.local.yaml"
+
+rem The shim suppresses only ComfyUI's shared auto-loaded model-path file.
+start "TEGAKI H3 Native Backend" /b "%PORTABLE_ROOT%\python_embeded\python.exe" "%PORTABLE_ROOT%\h3\tools\run_native_isolated.py" ^
   --listen 127.0.0.1 --port 8188 ^
   --disable-auto-launch --disable-manager --disable-all-custom-nodes ^
-  --extra-model-paths-config "%PORTABLE_ROOT%\h3\config\extra_model_paths.yaml" ^
+  --extra-model-paths-config "%H3_MODEL_PATHS_CONFIG%" ^
   --output-directory "%PORTABLE_ROOT%\output\h3" ^
   --input-directory "%PORTABLE_ROOT%\output\h3" ^
   --user-directory "%PORTABLE_ROOT%\output\h3\h3_native_user" ^

@@ -1,0 +1,11 @@
+# Copy this file to extra_model_paths.local.yaml on a machine that has the
+# canonical H3 model library. The copied file is intentionally git-ignored.
+#
+# This config exposes only H3-specific categories. It does not wire the full
+# shared Illustrious/A1111 library into the isolated H3 Native runtime.
+h3_external:
+  base_path: E:/Data/Models/StableDiffusion/minimaxH3/
+  diffusion_models: diffusion_models/
+  text_encoders: text_encoders/
+  vae: E:/Data/Models/VAE/minimaxH3/
+  loras: D:/Models/Lora/minimaxH3/

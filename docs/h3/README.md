@@ -17,8 +17,8 @@ and are published on GitHub `main`; Owner acceptance remains pending. H2A
 still feasibility is implemented and locally verified through a bounded
 Native route; no production Still UI was added and H2A is published on GitHub
 `main`. H2B source-anchored Still feasibility is implemented and locally
-verified through a matched Native pair; its new commits remain local pending
-Owner push. Owner acceptance remains pending.
+verified through a matched Native pair; its implementation, evidence, and
+docs are published on GitHub `main`. Owner acceptance remains pending.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。

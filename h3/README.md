@@ -19,10 +19,13 @@ UI on `127.0.0.1:8190`. Set `TEGAKI_H3_NO_BROWSER=1` when the browser should
 not be opened automatically. `run_h1a.bat` remains a compatibility wrapper that
 delegates to this canonical launcher.
 
-The launcher uses the local first-wave model store at `h3/model_store/` through
-`h3/config/extra_model_paths.yaml`. It does not copy weights into the shared
-`ComfyUI/models/` tree and disables all third-party custom nodes for this Native
-baseline.
+The launcher uses the machine-local
+`h3/config/extra_model_paths.local.yaml` when it exists, otherwise it falls
+back to the tracked `h3/config/extra_model_paths.yaml` and
+`h3/model_store/` namespace. The external override exposes only H3
+`diffusion_models`, `text_encoders`, `vae`, and `loras`; it does not copy
+weights into the shared `ComfyUI/models/` tree and disables all third-party
+custom nodes for this Native baseline.
 
 ## H1A / H1B boundary
 
