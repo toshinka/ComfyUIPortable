@@ -19,7 +19,10 @@ Repository: `https://github.com/toshinka/tegaki`
 - Domain router: `ComfyUIPortable/GITHUB_ComfyUI.txt`
 - Manga implementation Review Target: `a7f0baaa89a2e315b0492573c9da19e50727928b`
 - Manga namespace/card migration publication: `ef7daa502f501211cd6b06f378e9024dbff6f284`
-- 2026-09-09監査時のrepository HEAD / `origin/main`: `145807e1`
+- 2026-09-09監査時のrepository HEAD / `origin/main`: `db7611c120af35504425872e896dc0229216b8c9`
+- Latest operational Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/current/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md
+- Latest operational report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_REPORT.md
+- Current repository publication: db7611c120af35504425872e896dc0229216b8c9
 
 repository HEADにはTegaki本体やH3の別作業も進むため、最新HEADをManga実装SHAと読み替えないこと。
 
@@ -38,6 +41,8 @@ Primary flowはScene-firstである。CAST、人物粗領域、ラフ人物/白�
 - M3A / M3A.1: Visual Panel Frameとruntime framingを実装済み。
 - M3A.1: headless testとstructural pixel oracleはPASS。
 - M3A.1 Owner live-browser acceptance: PENDINGとして扱う。
+- 最新運用Card: M3A1-TF2 External AI Publication Traceability Closure（documentation/publication only）。
+- M3A1-TF2のPublicationはLOCAL。Owner push後にWeb GPT SOLが公開URLを再確認する。
 - Active LUNA implementation Card: なし。
 - M3B候補: Rough Manga / White-Dummy Character Guide Integration。Owner browser gate前に開始しない。
 - production output namespace移行: 未実施。`output/Tegaki`を維持する。

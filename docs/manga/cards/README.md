@@ -8,6 +8,10 @@
 
 ## Current
 
+Latest operational Card:
+[M3A1_TF2 — External AI Publication Traceability Closure](current/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md)
+Publication state: LOCAL; Owner push and SOL public-URL review remain pending.
+
 現在、実行中Cardはない。M3A.1のOwner live-browser acceptanceが未完了。
 再開時は [`WEBGPT_SOL_LUNA_HANDOFF.md`](../WEBGPT_SOL_LUNA_HANDOFF.md) をSOLが監査し、
 新しいCardを [`current/`](current/README.md) に1件だけ発行する。`completed/` のCardをコピーして再開指示にしない。

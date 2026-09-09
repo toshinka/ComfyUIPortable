@@ -3,6 +3,11 @@
 更新: 2026-09-09 JST
 Review Target Commit SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b` (M3A.1 implementation, published)
 Manga正本入口: [GITHUB_MANGA.txt](../../GITHUB_MANGA.txt)
+Current repository publication: db7611c120af35504425872e896dc0229216b8c9
+Latest operational Card: [M3A1-TF2 — External AI Publication Traceability Closure](cards/current/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md)
+Latest operational report: [M3A1-TF2 External AI Publication Traceability Report](reports/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_REPORT.md)
+Publication state: LOCAL; Owner push required; Web GPT verification is blocked until push.
+Current gates: Browser PENDING / Visual PENDING / Owner acceptance PENDING / M3B authorization NO.
 
 `GITHUB_ComfyUI.txt` はManga/H3を振り分けるCompatibility Routerへ変更した。
 今回のnamespace整理は文書/navigationのみで、Manga runtime・workflow・schema・outputを変更していない。

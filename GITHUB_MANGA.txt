@@ -11,7 +11,7 @@ Navigation Commit SHA: dfe944c6
 Strategic Planning Commit SHA: 261a3d7297455931d391e62f2d8a1335193d8d90
 Namespace/card migration publication: ef7daa502f501211cd6b06f378e9024dbff6f284
 SOL/LUNA handoff and Manga workflow namespace: 77de3c48
-Docs namespace consolidation publication: LOCAL PENDING OWNER COMMIT/PUSH
+Docs namespace consolidation publication: db7611c120af35504425872e896dc0229216b8c9
 
 Current state
 -------------
@@ -20,6 +20,37 @@ M0 through M2B.2 are complete. M3A.1 is PASS for headless tests and structural
 pixel oracles; Owner live-browser acceptance remains PENDING. Do not start M3B
 automatically. Web GPT SOL now leads bounded Card design; a fresh local LUNA chat
 implements one published Card at a time.
+
+Latest operational work:
+M3A1-TF2 — External AI Publication Traceability Closure.
+This is documentation/publication traceability only; it does not change Manga
+implementation, workflow, runtime, schema, Browser, or Owner acceptance.
+
+Latest operational handoff
+--------------------------
+Current repository publication:
+db7611c120af35504425872e896dc0229216b8c9
+
+Current Manga implementation Review Target:
+a7f0baaa89a2e315b0492573c9da19e50727928b
+
+Active implementation Card:
+NONE
+
+Latest operational Card:
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/current/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md
+
+Latest operational report:
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_REPORT.md
+
+Current Browser / Visual / Owner gate:
+Browser: PENDING
+Visual: PENDING
+Owner acceptance: PENDING
+M3B authorization: NO
+
+Next recommended Card:
+M3A.1 Browser Closure
 
 Current review slice (no active LUNA implementation Card):
 M3A.1 — Frame Runtime Truth, Gutter Semantics & Live Browser Closure.
