@@ -6,7 +6,7 @@ Updated: 2026-09-09 JST
 
 Current Stage
 -------------
-H1B.1 / Start + End Frame / Native FL2VA vertical slice
+H1C / Frame-Bridged Continuation vertical slice
 Groundwork: PASS (historical)
 Semantic Alignment: PASS (historical)
 Astra bounded UI review: COMPLETED (historical)
@@ -31,6 +31,15 @@ H1B.1 evidence: CURRENT REVIEW EVIDENCE
 H1B.1 UX P0 fix: IMPLEMENTED / VERIFIED SOURCE AND BOUNDED BROWSER UI
 H1B.1 UX P1 primary-action visibility: IMPLEMENTED / VERIFIED
 H1B.1 UX P2 status/history reuse: IMPLEMENTED / VERIFIED
+H1C implementation: IMPLEMENTED
+H1C implementation commit: a92237fe3eeb0f53e16c69d37763d388fedf2145
+H1C final-frame capture fix: IMPLEMENTED / VERIFIED
+H1C final-frame capture fix commit: ff577a0c
+H1C P2 Start+End Use settings: VERIFIED BROWSER UI
+H1C Continue bridge preparation: VERIFIED BROWSER UI
+H1C Native continuation: VERIFIED LOCAL GENERATION / VERIFIED BROWSER UI
+H1C evidence: CURRENT REVIEW EVIDENCE
+H1C publication: LOCAL MAIN / OWNER PUSH PENDING
 Owner acceptance: PENDING
 
 This entry is the starting point for external AI review of MiniMax H3 work. It
@@ -65,6 +74,11 @@ Read Order
 25. ComfyUIPortable/docs/h3/evidence/h1b1-ux/2026-09-09/README.md
 26. ComfyUIPortable/docs/h3/reports/H1B1_UX_P1_PRIMARY_ACTION_VISIBILITY_REPORT.md
 27. ComfyUIPortable/docs/h3/evidence/h1b1-ux-p1/2026-09-09/README.md
+28. ComfyUIPortable/docs/h3/reports/H1B1_UX_P2_STATUS_HISTORY_REUSE_REPORT.md
+29. ComfyUIPortable/docs/h3/evidence/h1b1-ux-p2/2026-09-09/README.md
+30. ComfyUIPortable/docs/h3/reports/H1C_FRAME_BRIDGED_CONTINUATION_REPORT.md
+31. ComfyUIPortable/docs/h3/evidence/h1c/2026-09-09/README.md
+32. ComfyUIPortable/docs/h3/evidence/h1c/2026-09-09/manifest.json
 
 Master Roadmap
 --------------
@@ -134,9 +148,9 @@ uploaded runtime inputs, and model weights remain ignored.
 
 Current Review Gate
 -------------------
-H1B.1 UX P2 Status Semantics / History Reuse
+H1C Frame-Bridged Continuation
 
-H1B.1 is implemented as the current bounded slice and has Start-only,
+H1B.1 remains implemented as the regression foundation and has Start-only,
 Start+End, End-only, and text-only browser completion results plus Native media
 evidence. The H1B.1 UX P0 fix closes the targeted Reference hidden-state bug
 and separates Active Job authority from History Preview selection. The P1
@@ -144,13 +158,16 @@ follow-up closes Astra SHOULD ③ for the primary 1280 x 720 layout target by
 placing Generate before Advanced and applying modest control-column
 compaction. The P2 follow-up closes Astra SHOULD ④ with state-specific copy and
 SHOULD ⑤ with a session-scoped History `Use settings` bridge that validates all
-inputs and existing Reference assets before atomic form application. P2 live
-Browser evidence covers the Text-only restore; Start/End restore is covered by
-logic smoke and remains a bounded Browser follow-up for a session with assets.
-Owner acceptance and license action remain separate; publication does not imply
-Owner acceptance. REF2VA, ordered generic multi-reference, Still, Continuation,
-Segment, Studio, Timeline, Storyboard, Cast, 3D, and Manga are not started by
-this slice.
+inputs and existing Reference assets before atomic form application.
+
+H1C now records a live Start+End `Use settings` restore, a same-origin Browser
+capture of the source output near-final decoded frame, upload through the
+existing `/api/references` route, atomic Start=bridge / End=empty preparation,
+and one real Native continuation. The H1C report distinguishes source/logic,
+Browser, local generation, publication, and Owner acceptance. Owner acceptance
+and license action remain separate; publication does not imply Owner
+acceptance. REF2VA, ordered generic multi-reference, Still, Segment, Studio,
+Timeline, Storyboard, Cast, 3D, and Manga are not started by this slice.
 
 Publication Note
 ----------------
@@ -168,4 +185,8 @@ recorded with the dated package. The H1B.1 UX P1 implementation is recorded in
 `247296b626f3e87e46e64c745180712497038f2a`; the P1 evidence/report commit is
 recorded with the dated package. H1B.1 UX P2 implementation is recorded in
 `8084c6a340aca2f6b94bbd2cfced831117810502`; the P2 evidence/report commit is
-recorded with the dated package.
+recorded with the dated package. H1C base implementation is recorded in
+`a92237fe3eeb0f53e16c69d37763d388fedf2145`; its bounded final-frame capture
+fix is recorded in `ff577a0c`. The H1C evidence/report/canonical-doc commit is
+recorded with the dated package. No push was performed; Owner acceptance
+remains `PENDING`.

@@ -1,0 +1,173 @@
+{
+  "schema": "tegaki.h3.h1c.evidence/v1",
+  "captured_at": "2026-09-09T20:25:41+09:00",
+  "status": [
+    "IMPLEMENTED",
+    "VERIFIED SOURCE/LOGIC",
+    "VERIFIED BROWSER UI",
+    "VERIFIED LOCAL GENERATION",
+    "OWNER ACCEPTANCE PENDING"
+  ],
+  "implementation": {
+    "base_commit": "a92237fe3eeb0f53e16c69d37763d388fedf2145",
+    "additional_fix_commit": "ff577a0c",
+    "canonical_launcher": "h3/run_h3.bat",
+    "skin_url": "http://127.0.0.1:8190/",
+    "native_backend_url": "http://127.0.0.1:8188/",
+    "evidence_docs_commit": "TO_BE_FILLED_AFTER_COMMIT"
+  },
+  "environment": {
+    "host_gpu": "NVIDIA GeForce RTX 4070",
+    "vram_total_bytes": 12878086144,
+    "ram_total_bytes": 68476002304,
+    "native_backend": "ComfyUI 0.30.0",
+    "python": "3.13.14 embedded",
+    "pytorch": "2.13.0+cu130",
+    "dynamic_vram": true,
+    "custom_nodes": "disabled",
+    "model_store": "h3/model_store/",
+    "shared_comfyui_models_used": false
+  },
+  "workflow": {
+    "path": "workflows/h3/H1B1_NATIVE_FL2VA_BASE.json",
+    "schema": "tegaki.h3.h1b1.native-fl2va/v1",
+    "local_workflow_sha256": "0072756BBB3A259E83D441054C838AC18CE8A40EACFEC63D0C11948001F685E9",
+    "reference_roles": ["start_frame", "end_frame"],
+    "resolution": [608, 352],
+    "duration_seconds": 5,
+    "frames": 124,
+    "fps": 24,
+    "steps": 20,
+    "model": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+    "text_encoder": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+    "video_vae": "minimax_h3_video_vae_fp16.safetensors",
+    "audio_vae": "minimax_h3_audio_vae_fp32.safetensors",
+    "changed": false
+  },
+  "browser": {
+    "capture_method": "Codex in-app Browser via CUA/Playwright",
+    "p2_start_end_use_settings": {
+      "source_job_id": "970a614fed4e43a88d5bbf9f22f0bd7a",
+      "result": "PASS",
+      "prompt_restored": true,
+      "resolution_restored": "608x352",
+      "duration_restored": "5",
+      "seed_restored": "24680",
+      "steps_restored": "20",
+      "start_reference_restored": "27749594c9704c38aa3da20e533c90d6",
+      "end_reference_restored": "163a4dccec434f6b84b7b86239d49782",
+      "feedback": "Settings loaded.",
+      "auto_generate": false
+    },
+    "h1c_preparation": {
+      "result": "PASS",
+      "source_video_url": "/api/jobs/970a614fed4e43a88d5bbf9f22f0bd7a/video",
+      "source_duration_seconds": 5.167,
+      "capture_current_time_seconds": 5.125,
+      "bridge_dimensions": [608, 352],
+      "bridge_reference_id": "8a13cf3913b640c5abbcafcdcb4ec627",
+      "start_after_continue": "bridge_reference",
+      "end_after_continue": null,
+      "generate_enabled_before_manual_submit": true,
+      "auto_generate": false,
+      "feedback": "Continuation prepared. Edit the prompt if needed, then Generate."
+    },
+    "continuation_submission": {
+      "result": "PASS",
+      "job_id": "ebe2a7b6621849bdb37833826c9235a0",
+      "route": "native_i2v",
+      "route_label": "Start Frame",
+      "bridge_reference_id": "8a13cf3913b640c5abbcafcdcb4ec627",
+      "end_reference": null,
+      "visible_result": "Start Frame · Completed in 138.2s · 608 x 352 · 5s"
+    }
+  },
+  "runs": {
+    "source": {
+      "job_id": "970a614fed4e43a88d5bbf9f22f0bd7a",
+      "route_label": "Start + End",
+      "start_reference_id": "27749594c9704c38aa3da20e533c90d6",
+      "end_reference_id": "163a4dccec434f6b84b7b86239d49782",
+      "elapsed_seconds": 157.28,
+      "output_path": "output/h3/video/h1b1_native_fl2va_00004_.mp4",
+      "output_bytes": 257294,
+      "output_sha256": "8D27B20B1570BC3E8DEB40E6ECC5A48444499C0F332BFAD6E2E20A982089F52D",
+      "ffprobe": {
+        "video_codec": "h264",
+        "audio_codec": "aac",
+        "width": 608,
+        "height": 352,
+        "fps": 24,
+        "video_frames": 124,
+        "duration_seconds": 5.167
+      },
+      "oom": false,
+      "retries": 0
+    },
+    "continuation": {
+      "job_id": "ebe2a7b6621849bdb37833826c9235a0",
+      "route_label": "Start Frame",
+      "bridge_reference_id": "8a13cf3913b640c5abbcafcdcb4ec627",
+      "end_reference_id": null,
+      "prompt": "The kite continues drifting into a brighter patch of evening sky, gentle motion, clean illustrative style.",
+      "seed": 24680,
+      "steps": 20,
+      "elapsed_seconds": 138.22,
+      "output_path": "output/h3/video/h1b1_native_fl2va_00006_.mp4",
+      "output_bytes": 388970,
+      "output_sha256": "31D121A5110CF473B2A8129A38612DBDD67D2FC0DAC9EBAADD58BDAAD78D1828",
+      "ffprobe": {
+        "video_codec": "h264",
+        "audio_codec": "aac",
+        "width": 608,
+        "height": 352,
+        "fps": 24,
+        "video_frames": 124,
+        "duration_seconds": 5.167
+      },
+      "oom": false,
+      "retries": 0
+    }
+  },
+  "telemetry": {
+    "monitor_interval_seconds": 10,
+    "peak_vram_used_mb": 11784.3,
+    "minimum_vram_free_mb": 497.2,
+    "peak_ram_mb": null,
+    "post_run_native_working_set_mb": 27767.8,
+    "native_pid": 30580,
+    "oom_count": 0,
+    "retry_count": 0,
+    "note": "Peak RAM was not captured continuously; the working-set value is a post-run sample."
+  },
+  "provenance": {
+    "original_start_test_png_sha256": "43D29D07B5D0B4A2C4650A2C840AE6CF07980714008FDDB1D1008B0E08CF030E",
+    "original_end_test_png_sha256": "C1A21466B5858CCDF4E4A04F1C9AA91D0056C493C98F7E33415C69CED28ADB21",
+    "bridge_png_path": "output/h3/inputs/8a13cf3913b640c5abbcafcdcb4ec627.png",
+    "bridge_png_bytes": 346179,
+    "bridge_png_sha256": "636FA8552329D0B0F73D3206E0B455EF0FEB6A6F344372ED3CF342250F68EA2D",
+    "source_near_final_frame": "docs/h3/evidence/h1c/2026-09-09/source_last.png",
+    "bridge_near_final_mean_abs_rgb_difference": 1.4469930599,
+    "byte_identity_claim": false,
+    "provenance_claim": "Browser source job URL + near-final capture metrics + new Reference id + stored bridge hash + visual comparison"
+  },
+  "evidence_files": [
+    {"path": "source_first.png", "bytes": 180858, "sha256": "0893CBACAD5330F101CA6BFE1DF1D8749672B7228F0F47E98D35DD21757A3D07"},
+    {"path": "source_mid.png", "bytes": 228645, "sha256": "BA5A7F4FE56AEE1AE9FAAD6E0CC603DD8D6BD00C5E24D2899E1776DB5F88D35B"},
+    {"path": "source_last.png", "bytes": 192421, "sha256": "11B0DDD118BD60C0FED961F5FCD7C6A0224445A205A80010D53DB08BFE7F63EB"},
+    {"path": "bridge_start_final.png", "bytes": 346179, "sha256": "636FA8552329D0B0F73D3206E0B455EF0FEB6A6F344372ED3CF342250F68EA2D"},
+    {"path": "continuation_final_first.png", "bytes": 176375, "sha256": "5FC2251BF8956A50F1098F9093919DA03547BE4ED55EA5CD1D8273731BC1222E"},
+    {"path": "continuation_final_mid.png", "bytes": 150627, "sha256": "B80B30C9F91D667D7F2355BE941F07EC3349AB7D16443E8542ACE175C41D95A0"},
+    {"path": "continuation_final_last.png", "bytes": 149654, "sha256": "BF3D9E95B89279BAF2A1197329A74DD3CD8C9C185CF5314C70AED126B812EE59"},
+    {"path": "contact_sheet.png", "bytes": 1100392, "sha256": "9985BF94BB3DBF381413E0DD5BD492021AC215F838F2F9B25C35CCB74D6FE691"}
+  ],
+  "scope": {
+    "workflow_changes": false,
+    "model_changes": false,
+    "dependency_changes": false,
+    "shared_comfyui_changes": false,
+    "manga_changes": false,
+    "owner_acceptance": "PENDING",
+    "github_push": false
+  }
+}
