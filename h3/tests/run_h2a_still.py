@@ -20,6 +20,10 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 
+PORTABLE_ROOT = Path(__file__).resolve().parents[2]
+if str(PORTABLE_ROOT) not in sys.path:
+    sys.path.insert(0, str(PORTABLE_ROOT))
+
 try:
     import psutil
 except ImportError:  # pragma: no cover - the runner records unavailable telemetry
@@ -36,8 +40,6 @@ from h3.adapters.native_still import (
     workflow_metadata,
 )
 
-
-PORTABLE_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PROMPT = (
     "A small orange robot stands alone on a pale blue studio background, "
     "clean illustrative anime style, centered composition, soft daylight."
