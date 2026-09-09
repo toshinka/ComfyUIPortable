@@ -1,10 +1,11 @@
 # MiniMax H3 Document Hub
 
-更新: 2026-09-09 JST
+更新: 2026-09-10 JST
 
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
 将来の実装棚とReference Implementation evidenceを一か所から辿るための
-document hub です。現在は **H1C / Frame-Bridged Continuation** であり、
+document hub です。現在は **H2A / H3 Still Native Feasibility** であり、
+H1C / Frame-Bridged Continuation は回帰基盤として保持し、
 H1B.1 / Start + End Frame and Native FL2VA vertical slice + UX P0/P1/P2
 Fixes は履歴と回帰対象として保持します。H0/H0.1/H1A/H1B の model
 isolation、generation smoke、T2V skin、single-Start-Frame I2V も保持します。
@@ -12,7 +13,10 @@ H1A implementation commit `925596b9d7fbd731290fe9869ea34a0006249130` is
 published on `main`. H1B, H1B.1, and the H1B.1 UX P0/P1/P2 fixes are implemented and
 locally/browser verified within their recorded bounds; Owner acceptance remains
 pending. H1C evidence/report/canonical docs are recorded in commit `4df2f2a5f29957a9f4ba429ddd8796d13de5de3b`
-and are published on GitHub `main`; Owner acceptance remains pending.
+and are published on GitHub `main`; Owner acceptance remains pending. H2A
+still feasibility is implemented and locally verified through a bounded
+Native route; no production Still UI was added and H2A publication remains
+pending Owner push.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
@@ -54,6 +58,9 @@ and are published on GitHub `main`; Owner acceptance remains pending.
 | `docs/h3/reports/H1C_FRAME_BRIDGED_CONTINUATION_REPORT.md` | H1C Browser bridge, Native continuation, evidence, and closeout boundary | CURRENT H1C REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H1C_FRAME_BRIDGED_CONTINUATION_REPORT.md` |
 | `docs/h3/evidence/h1c/2026-09-09/README.md` | H1C source/bridge/continuation Browser and media evidence | CURRENT H1C EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1c/2026-09-09/README.md` |
 | `docs/h3/evidence/h1c/2026-09-09/manifest.json` | Machine-readable H1C runtime/bridge/output manifest | CURRENT H1C EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1c/2026-09-09/manifest.json` |
+| `docs/h3/reports/H2A_H3_STILL_NATIVE_FEASIBILITY_REPORT.md` | H2A bounded Native still feasibility route, telemetry, visual review, and closeout boundary | CURRENT H2A REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H2A_H3_STILL_NATIVE_FEASIBILITY_REPORT.md` |
+| `docs/h3/evidence/h2a-still/2026-09-09/README.md` | H2A Native still output and runtime evidence | CURRENT H2A EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2a-still/2026-09-09/README.md` |
+| `docs/h3/evidence/h2a-still/2026-09-09/manifest.json` | Machine-readable H2A still/runtime/output manifest | CURRENT H2A EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2a-still/2026-09-09/manifest.json` |
 
 ## External master roadmap
 

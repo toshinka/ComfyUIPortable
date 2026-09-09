@@ -2,11 +2,12 @@ ComfyUIPortable — MiniMax H3 External AI Entry
 Repository: https://github.com/toshinka/tegaki
 Branch: main
 Canonical path: ComfyUIPortable/GITHUB_H3.txt
-Updated: 2026-09-09 JST
+Updated: 2026-09-10 JST
 
 Current Stage
 -------------
-H1C / Frame-Bridged Continuation vertical slice
+H2A / H3 Still Native Feasibility vertical slice
+H1C / Frame-Bridged Continuation: IMPLEMENTED / VERIFIED (regression foundation)
 Groundwork: PASS (historical)
 Semantic Alignment: PASS (historical)
 Astra bounded UI review: COMPLETED (historical)
@@ -41,6 +42,13 @@ H1C Native continuation: VERIFIED LOCAL GENERATION / VERIFIED BROWSER UI
 H1C evidence: CURRENT REVIEW EVIDENCE
 H1C evidence/docs commit: 4df2f2a5f29957a9f4ba429ddd8796d13de5de3b
 H1C publication: PUBLISHED ON MAIN
+H2A implementation: IMPLEMENTED
+H2A implementation commits: 6e81ce95 / 0b8615f9
+H2A selected route: short temporal packet → selected frame
+H2A local still generation: VERIFIED LOCAL GENERATION
+H2A Browser UI: N/A (feasibility path intentionally has no new Still UI)
+H2A evidence: CURRENT FEASIBILITY EVIDENCE
+H2A publication: LOCAL MAIN / OWNER PUSH PENDING
 Owner acceptance: PENDING
 
 This entry is the starting point for external AI review of MiniMax H3 work. It

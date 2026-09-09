@@ -1,0 +1,82 @@
+{
+  "card": "H2A",
+  "title": "H3 Still Native Feasibility",
+  "evidence_date": "2026-09-09",
+  "generated_at": "2026-09-10T06:01:19.8514411+09:00",
+  "status": "PASS",
+  "route": "native_still",
+  "workflow": "workflows/h3/H2A_NATIVE_STILL_BASE.json",
+  "workflow_schema": "tegaki.h3.h2a.native-still/v1",
+  "browser_ui": "N/A",
+  "publication": "LOCAL MAIN / OWNER PUSH PENDING",
+  "owner_acceptance": "PENDING",
+  "input": {
+    "prompt": "A small orange robot stands alone on a pale blue studio background, clean illustrative anime style, centered composition, soft daylight.",
+    "resolution": "608x352",
+    "packet_frames": 5,
+    "selected_frame_index": 0,
+    "seed": 20260910,
+    "steps": 20,
+    "sampler": "res_multistep",
+    "scheduler": "simple",
+    "fps": 24
+  },
+  "runtime": {
+    "gpu": "NVIDIA GeForce RTX 4070",
+    "vram_total_mib": 12282,
+    "system_ram_total_bytes": 68476002304,
+    "native_port": 8189,
+    "native_process_id": 51096,
+    "comfyui_version": "0.30.0",
+    "python": "3.13.14 embedded",
+    "pytorch": "2.13.0+cu130",
+    "custom_nodes": "disabled",
+    "model_store": "h3/model_store/",
+    "model": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+    "text_encoder": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+    "video_vae": "minimax_h3_video_vae_fp16.safetensors",
+    "audio_vae": null
+  },
+  "telemetry": {
+    "sample_count": 29,
+    "peak_observed_vram_used_mib": 9736,
+    "minimum_observed_vram_free_mib": 2277,
+    "peak_native_working_set_bytes": 38185992192,
+    "oom_count": 0,
+    "retry_count": 0,
+    "measurement": "nvidia-smi and psutil samples during one accepted job; RAM is Native process working set, not continuous system-RAM peak"
+  },
+  "job": {
+    "prompt_id": "9f07fad0-6b9b-4523-8044-de2df4674251",
+    "runner_elapsed_seconds": 54.21,
+    "native_prompt_execution_seconds": 53.04,
+    "pre_submit_validation_failures": 1,
+    "pre_submit_failure_queued_job": false
+  },
+  "output": {
+    "source_path": "output/h3/still/h2a_native_still_00001_.png",
+    "evidence_path": "docs/h3/evidence/h2a-still/2026-09-09/accepted_still.png",
+    "format": "PNG",
+    "dimensions": [608, 352],
+    "bytes": 172927,
+    "sha256": "86165612E0DFDE15219AB90343DE7991BEEB2641C41BAD2495F7CE9057867A99"
+  },
+  "source_anchor_test": "DEFER",
+  "verification": {
+    "h1c_continuation": "38 PASS",
+    "h1b1_p2": "44 PASS",
+    "h1b_ui": "36 PASS",
+    "python_unittest": "36 tests OK",
+    "javascript_syntax": "PASS",
+    "compileall": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "scope_audit": {
+    "workflow_changes": "one H3-only experimental workflow",
+    "model_changes": "NONE",
+    "dependency_changes": "NONE",
+    "shared_comfyui_changes": "NONE",
+    "manga_changes": "NONE",
+    "production_still_ui": "NONE"
+  }
+}
