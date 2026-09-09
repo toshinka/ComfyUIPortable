@@ -1,0 +1,123 @@
+{
+  "schema": "tegaki.h3.h2a.native-still/v1",
+  "source": {
+    "basis_workflow": "workflows/h3/H1A_NATIVE_T2V_BASE.json",
+    "basis_workflow_sha256": "4783A19B767514D2B901CC508693524D9FA73CAFC7C6FFA20F94167CF0406552",
+    "official_workflow_url": "https://github.com/Comfy-Org/workflow_templates/blob/main/templates/video_minimax_h3_t2v.json",
+    "official_workflow_commit": "7c25a3c586484601f94b7e8f8b14c23b2c95a096",
+    "adaptation": "H2A feasibility-only adaptation of the verified Native H3 AV path: minimum five-frame temporal packet, video VAE decode, and one selected frame. No reference conditioning, audio decode, video container, custom node, or production UI is introduced."
+  },
+  "baseline": {
+    "route": "native_still",
+    "model": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+    "text_encoder": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+    "video_vae": "minimax_h3_video_vae_fp16.safetensors",
+    "audio_vae": null,
+    "width": 608,
+    "height": 352,
+    "packet_frames": 5,
+    "selected_frame_index": 0,
+    "fps": 24,
+    "steps": 20,
+    "sampler": "res_multistep",
+    "scheduler": "simple",
+    "turbo_lora": false,
+    "output_prefix": "still/h2a_native_still"
+  },
+  "semantic_nodes": {
+    "save_image": {"id": "92", "class_type": "SaveImage"},
+    "video_vae": {"id": "119", "class_type": "VAELoader"},
+    "video_decode": {"id": "122", "class_type": "VAEDecode"},
+    "sampler_select": {"id": "123", "class_type": "KSamplerSelect"},
+    "scheduler": {"id": "124", "class_type": "BasicScheduler"},
+    "sampler": {"id": "125", "class_type": "SamplerCustomAdvanced"},
+    "guider": {"id": "126", "class_type": "BasicGuider"},
+    "model": {"id": "127", "class_type": "UNETLoader"},
+    "text_encoder": {"id": "128", "class_type": "CLIPLoader"},
+    "noise": {"id": "129", "class_type": "RandomNoise"},
+    "conditioning_latent": {"id": "131", "class_type": "MiniMaxH3ImageToVideo"},
+    "select_frame": {"id": "132", "class_type": "ImageFromBatch"}
+  },
+  "prompt": {
+    "92": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": ["132", 0],
+        "filename_prefix": "still/h2a_native_still"
+      }
+    },
+    "119": {
+      "class_type": "VAELoader",
+      "inputs": {"vae_name": "minimax_h3_video_vae_fp16.safetensors"}
+    },
+    "122": {
+      "class_type": "VAEDecode",
+      "inputs": {"samples": ["125", 0], "vae": ["119", 0]}
+    },
+    "123": {
+      "class_type": "KSamplerSelect",
+      "inputs": {"sampler_name": "res_multistep"}
+    },
+    "124": {
+      "class_type": "BasicScheduler",
+      "inputs": {
+        "model": ["127", 0],
+        "scheduler": "simple",
+        "steps": 20,
+        "denoise": 1
+      }
+    },
+    "125": {
+      "class_type": "SamplerCustomAdvanced",
+      "inputs": {
+        "noise": ["129", 0],
+        "guider": ["126", 0],
+        "sampler": ["123", 0],
+        "sigmas": ["124", 0],
+        "latent_image": ["131", 1]
+      }
+    },
+    "126": {
+      "class_type": "BasicGuider",
+      "inputs": {"model": ["127", 0], "conditioning": ["131", 0]}
+    },
+    "127": {
+      "class_type": "UNETLoader",
+      "inputs": {
+        "unet_name": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+        "weight_dtype": "default"
+      }
+    },
+    "128": {
+      "class_type": "CLIPLoader",
+      "inputs": {
+        "clip_name": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+        "type": "minimax",
+        "device": "default"
+      }
+    },
+    "129": {
+      "class_type": "RandomNoise",
+      "inputs": {"noise_seed": 20260910, "control_after_generate": "fixed"}
+    },
+    "131": {
+      "class_type": "MiniMaxH3ImageToVideo",
+      "inputs": {
+        "clip": ["128", 0],
+        "vae": ["119", 0],
+        "prompt": "",
+        "width": 608,
+        "height": 352,
+        "length": 5
+      }
+    },
+    "132": {
+      "class_type": "ImageFromBatch",
+      "inputs": {
+        "image": ["122", 0],
+        "batch_index": 0,
+        "length": 1
+      }
+    }
+  }
+}
