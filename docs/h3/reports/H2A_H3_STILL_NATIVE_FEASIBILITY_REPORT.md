@@ -37,11 +37,11 @@ of prompts and resolutions.
 
 ## 1. Route comparison and selection
 
-| Route | Required model / node path | Custom node | Output semantics | 12GB expectation | H2A decision |
-|---|---|---|---|---|---|
-| A. Native single-image decode | Existing H3 diffusion model, Qwen3-VL text encoder, video VAE; would still need a valid H3 temporal latent before decode | None if it collapsed into B | One image only if a valid temporal packet already exists; no current direct single-image latent path | Unknown as a distinct route | Rejected as not separately exposed by current Native nodes |
-| B. Short temporal packet → selected frame | Existing `MiniMaxH3ImageToVideo` → `SamplerCustomAdvanced` → `VAEDecode` → `ImageFromBatch` → `SaveImage`; packet length `5` | None | One selected decoded frame; not a native T2I semantic | Tested successfully with peak `9736 MiB` used and minimum `2277 MiB` free | Accepted and tested |
-| C. Experimental `T=1` | Would require a new temporal contract around the H3 AV latent/model path | None in current graph; a workaround would broaden runtime or require external code | Experimental one-frame latent | Not testable under the current node contract | Rejected / deferred |
+| Route | Required model / node path | Custom node | Output semantics | Known status | 12GB expectation | H2A decision |
+|---|---|---|---|---|---|---|
+| A. Native single-image decode | Existing H3 diffusion model, Qwen3-VL text encoder, video VAE; would still need a valid H3 temporal latent before decode | None if it collapsed into B | One image only if a valid temporal packet already exists; no current direct single-image latent path | Not exposed by the current Native node surface | Unknown as a distinct route | Rejected as not separately exposed |
+| B. Short temporal packet → selected frame | Existing `MiniMaxH3ImageToVideo` → `SamplerCustomAdvanced` → `VAEDecode` → `ImageFromBatch` → `SaveImage`; packet length `5` | None | One selected decoded frame; not a native T2I semantic | Feasibility-only experimental adaptation; locally generated successfully | Tested successfully with peak `9736 MiB` used and minimum `2277 MiB` free | Accepted and tested |
+| C. Experimental `T=1` | Would require a new temporal contract around the H3 AV latent/model path | None in current graph; a workaround would broaden runtime or require external code | Experimental one-frame latent | Unsupported research path under the current node contract | Not testable under the current node contract | Rejected / deferred |
 
 The decisive source constraint is in the current native H3 node implementation:
 `EmptyMiniMaxH3LatentAV` and `MiniMaxH3ImageToVideo` accept a minimum length of
