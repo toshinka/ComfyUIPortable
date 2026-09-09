@@ -429,3 +429,191 @@ export function checkFrameOverlap(frames = []) {
     };
 }
 
+/**
+ * Generate the next unique Page-owned Guide id.
+ *
+ * Guide ids are independent from Scene, Frame, CAST, and Character Instance ids.
+ */
+export function getNextGuideId(guides = []) {
+    let nextNum = 1;
+    const existingNums = guides.map((guide) => {
+        const match = guide?.guide_id && String(guide.guide_id).match(/guide_(\d+)/);
+        return match ? parseInt(match[1], 10) : 0;
+    });
+    if (existingNums.length > 0) nextNum = Math.max(...existingNums, 0) + 1;
+    let candidate = `guide_${nextNum}`;
+    while (guides.some((guide) => guide?.guide_id === candidate)) {
+        nextNum += 1;
+        candidate = `guide_${nextNum}`;
+    }
+    return candidate;
+}
+
+/** Generate the next unique figure id within one Guide. */
+export function getNextFigureId(figureRegions = []) {
+    let nextNum = 1;
+    const existingNums = figureRegions.map((figure) => {
+        const match = figure?.figure_id && String(figure.figure_id).match(/figure_(\d+)/);
+        return match ? parseInt(match[1], 10) : 0;
+    });
+    if (existingNums.length > 0) nextNum = Math.max(...existingNums, 0) + 1;
+    let candidate = `figure_${nextNum}`;
+    while (figureRegions.some((figure) => figure?.figure_id === candidate)) {
+        nextNum += 1;
+        candidate = `figure_${nextNum}`;
+    }
+    return candidate;
+}
+
+function roundGuideNumber(value) {
+    return parseFloat(Number(value).toFixed(4));
+}
+
+/**
+ * Calculate a page-normalized contain-fit placement for a Guide asset.
+ * The image is centered and never cropped. This is a derived placement only;
+ * figure coordinates remain local to the Guide asset.
+ */
+export function calculateContainPlacement(imageWidth, imageHeight, pageWidth, pageHeight) {
+    const iw = Number(imageWidth);
+    const ih = Number(imageHeight);
+    const pw = Number(pageWidth);
+    const ph = Number(pageHeight);
+    if (![iw, ih, pw, ph].every((value) => Number.isFinite(value) && value > 0)) {
+        return { shape_type: "rect", x: 0, y: 0, w: 1, h: 1 };
+    }
+
+    const imageAspect = iw / ih;
+    const pageAspect = pw / ph;
+    let w = 1;
+    let h = pageAspect / imageAspect;
+    if (imageAspect < pageAspect) {
+        w = imageAspect / pageAspect;
+        h = 1;
+    }
+    return {
+        shape_type: "rect",
+        x: roundGuideNumber((1 - w) / 2),
+        y: roundGuideNumber((1 - h) / 2),
+        w: roundGuideNumber(w),
+        h: roundGuideNumber(h)
+    };
+}
+
+/** Clamp one Guide-local figure rectangle to normalized [0, 1] bounds. */
+export function clampGuideFigureArea(area, minSize = 0.04) {
+    const source = area || { x: 0, y: 0, w: minSize, h: minSize };
+    const safeMin = Math.max(0.001, Math.min(1, Number(minSize) || 0.04));
+    const w = Math.max(safeMin, Math.min(1, Number(source.w) || safeMin));
+    const h = Math.max(safeMin, Math.min(1, Number(source.h) || safeMin));
+    const x = Math.max(0, Math.min(1 - w, Number(source.x) || 0));
+    const y = Math.max(0, Math.min(1 - h, Number(source.y) || 0));
+    return {
+        shape_type: source.shape_type || "rect",
+        x: roundGuideNumber(x),
+        y: roundGuideNumber(y),
+        w: roundGuideNumber(w),
+        h: roundGuideNumber(h)
+    };
+}
+
+/** Move a Guide-local figure rectangle without changing its size. */
+export function clampGuideFigureDrag(startArea, dx, dy) {
+    const start = clampGuideFigureArea(startArea);
+    return {
+        x: roundGuideNumber(Math.max(0, Math.min(1 - start.w, start.x + Number(dx || 0)))),
+        y: roundGuideNumber(Math.max(0, Math.min(1 - start.h, start.y + Number(dy || 0))))
+    };
+}
+
+/** Resize a Guide-local figure rectangle with the same four-corner model as Frames. */
+export function resizeGuideFigure(startArea, handle, dx, dy, minSize = 0.04) {
+    const start = clampGuideFigureArea(startArea, minSize);
+    const maxRight = start.x + start.w;
+    const maxBottom = start.y + start.h;
+    const safeMin = Math.max(0.001, Math.min(1, Number(minSize) || 0.04));
+    let x = start.x;
+    let y = start.y;
+    let w = start.w;
+    let h = start.h;
+    const ddx = Number(dx || 0);
+    const ddy = Number(dy || 0);
+
+    if (handle === "se") {
+        w = Math.max(safeMin, Math.min(1 - start.x, start.w + ddx));
+        h = Math.max(safeMin, Math.min(1 - start.y, start.h + ddy));
+    } else if (handle === "nw") {
+        x = Math.max(0, Math.min(maxRight - safeMin, start.x + ddx));
+        y = Math.max(0, Math.min(maxBottom - safeMin, start.y + ddy));
+        w = maxRight - x;
+        h = maxBottom - y;
+    } else if (handle === "ne") {
+        y = Math.max(0, Math.min(maxBottom - safeMin, start.y + ddy));
+        w = Math.max(safeMin, Math.min(1 - start.x, start.w + ddx));
+        h = maxBottom - y;
+    } else if (handle === "sw") {
+        x = Math.max(0, Math.min(maxRight - safeMin, start.x + ddx));
+        w = maxRight - x;
+        h = Math.max(safeMin, Math.min(1 - start.y, start.h + ddy));
+    }
+
+    return clampGuideFigureArea({ shape_type: "rect", x, y, w, h }, safeMin);
+}
+
+/** Provide a deterministic first/second figure placement for manual authoring. */
+export function calculateNewGuideFigureArea(existingFigures = []) {
+    const count = existingFigures.length;
+    const x = count === 0 ? 0.08 : (count === 1 ? 0.56 : 0.08 + ((count % 3) * 0.28));
+    const y = count < 2 ? 0.12 : 0.54;
+    return clampGuideFigureArea({ shape_type: "rect", x, y, w: 0.34, h: 0.68 });
+}
+
+/** Create a manually authored, initially unassigned Guide figure. */
+export function createGuideFigure(figureRegions = []) {
+    return {
+        figure_id: getNextFigureId(figureRegions),
+        area: calculateNewGuideFigureArea(figureRegions),
+        instance_id: null,
+        metadata: {}
+    };
+}
+
+/** Associate one figure with at most one Character Instance, without mutation. */
+export function associateGuideFigure(guide, figureId, instanceId) {
+    if (!guide || !Array.isArray(guide.figure_regions)) {
+        return { ok: false, reason: "NO_GUIDE", error: "Guide figure list is missing." };
+    }
+    if (!instanceId) {
+        return { ok: true, guide: { ...guide, figure_regions: guide.figure_regions.map((figure) =>
+            figure.figure_id === figureId ? { ...figure, instance_id: null } : { ...figure }
+        ) } };
+    }
+    const duplicate = guide.figure_regions.find((figure) =>
+        figure.figure_id !== figureId && figure.instance_id === instanceId
+    );
+    if (duplicate) {
+        return {
+            ok: false,
+            reason: "DUPLICATE_INSTANCE_ASSOCIATION",
+            error: `Character Instance '${instanceId}' is already associated with ${duplicate.figure_id}.`
+        };
+    }
+    const found = guide.figure_regions.some((figure) => figure.figure_id === figureId);
+    if (!found) {
+        return { ok: false, reason: "FIGURE_NOT_FOUND", error: `Figure '${figureId}' was not found.` };
+    }
+    return { ok: true, guide: { ...guide, figure_regions: guide.figure_regions.map((figure) =>
+        figure.figure_id === figureId ? { ...figure, instance_id: instanceId } : { ...figure }
+    ) } };
+}
+
+/** Unassign an Instance while preserving the Guide figure itself. */
+export function unassignGuideInstance(guide, instanceId) {
+    if (!guide || !Array.isArray(guide.figure_regions)) return guide;
+    return {
+        ...guide,
+        figure_regions: guide.figure_regions.map((figure) =>
+            figure.instance_id === instanceId ? { ...figure, instance_id: null } : { ...figure }
+        )
+    };
+}

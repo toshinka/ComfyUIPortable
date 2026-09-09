@@ -12,6 +12,7 @@
  * Strict SSOT: TEGAKI_AUTHORING_DOCUMENT in document_json widget.
  */
 import { app } from "../../../scripts/app.js";
+import { api } from "../../../scripts/api.js";
 import {
     chooseCastForPlacement,
     getNextInstanceId,
@@ -26,7 +27,14 @@ import {
     copyFramesFromScenes,
     clampFrameDrag,
     resizeFrame,
-    checkFrameOverlap
+    checkFrameOverlap,
+    getNextGuideId,
+    calculateContainPlacement,
+    clampGuideFigureDrag,
+    resizeGuideFigure,
+    createGuideFigure,
+    associateGuideFigure,
+    unassignGuideInstance
 } from "./minimum_hand_authoring_ops.js";
 
 const SCENE_PALETTE = [
@@ -174,21 +182,24 @@ app.registerExtension({
             }
 
             let doc = createDefaultDoc();
-            let activeEditLayer = "scene"; // 'scene' | 'frame' | 'character'
+            let activeEditLayer = "scene"; // 'scene' | 'frame' | 'character' | 'guide'
             let selectedSceneIndex = 0;
             let selectedFrameIndex = -1;
             let selectedInstanceId = null;
+            let selectedGuideIndex = -1;
+            let selectedFigureIndex = -1;
             let selectedCastId = null;
 
             // Drag state
             let isDragging = false;
-            let dragTarget = "none"; // 'scene' | 'character' | 'frame'
+            let dragTarget = "none"; // 'scene' | 'character' | 'frame' | 'guide'
             let dragMode = "none";   // 'move' | 'nw' | 'ne' | 'se' | 'sw'
             let dragStartX = 0;
             let dragStartY = 0;
             let dragStartSceneArea = null;
             let dragStartInstArea = null;
             let dragStartFrameArea = null;
+            let dragStartGuideFigureArea = null;
             let dragStartChildAreas = []; // [{ id, area }]
 
             function getPage() {
@@ -220,6 +231,12 @@ app.registerExtension({
                 const p = getPage();
                 if (!p.character_instances) p.character_instances = [];
                 return p.character_instances;
+            }
+
+            function getGuides() {
+                const p = getPage();
+                if (!p.guides) p.guides = [];
+                return p.guides;
             }
 
             function getCastColor(castId) {
@@ -359,7 +376,8 @@ app.registerExtension({
             const layers = [
                 { id: "scene", label: "Scene Regions", desc: "Edit semantic story regions & regional prompts" },
                 { id: "frame", label: "Visual Panel Frames", desc: "Edit visible manga comic panel borders (overlay / layout)" },
-                { id: "character", label: "Character Staging", desc: "Edit character instance placement & acting within scenes" }
+                { id: "character", label: "Character Staging", desc: "Edit character instance placement & acting within scenes" },
+                { id: "guide", label: "Rough Guide", desc: "Upload and manually mark a page-owned rough manga guide" }
             ];
 
             layers.forEach(l => {
@@ -502,6 +520,8 @@ app.registerExtension({
                 );
                 selectedSceneIndex = 0;
                 selectedInstanceId = null;
+                selectedGuideIndex = -1;
+                selectedFigureIndex = -1;
                 selectedCastId = null;
                 syncToWidgets();
                 renderAll();
@@ -693,6 +713,198 @@ app.registerExtension({
             frameInspector.appendChild(frameThicknessRow);
             container.appendChild(frameInspector);
 
+            // Page-owned Rough Guide layer. This is intentionally separate from
+            // Scene, Visual Panel Frame, CAST, and Character Instance semantics.
+            const guideToolbar = document.createElement("div");
+            guideToolbar.style.cssText = "display: none; gap: 6px; align-items: center; flex-wrap: wrap;";
+
+            const guideFileInput = document.createElement("input");
+            guideFileInput.type = "file";
+            guideFileInput.accept = ".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp";
+            guideFileInput.style.display = "none";
+            document.body.appendChild(guideFileInput);
+            let pendingGuideUploadMode = "add";
+
+            function openGuideFilePicker(mode) {
+                pendingGuideUploadMode = mode;
+                guideFileInput.value = "";
+                guideFileInput.click();
+            }
+
+            function readGuideImageDimensions(file) {
+                return new Promise((resolve) => {
+                    const objectUrl = URL.createObjectURL(file);
+                    const image = new Image();
+                    image.onload = () => {
+                        const dimensions = { width: image.naturalWidth || image.width, height: image.naturalHeight || image.height };
+                        URL.revokeObjectURL(objectUrl);
+                        resolve(dimensions.width > 0 && dimensions.height > 0 ? dimensions : null);
+                    };
+                    image.onerror = () => {
+                        URL.revokeObjectURL(objectUrl);
+                        resolve(null);
+                    };
+                    image.src = objectUrl;
+                });
+            }
+
+            async function uploadGuideAsset(file) {
+                const fileName = String(file?.name || "");
+                const extension = fileName.includes(".") ? fileName.slice(fileName.lastIndexOf(".")).toLowerCase() : "";
+                if (![".png", ".jpg", ".jpeg", ".webp"].includes(extension)) {
+                    throw new Error("Rough Guide accepts PNG, JPG, JPEG, or WEBP files only.");
+                }
+
+                const body = new FormData();
+                body.append("image", file, file.name);
+                body.append("subfolder", "tegaki_manga_guides");
+                const response = await api.fetchApi("/upload/image", { method: "POST", body });
+                if (!response.ok) {
+                    throw new Error(`Guide upload failed (${response.status}).`);
+                }
+                const payload = await response.json();
+                const name = String(payload?.name || "").replaceAll("\\", "/");
+                const subfolder = String(payload?.subfolder || "").replaceAll("\\", "/").replace(/^\/+|\/+$/g, "");
+                const reference = [subfolder, name].filter(Boolean).join("/");
+                if (!reference || reference.startsWith("/") || reference.includes("..") || reference.includes("//")) {
+                    throw new Error("Upload returned a non-canonical asset reference; refusing to save it.");
+                }
+                return {
+                    reference,
+                    dimensions: await readGuideImageDimensions(file)
+                };
+            }
+
+            guideFileInput.onchange = async () => {
+                const file = guideFileInput.files?.[0];
+                if (!file) return;
+                try {
+                    const uploaded = await uploadGuideAsset(file);
+                    const page = getPage();
+                    const guides = getGuides();
+                    const dimensions = uploaded.dimensions || { width: page.width_px, height: page.height_px };
+                    const placement = calculateContainPlacement(
+                        dimensions.width,
+                        dimensions.height,
+                        page.width_px,
+                        page.height_px
+                    );
+                    if (pendingGuideUploadMode === "replace" && guides[selectedGuideIndex]) {
+                        const guide = guides[selectedGuideIndex];
+                        guide.guide_type = "rough_manga";
+                        guide.asset_reference = uploaded.reference;
+                        guide.placement = placement;
+                        guide.enabled = guide.enabled !== false;
+                        guide.figure_regions = Array.isArray(guide.figure_regions) ? guide.figure_regions : [];
+                        guide.metadata = {
+                            ...(guide.metadata || {}),
+                            fit_mode: "contain",
+                            source_dimensions: { width_px: dimensions.width, height_px: dimensions.height }
+                        };
+                    } else {
+                        const guide = {
+                            guide_id: getNextGuideId(guides),
+                            guide_type: "rough_manga",
+                            asset_reference: uploaded.reference,
+                            placement,
+                            enabled: true,
+                            figure_regions: [],
+                            metadata: {
+                                fit_mode: "contain",
+                                source_dimensions: { width_px: dimensions.width, height_px: dimensions.height }
+                            }
+                        };
+                        guides.push(guide);
+                        selectedGuideIndex = guides.length - 1;
+                    }
+                    selectedFigureIndex = -1;
+                    syncToWidgets();
+                    renderAll();
+                } catch (error) {
+                    console.error("[TegakiMinimumHandSceneEditor] Rough Guide upload failed", error);
+                    alert(error?.message || "Rough Guide upload failed.");
+                }
+            };
+
+            const btnAddGuide = createButton("+ Add Guide", "Upload a rough manga guide through ComfyUI's standard image upload boundary", () => {
+                openGuideFilePicker("add");
+            }, "#1e3a5f");
+            const btnReplaceGuide = createButton("Replace Asset", "Replace the selected Guide asset and recompute contain placement", () => {
+                if (selectedGuideIndex < 0 || !getGuides()[selectedGuideIndex]) return;
+                openGuideFilePicker("replace");
+            });
+            const btnToggleGuide = createButton("Disable Guide", "Toggle whether the selected Guide is enabled", () => {
+                const guide = getGuides()[selectedGuideIndex];
+                if (!guide) return;
+                guide.enabled = guide.enabled === false;
+                syncToWidgets();
+                renderAll();
+            });
+            const btnRemoveGuide = createButton("Remove Guide", "Remove only the selected Guide entry; preserve Character Instances and uploaded asset", () => {
+                const guides = getGuides();
+                if (selectedGuideIndex < 0 || selectedGuideIndex >= guides.length) return;
+                guides.splice(selectedGuideIndex, 1);
+                selectedGuideIndex = Math.min(selectedGuideIndex, guides.length - 1);
+                selectedFigureIndex = -1;
+                syncToWidgets();
+                renderAll();
+            }, "#7f1d1d");
+            guideToolbar.appendChild(btnAddGuide);
+            guideToolbar.appendChild(btnReplaceGuide);
+            guideToolbar.appendChild(btnToggleGuide);
+            guideToolbar.appendChild(btnRemoveGuide);
+            container.appendChild(guideToolbar);
+
+            const guideInspector = document.createElement("div");
+            guideInspector.style.cssText = `
+                display: none;
+                flex-direction: column;
+                gap: 6px;
+                background: #1d2835;
+                padding: 8px;
+                border-radius: 6px;
+                border: 1px solid #38bdf8;
+            `;
+            const guideInspectorHeader = document.createElement("div");
+            guideInspectorHeader.style.cssText = "display: flex; justify-content: space-between; align-items: center; gap: 8px;";
+            const guideStatusBadge = document.createElement("div");
+            guideStatusBadge.style.cssText = "font-weight: 700; font-size: 11px; color: #7dd3fc;";
+            const guideChipsRow = document.createElement("div");
+            guideChipsRow.style.cssText = "display: flex; gap: 4px; align-items: center; flex-wrap: wrap;";
+            const guideAssetLabel = document.createElement("div");
+            guideAssetLabel.style.cssText = "font-size: 10px; color: #a5f3fc; word-break: break-all;";
+            const guideFigureToolbar = document.createElement("div");
+            guideFigureToolbar.style.cssText = "display: flex; gap: 5px; align-items: center; flex-wrap: wrap;";
+            const btnAddFigure = createButton("+ Add Figure", "Add a manual Guide-local figure rectangle; no automatic interpretation", () => {
+                const guide = getGuides()[selectedGuideIndex];
+                if (!guide) return;
+                if (!Array.isArray(guide.figure_regions)) guide.figure_regions = [];
+                guide.figure_regions.push(createGuideFigure(guide.figure_regions));
+                selectedFigureIndex = guide.figure_regions.length - 1;
+                syncToWidgets();
+                renderAll();
+            });
+            const btnRemoveFigure = createButton("Remove Figure", "Remove the selected Guide figure only", () => {
+                const guide = getGuides()[selectedGuideIndex];
+                if (!guide?.figure_regions || selectedFigureIndex < 0 || selectedFigureIndex >= guide.figure_regions.length) return;
+                guide.figure_regions.splice(selectedFigureIndex, 1);
+                selectedFigureIndex = Math.min(selectedFigureIndex, guide.figure_regions.length - 1);
+                syncToWidgets();
+                renderAll();
+            }, "#7f1d1d");
+            guideFigureToolbar.appendChild(btnAddFigure);
+            guideFigureToolbar.appendChild(btnRemoveFigure);
+            const guideFigureList = document.createElement("div");
+            guideFigureList.style.cssText = "display: flex; flex-direction: column; gap: 5px;";
+
+            guideInspectorHeader.appendChild(guideStatusBadge);
+            guideInspector.appendChild(guideInspectorHeader);
+            guideInspector.appendChild(guideChipsRow);
+            guideInspector.appendChild(guideAssetLabel);
+            guideInspector.appendChild(guideFigureToolbar);
+            guideInspector.appendChild(guideFigureList);
+            container.appendChild(guideInspector);
+
             // Character Instance Inspector (visible when an instance is selected)
             const charInspector = document.createElement("div");
             charInspector.style.cssText = `
@@ -718,6 +930,7 @@ app.registerExtension({
                 const sceneId = curInst ? curInst.scene_id : null;
 
                 p.character_instances = (p.character_instances || []).filter(inst => inst.instance_id !== selectedInstanceId);
+                p.guides = (p.guides || []).map(guide => unassignGuideInstance(guide, selectedInstanceId));
                 selectedInstanceId = null;
 
                 if (sceneId) {
@@ -927,12 +1140,179 @@ app.registerExtension({
                 castInspector.appendChild(promptRow);
             }
 
+            const guidePreviewImages = new Map();
+
+            function getGuidePreviewUrl(assetReference) {
+                const normalized = String(assetReference || "").replaceAll("\\", "/");
+                const slash = normalized.lastIndexOf("/");
+                const name = slash >= 0 ? normalized.slice(slash + 1) : normalized;
+                const subfolder = slash >= 0 ? normalized.slice(0, slash) : "";
+                const query = new URLSearchParams({ filename: name, type: "input" });
+                if (subfolder) query.set("subfolder", subfolder);
+                return api.apiURL(`/view?${query.toString()}`);
+            }
+
+            function getGuidePreviewImage(guide) {
+                const reference = String(guide?.asset_reference || "");
+                if (!reference) return null;
+                if (guidePreviewImages.has(reference)) return guidePreviewImages.get(reference);
+                const image = new Image();
+                guidePreviewImages.set(reference, image);
+                image.onload = () => renderCanvas();
+                image.onerror = () => {
+                    guidePreviewImages.set(reference, null);
+                    renderCanvas();
+                };
+                image.src = getGuidePreviewUrl(reference);
+                return null;
+            }
+
+            function guideFigurePageArea(guide, figure) {
+                const placement = guide?.placement || { x: 0, y: 0, w: 1, h: 1 };
+                const local = figure?.area || { x: 0, y: 0, w: 0.2, h: 0.2 };
+                return {
+                    shape_type: "rect",
+                    x: placement.x + local.x * placement.w,
+                    y: placement.y + local.y * placement.h,
+                    w: local.w * placement.w,
+                    h: local.h * placement.h
+                };
+            }
+
+            function renderGuideInspector() {
+                const guides = getGuides();
+                guideChipsRow.innerHTML = "";
+                guides.forEach((guide, idx) => {
+                    const selected = idx === selectedGuideIndex;
+                    const chip = document.createElement("button");
+                    chip.textContent = guide.guide_id || `Guide ${idx + 1}`;
+                    chip.style.cssText = `
+                        background: ${selected ? "#0284c7" : "#17202b"};
+                        color: ${selected ? "#ffffff" : "#bae6fd"};
+                        border: 1px solid ${selected ? "#7dd3fc" : "#0369a1"};
+                        border-radius: 4px; padding: 2px 8px; font-size: 10px;
+                        font-weight: 700; cursor: pointer;
+                    `;
+                    chip.onclick = (event) => {
+                        event.preventDefault();
+                        selectedGuideIndex = idx;
+                        selectedFigureIndex = -1;
+                        renderAll();
+                    };
+                    guideChipsRow.appendChild(chip);
+                });
+
+                if (guides.length === 0) {
+                    selectedGuideIndex = -1;
+                    selectedFigureIndex = -1;
+                    guideStatusBadge.textContent = "No Rough Guide (optional)";
+                    guideAssetLabel.textContent = "Add Guide uploads through the standard ComfyUI input boundary. Scene authoring remains available without a Guide.";
+                    btnReplaceGuide.disabled = true;
+                    btnToggleGuide.disabled = true;
+                    btnRemoveGuide.disabled = true;
+                    btnAddFigure.disabled = true;
+                    btnRemoveFigure.disabled = true;
+                    guideFigureList.innerHTML = "";
+                    return;
+                }
+
+                if (selectedGuideIndex < 0 || selectedGuideIndex >= guides.length) selectedGuideIndex = 0;
+                const guide = guides[selectedGuideIndex];
+                if (!Array.isArray(guide.figure_regions)) guide.figure_regions = [];
+                if (selectedFigureIndex >= guide.figure_regions.length) selectedFigureIndex = guide.figure_regions.length - 1;
+
+                const enabled = guide.enabled !== false;
+                guideStatusBadge.textContent = `${guide.guide_id || "Guide"} · ${enabled ? "ENABLED" : "DISABLED"} · ${guide.figure_regions.length} figure(s)`;
+                guideStatusBadge.style.color = enabled ? "#7dd3fc" : "#fbbf24";
+                guideAssetLabel.textContent = `Asset: ${guide.asset_reference || "missing"} · Placement: contain / page-normalized · Associations are manual only`;
+                btnReplaceGuide.disabled = false;
+                btnToggleGuide.disabled = false;
+                btnToggleGuide.textContent = enabled ? "Disable Guide" : "Enable Guide";
+                btnRemoveGuide.disabled = false;
+                btnAddFigure.disabled = false;
+                btnRemoveFigure.disabled = selectedFigureIndex < 0;
+
+                guideFigureList.innerHTML = "";
+                const instances = getCharacterInstances();
+                const usedInstanceIds = new Set(guide.figure_regions.map(figure => figure.instance_id).filter(Boolean));
+                guide.figure_regions.forEach((figure, idx) => {
+                    const row = document.createElement("div");
+                    row.style.cssText = `
+                        display: flex; flex-direction: column; gap: 4px; padding: 5px;
+                        background: ${idx === selectedFigureIndex ? "#164e63" : "#17202b"};
+                        border: 1px solid ${idx === selectedFigureIndex ? "#67e8f9" : "#334155"};
+                        border-radius: 4px;
+                    `;
+                    const rowHeader = document.createElement("div");
+                    rowHeader.style.cssText = "display: flex; justify-content: space-between; align-items: center; gap: 6px;";
+                    const selectFigureButton = document.createElement("button");
+                    selectFigureButton.textContent = `${figure.figure_id || `figure_${idx + 1}`} · local ${Number(figure.area?.x || 0).toFixed(2)},${Number(figure.area?.y || 0).toFixed(2)}`;
+                    selectFigureButton.style.cssText = "flex: 1; text-align: left; background: transparent; color: #e0f2fe; border: 0; padding: 0; font-size: 10px; font-weight: 700; cursor: pointer;";
+                    selectFigureButton.onclick = (event) => {
+                        event.preventDefault();
+                        selectedFigureIndex = idx;
+                        renderAll();
+                    };
+                    const removeButton = document.createElement("button");
+                    removeButton.textContent = "×";
+                    removeButton.title = "Remove this Guide figure";
+                    removeButton.style.cssText = "background: #7f1d1d; color: #fff; border: 1px solid #ef4444; border-radius: 3px; padding: 0 5px; cursor: pointer;";
+                    removeButton.onclick = (event) => {
+                        event.preventDefault();
+                        guide.figure_regions.splice(idx, 1);
+                        selectedFigureIndex = Math.min(selectedFigureIndex, guide.figure_regions.length - 1);
+                        syncToWidgets();
+                        renderAll();
+                    };
+                    rowHeader.appendChild(selectFigureButton);
+                    rowHeader.appendChild(removeButton);
+                    row.appendChild(rowHeader);
+
+                    const associationRow = document.createElement("div");
+                    associationRow.style.cssText = "display: flex; align-items: center; gap: 5px;";
+                    const associationLabel = document.createElement("span");
+                    associationLabel.textContent = "Character Instance:";
+                    associationLabel.style.cssText = "color: #a5f3fc; font-size: 10px; min-width: 105px;";
+                    const associationSelect = document.createElement("select");
+                    associationSelect.style.cssText = "flex: 1; background: #0f172a; color: #e0f2fe; border: 1px solid #475569; border-radius: 3px; padding: 2px; font-size: 10px;";
+                    const unassignedOption = document.createElement("option");
+                    unassignedOption.value = "";
+                    unassignedOption.textContent = "Unassigned";
+                    associationSelect.appendChild(unassignedOption);
+                    instances.forEach((instance) => {
+                        const option = document.createElement("option");
+                        option.value = instance.instance_id;
+                        const cast = getCast().find(entry => entry.cast_id === instance.cast_id);
+                        option.textContent = `${instance.instance_id} · ${cast?.display_name || instance.cast_id}`;
+                        option.disabled = usedInstanceIds.has(instance.instance_id) && instance.instance_id !== figure.instance_id;
+                        associationSelect.appendChild(option);
+                    });
+                    associationSelect.value = figure.instance_id || "";
+                    associationSelect.onchange = () => {
+                        const result = associateGuideFigure(guide, figure.figure_id, associationSelect.value || null);
+                        if (!result.ok) {
+                            alert(result.error);
+                            renderGuideInspector();
+                            return;
+                        }
+                        guides[selectedGuideIndex] = result.guide;
+                        syncToWidgets();
+                        renderAll();
+                    };
+                    associationRow.appendChild(associationLabel);
+                    associationRow.appendChild(associationSelect);
+                    row.appendChild(associationRow);
+                    guideFigureList.appendChild(row);
+                });
+            }
+
             function renderInspector() {
                 updateLayerButtons();
                 const scenes = getScenes();
                 const frames = getVisualFrames();
+                const guides = getGuides();
                 const countSpan = container.querySelector("#scene-counter");
-                if (countSpan) countSpan.textContent = `Scenes: ${scenes.length} / 6 | Frames: ${frames.length}`;
+                if (countSpan) countSpan.textContent = `Scenes: ${scenes.length} / 6 | Frames: ${frames.length} | Guides: ${guides.length}`;
 
                 btnAddScene.disabled = scenes.length >= 6;
                 btnDeleteScene.disabled = scenes.length <= 1;
@@ -941,6 +1321,8 @@ app.registerExtension({
                     toolbar.style.display = "none";
                     sceneInspector.style.display = "none";
                     charInspector.style.display = "none";
+                    guideToolbar.style.display = "none";
+                    guideInspector.style.display = "none";
                     frameToolbar.style.display = "flex";
                     frameInspector.style.display = "flex";
 
@@ -977,11 +1359,23 @@ app.registerExtension({
                         frameBadge.innerHTML = `<span style="color: #71717a;">No frame selected</span>`;
                     }
                     return;
+                } else if (activeEditLayer === "guide") {
+                    toolbar.style.display = "none";
+                    sceneInspector.style.display = "none";
+                    charInspector.style.display = "none";
+                    frameToolbar.style.display = "none";
+                    frameInspector.style.display = "none";
+                    guideToolbar.style.display = "flex";
+                    guideInspector.style.display = "flex";
+                    renderGuideInspector();
+                    return;
                 } else {
                     toolbar.style.display = "flex";
                     sceneInspector.style.display = "flex";
                     frameToolbar.style.display = "none";
                     frameInspector.style.display = "none";
+                    guideToolbar.style.display = "none";
+                    guideInspector.style.display = "none";
                 }
 
                 const curScene = scenes[selectedSceneIndex];
@@ -1215,7 +1609,79 @@ app.registerExtension({
                     }
                 });
 
-                // 2. Draw Scenes (Translucent boxes)
+                const guides = getGuides();
+                const isGuideActive = (activeEditLayer === "guide");
+
+                // 2. Draw Page-owned Rough Guides. Figure geometry is Guide-local;
+                // this conversion is runtime/view derived and is never persisted.
+                guides.forEach((guide, guideIndex) => {
+                    const placement = guide.placement || { x: 0, y: 0, w: 1, h: 1 };
+                    const isSelectedGuide = isGuideActive && guideIndex === selectedGuideIndex;
+                    const enabled = guide.enabled !== false;
+                    const rx = placement.x * cw;
+                    const ry = placement.y * ch;
+                    const rw = placement.w * cw;
+                    const rh = placement.h * ch;
+                    const preview = getGuidePreviewImage(guide);
+
+                    ctx.save();
+                    ctx.globalAlpha = isGuideActive ? (enabled ? 0.34 : 0.08) : 0.07;
+                    if (preview) {
+                        ctx.drawImage(preview, rx, ry, rw, rh);
+                    } else {
+                        ctx.fillStyle = enabled ? "#bae6fd" : "#facc15";
+                        ctx.fillRect(rx, ry, rw, rh);
+                    }
+                    ctx.globalAlpha = isSelectedGuide ? 0.9 : 0.45;
+                    ctx.strokeStyle = enabled ? "#0284c7" : "#ca8a04";
+                    ctx.lineWidth = isSelectedGuide ? 2 : 1;
+                    ctx.setLineDash(enabled ? [] : [5, 4]);
+                    ctx.strokeRect(rx, ry, rw, rh);
+                    ctx.setLineDash([]);
+
+                    const guideLabel = `${guide.guide_id || `Guide ${guideIndex + 1}`} · ${enabled ? "enabled" : "disabled"}`;
+                    ctx.font = "bold 9px system-ui, sans-serif";
+                    const guideLabelWidth = ctx.measureText(guideLabel).width;
+                    ctx.globalAlpha = isGuideActive ? 0.85 : 0.32;
+                    ctx.fillStyle = enabled ? "#0369a1" : "#a16207";
+                    ctx.fillRect(rx, ry, guideLabelWidth + 6, 14);
+                    ctx.fillStyle = "#ffffff";
+                    ctx.fillText(guideLabel, rx + 3, ry + 10);
+                    ctx.restore();
+
+                    (guide.figure_regions || []).forEach((figure, figureIndex) => {
+                        const b = guideFigurePageArea(guide, figure);
+                        const fx = b.x * cw;
+                        const fy = b.y * ch;
+                        const fw = b.w * cw;
+                        const fh = b.h * ch;
+                        const isSelectedFigure = isSelectedGuide && figureIndex === selectedFigureIndex;
+                        ctx.save();
+                        ctx.fillStyle = isSelectedFigure ? "rgba(14, 116, 144, 0.28)" : "rgba(14, 116, 144, 0.10)";
+                        ctx.strokeStyle = isSelectedFigure ? "#0e7490" : "rgba(14, 116, 144, 0.65)";
+                        ctx.lineWidth = isSelectedFigure ? 2.5 : 1;
+                        ctx.setLineDash(isGuideActive ? [] : [3, 3]);
+                        ctx.fillRect(fx, fy, fw, fh);
+                        ctx.strokeRect(fx, fy, fw, fh);
+                        ctx.setLineDash([]);
+                        ctx.font = "bold 8px system-ui, sans-serif";
+                        ctx.fillStyle = isSelectedFigure ? "#0e7490" : "rgba(14, 116, 144, 0.75)";
+                        ctx.fillText(figure.figure_id || `figure_${figureIndex + 1}`, fx + 3, fy + 10);
+                        if (isSelectedFigure) {
+                            const hs = 8;
+                            ctx.fillStyle = "#ffffff";
+                            ctx.strokeStyle = "#0e7490";
+                            ctx.lineWidth = 2;
+                            [[fx, fy], [fx + fw, fy], [fx + fw, fy + fh], [fx, fy + fh]].forEach(([cx, cy]) => {
+                                ctx.fillRect(cx - hs / 2, cy - hs / 2, hs, hs);
+                                ctx.strokeRect(cx - hs / 2, cy - hs / 2, hs, hs);
+                            });
+                        }
+                        ctx.restore();
+                    });
+                });
+
+                // 3. Draw Scenes (Translucent boxes)
                 scenes.forEach((sc, idx) => {
                     const b = sc.area || { x: 0, y: 0, w: 1, h: 1 };
                     const col = getSceneColor(idx);
@@ -1414,8 +1880,12 @@ app.registerExtension({
 
             function hitTestHandle(box, px, py) {
                 const b = box || { x: 0, y: 0, w: 1, h: 1 };
-                const cw = canvas.width;
-                const ch = canvas.height;
+                // Pointer coordinates are CSS pixels from getBoundingClientRect;
+                // use the rendered canvas size rather than the backing bitmap
+                // size so corner handles remain hittable under node zoom.
+                const rect = canvas.getBoundingClientRect();
+                const cw = rect.width;
+                const ch = rect.height;
                 const rx = b.x * cw;
                 const ry = b.y * ch;
                 const rw = b.w * cw;
@@ -1462,11 +1932,78 @@ app.registerExtension({
                 return -1;
             }
 
+            function hitTestGuide(x, y) {
+                const guides = getGuides();
+                for (let i = guides.length - 1; i >= 0; i--) {
+                    const b = guides[i].placement || { x: 0, y: 0, w: 1, h: 1 };
+                    if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) return i;
+                }
+                return -1;
+            }
+
+            function hitTestGuideFigure(guide, x, y) {
+                if (!guide) return -1;
+                const figures = guide.figure_regions || [];
+                for (let i = figures.length - 1; i >= 0; i--) {
+                    const b = guideFigurePageArea(guide, figures[i]);
+                    if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) return i;
+                }
+                return -1;
+            }
+
             canvas.onmousedown = (e) => {
                 const pos = getCanvasNormPos(e);
                 const scenes = getScenes();
                 const frames = getVisualFrames();
                 const allInstances = getCharacterInstances();
+
+                // Layer: ROUGH GUIDE. Manipulation is limited to Guide-local
+                // figure rectangles and cannot move Scene/Frame/Character boxes.
+                if (activeEditLayer === "guide") {
+                    const guides = getGuides();
+                    const curGuide = guides[selectedGuideIndex];
+                    if (curGuide) {
+                        const figures = curGuide.figure_regions || [];
+                        if (selectedFigureIndex >= 0 && selectedFigureIndex < figures.length) {
+                            const figureArea = guideFigurePageArea(curGuide, figures[selectedFigureIndex]);
+                            const handle = hitTestHandle(figureArea, pos.px, pos.py);
+                            if (handle) {
+                                isDragging = true;
+                                dragTarget = "guide";
+                                dragMode = handle;
+                                dragStartX = pos.x;
+                                dragStartY = pos.y;
+                                dragStartGuideFigureArea = { ...(figures[selectedFigureIndex].area || {}) };
+                                return;
+                            }
+                        }
+
+                        const hitFigure = hitTestGuideFigure(curGuide, pos.x, pos.y);
+                        if (hitFigure !== -1) {
+                            selectedFigureIndex = hitFigure;
+                            isDragging = true;
+                            dragTarget = "guide";
+                            dragMode = "move";
+                            dragStartX = pos.x;
+                            dragStartY = pos.y;
+                            dragStartGuideFigureArea = { ...(figures[hitFigure].area || {}) };
+                            renderAll();
+                            return;
+                        }
+                    }
+
+                    const hitGuide = hitTestGuide(pos.x, pos.y);
+                    if (hitGuide !== -1) {
+                        selectedGuideIndex = hitGuide;
+                        selectedFigureIndex = -1;
+                        renderAll();
+                    } else {
+                        selectedGuideIndex = -1;
+                        selectedFigureIndex = -1;
+                        renderAll();
+                    }
+                    return;
+                }
 
                 // Layer: FRAME
                 if (activeEditLayer === "frame") {
@@ -1583,6 +2120,25 @@ app.registerExtension({
                 const dy = pos.y - dragStartY;
                 const scenes = getScenes();
                 const allInstances = getCharacterInstances();
+
+                if (dragTarget === "guide") {
+                    const guides = getGuides();
+                    const guide = guides[selectedGuideIndex];
+                    const figure = guide?.figure_regions?.[selectedFigureIndex];
+                    const placement = guide?.placement;
+                    if (!figure || !placement || !dragStartGuideFigureArea || placement.w <= 0 || placement.h <= 0) return;
+                    const localDx = dx / placement.w;
+                    const localDy = dy / placement.h;
+                    if (dragMode === "move") {
+                        const next = clampGuideFigureDrag(dragStartGuideFigureArea, localDx, localDy);
+                        figure.area.x = next.x;
+                        figure.area.y = next.y;
+                    } else {
+                        figure.area = resizeGuideFigure(dragStartGuideFigureArea, dragMode, localDx, localDy);
+                    }
+                    renderCanvas();
+                    return;
+                }
 
                 if (dragTarget === "frame") {
                     const frames = getVisualFrames();
@@ -1733,6 +2289,7 @@ app.registerExtension({
                     dragStartSceneArea = null;
                     dragStartInstArea = null;
                     dragStartFrameArea = null;
+                    dragStartGuideFigureArea = null;
                     dragStartChildAreas = [];
                     syncToWidgets();
                     renderAll();
@@ -1746,6 +2303,7 @@ app.registerExtension({
             node.onRemoved = function () {
                 window.removeEventListener("mousemove", onWindowMouseMove);
                 window.removeEventListener("mouseup", onWindowMouseUp);
+                guideFileInput.remove();
                 if (origOnRemoved) origOnRemoved.apply(this, arguments);
             };
 

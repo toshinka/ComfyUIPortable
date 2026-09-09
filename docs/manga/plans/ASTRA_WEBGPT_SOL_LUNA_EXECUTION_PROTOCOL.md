@@ -18,6 +18,15 @@
 → Ownerがcommit/push → SOLが固定SHAでreview` とする。SOLが読めるのは公開済みGitHubであり、
 LUNAの未commit・未push差分は対象外である。
 
+## Delegated milestone gate
+
+Ownerが中間Milestone gateの判断をWeb GPT SOLへ明示的に委任した場合、SOLは
+記録済みのtechnical、runtime、Browser、visual evidenceだけを根拠に
+`ACCEPTED_BY_DELEGATED_SOL` または `REJECTED_BY_DELEGATED_SOL` を記録できる。
+これはOwner本人による最終的な制作・画質・product reviewとは別であり、最終reviewは
+Ownerに残す。LUNAは委任記録なしにOwner acceptanceを推測せず、委任記録がある場合も
+SOLが発行したCardの範囲を越えて次のCardやM3Bを自動開始しない。
+
 ## Card発行前のSOL監査
 
 1. `GITHUB_MANGA.txt` の最新入口を読む。
@@ -96,4 +105,3 @@ LUNAが次の作業を誤推定しないようCard内で順序とstop条件を�
 SOLは入口には`main`、コード・workflow・reportの精査には入口が指定した固定SHAを使う。
 raw URLが404なら未公開として止め、別revisionへ黙ってfallbackしない。LUNA完了後はOwnerが公開したSHAを
 受け取り、そのSHAだけをreviewする。pushと制作受入はOwnerが行う。
-

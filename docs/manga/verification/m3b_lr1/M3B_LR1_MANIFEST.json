@@ -1,0 +1,28 @@
+{
+  "card": "M3B-LR1",
+  "date": "2026-09-09 JST",
+  "contract": "PASS",
+  "regression": "PASS",
+  "browser": "PASS",
+  "visual_ui_evidence": "PASS",
+  "runtime_guide_bridge": "PASS",
+  "generation_influence": "NOT_IMPLEMENTED",
+  "controlnet": "NOT_ADDED",
+  "final_owner_product_review": "DEFERRED",
+  "evidence": [
+    "R0_CANONICAL_QUEUE.md",
+    "R1_GUIDE_LAYER_EMPTY_STATE.md",
+    "R2_STANDARD_UPLOAD_AND_CONTAIN.md",
+    "R3_MANUAL_FIGURES_AND_ASSOCIATIONS.md",
+    "R4_GUIDE_DRAG_RESIZE_ISOLATION.md",
+    "R5_SAVE_RELOAD.md",
+    "R6_INSTANCE_DELETE_UNASSIGNS.md",
+    "R7_GUIDE_DISABLE.md",
+    "R8_GUIDE_REMOVE.md",
+    "R0_CANONICAL_OUTPUT.png",
+    "fixtures/rough_guide_live.png"
+  ],
+  "live_output": "R0_CANONICAL_OUTPUT.png",
+  "runtime_node": "TegakiMangaRoughGuideBridge",
+  "automatic_interpretation": "NOT_PERFORMED"
+}

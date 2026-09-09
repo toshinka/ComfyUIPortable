@@ -20,13 +20,13 @@ Repository: `https://github.com/toshinka/tegaki`
 - M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`
 - M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`
 - Manga namespace/card migration publication: `ef7daa502f501211cd6b06f378e9024dbff6f284`
-- Latest SOL-verified public commit: `ad91c9277715e998663e8c12b6c37cca16e53955`
-- M3A1-BC1 publication: PUBLISHED; SOL public-URL review: PASS.
+- Latest SOL-verified public commit: `3be0ecb027c633a90aecd46b79f32ae47b5aab66`
+- M3A1-OA1 publication: PUBLISHED; SOL public-URL review: PASS.
 - Web GPT SOL public-URL review: PASS
-- Latest published Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE.md
-- Latest published report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE_REPORT.md
-- Current operational Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/current/M3A1_OA1_OWNER_ACCEPTANCE_GATE_AND_REVIEW_TARGET_CLOSURE.md
-- Current operational report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3A1_OA1_OWNER_ACCEPTANCE_GATE_REPORT.md
+- Latest published Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3A1_OA1_OWNER_ACCEPTANCE_GATE_AND_REVIEW_TARGET_CLOSURE.md
+- Latest published report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3A1_OA1_OWNER_ACCEPTANCE_GATE_REPORT.md
+- Latest completed local Card (publication pending): https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_BATCH.md
+- Latest completed local report (publication pending): https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_REPORT.md
 
 repository HEADにはTegaki本体やH3の別作業も進むため、最新HEADをManga実装SHAと読み替えないこと。
 
@@ -44,13 +44,13 @@ Primary flowはScene-firstである。CAST、人物粗領域、ラフ人物/白�
 - M0〜M2B.2: 完了。
 - M3A / M3A.1: Visual Panel Frameとruntime framingを実装済み。
 - M3A.1: headless testとstructural pixel oracleはPASS。
-- M3A.1 Owner live-browser acceptance: Browser/Visual PASS、Owner acceptance PENDINGとして扱う。
-- M3A1-BC1 technical closure: B0-B9 PASS; routed to completed after SOL review。
-- M3A1-OA1 Owner gate: O1-O5 decision pending; M3A.1 gate WAITING OWNER。
+- M3A.1 milestone acceptance: ACCEPTED_BY_DELEGATED_SOL。Final Owner product reviewはDEFERRED。
+- M3A1-BC1 technical closure: B0-B9 PASS; routed to completed。
+- M3A1-OA1 gate: CLOSED; M3B eligibility OPEN。
 - Web GPT SOL public-URL review: PASS。
-- Current operation: M3A1-OA1 Owner Acceptance Gate and Review Target Closure。
-- Active LUNA Card: M3A1-OA1。
-- M3B eligibility: CLOSED。Owner acceptance前に開始しない。
+- Latest completed operation: M3B-LR1 Rough Guide Foundation Long-Run Batch。
+- Active LUNA Card: NONE。Next Card is not issued automatically。
+- M3B generation influence: NOT IMPLEMENTED。ControlNet: NOT ADDED。
 - production output namespace移行: 未実施。`output/Tegaki`を維持する。
 
 証拠の注意:

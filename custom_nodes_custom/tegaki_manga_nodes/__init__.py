@@ -17,6 +17,7 @@ from .character_staging_editor import TegakiMangaCharacterStagingEditor
 from .layout_guide_generator import TegakiMangaLayoutGuideGenerator
 from .minimum_hand_scene_editor import TegakiMinimumHandSceneEditor
 from .frame_overlay import TegakiMangaFrameOverlay
+from .rough_guide_bridge import TegakiMangaRoughGuideBridge
 from . import panel_layout_api
 
 NODE_CLASS_MAPPINGS = {
@@ -42,6 +43,7 @@ NODE_CLASS_MAPPINGS = {
     "TegakiMangaLayoutGuideGenerator": TegakiMangaLayoutGuideGenerator,
     "TegakiMinimumHandSceneEditor": TegakiMinimumHandSceneEditor,
     "TegakiMangaFrameOverlay": TegakiMangaFrameOverlay,
+    "TegakiMangaRoughGuideBridge": TegakiMangaRoughGuideBridge,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -67,10 +69,10 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "TegakiMangaLayoutGuideGenerator": "Tegaki Manga Layout Guide Generator (ControlNet)",
     "TegakiMinimumHandSceneEditor": "Tegaki Minimum-Hand Manga Authoring (Draft)",
     "TegakiMangaFrameOverlay": "Tegaki Manga Frame Overlay (Deterministic)",
+    "TegakiMangaRoughGuideBridge": "Tegaki Manga Rough Guide Bridge (Preview / Mask)",
 }
 
 WEB_DIRECTORY = "./web"
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS", "WEB_DIRECTORY"]
-
 

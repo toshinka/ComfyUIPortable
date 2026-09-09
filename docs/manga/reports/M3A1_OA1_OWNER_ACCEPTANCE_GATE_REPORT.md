@@ -73,3 +73,27 @@ Owner note: Awaiting explicit Owner decision.
 ## Next SOL action
 
 After the Owner explicitly replies `ACCEPT M3A1 O1-O5` or provides a rejection, update only the OA1 decision branch. Until then, keep Owner acceptance `PENDING`, M3A.1 gate `WAITING OWNER`, and M3B eligibility `CLOSED`.
+
+## Post-publication SOL verification
+
+OA1 public commit: `3be0ecb027c633a90aecd46b79f32ae47b5aab66`
+
+SOL public verification: **PASS**
+
+Owner delegated intermediate milestone gate decisions to Web GPT SOL. Based on
+the recorded BC1 regression, runtime, Browser B0-B9, and visual evidence:
+
+- SOL decision: `ACCEPT M3A1 O1-O5`
+- O1: **ACCEPT**
+- O2: **ACCEPT**
+- O3: **ACCEPT**
+- O4: **ACCEPT**
+- O5: **ACCEPT**
+- Milestone acceptance: **ACCEPTED_BY_DELEGATED_SOL**
+- M3A.1 gate: **CLOSED**
+- M3B eligibility: **OPEN**
+- Active M3B Card: **M3B-LR1**
+- Final Owner product review: **DEFERRED**
+
+This delegated milestone acceptance does not claim that the Owner personally
+performed the O1-O5 product review. Final product review remains with the Owner.

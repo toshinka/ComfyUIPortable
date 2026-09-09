@@ -1,6 +1,6 @@
 {
-  "last_node_id": 9,
-  "last_link_id": 18,
+  "last_node_id": 11,
+  "last_link_id": 20,
   "nodes": [
     {
       "id": 1,
@@ -68,7 +68,8 @@
           "name": "authoring_document_json",
           "type": "STRING",
           "links": [
-            17
+            17,
+            19
           ],
           "slot_index": 6
         }
@@ -456,6 +457,88 @@
         4,
         0
       ]
+    },
+    {
+      "id": 10,
+      "type": "TegakiMangaRoughGuideBridge",
+      "pos": [
+        2020,
+        340
+      ],
+      "size": [
+        320,
+        160
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "document_json",
+          "type": "STRING",
+          "link": 19,
+          "widget": {
+            "name": "document_json"
+          }
+        },
+        {
+          "name": "page_index",
+          "type": "INT",
+          "link": null,
+          "widget": {
+            "name": "page_index"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "rough_guide_image",
+          "type": "IMAGE",
+          "links": [
+            20
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "figure_union_mask",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 1
+        },
+        {
+          "name": "debug_json",
+          "type": "STRING",
+          "links": null,
+          "slot_index": 2
+        }
+      ],
+      "widgets_values": [
+        0
+      ]
+    },
+    {
+      "id": 11,
+      "type": "PreviewImage",
+      "pos": [
+        2380,
+        340
+      ],
+      "size": [
+        340,
+        500
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 20
+        }
+      ],
+      "outputs": [],
+      "widgets_values": []
     }
   ],
   "links": [
@@ -576,6 +659,22 @@
       9,
       0,
       8,
+      0,
+      "IMAGE"
+    ],
+    [
+      19,
+      1,
+      6,
+      10,
+      0,
+      "STRING"
+    ],
+    [
+      20,
+      10,
+      0,
+      11,
       0,
       "IMAGE"
     ]

@@ -20,6 +20,7 @@ Unknown newer schema versions fail closed — never silently overwritten.
 import copy
 import json
 import math
+import posixpath
 import uuid
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -45,6 +46,8 @@ GEOMETRY_ROUND_DIGITS = 4
 
 VALID_INPUT_MODES = frozenset({"simple", "cast"})
 VALID_SHAPE_TYPES = frozenset({"rect"})  # polygon, freeform: future
+SUPPORTED_GUIDE_TYPES = frozenset({"frame_guide", "rough_manga"})
+SUPPORTED_GUIDE_EXTENSIONS = frozenset({".png", ".jpg", ".jpeg", ".webp"})
 
 
 # ===================================================================
@@ -270,9 +273,10 @@ def create_guide(guide_type: str = "frame_guide",
                  placement: Optional[Dict] = None,
                  enabled: bool = True,
                  guide_id: Optional[str] = None,
+                 figure_regions: Optional[List[Dict]] = None,
                  metadata: Optional[Dict] = None) -> Dict[str, Any]:
     """Create a guide entry."""
-    return {
+    guide = {
         "guide_id": guide_id or generate_id("guide"),
         "guide_type": guide_type,
         "asset_reference": asset_reference,
@@ -280,6 +284,128 @@ def create_guide(guide_type: str = "frame_guide",
         "enabled": enabled,
         "metadata": metadata or {},
     }
+    if guide_type == "rough_manga" or figure_regions is not None:
+        guide["figure_regions"] = figure_regions or []
+    return guide
+
+
+def validate_asset_reference(asset_reference: Any, context: str = "") -> List[str]:
+    """Validate a canonical relative ComfyUI input-boundary asset reference."""
+    errors: List[str] = []
+    ctx = f" ({context})" if context else ""
+    if not isinstance(asset_reference, str) or not asset_reference.strip():
+        return [f"asset_reference must be a non-empty string{ctx}"]
+
+    value = asset_reference.strip()
+    if value.startswith(("/", "\\")) or value.startswith("file://"):
+        errors.append(f"asset_reference must be relative{ctx}")
+    if len(value) >= 2 and value[1] == ":":
+        errors.append(f"asset_reference must not contain a drive prefix{ctx}")
+    if "\\" in value:
+        errors.append(f"asset_reference must use canonical '/' separators{ctx}")
+
+    parts = value.split("/")
+    if any(part in ("", ".", "..") for part in parts):
+        errors.append(f"asset_reference contains an invalid path segment{ctx}")
+    if posixpath.normpath(value) != value:
+        errors.append(f"asset_reference is not normalized{ctx}")
+    return errors
+
+
+def _validate_guide(
+    guide: Dict[str, Any],
+    page_index: int,
+    guide_index: int,
+    instance_ids: set,
+    guide_ids: set,
+) -> Tuple[List[str], List[str]]:
+    """Validate a Page-owned Guide without changing the schema version."""
+    errors: List[str] = []
+    warnings: List[str] = []
+    g_ctx = f"page[{page_index}].guides[{guide_index}]"
+
+    gid = guide.get("guide_id")
+    if not isinstance(gid, str) or not gid:
+        errors.append(f"{g_ctx}: guide_id must be non-empty string")
+    elif gid in guide_ids:
+        errors.append(f"{g_ctx}: duplicate guide_id '{gid}'")
+    else:
+        guide_ids.add(gid)
+
+    guide_type = guide.get("guide_type")
+    if not isinstance(guide_type, str) or not guide_type.strip():
+        errors.append(f"{g_ctx}: guide_type must be non-empty string")
+        guide_type = ""
+    elif guide_type not in SUPPORTED_GUIDE_TYPES:
+        warnings.append(
+            f"{g_ctx}: unknown guide_type '{guide_type}' preserved without route-specific validation"
+        )
+
+    if "enabled" in guide and not isinstance(guide.get("enabled"), bool):
+        errors.append(f"{g_ctx}: enabled must be boolean")
+    if "metadata" in guide and not isinstance(guide.get("metadata"), dict):
+        errors.append(f"{g_ctx}: metadata must be dict")
+
+    asset_reference = guide.get("asset_reference")
+    if asset_reference is not None:
+        errors.extend(validate_asset_reference(asset_reference, g_ctx))
+
+    placement = guide.get("placement")
+    if guide_type == "rough_manga":
+        if not isinstance(asset_reference, str) or not asset_reference.strip():
+            errors.append(f"{g_ctx}: rough_manga requires asset_reference")
+        elif not any(asset_reference.lower().endswith(ext) for ext in SUPPORTED_GUIDE_EXTENSIONS):
+            errors.append(
+                f"{g_ctx}: rough_manga asset_reference extension must be one of "
+                f"{sorted(SUPPORTED_GUIDE_EXTENSIONS)}"
+            )
+        if placement is None:
+            errors.append(f"{g_ctx}: rough_manga requires placement")
+        else:
+            errors.extend(validate_area(placement, f"{g_ctx}.placement"))
+
+        figure_regions = guide.get("figure_regions")
+        if not isinstance(figure_regions, list):
+            errors.append(f"{g_ctx}: figure_regions must be list")
+            figure_regions = []
+
+        figure_ids: set = set()
+        associated_instance_ids: set = set()
+        for fi, figure in enumerate(figure_regions):
+            f_ctx = f"{g_ctx}.figure_regions[{fi}]"
+            if not isinstance(figure, dict):
+                errors.append(f"{f_ctx}: must be dict")
+                continue
+            figure_id = figure.get("figure_id")
+            if not isinstance(figure_id, str) or not figure_id:
+                errors.append(f"{f_ctx}: figure_id must be non-empty string")
+            elif figure_id in figure_ids:
+                errors.append(f"{f_ctx}: duplicate figure_id '{figure_id}'")
+            else:
+                figure_ids.add(figure_id)
+
+            figure_area = figure.get("area")
+            if figure_area is None:
+                errors.append(f"{f_ctx}: area is required")
+            else:
+                errors.extend(validate_area(figure_area, f"{f_ctx}.area"))
+
+            ref_instance = figure.get("instance_id")
+            if ref_instance is not None:
+                if not isinstance(ref_instance, str) or not ref_instance:
+                    errors.append(f"{f_ctx}: instance_id must be non-empty string or null")
+                elif ref_instance not in instance_ids:
+                    errors.append(
+                        f"{f_ctx}: instance_id '{ref_instance}' not found in page character_instances"
+                    )
+                elif ref_instance in associated_instance_ids:
+                    errors.append(
+                        f"{f_ctx}: duplicate instance association '{ref_instance}' within guide"
+                    )
+                else:
+                    associated_instance_ids.add(ref_instance)
+
+    return errors, warnings
 
 
 # ===================================================================
@@ -541,12 +667,14 @@ def _validate_page(page: Dict[str, Any], page_index: int) -> Tuple[List[str], Li
         if not isinstance(guide, dict):
             errors.append(f"{g_ctx}: must be dict")
             continue
-        gid = guide.get("guide_id")
-        if not isinstance(gid, str) or not gid:
-            errors.append(f"{g_ctx}: guide_id must be non-empty string")
-        elif gid in guide_ids:
-            errors.append(f"{g_ctx}: duplicate guide_id '{gid}'")
-        else:
-            guide_ids.add(gid)
+        guide_errors, guide_warnings = _validate_guide(
+            guide,
+            page_index,
+            gi,
+            instance_ids,
+            guide_ids,
+        )
+        errors.extend(guide_errors)
+        warnings.extend(guide_warnings)
 
     return errors, warnings
