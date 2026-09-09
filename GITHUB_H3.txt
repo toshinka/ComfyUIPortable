@@ -48,7 +48,7 @@ H2A selected route: short temporal packet → selected frame
 H2A local still generation: VERIFIED LOCAL GENERATION
 H2A Browser UI: N/A (feasibility path intentionally has no new Still UI)
 H2A evidence: CURRENT FEASIBILITY EVIDENCE
-H2A publication: LOCAL MAIN / OWNER PUSH PENDING
+H2A publication: PUBLISHED ON MAIN
 Owner acceptance: PENDING
 
 This entry is the starting point for external AI review of MiniMax H3 work. It

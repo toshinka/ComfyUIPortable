@@ -15,8 +15,8 @@ locally/browser verified within their recorded bounds; Owner acceptance remains
 pending. H1C evidence/report/canonical docs are recorded in commit `4df2f2a5f29957a9f4ba429ddd8796d13de5de3b`
 and are published on GitHub `main`; Owner acceptance remains pending. H2A
 still feasibility is implemented and locally verified through a bounded
-Native route; no production Still UI was added and H2A publication remains
-pending Owner push.
+Native route; no production Still UI was added and H2A is published on GitHub
+`main`. Owner acceptance remains pending.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。

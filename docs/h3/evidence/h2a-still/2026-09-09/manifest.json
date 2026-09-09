@@ -8,7 +8,7 @@
   "workflow": "workflows/h3/H2A_NATIVE_STILL_BASE.json",
   "workflow_schema": "tegaki.h3.h2a.native-still/v1",
   "browser_ui": "N/A",
-  "publication": "LOCAL MAIN / OWNER PUSH PENDING",
+  "publication": "PUBLISHED ON MAIN",
   "owner_acceptance": "PENDING",
   "input": {
     "prompt": "A small orange robot stands alone on a pale blue studio background, clean illustrative anime style, centered composition, soft daylight.",

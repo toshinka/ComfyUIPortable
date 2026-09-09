@@ -32,7 +32,7 @@ of prompts and resolutions.
 | `VERIFIED SOURCE/LOGIC` | `PASS` | The H2A graph and fail-closed text-only adapter contracts pass. |
 | `VERIFIED LOCAL STILL GENERATION` | `PASS` | One real Native PNG completed on the RTX 4070 stack. |
 | `VERIFIED BROWSER UI` | `N/A` | This feasibility Card intentionally adds no production Still UI. |
-| `PUBLISHED ON MAIN` | `LOCAL MAIN / OWNER PUSH PENDING` | H2A commits are local; they are not claimed as published. |
+| `PUBLISHED ON MAIN` | `PUBLISHED ON MAIN` | H2A implementation and evidence/docs are present on the current GitHub `main` baseline. |
 | `OWNER ACCEPTED` | `PENDING` | Technical evidence does not replace Owner acceptance. |
 
 ## 1. Route comparison and selection

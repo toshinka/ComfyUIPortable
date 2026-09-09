@@ -92,5 +92,4 @@ anchor without expanding the Card into I2I/REF2VA work.
 - H3 JavaScript syntax checks — all `PASS`.
 - Python `compileall` and `git diff --check` — `PASS`.
 
-Publication: `LOCAL MAIN / OWNER PUSH PENDING` for H2A. Owner acceptance remains
-`PENDING`.
+Publication: `PUBLISHED ON MAIN` for H2A. Owner acceptance remains `PENDING`.
