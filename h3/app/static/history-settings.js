@@ -51,12 +51,11 @@ function historyReferenceValue(entry, references, slot) {
   return null;
 }
 
-export async function resolveHistorySettings(entry, {
+export function resolveHistoryScalars(entry, {
   resolutionValues = [],
   durationValues = [],
   stepsValue,
   maxPromptLength = 4000,
-  verifyReference,
 } = {}) {
   if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
     invalidSettings("History settings are invalid.");
@@ -96,6 +95,30 @@ export async function resolveHistorySettings(entry, {
     invalidSettings("Steps cannot be restored with the current UI.");
   }
 
+  return {
+    prompt: request.prompt,
+    resolution,
+    duration: durationOption,
+    seed: String(request.seed),
+    steps: String(request.steps),
+  };
+}
+
+export async function resolveHistorySettings(entry, options = {}) {
+  const {
+    resolutionValues = [],
+    durationValues = [],
+    stepsValue,
+    maxPromptLength = 4000,
+    verifyReference,
+  } = options;
+  const scalars = resolveHistoryScalars(entry, {
+    resolutionValues,
+    durationValues,
+    stepsValue,
+    maxPromptLength,
+  });
+
   const references = entry.references && typeof entry.references === "object" && !Array.isArray(entry.references)
     ? entry.references
     : null;
@@ -115,11 +138,7 @@ export async function resolveHistorySettings(entry, {
   }
 
   return {
-    prompt: request.prompt,
-    resolution,
-    duration: durationOption,
-    seed: String(request.seed),
-    steps: String(request.steps),
+    ...scalars,
     references: normalizedReferences,
   };
 }

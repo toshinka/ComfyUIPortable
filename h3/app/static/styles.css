@@ -356,11 +356,13 @@ textarea::placeholder, input::placeholder { color: #a58a82; }
 .history-content button:hover { text-decoration: underline; }
 .history-prompt { display: -webkit-box; margin-top: 7px; overflow: hidden; color: var(--muted); font-size: 0.78rem; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .history-time { display: block; margin-top: 9px; color: #9c8077; font-size: 0.7rem; }
-.history-content .history-use-settings {
+.history-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.history-content .history-use-settings,
+.history-content .history-continue {
   min-height: 30px;
   display: inline-flex;
   align-items: center;
-  margin-top: 10px;
+  margin-top: 0;
   padding: 0 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -370,7 +372,8 @@ textarea::placeholder, input::placeholder { color: #a58a82; }
   font-weight: 650;
   text-align: center;
 }
-.history-content .history-use-settings:hover { background: #e5cbc1; text-decoration: none; }
+.history-content .history-use-settings:hover,
+.history-content .history-continue:hover { background: #e5cbc1; text-decoration: none; }
 .history-action-status { margin-top: 12px; color: var(--success); font-size: 0.78rem; }
 .history-action-status.error { color: var(--danger); }
 .history-failed { padding: 25px; color: var(--danger); background: #fff0eb; font-size: 0.8rem; }

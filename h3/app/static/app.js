@@ -1,5 +1,7 @@
 import { activeStatusDetail, previewStatusDetail } from "./job-status-copy.js";
 import { resolveHistorySettings } from "./history-settings.js";
+import { resolveHistoryScalars } from "./history-settings.js";
+import { validateContinuationSource } from "./continuation-source.js";
 
 const state = {
   backend: "CONNECTING",
@@ -330,6 +332,15 @@ async function verifyHistoryReference(reference, slot) {
   }
 }
 
+function historyScalarOptions() {
+  return {
+    resolutionValues: Array.from(resolutionInput.options, (option) => option.value),
+    durationValues: Array.from(durationInput.options, (option) => option.value),
+    stepsValue: stepsInput.value,
+    maxPromptLength: promptInput.maxLength,
+  };
+}
+
 function applyHistorySettings(settings) {
   promptInput.value = settings.prompt;
   resolutionInput.value = settings.resolution;
@@ -345,16 +356,168 @@ async function useHistorySettings(entry) {
   setHistoryActionStatus("Checking saved settings…");
   try {
     const settings = await resolveHistorySettings(entry, {
-      resolutionValues: Array.from(resolutionInput.options, (option) => option.value),
-      durationValues: Array.from(durationInput.options, (option) => option.value),
-      stepsValue: stepsInput.value,
-      maxPromptLength: promptInput.maxLength,
+      ...historyScalarOptions(),
       verifyReference: verifyHistoryReference,
     });
     applyHistorySettings(settings);
     setHistoryActionStatus("Settings loaded.");
   } catch (error) {
     setHistoryActionStatus(`Settings were not changed. ${error.message}`, true);
+  }
+}
+
+function captureContinuationFrame(sourceUrl) {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement("video");
+    video.preload = "auto";
+    video.muted = true;
+    video.playsInline = true;
+    let settled = false;
+
+    const cleanup = () => {
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+    };
+    const fail = (message) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(new Error(message));
+    };
+    const finish = (value) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve(value);
+    };
+    const capture = () => {
+      if (!video.videoWidth || !video.videoHeight) {
+        fail("The source video has no decodable frame.");
+        return;
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const context = canvas.getContext("2d");
+      if (!context) {
+        fail("The final frame canvas could not be created.");
+        return;
+      }
+      try {
+        context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+      } catch {
+        fail("The final frame could not be drawn.");
+        return;
+      }
+      canvas.toBlob((blob) => {
+        if (!blob || blob.type !== "image/png") {
+          fail("The final frame could not be encoded as PNG.");
+          return;
+        }
+        finish({
+          blob,
+          duration: video.duration,
+          currentTime: video.currentTime,
+          width: video.videoWidth,
+          height: video.videoHeight,
+        });
+      }, "image/png");
+    };
+    video.addEventListener("loadedmetadata", () => {
+      if (!Number.isFinite(video.duration) || video.duration <= 0) {
+        fail("The source video duration could not be read.");
+        return;
+      }
+      try {
+        video.currentTime = Math.max(0, video.duration - 0.05);
+      } catch {
+        fail("The source video could not seek to its final frame.");
+      }
+    }, { once: true });
+    video.addEventListener("seeked", capture, { once: true });
+    video.addEventListener("error", () => fail("The source video could not be read."), { once: true });
+    video.src = sourceUrl;
+    video.load();
+  });
+}
+
+async function uploadContinuationReference(frame, sourceJobId) {
+  const body = new FormData();
+  body.append("slot", "start_frame");
+  body.append("reference", frame.blob, `h1c-${sourceJobId}-end.png`);
+  state.referenceUploading.start_frame = true;
+  updateGenerateAvailability();
+  try {
+    const result = await requestJson("/api/references", { method: "POST", body });
+    if (!result.reference || typeof result.reference.id !== "string") {
+      throw new Error("The bridge frame was not accepted by the Reference upload boundary.");
+    }
+    return result.reference;
+  } finally {
+    state.referenceUploading.start_frame = false;
+    updateGenerateAvailability();
+  }
+}
+
+function snapshotFormSettings() {
+  return {
+    prompt: promptInput.value,
+    resolution: resolutionInput.value,
+    duration: durationInput.value,
+    seed: seedInput.value,
+    steps: stepsInput.value,
+    references: {
+      start_frame: state.references.start_frame,
+      end_frame: state.references.end_frame,
+    },
+  };
+}
+
+function restoreFormSettings(snapshot) {
+  promptInput.value = snapshot.prompt;
+  resolutionInput.value = snapshot.resolution;
+  durationInput.value = snapshot.duration;
+  seedInput.value = snapshot.seed;
+  stepsInput.value = snapshot.steps;
+  setReferenceSlotView("start_frame", snapshot.references.start_frame);
+  setReferenceSlotView("end_frame", snapshot.references.end_frame);
+  updatePromptCount();
+}
+
+function applyContinuationSettings(settings) {
+  const before = snapshotFormSettings();
+  try {
+    promptInput.value = settings.prompt;
+    resolutionInput.value = settings.resolution;
+    durationInput.value = settings.duration;
+    seedInput.value = settings.seed;
+    stepsInput.value = settings.steps;
+    setReferenceSlotView("start_frame", settings.reference);
+    setReferenceSlotView("end_frame", null);
+    updatePromptCount();
+  } catch (error) {
+    restoreFormSettings(before);
+    throw error;
+  }
+}
+
+async function prepareContinuation(entry) {
+  setHistoryActionStatus("Preparing continuation…");
+  try {
+    const scalarSettings = resolveHistoryScalars(entry, historyScalarOptions());
+    const sourceUrl = validateContinuationSource(entry);
+    const frame = await captureContinuationFrame(sourceUrl);
+    const reference = await uploadContinuationReference(frame, entry.job_id);
+    applyContinuationSettings({ ...scalarSettings, reference });
+    historyActionStatus.dataset.continuationDuration = String(frame.duration);
+    historyActionStatus.dataset.continuationCurrentTime = String(frame.currentTime);
+    historyActionStatus.dataset.continuationWidth = String(frame.width);
+    historyActionStatus.dataset.continuationHeight = String(frame.height);
+    historyActionStatus.dataset.continuationReferenceId = reference.id;
+    setHistoryActionStatus("Continuation prepared. Edit the prompt if needed, then Generate.");
+  } catch (error) {
+    setHistoryActionStatus(`Continuation was not prepared. ${error.message || "The source video could not be read."}`, true);
   }
 }
 
@@ -405,7 +568,20 @@ function createHistoryCard(entry) {
   useSettings.textContent = "Use settings";
   useSettings.setAttribute("aria-label", `Use settings from ${routeLabel} History result`);
   useSettings.addEventListener("click", () => useHistorySettings(entry));
-  content.append(open, prompt, time, useSettings);
+  const actions = document.createElement("div");
+  actions.className = "history-actions";
+  actions.append(useSettings);
+  if (entry.state === "COMPLETED" && typeof entry.video_url === "string" && entry.video_url.trim()) {
+    const continueButton = document.createElement("button");
+    continueButton.type = "button";
+    continueButton.className = "quiet-button history-continue";
+    continueButton.textContent = "Continue";
+    continueButton.title = "Use this result's end frame as the next Start Frame.";
+    continueButton.setAttribute("aria-label", `Continue from ${routeLabel} History result`);
+    continueButton.addEventListener("click", () => prepareContinuation(entry));
+    actions.append(continueButton);
+  }
+  content.append(open, prompt, time, actions);
   card.append(content);
   return card;
 }
