@@ -30,6 +30,7 @@ H1B.1 T2V regression: VERIFIED BROWSER UI GENERATION
 H1B.1 evidence: CURRENT REVIEW EVIDENCE
 H1B.1 UX P0 fix: IMPLEMENTED / VERIFIED SOURCE AND BOUNDED BROWSER UI
 H1B.1 UX P1 primary-action visibility: IMPLEMENTED / VERIFIED
+H1B.1 UX P2 status/history reuse: IMPLEMENTED / VERIFIED
 Owner acceptance: PENDING
 
 This entry is the starting point for external AI review of MiniMax H3 work. It
@@ -129,21 +130,23 @@ uploaded runtime inputs, and model weights remain ignored.
 
 Current Review Gate
 -------------------
-H1B.1 UX P1 Primary Action Visibility
+H1B.1 UX P2 Status Semantics / History Reuse
 
 H1B.1 is implemented as the current bounded slice and has Start-only,
 Start+End, End-only, and text-only browser completion results plus Native media
-evidence. The H1B.1 UX P0 fix now closes the targeted Reference hidden-state
-bug and separates Active Job authority from History Preview selection. Its
-bounded evidence is ready for Web GPT / Astra review. The P1 follow-up closes
-Astra SHOULD ③ for the primary 1280 x 720 layout target by placing Generate
-before Advanced and applying modest control-column compaction; no sticky action
-was needed. The live Running plus older-History browser scenario from P0
-remains explicitly recorded as not replayed after the local in-memory History
-reset; source/static evidence covers that path. Owner acceptance and license
-action remain separate; publication does not imply Owner acceptance. REF2VA,
-ordered generic multi-reference, Still, Continuation, Segment, Studio,
-Timeline, Storyboard, Cast, 3D, and Manga are not started by this slice.
+evidence. The H1B.1 UX P0 fix closes the targeted Reference hidden-state bug
+and separates Active Job authority from History Preview selection. The P1
+follow-up closes Astra SHOULD ③ for the primary 1280 x 720 layout target by
+placing Generate before Advanced and applying modest control-column
+compaction. The P2 follow-up closes Astra SHOULD ④ with state-specific copy and
+SHOULD ⑤ with a session-scoped History `Use settings` bridge that validates all
+inputs and existing Reference assets before atomic form application. P2 live
+Browser evidence covers the Text-only restore; Start/End restore is covered by
+logic smoke and remains a bounded Browser follow-up for a session with assets.
+Owner acceptance and license action remain separate; publication does not imply
+Owner acceptance. REF2VA, ordered generic multi-reference, Still, Continuation,
+Segment, Studio, Timeline, Storyboard, Cast, 3D, and Manga are not started by
+this slice.
 
 Publication Note
 ----------------
@@ -159,4 +162,6 @@ UX P0 implementation is recorded in
 `12942d04e5baa8c882a265a1d21fc34bf910da58`; the UX evidence/report commit is
 recorded with the dated package. The H1B.1 UX P1 implementation is recorded in
 `247296b626f3e87e46e64c745180712497038f2a`; the P1 evidence/report commit is
+recorded with the dated package. H1B.1 UX P2 implementation is recorded in
+`8084c6a340aca2f6b94bbd2cfced831117810502`; the P2 evidence/report commit is
 recorded with the dated package.
