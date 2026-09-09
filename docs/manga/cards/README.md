@@ -8,21 +8,23 @@
 
 ## Current
 
-Latest SOL-verified public commit: `399b4d5f973c389f42cb1912be3abe153ad08678`.
+M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`.
+M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`.
+Latest SOL-verified public commit: `ad91c9277715e998663e8c12b6c37cca16e53955`.
 Latest published Card:
-[M3A1_TF2 — External AI Publication Traceability Closure](completed/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md)
-M3A1-TF2 publication: PUBLISHED; SOL public-URL review: PASS.
+[M3A1-BC1 — Owner Live-Browser Closure and Publication Model Cleanup](completed/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE.md)
+M3A1-BC1 publication: PUBLISHED; SOL public-URL review: PASS.
 Current operational Card:
-[M3A1-BC1 — Owner Live-Browser Closure and Publication Model Cleanup](current/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE.md)
-Browser technical verification: PASS; Visual evidence: PASS; Owner acceptance: PENDING; M3B authorization: NO.
+[M3A1-OA1 — Owner Acceptance Gate & Review Target Closure](current/M3A1_OA1_OWNER_ACCEPTANCE_GATE_AND_REVIEW_TARGET_CLOSURE.md)
+Browser technical verification: PASS; Visual evidence: PASS; Owner acceptance: PENDING; M3A.1 gate: WAITING OWNER; M3B eligibility: CLOSED.
 
-現在の実行対象はM3A1-BC1。Browser/VisualはPASS、Owner live-browser acceptanceが未完了。
+現在の実行対象はM3A1-OA1。BC1のBrowser/VisualはPASS、Owner O1-O5の明示判定が未完了。
 再開時は [`WEBGPT_SOL_LUNA_HANDOFF.md`](../WEBGPT_SOL_LUNA_HANDOFF.md) をSOLが監査し、
 新しいCardを [`current/`](current/README.md) に1件だけ発行する。`completed/` のCardをコピーして再開指示にしない。
 
 ## Completed
 
-`completed/` は3M-PrepからM3A.1までの実行契約を保存する。完了実績、scope、当時のgateを
+`completed/` は3M-PrepからM3A1-BC1までの実行契約を保存する。完了実績、scope、当時のgateを
 確認するための資料であり、現在の状態や次作業の正本ではない。
 
 | Milestone | Card |
@@ -41,6 +43,7 @@ Browser technical verification: PASS; Visual evidence: PASS; Owner acceptance: P
 | M3A.1 | [`M3A1_FRAME_RUNTIME_TRUTH_GUTTERS_AND_LIVE_BROWSER_CLOSURE.md`](completed/M3A1_FRAME_RUNTIME_TRUTH_GUTTERS_AND_LIVE_BROWSER_CLOSURE.md) |
 | M3A1-TF2 | [`M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md`](completed/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md) |
 | M3A1-TF2.1 | [`M3A1_TF2_1_POST_PUSH_PUBLICATION_TRUTH_CLOSURE.md`](completed/M3A1_TF2_1_POST_PUSH_PUBLICATION_TRUTH_CLOSURE.md) |
+| M3A1-BC1 | [`M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE.md`](completed/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE.md) |
 
 ## Naming rule
 

@@ -17,16 +17,16 @@ Repository: `https://github.com/toshinka/tegaki`
 - This handoff raw URL: `https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md`
 - H3 external entry: `ComfyUIPortable/GITHUB_H3.txt`
 - Domain router: `ComfyUIPortable/GITHUB_ComfyUI.txt`
-- Manga implementation Review Target: `a7f0baaa89a2e315b0492573c9da19e50727928b`
+- M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`
+- M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`
 - Manga namespace/card migration publication: `ef7daa502f501211cd6b06f378e9024dbff6f284`
-- Latest SOL-verified public commit: `399b4d5f973c389f42cb1912be3abe153ad08678`
-- Manga implementation Review Target: `a7f0baaa89a2e315b0492573c9da19e50727928b`
-- M3A1-TF2 publication: PUBLISHED; SOL public-URL review: PASS.
+- Latest SOL-verified public commit: `ad91c9277715e998663e8c12b6c37cca16e53955`
+- M3A1-BC1 publication: PUBLISHED; SOL public-URL review: PASS.
 - Web GPT SOL public-URL review: PASS
-- Latest published Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md
-- Latest published report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_REPORT.md
-- Current operational Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/current/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE.md
-- Current operational report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE_REPORT.md
+- Latest published Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE.md
+- Latest published report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE_REPORT.md
+- Current operational Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/current/M3A1_OA1_OWNER_ACCEPTANCE_GATE_AND_REVIEW_TARGET_CLOSURE.md
+- Current operational report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3A1_OA1_OWNER_ACCEPTANCE_GATE_REPORT.md
 
 repository HEADにはTegaki本体やH3の別作業も進むため、最新HEADをManga実装SHAと読み替えないこと。
 
@@ -45,11 +45,12 @@ Primary flowはScene-firstである。CAST、人物粗領域、ラフ人物/白�
 - M3A / M3A.1: Visual Panel Frameとruntime framingを実装済み。
 - M3A.1: headless testとstructural pixel oracleはPASS。
 - M3A.1 Owner live-browser acceptance: Browser/Visual PASS、Owner acceptance PENDINGとして扱う。
-- M3A1-BC1 live-browser closure: B0-B9 PASS; Owner acceptance remains PENDING。
+- M3A1-BC1 technical closure: B0-B9 PASS; routed to completed after SOL review。
+- M3A1-OA1 Owner gate: O1-O5 decision pending; M3A.1 gate WAITING OWNER。
 - Web GPT SOL public-URL review: PASS。
-- Current operation: M3A1-BC1 Owner Live-Browser Closure and Publication Model Cleanup。
-- Active LUNA implementation Card: M3A1-BC1。
-- M3B候補: Rough Manga / White-Dummy Character Guide Integration。Owner browser gate前に開始しない。
+- Current operation: M3A1-OA1 Owner Acceptance Gate and Review Target Closure。
+- Active LUNA Card: M3A1-OA1。
+- M3B eligibility: CLOSED。Owner acceptance前に開始しない。
 - production output namespace移行: 未実施。`output/Tegaki`を維持する。
 
 証拠の注意:

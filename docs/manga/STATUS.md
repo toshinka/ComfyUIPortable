@@ -1,21 +1,22 @@
 # ComfyUIPortable 現在地 (Status & Direction)
 
 更新: 2026-09-09 JST
-Review Target Commit SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b` (M3A.1 implementation, published)
+M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`
+M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`
 Manga正本入口: [GITHUB_MANGA.txt](../../GITHUB_MANGA.txt)
-Latest SOL-verified public commit: `399b4d5f973c389f42cb1912be3abe153ad08678`
-Latest published Card: [M3A1-TF2 — External AI Publication Traceability Closure](cards/completed/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_CLOSURE.md)
-Latest published report: [M3A1-TF2 External AI Publication Traceability Report](reports/M3A1_TF2_EXTERNAL_AI_PUBLICATION_TRACEABILITY_REPORT.md)
-M3A1-TF2 publication: PUBLISHED; SOL public-URL review: PASS
-Current operational Card: [M3A1-BC1 — Owner Live-Browser Closure and Publication Model Cleanup](cards/current/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE.md)
-Current operational report: [M3A1-BC1 Owner Live-Browser Closure and Publication Model Cleanup Report](reports/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE_REPORT.md)
-Browser technical verification: PASS / Visual evidence: PASS / Owner acceptance: PENDING / M3B authorization: NO.
+Latest SOL-verified public commit: `ad91c9277715e998663e8c12b6c37cca16e53955`
+Latest published Card: [M3A1-BC1 — Owner Live-Browser Closure and Publication Model Cleanup](cards/completed/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE.md)
+Latest published report: [M3A1-BC1 Owner Live-Browser Closure and Publication Model Cleanup Report](reports/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE_REPORT.md)
+M3A1-BC1 publication: PUBLISHED; SOL public-URL review: PASS
+Current operational Card: [M3A1-OA1 — Owner Acceptance Gate & Review Target Closure](cards/current/M3A1_OA1_OWNER_ACCEPTANCE_GATE_AND_REVIEW_TARGET_CLOSURE.md)
+Current operational report: [M3A1-OA1 Owner Acceptance Gate Report](reports/M3A1_OA1_OWNER_ACCEPTANCE_GATE_REPORT.md)
+Browser technical verification: PASS / Visual evidence: PASS / Owner acceptance: PENDING / M3A.1 gate: WAITING OWNER / M3B eligibility: CLOSED.
 
 `GITHUB_ComfyUI.txt` はManga/H3を振り分けるCompatibility Routerへ変更した。
 今回のnamespace整理は文書/navigationのみで、Manga runtime・workflow・schema・outputを変更していない。
 今後はWeb GPT SOLが[新規チャット引き継ぎ](WEBGPT_SOL_LUNA_HANDOFF.md)からGitHubを監査し、
 [Card Router](cards/README.md)と[現行プロトコル](plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md)に従って
-ローカルLUNAへ新しい限定Cardを発行する。現在、active LUNA implementation Cardはない。
+ローカルLUNAへ新しい限定Cardを発行する。現在のactive LUNA CardはOA1で、Owner decision待ちである。
 
 ---
 
@@ -122,17 +123,19 @@ Scene-only Draft (M1) → CAST 複数出演 (M2) → Rough Guide (M3) → UX She
   - `page.visual_frames` SSOT、3-layer Edit UI、Frame独立操作、TegakiMangaFrameOverlay node、0-frame pass-through、V0-V4 PASS。
   - **報告書**: [M3A_VISUAL_PANEL_FRAME_AND_FRAME_GUIDE_REPORT.md](reports/M3A_VISUAL_PANEL_FRAME_AND_FRAME_GUIDE_REPORT.md)
 
-- **現行Review Slice**: **M3A1-BC1 — Owner Live-Browser Closure and Publication Model Cleanup** — PASS (Browser/Visual) / OWNER ACCEPTANCE PENDING
+- **現行Review Slice**: **M3A1-OA1 — Owner Acceptance Gate & Review Target Closure** — PASS (Browser/Visual) / OWNER ACCEPTANCE PENDING
   - **Finding A (fail-closed)**: invalid JSON / out-of-range page_index → ERROR status (fail-closed)。0 frames → pass-through PASS (legal)。
   - **Finding B (white gutter)**: comic_panels semantics: 白キャンバス + source paste inside frames + 黒枠線。Frame外 = 純白 gutter。
   - **Finding C (per-frame thickness)**: `border_thickness` per-frame honored、global `line_thickness` は fallback のみ。
   - **Finding D (area canonical)**: `area` key canonical。`shape` はlegacy fallback。`copyFramesFromScenes` area-only出力。JSON roundtrip後のdrift解消。
   - **Finding E (empty guide)**: `derive_panel_layout_spec_from_frames([])` → None (no fake full-frame)。
-  - **Manifest truth**: `luna_browser_verdict=PASS`、`visual_evidence=PASS`、`owner_acceptance=PENDING`。
+  - **BC1 technical truth**: `luna_browser_verdict=PASS`、`visual_evidence=PASS`、`owner_acceptance=PENDING`。
   - **Frame ID correction**: sequential `frame_1, frame_2...` (not timestamp+random — M3A Report記述誤り修正)。
   - **自動テスト**: Python 14/14 (M3A.1) + 7/7 (M3A) + 6/6 (M2B1 authoring) + 7/7 (M1.1 wiring) PASS、JS 19/19 PASS。V0-V4 pixel oracle PASS。
-  - **報告書**: [M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE_REPORT.md](reports/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE_REPORT.md)
+  - **BC1報告書**: [M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE_REPORT.md](reports/M3A1_BC1_OWNER_LIVE_BROWSER_CLOSURE_REPORT.md)
   - **Browser evidence**: `docs/manga/verification/m3a1_browser/M3A1_BROWSER_CLOSURE_MANIFEST.json` と B1-B9 PNG evidence。
+  - **OA1 Owner gate**: O1-O5 は未判定。Owner acceptanceを推測せず、M3A.1 gateはWAITING OWNER。
+  - **OA1報告書**: [M3A1_OA1_OWNER_ACCEPTANCE_GATE_REPORT.md](reports/M3A1_OA1_OWNER_ACCEPTANCE_GATE_REPORT.md)
 
 - **次Card候補**: **M3B — Rough Manga / White-Dummy Character Guide Integration** (Owner Browser受入完了後に着手)
   - rough manga image drop、white-dummy / silhouette character guide、Character Instance ↔ rough figure association、weak occupancy ControlNet を統合予定。
