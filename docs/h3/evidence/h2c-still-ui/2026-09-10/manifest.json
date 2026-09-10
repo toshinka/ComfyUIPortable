@@ -1,0 +1,205 @@
+{
+  "schema": "tegaki.h3.h2c.still-ui.evidence/v1",
+  "card": "H2C",
+  "title": "Still UI Browser Acceptance / Closeout",
+  "evidence_date": "2026-09-10",
+  "captured_at": "2026-09-10T12:21:37+09:00",
+  "status": [
+    "IMPLEMENTED",
+    "VERIFIED SOURCE/LOGIC",
+    "VERIFIED BROWSER STILL PROMPT-ONLY",
+    "VERIFIED BROWSER STILL SOURCE-ANCHORED",
+    "VERIFIED STILL USE SETTINGS",
+    "VERIFIED CROSS-MEDIA STATE",
+    "VERIFIED VIDEO REGRESSION",
+    "OWNER ACCEPTANCE PENDING"
+  ],
+  "publication": "LOCAL MAIN",
+  "owner_acceptance": "PENDING",
+  "implementation": {
+    "base_commit": "2b167493ee83df2a4f80c10669d9c4e4387e111e",
+    "additional_fix_commit": "0df5f865",
+    "canonical_launcher": "h3/run_h3.bat",
+    "skin_url": "http://127.0.0.1:8191/",
+    "native_backend_url": "http://127.0.0.1:8189/",
+    "evidence_docs_commit": null
+  },
+  "environment": {
+    "host_gpu": "NVIDIA GeForce RTX 4070",
+    "vram_total_bytes": 12878086144,
+    "ram_total_bytes": 68476002304,
+    "native_backend": "ComfyUI 0.30.0",
+    "python": "3.13.14 embedded",
+    "pytorch": "2.13.0+cu130",
+    "custom_nodes": "disabled",
+    "model_store": "h3/model_store/",
+    "shared_comfyui_models_used": false,
+    "workflow": "workflows/h3/H2B_SOURCE_ANCHORED_STILL_BASE.json",
+    "workflow_schema": "tegaki.h3.h2b.source-anchored-still/v1",
+    "workflow_sha256": "ac62bccdd4fdc1bbd88a474cfd3911028ed2962e3108eb370af6729af8d49251"
+  },
+  "source_upload": {
+    "authorization": "Owner-approved exact local source for this Browser acceptance",
+    "local_source_path": "output/h3/tests/reference_robot_v1.png",
+    "runtime_staged_path": "output/h3/inputs/5e76ec7b142f437893500c49cab7a9b4.png",
+    "evidence_path": "docs/h3/evidence/h2c-still-ui/2026-09-10/source.png",
+    "source_id": "5e76ec7b142f437893500c49cab7a9b4",
+    "format": "PNG",
+    "dimensions": [608, 352],
+    "bytes": 206821,
+    "sha256": "43d29d07b5d0b4a2c4650a2c840ae6cf07980714008fddb1d1008b0e08cf030e",
+    "external_upload": false
+  },
+  "runs": {
+    "prompt_only_still": {
+      "job_id": "1103a35a3d6b4bf6aab4f8f190466361",
+      "prompt_id": "c8571b2d-f0c9-4619-a887-9558d5a244b8",
+      "route": "native_still",
+      "route_label": "Text only",
+      "prompt": "A small paper robot standing in warm maroon light, clean studio composition",
+      "resolution": [608, 352],
+      "steps": 20,
+      "elapsed_seconds": 109.39,
+      "output": {
+        "path": "output/h3/still/h2a_native_still_00002_.png",
+        "evidence_path": "docs/h3/evidence/h2c-still-ui/2026-09-10/prompt_only.png",
+        "bytes": 169205,
+        "sha256": "8ccdefd9a4b074830cbcb9905837fe6c5ee081d168a6edd900defad5248aeaad"
+      },
+      "browser_result": "completed image Preview; no Duration; no Continue"
+    },
+    "source_anchored_still": {
+      "job_id": "4690d19f469f4580bca852410e4e5e2",
+      "prompt_id": "525aed3e-5c54-49f7-9738-23d41d9b189f",
+      "route": "native_source_anchored_still",
+      "route_label": "Source Image",
+      "prompt": "A small paper robot standing in a leafy greenhouse, warm red body, gentle studio light",
+      "resolution": [608, 352],
+      "seed": "1522422703298925749",
+      "steps": 20,
+      "source_id": "5e76ec7b142f437893500c49cab7a9b4",
+      "elapsed_seconds": 35.44,
+      "output": {
+        "path": "output/h3/still/h2b_source_anchor_00006_.png",
+        "evidence_path": "docs/h3/evidence/h2c-still-ui/2026-09-10/source_anchored.png",
+        "bytes": 281765,
+        "sha256": "ca72a4ba640b90c8a3c271cbfca9c6d8262be8530af74b778c812fbd6d386b4e"
+      },
+      "browser_result": "completed generated Still image Preview and Source Image History card"
+    },
+    "use_settings_source_job": {
+      "job_id": "8eac0d62fa4b471a8f562a0420bd8dc3",
+      "prompt_id": "cfa15626-4b7b-45dc-a360-00668cf7c398",
+      "route": "native_source_anchored_still",
+      "result": "PASS",
+      "feedback": "Settings loaded.",
+      "restored": {
+        "prompt": "A small paper robot standing in a leafy greenhouse, warm red body, gentle studio light",
+        "resolution": "608x352",
+        "seed": "1522422703298925749",
+        "steps": "20",
+        "duration_hidden": true,
+        "source_present": true
+      },
+      "auto_generate": false
+    },
+    "video_regression": {
+      "job_id": "08bc7292717646ba9281faae7a3c932d",
+      "prompt_id": "f4c5d9ee-78af-494a-8b7d-533616933eb2",
+      "route": "native_t2v",
+      "route_label": "Text only",
+      "prompt": "A red kite drifting above a quiet paper city, gentle camera movement",
+      "resolution": [608, 352],
+      "duration_seconds": 5.0,
+      "steps": 20,
+      "elapsed_seconds": 130.34,
+      "output": {
+        "path": "output/h3/video/h1a_native_t2v_00009_.mp4",
+        "bytes": 255026,
+        "sha256": "26acc5a5f1f3374bc007e90d34ede541b6ac3897f3b2b463c389288b900ccff9"
+      },
+      "browser_result": "completed video Preview with playback controls and Text only History card",
+      "committed": false
+    },
+    "cross_media_still": {
+      "job_id": "4690d19f469f4580bca852410e4e5e2",
+      "active_media": "still",
+      "active_state_while_previewing_video": "Running",
+      "active_queue_while_previewing_video": 1,
+      "preview_media_while_active": "video",
+      "preview_job_id": "08bc7292717646ba9281faae7a3c932d",
+      "preview_label": "Text only",
+      "completion_preview_label": "Source Image",
+      "history_count_after_completion": 3,
+      "history_order_after_completion": ["still", "video", "still"]
+    }
+  },
+  "mode_crossing": {
+    "result": "PASS",
+    "video_start_reference_after_still_use_settings": "6793f62c617841c58d178c851cdac450",
+    "video_end_reference_after_still_use_settings": "6aa1536a378b467a94485fad9bf115e6",
+    "still_source_after_video_switch": "5e76ec7b142f437893500c49cab7a9b4",
+    "video_duration_visible": true,
+    "still_duration_hidden": true,
+    "later_reference_removal": "intentional text-only Video regression setup, not a mode-crossing failure"
+  },
+  "visual_acceptance": {
+    "result": "PASS WITH HOST VIEWPORT NOTE",
+    "requested_target": [1280, 720],
+    "measured_chrome_css_viewport": [1083, 557],
+    "preview_dominant": true,
+    "generate_before_advanced": true,
+    "still_has_no_duration_or_end_frame": true,
+    "video_reference_and_duration_density": true,
+    "maroon_visual_ramp": "PASS",
+    "exact_requested_css_viewport_measured": false,
+    "note": "Chrome CUA host retained a 1083x557 CSS content viewport despite the explicit desktop viewport request; the desktop full-page composition and target y placement were reviewed and the limitation is recorded."
+  },
+  "telemetry": {
+    "source_run_sampling_interval_seconds": 5,
+    "source_run_minimum_free_vram_bytes": 4660450860,
+    "source_run_minimum_free_vram_mib": 4444.6,
+    "source_run_derived_observed_peak_used_mib": 7836.9,
+    "cross_media_still_minimum_free_vram_bytes": 4649273804,
+    "oom_count": 0,
+    "accepted_job_retry_count": 0,
+    "method_note": "Values are sampled /api/status observations; derived peak used is total reported VRAM minus sampled minimum free VRAM, not a hardware guarantee."
+  },
+  "artifacts": {
+    "source": {
+      "path": "docs/h3/evidence/h2c-still-ui/2026-09-10/source.png",
+      "bytes": 206821,
+      "sha256": "43d29d07b5d0b4a2c4650a2c840ae6cf07980714008fddb1d1008b0e08cf030e"
+    },
+    "prompt_only": {
+      "path": "docs/h3/evidence/h2c-still-ui/2026-09-10/prompt_only.png",
+      "bytes": 169205,
+      "sha256": "8ccdefd9a4b074830cbcb9905837fe6c5ee081d168a6edd900defad5248aeaad"
+    },
+    "source_anchored": {
+      "path": "docs/h3/evidence/h2c-still-ui/2026-09-10/source_anchored.png",
+      "bytes": 281765,
+      "sha256": "ca72a4ba640b90c8a3c271cbfca9c6d8262be8530af74b778c812fbd6d386b4e"
+    }
+  },
+  "verification": {
+    "h2c_ui": "52 PASS",
+    "h1b_ui": "36 PASS",
+    "p2_ui": "44 PASS",
+    "h1c_ui": "38 PASS",
+    "python_unittest": "48 tests OK",
+    "javascript_syntax": "PASS",
+    "compileall": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "scope_audit": {
+    "new_model": false,
+    "new_dependency": false,
+    "shared_comfyui_changes": false,
+    "manga_changes": false,
+    "external_upload": false,
+    "mp4_committed": false,
+    "owner_acceptance": "PENDING",
+    "github_push": false
+  }
+}

@@ -4,7 +4,7 @@
 
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
 将来の実装棚とReference Implementation evidenceを一か所から辿るための
-document hub です。現在は **H2B / Source-Anchored Still / Single Reference I2I Feasibility** であり、
+document hub です。現在は **H2C / Still UI Browser Acceptance / Source Image + cross-media vertical slice** であり、
 H1C / Frame-Bridged Continuation は回帰基盤として保持し、
 H1B.1 / Start + End Frame and Native FL2VA vertical slice + UX P0/P1/P2
 Fixes は履歴と回帰対象として保持します。H0/H0.1/H1A/H1B の model
@@ -23,8 +23,11 @@ H2-INFRA external model library normalization is `CONFIGURED / VERIFIED` and
 `PUBLISHED ON MAIN`:
 the four first-wave heavy Portable copies are removed, the Portable fallback
 namespace is retained without bundled heavy weights, and the local shortcut
-collection is configured. H2B remains the capability gate; Still UI remains
-not started. Owner acceptance remains pending.
+collection is configured. H2C is the bounded Browser-facing Still UI gate over
+the H2B source route; production I2I semantics remain out of scope. The H2C
+base implementation is in the current `origin/main` history, while the
+seed-losslessness fix and this closeout package are local until Owner push.
+Owner acceptance remains pending.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
@@ -72,6 +75,9 @@ not started. Owner acceptance remains pending.
 | `docs/h3/reports/H2B_SOURCE_ANCHORED_STILL_FEASIBILITY_REPORT.md` | H2B single-source anchored Still feasibility route, matched comparison, telemetry, and closeout boundary | CURRENT H2B REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H2B_SOURCE_ANCHORED_STILL_FEASIBILITY_REPORT.md` |
 | `docs/h3/evidence/h2b-source-anchor/2026-09-10/README.md` | H2B source image, prompt-only/anchored outputs, source-influence review, and runtime evidence | CURRENT H2B EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2b-source-anchor/2026-09-10/README.md` |
 | `docs/h3/evidence/h2b-source-anchor/2026-09-10/manifest.json` | Machine-readable H2B source/runtime/output manifest | CURRENT H2B EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2b-source-anchor/2026-09-10/manifest.json` |
+| `docs/h3/reports/H2C_STILL_UI_VERTICAL_SLICE_REPORT.md` | H2C Still UI Browser acceptance, state separation, visual review, and closeout | CURRENT H2C REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H2C_STILL_UI_VERTICAL_SLICE_REPORT.md` |
+| `docs/h3/evidence/h2c-still-ui/2026-09-10/README.md` | H2C prompt-only/source Still Browser, History, cross-media, and visual evidence | CURRENT H2C EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2c-still-ui/2026-09-10/README.md` |
+| `docs/h3/evidence/h2c-still-ui/2026-09-10/manifest.json` | Machine-readable H2C Browser/runtime/output manifest | CURRENT H2C EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2c-still-ui/2026-09-10/manifest.json` |
 | `docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` | H2-INFRA external model migration, isolation, shortcuts, cold restart, and closeout | CURRENT H2-INFRA REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` |
 | `docs/h3/evidence/model-library/2026-09-10/README.md` | H2-INFRA inventory, migration, deletion, shortcut, and runtime evidence index | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/README.md` |
 | `docs/h3/evidence/model-library/2026-09-10/inventory.json` | Machine-readable before/after H3 model inventory | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/inventory.json` |
@@ -165,6 +171,9 @@ implementation follows from that result automatically.
 - [H2B_SOURCE_ANCHORED_STILL_FEASIBILITY_REPORT.md](reports/H2B_SOURCE_ANCHORED_STILL_FEASIBILITY_REPORT.md)
   — H2B one-source anchored Still feasibility, matched prompt-only comparison,
   Native conditioning semantics, source influence, and explicit non-scope.
+- [H2C_STILL_UI_VERTICAL_SLICE_REPORT.md](reports/H2C_STILL_UI_VERTICAL_SLICE_REPORT.md)
+  — H2C Still Browser acceptance, source upload, History restore, mode crossing,
+  cross-media active/preview separation, visual review, and explicit limits.
 - [H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md](reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md)
   — H2-INFRA external model locations, Portable fallback semantics, shortcut
   collection, cold restart, post-delete Still, and closeout boundary.
@@ -201,15 +210,18 @@ implementation follows from that result automatically.
 - [H2B evidence](evidence/h2b-source-anchor/2026-09-10/) — one source image,
   matched prompt-only and anchored Still outputs, contact sheet, hashes, and
   RTX 4070 telemetry.
+- [H2C evidence](evidence/h2c-still-ui/2026-09-10/) — prompt-only and
+  source-anchored Still Browser results, History `Use settings`, mode crossing,
+  active-job/preview-job separation, Video regression, and visual review.
 - [H2-INFRA model-library evidence](evidence/model-library/2026-09-10/) —
   before/after inventory, external hashes, exact Portable deletion, shortcut
   regeneration, cold-start path observation, and post-delete H2B Still.
 - Production H3 output is isolated at `output/h3/video/`, with `debug/` and `tests/`
   alongside it. Existing `output/` content and Manga output are outside this slice.
 
-The historical groundwork reports remain historical records. The current gate is
-the H2B report and evidence above; it does not imply Owner acceptance, public
-production deployment, or adoption of a candidate implementation.
+The historical groundwork reports remain historical records. The current gate
+is the H2C report and evidence above; it does not imply Owner acceptance,
+public production deployment, or adoption of a candidate implementation.
 
 ## H3 implementation boundary
 
@@ -234,8 +246,10 @@ only the fixed `start_frame` / `end_frame` slots and binds them to optional
 near-final Browser canvas bridge into `start_frame`, clears `end_frame`, and
 permits one manual continuation through the existing Native route. `h3/run_h3.bat`
 is canonical and `run_h1a.bat` delegates to it. Do not infer REF2VA, ordered
-generic multi-reference, Still, Segment, Studio, Timeline, Storyboard, Cast,
-3D, Manga, or a persistent project schema from these paths.
+generic multi-reference, production I2I semantics, source-fidelity controls,
+Segment, Studio, Timeline, Storyboard, Cast, 3D, Manga, or a persistent project
+schema from these paths. H2C adds only the bounded Still Source Image lens over
+the H2B first-frame route.
 
 ## Review recipe
 
@@ -268,9 +282,13 @@ generic multi-reference, Still, Segment, Studio, Timeline, Storyboard, Cast,
 15. Read the H2B report and dated evidence; verify the single source path,
     matched prompt-only comparison, Native first-frame binding, source
     influence, and 12GB telemetry separately.
-16. Stop at the H2B feasibility gate; do not infer Owner acceptance, production
-    Still UI, REF2VA, ordered multi-reference, Segment, Studio, or production
-    deployment from a local generation result.
+16. Read the H2C report and dated evidence; verify prompt-only and source
+    Browser completions, the authorized upload path, `Use settings`, mode
+    crossing, active-job/preview-job separation, Video regression, and the
+    recorded viewport qualification separately.
+17. Stop at the H2C gate; do not infer Owner acceptance, production I2I,
+    REF2VA, ordered multi-reference, Segment, Studio, or production deployment
+    from this bounded Browser slice.
 
 ## Evidence vocabulary
 
@@ -281,7 +299,7 @@ generic multi-reference, Still, Segment, Studio, Timeline, Storyboard, Cast,
 - `VERIFIED BROWSER UI GENERATION`: the prompt and, for H1B, the single Start
   Frame were submitted through the browser controls and the job reached a visible
   completed Preview; it does not replace runtime/media evidence or Owner acceptance.
-- `IMPLEMENTED`: the bounded H1A/H1B/H1C source and canonical launcher are present and tested;
+- `IMPLEMENTED`: the bounded H1A/H1B/H1C/H2C source and canonical launcher are present and tested;
   it does not mean the whole H3 roadmap is implemented.
 - `BLOCKED`: a concrete dependency, model, or scope boundary stopped the relevant
   runtime path.

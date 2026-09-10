@@ -6,7 +6,7 @@ Updated: 2026-09-10 JST
 
 Current Stage
 -------------
-H2B / Source-Anchored Still / Single Reference I2I Feasibility vertical slice
+H2C / Still UI Browser Acceptance / Source Image + cross-media vertical slice
 H1C / Frame-Bridged Continuation: IMPLEMENTED / VERIFIED (regression foundation)
 Groundwork: PASS (historical)
 Semantic Alignment: PASS (historical)
@@ -57,11 +57,22 @@ H2B source influence: OBSERVED / PASS
 H2B Browser UI: N/A (feasibility path intentionally has no new Still UI)
 H2B evidence: CURRENT FEASIBILITY EVIDENCE
 H2B publication: PUBLISHED ON MAIN
+H2C implementation: IMPLEMENTED
+H2C base implementation commit: 2b167493ee83df2a4f80c10669d9c4e4387e111e
+H2C Still prompt-only Browser: VERIFIED BROWSER UI GENERATION
+H2C Still Source Image Browser: VERIFIED BROWSER UI GENERATION
+H2C Still History Use settings: VERIFIED BROWSER UI
+H2C mode crossing: VERIFIED BROWSER UI
+H2C cross-media activeJob/previewJob: VERIFIED BROWSER UI
+H2C Video regression: VERIFIED BROWSER UI GENERATION
+H2C additional seed fix: IMPLEMENTED / VERIFIED; LOCAL MAIN
+H2C evidence/report: CURRENT REVIEW EVIDENCE; LOCAL MAIN
+H2C publication: BASE IMPLEMENTATION PUBLISHED ON MAIN / NEW CLOSEOUT LOCAL
 H3 external model library: CONFIGURED / VERIFIED
 Portable duplicate heavy weights: REMOVED
 Portable fallback namespace: RETAINED / EMPTY OF FIRST-WAVE HEAVY WEIGHTS
 Model shortcuts: CONFIGURED LOCAL
-Still UI: NOT STARTED
+Still UI: BOUNDED H2C VERTICAL SLICE IMPLEMENTED / VERIFIED
 Owner acceptance: PENDING
 
 This entry is the starting point for external AI review of MiniMax H3 work. It
@@ -101,6 +112,9 @@ Read Order
 30. ComfyUIPortable/docs/h3/reports/H1C_FRAME_BRIDGED_CONTINUATION_REPORT.md
 31. ComfyUIPortable/docs/h3/evidence/h1c/2026-09-09/README.md
 32. ComfyUIPortable/docs/h3/evidence/h1c/2026-09-09/manifest.json
+33. ComfyUIPortable/docs/h3/reports/H2C_STILL_UI_VERTICAL_SLICE_REPORT.md
+34. ComfyUIPortable/docs/h3/evidence/h2c-still-ui/2026-09-10/README.md
+35. ComfyUIPortable/docs/h3/evidence/h2c-still-ui/2026-09-10/manifest.json
 
 Master Roadmap
 --------------
@@ -160,8 +174,10 @@ The shared shell/tab goal is recorded in the Manga SOL/LUNA handoff. It is a
 separate future integration Card; H1B.1 does not authorize Manga or shared-shell edits.
 
 H1A/H1B/H1B.1/H1C own the narrow Video implementation boundary under `h3/` and
-`workflows/h3/`. H2A/H2B add separate H3-only Still feasibility adapters,
-workflows, and local runners without adding a production Still UI. H1B.1
+`workflows/h3/`. H2A/H2B add separate H3-only Still feasibility adapters and
+workflows. H2C adds a bounded Browser-facing Still lens over the H2B route; it
+does not establish a production I2I semantic or persistent Still project
+schema. H1B.1
 accepts only the named `start_frame` and
 `end_frame` slots and binds them to optional `first_frame` / `last_frame`
 edges. The H3 model store remains isolated; no custom node, ComfyUI
@@ -170,7 +186,7 @@ uploaded runtime inputs, and model weights remain ignored.
 
 Current Review Gate
 -------------------
-H2B Source-Anchored Still / Single Reference I2I Feasibility
+H2C Still UI Browser Acceptance / Closeout
 
 H1B.1 remains implemented as the regression foundation and has Start-only,
 Start+End, End-only, and text-only browser completion results plus Native media
@@ -190,9 +206,15 @@ continuation. H2B adds one local PNG/JPEG source to the existing Native
 `first_frame` conditioning edge, compares it with a matched prompt-only Still,
 and records bounded source influence. The H2B report distinguishes
 source/logic, local generation, Browser UI N/A, publication, and Owner
-acceptance. REF2VA, ordered generic multi-reference, production Still UI,
-Segment, Studio, Timeline, Storyboard, Cast, 3D, and Manga are not started by
-this slice.
+acceptance. H2C adds one Source Image slot to the Still lens, records
+prompt-only and source-anchored Browser completions, History `Use settings`,
+mode crossing, and the separate active-job/preview-job cross-media behavior.
+The additional 64-bit seed boundary fix is local in `0df5f865`; the base H2C
+implementation is in the current `origin/main` history. Exact 1280 x 720 CSS
+viewport readback was not available in the CUA Chrome host and is recorded as
+a visual-review qualification. REF2VA, ordered generic multi-reference,
+production I2I semantics, source-fidelity controls, Segment, Studio, Timeline,
+Storyboard, Cast, 3D, and Manga are not started by this slice.
 
 Publication Note
 ----------------
@@ -221,3 +243,8 @@ H2B evidence/report/canonical-doc commit: `828524e8700d4c36906e692e3153ed9e17772
 H2-INFRA external model library and shortcut normalization is technically
 verified in the closeout evidence/report, and the closeout package is
 `PUBLISHED ON MAIN`. Owner acceptance remains `PENDING`.
+H2C base implementation is present in `origin/main` through
+`2b167493ee83df2a4f80c10669d9c4e4387e111e`. The Browser seed-losslessness fix
+is local commit `0df5f865`; H2C evidence/report/canonical updates are local
+until Owner push and public URL verification. Owner acceptance remains
+`PENDING`.
