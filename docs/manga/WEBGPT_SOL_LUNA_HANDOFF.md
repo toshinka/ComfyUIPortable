@@ -27,10 +27,10 @@ Repository: `https://github.com/toshinka/tegaki`
 - Latest published Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION.md
 - Latest published report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION_REPORT.md
 - Latest published manifest: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_lr8/M3B_LR8_MANIFEST.json
-- Active Card: M3B-PI1
-- Latest completed Card: docs/manga/cards/completed/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION.md
-- Latest completed report: docs/manga/reports/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION_REPORT.md
-- Latest completed manifest: docs/manga/verification/m3b_lr8/M3B_LR8_MANIFEST.json
+- Active Card: NONE
+- Latest completed Card: docs/manga/cards/completed/M3B_PI1_OPTIONAL_CLEAN_GUIDE_PRODUCTION_BACKEND_INTEGRATION.md
+- Latest completed report: docs/manga/reports/M3B_PI1_OPTIONAL_CLEAN_GUIDE_PRODUCTION_BACKEND_INTEGRATION_REPORT.md
+- Latest completed manifest: docs/manga/verification/m3b_pi1/M3B_PI1_MANIFEST.json
 
 repository HEADにはTegaki本体やH3の別作業も進むため、最新HEADをManga実装SHAと読み替えないこと。
 
@@ -52,12 +52,13 @@ Primary flowはScene-firstである。CAST、人物粗領域、ラフ人物/白�
 - M3A1-BC1 technical closure: B0-B9 PASS; routed to completed。
 - M3A1-OA1 gate: CLOSED; M3B eligibility OPEN。
 - Web GPT SOL public-URL review: PASS。
-- Latest completed operation: M3B-LR8 Core CAST_GLOBAL Robustness Qualification Research — PUBLISHED / SOL REVIEWED / CORE_GLOBAL_QUALIFIED; 12/12 generation PASS, ComfyUI core ControlNetApplyAdvanced contract verified, 0 ACN nodes, 3 IMPROVED, 3 NEUTRAL, 0 REGRESSED, 6/6 figure count not worse, 0 boundary artifacts, 0 regional/control conflicts. ACCEPTED_BY_DELEGATED_SOL.
+- Latest completed operation: M3B-PI1 Optional CLEAN Guide Production Backend Integration — COMPLETED LOCALLY / PI1_BACKEND_INTEGRATED; 4/4 live production runs PASS, ComfyUI core ControlNetApplyAdvanced with TegakiMangaGenerationGuideBridge, 0 ACN nodes, 0 effect masks, bit-exact CLEAN parity PASS, canonical no-guide workflow untouched.
+- M3B-LR8 Core CAST_GLOBAL Robustness Qualification Research — PUBLISHED / SOL REVIEWED / CORE_GLOBAL_QUALIFIED.
 - M3B-LR2 stop reason: `CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED`。
 - M3B-LR2R1 result: pinned model REUSED from the verified reForge shared store; ComfyUI loader, A/B batch, canonical no-Guide, and required regressions PASS。
-- Active Card: M3B-PI1 (ACTIVE). M3B-LR8 is PUBLISHED / SOL REVIEWED with CORE_GLOBAL_QUALIFIED; M3B research qualification is CLOSED FOR CURRENT CLEAN-GLOBAL CANDIDATE; Production ControlNet integration is PI1 BACKEND SLICE IN PROGRESS. Final Owner product review is DEFERRED.
-- M3B-LR1 generation influence: NOT IMPLEMENTED。M3B-LR2 generation influence: BLOCKED。M3B-LR2R1: PUBLISHED / SOL REVIEWED / QUALITY WEAK。M3B-LR3: PUBLISHED / SOL REVIEWED / OPTION_A_INCONCLUSIVE。Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE。Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE。M3B-LR4: PUBLISHED / SOL REVIEWED / LOCALITY_SUPPORTED。M3B-LR5: PUBLISHED / SOL REVIEWED / CAST_MASKED_CONFLICT。M3B-LR6: PUBLISHED / SOL REVIEWED / SOFT_MASK_CONFLICT。M3B-LR7: PUBLISHED / SOL REVIEWED / EFFECT_MASK_INTERACTION_CONFIRMED。M3B-LR8: PUBLISHED / SOL REVIEWED / CORE_GLOBAL_QUALIFIED。
-- ControlNet production integration: PI1 BACKEND SLICE IN PROGRESS。
+- Active Card: NONE. M3B-PI1 is completed locally; Production ControlNet integration: M3B-PI1 BACKEND COMPLETED LOCALLY; Final Owner product review is DEFERRED; Owner push and SOL public review remain required.
+- M3B-LR1 generation influence: NOT IMPLEMENTED。M3B-LR2 generation influence: BLOCKED。M3B-LR2R1: PUBLISHED / SOL REVIEWED / QUALITY WEAK。M3B-LR3: PUBLISHED / SOL REVIEWED / OPTION_A_INCONCLUSIVE。Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE。Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE。M3B-LR4: PUBLISHED / SOL REVIEWED / LOCALITY_SUPPORTED。M3B-LR5: PUBLISHED / SOL REVIEWED / CAST_MASKED_CONFLICT。M3B-LR6: PUBLISHED / SOL REVIEWED / SOFT_MASK_CONFLICT。M3B-LR7: PUBLISHED / SOL REVIEWED / EFFECT_MASK_INTERACTION_CONFIRMED。M3B-LR8: PUBLISHED / SOL REVIEWED / CORE_GLOBAL_QUALIFIED。M3B-PI1: COMPLETED LOCALLY / PI1_BACKEND_INTEGRATED。
+- ControlNet production integration: M3B-PI1 BACKEND COMPLETED LOCALLY (UI routing NOT IMPLEMENTED, reserved for PI2)。
 - production output namespace移行: 未実施。`output/Tegaki`を維持する。
 
 証拠の注意:
