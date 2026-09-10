@@ -3,15 +3,18 @@
 Current and historical Manga reports are collected in this directory.
 
 Historical implementation report: [M3A.1 Frame Runtime Truth](M3A1_FRAME_RUNTIME_TRUTH_AND_BROWSER_CLOSURE_REPORT.md).
-Latest published operational report: [M3B-LR2 Rough Guide Generation Influence A/B Report](M3B_LR2_ROUGH_GUIDE_GENERATION_INFLUENCE_AB_REPORT.md).
-Latest local execution report: [M3B-LR2R1 AnyTest v4 Acquisition & A/B Resume Long-Run Report](M3B_LR2R1_ANYTEST_V4_ACQUISITION_AND_AB_RESUME_REPORT.md).
+Latest published operational report: [M3B-LR2R1 AnyTest v4 Acquisition & A/B Resume Long-Run Report](M3B_LR2R1_ANYTEST_V4_ACQUISITION_AND_AB_RESUME_REPORT.md).
+Latest local execution report: [M3B-LR3 Derived Clean Guide A/B Research Report](M3B_LR3_DERIVED_CLEAN_GUIDE_AB_RESEARCH_REPORT.md).
 M3A1-OA1 Owner Acceptance Gate Report remains the preceding milestone gate report.
 M3B-LR2 stopped before A/B generation because local ControlNet compatibility was
 not established; its report remains a historical local-stop record.
-M3B-LR2R1 completed locally: shared-storage model identity, ControlNet loader,
+M3B-LR2R1 completed: shared-storage model identity, ControlNet loader,
 eight-image A/B generation, canonical no-Guide regression, and required
-LR1/M2B regressions are recorded. Publication remains LOCAL pending Owner push
-and SOL review.
+LR1/M2B regressions are recorded. Its historical execution report retains
+`Publication: LOCAL`; current publication truth is PUBLISHED / SOL REVIEWED.
+M3B-LR3 completed locally with six-output CLEAN-vs-RAW/OFF evidence,
+`OPTION_A_INCONCLUSIVE`, and no production integration. Owner push and SOL
+public review remain pending.
 TF2.1 publication-truth report remains historical at [M3A1-TF2.1 Post-Push Publication Truth Closure Report](M3A1_TF2_1_POST_PUSH_PUBLICATION_TRUTH_CLOSURE_REPORT.md).
 
 Namespace work is recorded in

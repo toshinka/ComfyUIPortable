@@ -1,0 +1,155 @@
+{
+  "card": "M3B-LR3",
+  "execution_baseline": {
+    "final_head": "09a65e7dfe05b8609ad005e3e9d0acd7f4212404",
+    "origin_main": "09a65e7dfe05b8609ad005e3e9d0acd7f4212404",
+    "card_observed_main": "bbb9f6720c9a4ed8fb7a029814bd10a5442542fd",
+    "latest_sol_reviewed_manga_commit": "cd5dcbf4baca2f6e7ca91dc587dcba013216556b",
+    "remote_drift": "H3/model-path work only after the Manga commit; no Manga conflict"
+  },
+  "stage_0_publication_truth": "PASS",
+  "seeds": [42, 77],
+  "conditions": ["OFF", "RAW", "CLEAN"],
+  "raw_strength": 0.75,
+  "clean_strength": 0.75,
+  "control_start": 0.0,
+  "control_end": 1.0,
+  "preprocessor": "none",
+  "schema_changed": false,
+  "persistent_schema": "UNCHANGED",
+  "whole_page_control": true,
+  "character_specific_control": false,
+  "input_mode": "simple",
+  "conditioning_truth": "Geometry-derived global ControlNet assistance only; Character Instance-specific CAST conditioning was not tested.",
+  "generation_influence": "VERIFIED",
+  "model": {
+    "selector": "CN-anytest_v4\\CN-anytest4_illustrious2_A.safetensors",
+    "shared_storage": "E:\\EasyReforge\\Model\\ControlNet\\CN-anytest_v4\\CN-anytest4_illustrious2_A.safetensors",
+    "reForge_storage": "E:\\EasyReforge\\stable-diffusion-webui-reForge\\models\\ControlNet",
+    "reForge_link_type": "Junction",
+    "reForge_target": "E:\\EasyReforge\\Model\\ControlNet",
+    "bytes": 2502139104,
+    "sha256": "e069d496cc111740716b833238d9bea9cdd59f8623aa85a78d362d088b1f67b8",
+    "controlnet_loader_selector_present": true,
+    "portable_internal_copy_exists": false,
+    "portable_internal_copy_git_tracked": false,
+    "downloaded_or_copied_by_lr3": false
+  },
+  "geometry_provenance": {
+    "source_workflow": "workflows/manga/research/M3B_LR2R1_ANYTEST_AB.json",
+    "document_id": "m3b_lr2r1_ab_fixture",
+    "guide_id": "guide_1",
+    "guide_placement": {"x": 0.0, "y": 0.2434, "w": 1.0, "h": 0.5132},
+    "tolerance": 0.0001,
+    "renderer": "custom_nodes_custom.tegaki_manga_nodes.layout_guide_generator.draw_single_character_mannequin",
+    "renderer_style": "flat_silhouette",
+    "shot_type": "full_body",
+    "include_bbox_outline": false,
+    "canvas_dimensions": {"width": 832, "height": 1216},
+    "output_sha256": "96f99a6c1327925b4b7737c9658ffb3e2b69e76ea2b0fe40210a095b9d99ae3a",
+    "figures": [
+      {
+        "figure_id": "figure_1",
+        "instance_id": "inst_1",
+        "local_area": {"shape_type": "rect", "x": 0.05, "y": 0.12, "w": 0.38, "h": 0.72},
+        "derived_page_area": {"x": 0.05, "y": 0.304984, "w": 0.38, "h": 0.369504},
+        "pixel_bounds": {"x0": 42, "y0": 371, "x1": 358, "y1": 820}
+      },
+      {
+        "figure_id": "figure_2",
+        "instance_id": "inst_2",
+        "local_area": {"shape_type": "rect", "x": 0.57, "y": 0.22, "w": 0.28, "h": 0.58},
+        "derived_page_area": {"x": 0.57, "y": 0.356304, "w": 0.28, "h": 0.297656},
+        "pixel_bounds": {"x0": 474, "y0": 433, "x1": 707, "y1": 795}
+      }
+    ],
+    "instance_id_semantics": "Provenance only; ControlNet was applied to the whole page and did not receive Character Instance identity."
+  },
+  "clean_guide": {
+    "evidence": "M3B_LR3_CLEAN_GUIDE.png",
+    "bytes": 6863,
+    "sha256": "96f99a6c1327925b4b7737c9658ffb3e2b69e76ea2b0fe40210a095b9d99ae3a",
+    "dimensions": "832x1216",
+    "pixel_semantics": "Exactly two black flat silhouettes on white; no boxes, labels, panel outlines, raw Guide pixels, background strokes, tint, or frame borders."
+  },
+  "raw_guide_reference": {
+    "evidence": "M3B_LR3_RAW_GUIDE_REFERENCE.png",
+    "bytes": 3423,
+    "sha256": "4416cdf252166d99ae49e801075362437d1d45224c14ae21bb1008599a232643",
+    "dimensions": "320x240"
+  },
+  "generation_settings": {
+    "workflow": "workflows/manga/research/M3B_LR3_CLEAN_GUIDE_AB.json",
+    "checkpoint": "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors",
+    "resolution": "832x1216",
+    "steps": 20,
+    "cfg": 7.0,
+    "sampler": "euler",
+    "scheduler": "normal",
+    "denoise": 1.0,
+    "raw_input": "existing LR2R1 rough-guide bridge image",
+    "clean_input": "tegaki_manga_guides/M3B_LR3_CLEAN_GUIDE.png",
+    "control_interval": "0.0-1.0",
+    "queue_prompt_id": "0ef41b96-628d-4dab-882c-2eb002199edc",
+    "queue_status": "success",
+    "elapsed_seconds_total": 143.464
+  },
+  "outputs": [
+    {"seed": 42, "condition": "OFF", "source_output": "M3B_LR3_SEED_A_OFF_00001_.png", "evidence": "SEED_A_OFF.png", "bytes": 1543401, "sha256": "b155435e08fce06968c580dc0704e93870b71de2e68efbc8e34d36536afed48c", "dimensions": "832x1216", "queue_status": "PASS"},
+    {"seed": 42, "condition": "RAW", "source_output": "M3B_LR3_SEED_A_RAW_00001_.png", "evidence": "SEED_A_RAW.png", "bytes": 2152850, "sha256": "9275aa7fdfec88e4feeb29cf18d411d92136ac6ba908b57b8564b0c0591485aa", "dimensions": "832x1216", "queue_status": "PASS"},
+    {"seed": 42, "condition": "CLEAN", "source_output": "M3B_LR3_SEED_A_CLEAN_00001_.png", "evidence": "SEED_A_CLEAN.png", "bytes": 2368256, "sha256": "d9e9c066b18fab6632c8c99bef2dd7ea4f2bac7cab064b6855ec0a89ed267d73", "dimensions": "832x1216", "queue_status": "PASS"},
+    {"seed": 77, "condition": "OFF", "source_output": "M3B_LR3_SEED_B_OFF_00001_.png", "evidence": "SEED_B_OFF.png", "bytes": 1688024, "sha256": "55801e8335ca17fa57ddffd738388b5f17e288fbfa414cd91d1cb763c441484f", "dimensions": "832x1216", "queue_status": "PASS"},
+    {"seed": 77, "condition": "RAW", "source_output": "M3B_LR3_SEED_B_RAW_00001_.png", "evidence": "SEED_B_RAW.png", "bytes": 2427776, "sha256": "81eeb9ad29276f40dc71a975e1e9965dd691fb5a86953e2ce55c0fe2e1414a27", "dimensions": "832x1216", "queue_status": "PASS"},
+    {"seed": 77, "condition": "CLEAN", "source_output": "M3B_LR3_SEED_B_CLEAN_00001_.png", "evidence": "SEED_B_CLEAN.png", "bytes": 2321610, "sha256": "625dbc9f5125bca3d328864b2303017255818090c4eb510b0edb5ee41ae34c44", "dimensions": "832x1216", "queue_status": "PASS"}
+  ],
+  "technical_gate": {"seed_42": {"OFF": "PASS", "RAW": "PASS", "CLEAN": "PASS"}, "seed_77": {"OFF": "PASS", "RAW": "PASS", "CLEAN": "PASS"}, "queues": "6/6 PASS", "hash_difference_is_influence_only": true},
+  "visual_review": {
+    "seed_42": {
+      "OFF": {"placement": "NONE", "quality": "USABLE", "notes": "Multi-panel page; no stable left/right two-Figure composition."},
+      "RAW": {"placement": "DEGRADED", "quality": "DEGRADED", "notes": "Left/right figures appear in the central classroom panel, but raw guide lines and box geometry are intrusive and additional close-up panels remain."},
+      "CLEAN": {"placement": "CLEAR", "quality": "USABLE", "notes": "Two figures are clearly left/right in one classroom image; no raw-guide line or box artifact. Both rendered standing rather than the requested seated-right variation."},
+      "seed_variation": "PRESENT"
+    },
+    "seed_77": {
+      "OFF": {"placement": "NONE", "quality": "USABLE", "notes": "Multi-panel/group composition without stable intended two-Figure placement."},
+      "RAW": {"placement": "DEGRADED", "quality": "DEGRADED", "notes": "Intrusive raw-guide box and zig-zag line remain; three visible people make the intended association unstable."},
+      "CLEAN": {"placement": "NONE", "quality": "USABLE", "notes": "Clean classroom image with no raw-guide artifact, but only one visible person; the second Figure is lost."},
+      "seed_variation": "PRESENT"
+    },
+    "aggregate_raw_placement": "DEGRADED",
+    "aggregate_raw_quality": "DEGRADED",
+    "aggregate_clean_placement": "WEAK",
+    "aggregate_clean_quality": "USABLE",
+    "seed_variation": "PRESENT",
+    "browser_live_view": "PASS",
+    "contact_sheet": "M3B_LR3_CONTACT_SHEET.png"
+  },
+  "regression": {
+    "lr1_contract": "12/12 PASS",
+    "lr1_runtime_bridge": "5/5 PASS",
+    "lr1_guide_ops": "PASS",
+    "m2b_minimum_hand_frontend": "19/19 PASS",
+    "lr1_regression": "PASS"
+  },
+  "canonical_no_guide": {
+    "workflow": "workflows/manga/MINIMUM_HAND_MANGA_DRAFT.json",
+    "prompt_id": "85923820-607e-4511-bc96-0ed70af857a8",
+    "queue_status": "PASS",
+    "evidence": "CANONICAL_NO_GUIDE.png",
+    "bytes": 2148402,
+    "sha256": "0b82bd8bb6eb778a0cdaf1be68662865588df5588f0c6f7876c60ce51e607d28",
+    "dimensions": "832x1216",
+    "controlnet_dependency": false,
+    "guide_dependency": false,
+    "result": "PASS"
+  },
+  "option_a": "INCONCLUSIVE",
+  "option_a_provisional_result": "OPTION_A_INCONCLUSIVE",
+  "option_a_reason": "CLEAN improves intended placement and removes raw-guide geometry for Seed 42, but Seed 77 loses the second Figure. The Card's one-seed-improves rule therefore makes the result INCONCLUSIVE.",
+  "production_integration": "NOT_PERFORMED",
+  "final_owner_product_review": "DEFERRED",
+  "stopped_early": false,
+  "stop_reason": "",
+  "publication": "LOCAL",
+  "owner_push_required": true
+}

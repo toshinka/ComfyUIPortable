@@ -44,7 +44,8 @@ MangaとH3はrepository/Portable baseを共有するが、現在は別production
 | `M2B.2 / 3M-2B.2` | COMPLETED / OWNER ACCEPTED | Live UI Bootstrap, Widget Serialization & Workflow Repair |
 | `M3A / 3M-3A` | COMPLETED (Headless) / OWNER PENDING (Browser) | Visual Panel Frame Layer & Frame Guide Integration |
 | `M3A.1 / 3M-3A.1` | PASS (Headless) / OWNER PENDING | Frame Runtime Truth, Gutter Semantics & Live Browser Closure (fail-closed、comic_panels white gutter、per-frame thickness、area canonical key、derive→None) |
-| `M3B-LR2R1` | COMPLETED LOCAL / SOL REVIEW PENDING | AnyTest v4 shared-storage acquisition, ControlNet loader, bounded Guide A/B research, and canonical no-Guide regression |
+| `M3B-LR2R1` | PUBLISHED / SOL REVIEWED | AnyTest v4 shared-storage acquisition, ControlNet loader, bounded Guide A/B research, and canonical no-Guide regression |
+| `M3B-LR3` | COMPLETED LOCAL / SOL REVIEW PENDING | Derived Figure-geometry CLEAN Guide versus RAW/OFF bounded A/B research slice; provisional result OPTION_A_INCONCLUSIVE; no schema or production integration |
 
 ## 3. HISTORICAL / SUPERSEDED (過去の参照資料)
 過去のPhase指示書や中間計画書は歴史的経緯の参照用であり、次作業の直接指示とはみなさない。

@@ -1,0 +1,97 @@
+{
+  "card": "M3B-LR3",
+  "source_workflow": "workflows/manga/research/M3B_LR2R1_ANYTEST_AB.json",
+  "document_id": "m3b_lr2r1_ab_fixture",
+  "input_mode": "simple",
+  "whole_page_control": true,
+  "character_specific_control": false,
+  "geometry_tolerance": 0.0001,
+  "canvas_dimensions": {
+    "width": 832,
+    "height": 1216
+  },
+  "figures": [
+    {
+      "guide_id": "guide_1",
+      "figure_id": "figure_1",
+      "instance_id": "inst_1",
+      "local_area": {
+        "shape_type": "rect",
+        "x": 0.05,
+        "y": 0.12,
+        "w": 0.38,
+        "h": 0.72
+      },
+      "guide_placement": {
+        "x": 0,
+        "y": 0.2434,
+        "w": 1,
+        "h": 0.5132
+      },
+      "derived_page_area": {
+        "x": 0.05,
+        "y": 0.30498400000000003,
+        "w": 0.38,
+        "h": 0.369504
+      },
+      "pixel_bounds": {
+        "x0": 42,
+        "y0": 371,
+        "x1": 358,
+        "y1": 820
+      },
+      "renderer": "custom_nodes_custom.tegaki_manga_nodes.layout_guide_generator.draw_single_character_mannequin",
+      "renderer_style": "flat_silhouette",
+      "shot_type": "full_body",
+      "pose_preset": "standing_neutral",
+      "include_bbox_outline": false,
+      "canvas_dimensions": {
+        "width": 832,
+        "height": 1216
+      },
+      "output_sha256": "96f99a6c1327925b4b7737c9658ffb3e2b69e76ea2b0fe40210a095b9d99ae3a"
+    },
+    {
+      "guide_id": "guide_1",
+      "figure_id": "figure_2",
+      "instance_id": "inst_2",
+      "local_area": {
+        "shape_type": "rect",
+        "x": 0.57,
+        "y": 0.22,
+        "w": 0.28,
+        "h": 0.58
+      },
+      "guide_placement": {
+        "x": 0,
+        "y": 0.2434,
+        "w": 1,
+        "h": 0.5132
+      },
+      "derived_page_area": {
+        "x": 0.57,
+        "y": 0.356304,
+        "w": 0.28,
+        "h": 0.297656
+      },
+      "pixel_bounds": {
+        "x0": 474,
+        "y0": 433,
+        "x1": 707,
+        "y1": 795
+      },
+      "renderer": "custom_nodes_custom.tegaki_manga_nodes.layout_guide_generator.draw_single_character_mannequin",
+      "renderer_style": "flat_silhouette",
+      "shot_type": "full_body",
+      "pose_preset": "standing_neutral",
+      "include_bbox_outline": false,
+      "canvas_dimensions": {
+        "width": 832,
+        "height": 1216
+      },
+      "output_sha256": "96f99a6c1327925b4b7737c9658ffb3e2b69e76ea2b0fe40210a095b9d99ae3a"
+    }
+  ],
+  "output": "docs/manga/verification/m3b_lr3/M3B_LR3_CLEAN_GUIDE.png",
+  "output_sha256": "96f99a6c1327925b4b7737c9658ffb3e2b69e76ea2b0fe40210a095b9d99ae3a"
+}
