@@ -4,7 +4,7 @@
 
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
 将来の実装棚とReference Implementation evidenceを一か所から辿るための
-document hub です。現在は **IP1 / Native Image Prep / Reference Edit Feasibility — IN PROGRESS / NATIVE-ONLY / NO BROWSER UI** であり、Rev.4 は **CURRENT MASTER / DOCS-ONLY / PUBLISHED ON MAIN** です。
+document hub です。現在は **IP1 / Native Image Prep / Reference Edit Feasibility — FEASIBLE WITH LIMITS / NATIVE-ONLY / NO BROWSER UI** であり、Rev.4 は **CURRENT MASTER / DOCS-ONLY / PUBLISHED ON MAIN** です。
 H1C / Frame-Bridged Continuation は回帰基盤として保持し、
 H1B.1 / Start + End Frame and Native FL2VA vertical slice + UX P0/P1/P2
 Fixes は履歴と回帰対象として保持します。H0/H0.1/H1A/H1B の model

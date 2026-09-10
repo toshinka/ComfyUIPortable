@@ -94,6 +94,10 @@ Native source audit: PASS
 IP1 targeted contract tests: 7 PASS
 Native IP1 runtime cases: 3 PASS
 donor generation: 1 PASS / 1 allowed
+Full H3 Python regression: 14 test files / 72 PASS
+Python compileall: PASS
+Workflow JSON parse: 7 PASS
+git diff --check: PASS
 Browser UI: NOT RUN / NOT IMPLEMENTED
 Owner acceptance: PENDING
 ```

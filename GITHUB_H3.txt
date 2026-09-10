@@ -6,7 +6,7 @@ Updated: 2026-09-11 JST
 
 Current Stage
 -------------
-IP1 / Native Image Prep / Reference Edit Feasibility — IN PROGRESS / NATIVE-ONLY / NO BROWSER UI
+IP1 / Native Image Prep / Reference Edit Feasibility — FEASIBLE WITH LIMITS / NATIVE-ONLY / NO BROWSER UI
 R4 / H3 Roadmap Rev.4 — CURRENT MASTER / DOCS-ONLY / PUBLISHED ON MAIN
 VP2C / Reference Handoff and scoped D&D — ACCEPTANCE VERIFIED WITH LIMITS / PUBLISHED ON MAIN
 VP2B / Experimental R2V Playground — CLOSEOUT PUBLISHED ON MAIN
@@ -198,7 +198,9 @@ https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO・Still・Ima
 Historical Rev.3 canonical URL:
 https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
 
-The Rev.4 file and pointer updates are prepared locally for publication. The
+The Rev.4 file and pointer updates are published on `main` at
+`3880534af0e26b970a8fd0a1ba564af6bc88c15e`; the current `origin/main` is the
+later Manga-only descendant `df0ad3b389db5149e1b6ab1edb24c568c147a10e`. The
 Rev.3 root and Archive source remain byte-identical and historical; their
 preservation does not imply Owner acceptance or final production acceptance.
 

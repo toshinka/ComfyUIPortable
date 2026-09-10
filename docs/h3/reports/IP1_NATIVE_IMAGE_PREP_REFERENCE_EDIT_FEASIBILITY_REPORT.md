@@ -228,16 +228,21 @@ IP1 Native runtime cases: 3 PASS
 Allowed donor generation: 1/1 PASS
 Browser UI: NOT RUN / NOT IMPLEMENTED
 VP2B adapter and route: unchanged; targeted preservation test PASS
-Python syntax/compile check: PASS
-Workflow JSON parse: PASS
-git diff --check: PASS (final run recorded below)
+H3 Python regression: 14 test files / 72 PASS
+H2A targeted regression: 4 PASS
+H2B targeted regression: 5 PASS
+VP2B targeted regression: 5 PASS
+VP2C targeted regression: 5 PASS
+Python compileall: PASS
+Workflow JSON parse: 7 PASS
+git diff --check: PASS
 ```
 
 The targeted tests cover one source, optional donor, deterministic Picture
 roles, third/fourth rejection, video/audio rejection, traversal/absolute/
 remote rejection, fixed dimensions/steps/length/fps, frame-0 output, and
-preservation of the VP2B Ref2VA contract. The full H3 regression commands are
-recorded in the final verification update once executed.
+preservation of the VP2B Ref2VA contract. The full H3 run covered all 14
+existing and IP1 Python test files without adding any runtime generation.
 
 ## 9. Explicit non-claims and boundaries
 
