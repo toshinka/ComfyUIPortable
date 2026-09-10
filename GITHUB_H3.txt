@@ -66,7 +66,7 @@ H2C mode crossing: VERIFIED BROWSER UI
 H2C cross-media activeJob/previewJob: VERIFIED BROWSER UI
 H2C Video regression: VERIFIED BROWSER UI GENERATION
 H2C additional seed fix: IMPLEMENTED / VERIFIED; LOCAL MAIN
-H2C evidence/report: CURRENT REVIEW EVIDENCE; LOCAL MAIN
+H2C evidence/report: CURRENT REVIEW EVIDENCE; LOCAL MAIN (`0438dc93`)
 H2C publication: BASE IMPLEMENTATION PUBLISHED ON MAIN / NEW CLOSEOUT LOCAL
 H3 external model library: CONFIGURED / VERIFIED
 Portable duplicate heavy weights: REMOVED
@@ -246,5 +246,5 @@ verified in the closeout evidence/report, and the closeout package is
 H2C base implementation is present in `origin/main` through
 `2b167493ee83df2a4f80c10669d9c4e4387e111e`. The Browser seed-losslessness fix
 is local commit `0df5f865`; H2C evidence/report/canonical updates are local
-until Owner push and public URL verification. Owner acceptance remains
-`PENDING`.
+commit `0438dc93` until Owner push and public URL verification. Owner
+acceptance remains `PENDING`.

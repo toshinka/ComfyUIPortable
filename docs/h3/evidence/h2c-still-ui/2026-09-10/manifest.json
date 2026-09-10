@@ -22,7 +22,7 @@
     "canonical_launcher": "h3/run_h3.bat",
     "skin_url": "http://127.0.0.1:8191/",
     "native_backend_url": "http://127.0.0.1:8189/",
-    "evidence_docs_commit": null
+    "evidence_docs_commit": "0438dc93"
   },
   "environment": {
     "host_gpu": "NVIDIA GeForce RTX 4070",
