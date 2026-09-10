@@ -4,14 +4,15 @@
 M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`
 M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`
 Manga正本入口: [GITHUB_MANGA.txt](../../GITHUB_MANGA.txt)
-Latest SOL-verified public commit: `54b235f1b18c5c4df5aa01f74cd6a87e201dc5bb`
-Latest published Card: [M3B-LR4 — Figure-Union Mask Locality A/B Research Slice](cards/completed/M3B_LR4_FIGURE_UNION_MASK_LOCALITY_AB_RESEARCH.md)
-Latest published report: [M3B-LR4 Figure-Union Mask Locality A/B Research Report](reports/M3B_LR4_FIGURE_UNION_MASK_LOCALITY_AB_RESEARCH_REPORT.md)
+Latest SOL-verified public commit: `224c37b9446c412e0dca9ac04a72e74916059b1d`
+Latest published Card: [M3B-LR5 — CAST + Figure-Masked CLEAN Compatibility Research](cards/completed/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH.md)
+Latest published report: [M3B-LR5 CAST + Figure-Masked CLEAN Compatibility Research Report](reports/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH_REPORT.md)
+Latest published manifest: [M3B-LR5 Manifest](verification/m3b_lr5/M3B_LR5_MANIFEST.json)
 M3B-LR2 publication: PUBLISHED; SOL public-URL review: PASS; classification: BLOCKED
-Latest completed Card: [M3B-LR5 — CAST + Figure-Masked CLEAN Compatibility Research](cards/completed/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH.md)
-Latest completed report: [M3B-LR5 CAST + Figure-Masked CLEAN Compatibility Research Report](reports/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH_REPORT.md)
-Latest local manifest: [M3B-LR5 Manifest](verification/m3b_lr5/M3B_LR5_MANIFEST.json)
-Regression: PASS / Runtime: PASS / Browser: PASS / Visual evidence: PASS / M3B-LR1: COMPLETED / M3B-LR1 generation influence: NOT IMPLEMENTED / M3B-LR2: PUBLISHED / SOL REVIEWED / BLOCKED / M3B-LR2 stop: CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED / M3B-LR2R1: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED FOR RESEARCH GRAPH / quality: WEAK / Guide placement: DEGRADED / image quality: DEGRADED / M3B-LR3: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED / result: OPTION_A_INCONCLUSIVE / Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE / Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE / M3B-LR4: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / LOCALITY_SUPPORTED / Production ControlNet integration: NOT PERFORMED / M3B-LR5: LOCAL COMPLETED / TECHNICAL PASS / CAST_MASKED_CONFLICT / Final Owner product review: DEFERRED / Active Card: NONE.
+Latest completed Card: [M3B-LR6 — CAST Soft-Edge Figure Mask Compatibility Research](cards/completed/M3B_LR6_CAST_SOFT_EDGE_FIGURE_MASK_COMPATIBILITY_RESEARCH.md)
+Latest completed report: [M3B-LR6 CAST Soft-Edge Figure Mask Compatibility Research Report](reports/M3B_LR6_CAST_SOFT_EDGE_FIGURE_MASK_COMPATIBILITY_RESEARCH_REPORT.md)
+Latest local manifest: [M3B-LR6 Manifest](verification/m3b_lr6/M3B_LR6_MANIFEST.json)
+Regression: PASS / Runtime: PASS / Browser: PASS / Visual evidence: PASS / M3B-LR1: COMPLETED / M3B-LR1 generation influence: NOT IMPLEMENTED / M3B-LR2: PUBLISHED / SOL REVIEWED / BLOCKED / M3B-LR2 stop: CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED / M3B-LR2R1: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED FOR RESEARCH GRAPH / quality: WEAK / Guide placement: DEGRADED / image quality: DEGRADED / M3B-LR3: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED / result: OPTION_A_INCONCLUSIVE / Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE / Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE / M3B-LR4: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / LOCALITY_SUPPORTED / M3B-LR5: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / CAST_MASKED_CONFLICT / M3B-LR5 key failure: HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED / M3B-LR6: COMPLETED LOCAL / TECHNICAL PASS / SOFT_MASK_CONFLICT / Production ControlNet integration: NOT PERFORMED / Final Owner product review: DEFERRED / Active Card: NONE.
 
 `GITHUB_ComfyUI.txt` はManga/H3を振り分けるCompatibility Routerへ変更した。
 今回のnamespace整理は文書/navigationのみで、Manga runtime・workflow・schema・outputを変更していない。
@@ -141,9 +142,9 @@ Scene-only Draft (M1) → CAST 複数出演 (M2) → Rough Guide (M3) → UX She
   - **LR1報告書**: [M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_REPORT.md](reports/M3B_LR1_ROUGH_GUIDE_FOUNDATION_LONG_RUN_REPORT.md)
   - **LR1 manifest**: [M3B_LR1_MANIFEST.json](verification/m3b_lr1/M3B_LR1_MANIFEST.json)
 
-- **Latest published closeout**: [M3B-LR2R1 — AnyTest v4 Acquisition & A/B Resume Long-Run](cards/completed/M3B_LR2R1_ANYTEST_V4_ACQUISITION_AND_AB_RESUME_LONG_RUN.md)。既存reForge共有ControlNet storageを検証し、pinned modelの再利用、A/B 8本、canonical no-Guide、LR1/M2B回帰をPASS。SOL reviewは完了、Production integrationは未実施。
-- **Latest completed closeout**: [M3B-LR5 — CAST + Figure-Masked CLEAN Compatibility Research](cards/completed/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH.md)。CAST compile 2件、Character masks 2件、4/4 queue、回帰、canonical no-GuideをPASS。視覚結果はCAST_MASKED_CONFLICT、Production integrationは未実施。
-- **Active Card**: NONE。M3B-LR5 publicationはLOCAL、Owner pushとSOL public reviewが必要。Final Owner product reviewはDEFERRED。次Cardは自動発行しない。
+- **Latest published closeout**: [M3B-LR5 — CAST + Figure-Masked CLEAN Compatibility Research](cards/completed/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH.md)。CAST compile 2件、Character masks 2件、4/4 queue、回帰、canonical no-GuideをPASS。視覚結果はCAST_MASKED_CONFLICT、HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED、Production integrationは未実施。
+- **Latest completed closeout**: [M3B-LR6 — CAST Soft-Edge Figure Mask Compatibility Research](cards/completed/M3B_LR6_CAST_SOFT_EDGE_FIGURE_MASK_COMPATIBILITY_RESEARCH.md)。radius 16px SOFT mask、6/6 queue、live browser、回帰、canonical no-GuideをPASS。視覚結果はSOFT_MASK_CONFLICT、Production integrationは未実施。
+- **Active Card**: NONE。M3B-LR6 publicationはLOCAL、Owner pushとSOL public reviewが必要。Final Owner product reviewはDEFERRED。次Cardは自動発行しない。
 - 次Cardは自動発行しない。
 
 

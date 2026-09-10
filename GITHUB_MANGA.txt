@@ -31,26 +31,30 @@ LOCALITY_SUPPORTED; the Derived CLEAN Guide remains a retained research
 candidate, the Figure-union masked ControlNet is a supported research
 candidate, and production integration remains not performed. M3B-LR5
 completed its bounded CAST plus Figure-masked CLEAN compatibility research
-locally with result CAST_MASKED_CONFLICT; production integration remains not
-performed.
+and is PUBLISHED / SOL REVIEWED with result CAST_MASKED_CONFLICT; its key
+failure was a HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED. Production
+integration remains not performed. M3B-LR6 completed its bounded radius-16
+soft Figure-union effect-mask research with result SOFT_MASK_CONFLICT.
 Web GPT SOL leads Card design; a fresh local LUNA chat implements one published
 Card at a time.
 
 Latest completed operational work:
-M3B-LR5 — CAST + Figure-Masked CLEAN Compatibility Research.
-The existing CAST compiler and Character conditioning path were proven active;
-the bounded four-output graph, visual review, regressions, and canonical
-no-Guide regression completed with final result CAST_MASKED_CONFLICT.
+M3B-LR6 — CAST Soft-Edge Figure Mask Compatibility Research.
+The existing CAST compiler and Character conditioning path remained active;
+the bounded six-output OFF/HARD/SOFT graph, mask provenance, visual review,
+regressions, and canonical no-Guide regression completed with final result
+SOFT_MASK_CONFLICT. Publication remains LOCAL pending Owner push and SOL
+review.
 
 Latest published operational work:
-M3B-LR4 — Figure-Union Mask Locality A/B Research Slice.
+M3B-LR5 — CAST + Figure-Masked CLEAN Compatibility Research.
 Publication: PUBLISHED
-SOL review: PASS / LOCALITY_SUPPORTED classification
+SOL review: PASS / CAST_MASKED_CONFLICT classification
 
 Latest operational handoff
 --------------------------
 Latest SOL-verified public commit:
-54b235f1b18c5c4df5aa01f74cd6a87e201dc5bb
+224c37b9446c412e0dca9ac04a72e74916059b1d
 
 M3A.1 Core Implementation SHA:
 a7f0baaa89a2e315b0492573c9da19e50727928b
@@ -59,22 +63,22 @@ M3A.1 Current Closure Review Target:
 ad91c9277715e998663e8c12b6c37cca16e53955
 
 Latest published Card:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_LR4_FIGURE_UNION_MASK_LOCALITY_AB_RESEARCH.md
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH.md
 
 Latest published report:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_LR4_FIGURE_UNION_MASK_LOCALITY_AB_RESEARCH_REPORT.md
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH_REPORT.md
 
 Latest published manifest:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_lr4/M3B_LR4_MANIFEST.json
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_lr5/M3B_LR5_MANIFEST.json
 
 Latest completed Card:
-docs/manga/cards/completed/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH.md
+docs/manga/cards/completed/M3B_LR6_CAST_SOFT_EDGE_FIGURE_MASK_COMPATIBILITY_RESEARCH.md
 
 Latest completed local report:
-docs/manga/reports/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH_REPORT.md
+docs/manga/reports/M3B_LR6_CAST_SOFT_EDGE_FIGURE_MASK_COMPATIBILITY_RESEARCH_REPORT.md
 
 Latest local manifest:
-docs/manga/verification/m3b_lr5/M3B_LR5_MANIFEST.json
+docs/manga/verification/m3b_lr6/M3B_LR6_MANIFEST.json
 
 Browser technical verification:
 PASS
@@ -110,12 +114,14 @@ Derived CLEAN Guide: QUALITY IMPROVEMENT VERIFIED / PLACEMENT CONSISTENCY NOT VE
 Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE
 Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE
 M3B-LR4: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / LOCALITY_SUPPORTED
-M3B-LR5: LOCAL COMPLETED / TECHNICAL PASS / CAST_MASKED_CONFLICT
+M3B-LR5: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / CAST_MASKED_CONFLICT
+M3B-LR5 key failure: HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED
+M3B-LR6: COMPLETED LOCAL / TECHNICAL PASS / SOFT_MASK_CONFLICT
 Active Card: NONE
 
 Next:
-M3B-LR5 is locally completed. Owner push and SOL public review remain
-required. No subsequent Card is issued automatically.
+M3B-LR6 is locally completed with SOFT_MASK_CONFLICT. Owner push and SOL
+public review remain required; no additional Card is issued automatically.
 
 Completed review slice:
 M3B-LR1 — Rough Guide Foundation Long-Run Batch.

@@ -10,13 +10,13 @@
 
 M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`.
 M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`.
-Latest SOL-verified public commit: `54b235f1b18c5c4df5aa01f74cd6a87e201dc5bb`.
+Latest SOL-verified public commit: `224c37b9446c412e0dca9ac04a72e74916059b1d`.
 Latest published Card:
-[M3B-LR4 — Figure-Union Mask Locality A/B Research Slice](completed/M3B_LR4_FIGURE_UNION_MASK_LOCALITY_AB_RESEARCH.md)
-M3B-LR4 publication: PUBLISHED; SOL public-URL review: PASS; classification: LOCALITY_SUPPORTED.
-Latest completed Card:
 [M3B-LR5 — CAST + Figure-Masked CLEAN Compatibility Research](completed/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH.md)
-Stage 1 inventory stop: BLOCKED (`CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED`); LR2R1 technical result: PASS / QUALITY WEAK; LR3 final SOL result: PASS / OPTION_A_INCONCLUSIVE; Derived CLEAN Guide quality improvement: VERIFIED; placement consistency: NOT VERIFIED; Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE; Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE; LR4 result: PASS / LOCALITY_SUPPORTED; LR5 result: PASS / CAST_MASKED_CONFLICT; M3A.1 milestone acceptance: ACCEPTED_BY_DELEGATED_SOL; Final Owner product review: DEFERRED; Active Card: NONE.
+M3B-LR5 publication: PUBLISHED; SOL public-URL review: PASS; classification: CAST_MASKED_CONFLICT.
+Latest completed Card:
+[M3B-LR6 — CAST Soft-Edge Figure Mask Compatibility Research](completed/M3B_LR6_CAST_SOFT_EDGE_FIGURE_MASK_COMPATIBILITY_RESEARCH.md)
+Stage 1 inventory stop: BLOCKED (`CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED`); LR2R1 technical result: PASS / QUALITY WEAK; LR3 final SOL result: PASS / OPTION_A_INCONCLUSIVE; Derived CLEAN Guide quality improvement: VERIFIED; placement consistency: NOT VERIFIED; Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE; Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE; LR4 result: PASS / LOCALITY_SUPPORTED; LR5 result: PASS / CAST_MASKED_CONFLICT with HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED; LR6 result: PASS / SOFT_MASK_CONFLICT; M3A.1 milestone acceptance: ACCEPTED_BY_DELEGATED_SOL; Final Owner product review: DEFERRED; Active Card: NONE.
 
 M3B-LR1 is closed for its bounded foundation slice. M3B-LR2 is published and
 closed as a valid bounded inventory stop. M3B-LR2R1 is locally completed in
@@ -24,7 +24,7 @@ completed/ with the pinned model, verified shared storage, A/B evidence, and
 canonical regression. M3B-LR3 is completed in completed/ with final SOL result
 `OPTION_A_INCONCLUSIVE`; M3B-LR4 is published in completed/ with
 `LOCALITY_SUPPORTED`; M3B-LR5 is completed locally with
-`CAST_MASKED_CONFLICT`. Active Card: NONE. No subsequent Card is issued automatically.
+`CAST_MASKED_CONFLICT`; M3B-LR6 is completed locally with `SOFT_MASK_CONFLICT`. Active Card: NONE. Owner push and SOL review remain required. No subsequent Card is issued automatically.
 When work resumes, SOL audits [`WEBGPT_SOL_LUNA_HANDOFF.md`](../WEBGPT_SOL_LUNA_HANDOFF.md)
 and issues exactly one new limited Card in [`current/`](current/README.md). Do not copy a
 completed Card as a new instruction.
@@ -57,6 +57,8 @@ completed Card as a new instruction.
 | M3B-LR2R1 | [`M3B_LR2R1_ANYTEST_V4_ACQUISITION_AND_AB_RESUME_LONG_RUN.md`](completed/M3B_LR2R1_ANYTEST_V4_ACQUISITION_AND_AB_RESUME_LONG_RUN.md) |
 | M3B-LR3 | [`M3B_LR3_DERIVED_CLEAN_GUIDE_AB_RESEARCH.md`](completed/M3B_LR3_DERIVED_CLEAN_GUIDE_AB_RESEARCH.md) |
 | M3B-LR4 | [`M3B_LR4_FIGURE_UNION_MASK_LOCALITY_AB_RESEARCH.md`](completed/M3B_LR4_FIGURE_UNION_MASK_LOCALITY_AB_RESEARCH.md) |
+| M3B-LR5 | [`M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH.md`](completed/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH.md) |
+| M3B-LR6 | [`M3B_LR6_CAST_SOFT_EDGE_FIGURE_MASK_COMPATIBILITY_RESEARCH.md`](completed/M3B_LR6_CAST_SOFT_EDGE_FIGURE_MASK_COMPATIBILITY_RESEARCH.md) |
 
 ## Naming rule
 

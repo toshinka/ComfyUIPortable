@@ -5,7 +5,7 @@
 Active Card: **NONE**。
 
 Latest completed Card:
-[M3B-LR5 — CAST + Figure-Masked CLEAN Compatibility Research](../completed/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH.md)
+[M3B-LR6 — CAST Soft-Edge Figure Mask Compatibility Research](../completed/M3B_LR6_CAST_SOFT_EDGE_FIGURE_MASK_COMPATIBILITY_RESEARCH.md)
 
 Preceding completed Card:
 [M3B-LR4 — Figure-Union Mask Locality A/B Research Slice](../completed/M3B_LR4_FIGURE_UNION_MASK_LOCALITY_AB_RESEARCH.md)
@@ -18,30 +18,30 @@ bounded inventory stop. M3B-LR2R1 is completed with the pinned model,
 verified shared storage, A/B evidence, and canonical regression.
 
 Latest completed Card:
-[M3B-LR5 — CAST + Figure-Masked CLEAN Compatibility Research](../completed/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH.md)
+[M3B-LR6 — CAST Soft-Edge Figure Mask Compatibility Research](../completed/M3B_LR6_CAST_SOFT_EDGE_FIGURE_MASK_COMPATIBILITY_RESEARCH.md)
 
 Preceding milestone gate report:
 [M3A1-OA1 Owner Acceptance Gate Report](../../reports/M3A1_OA1_OWNER_ACCEPTANCE_GATE_REPORT.md)
 
 Latest completed report:
+[M3B-LR6 CAST Soft-Edge Figure Mask Compatibility Research Report](../../reports/M3B_LR6_CAST_SOFT_EDGE_FIGURE_MASK_COMPATIBILITY_RESEARCH_REPORT.md)
+
+Preceding published LR5 report:
 [M3B-LR5 CAST + Figure-Masked CLEAN Compatibility Research Report](../../reports/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH_REPORT.md)
 
-Latest completed LR5 report:
-[M3B-LR5 CAST + Figure-Masked CLEAN Compatibility Research Report](../../reports/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH_REPORT.md)
-
-Latest completed LR5 manifest:
-[M3B_LR5 Manifest](../../verification/m3b_lr5/M3B_LR5_MANIFEST.json)
+Latest completed LR6 manifest:
+[M3B_LR6 Manifest](../../verification/m3b_lr6/M3B_LR6_MANIFEST.json)
 
 M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`。
 M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`。
-Latest SOL-verified public commit: `54b235f1b18c5c4df5aa01f74cd6a87e201dc5bb`。
+Latest SOL-verified public commit: `224c37b9446c412e0dca9ac04a72e74916059b1d`。
 Browser technical verification: **PASS**。Visual evidence: **PASS**。M3B-LR1: **COMPLETED**。
 M3B-LR2 publication: **PUBLISHED**。SOL public-URL review: **PASS**。Classification: **BLOCKED**。
 M3B-LR2 stop reason: `CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED`。
 M3B-LR2R1: **PUBLISHED / SOL REVIEWED / TECHNICAL PASS / QUALITY WEAK**。
 M3B-LR2R1 Guide placement: **DEGRADED**。M3B-LR2R1 image quality: **DEGRADED**。
 M3A.1 milestone acceptance: **ACCEPTED_BY_DELEGATED_SOL**。Final Owner product review: **DEFERRED**。
-M3B-LR3: **PUBLISHED / SOL REVIEWED / TECHNICAL PASS / OPTION_A_INCONCLUSIVE**。Derived CLEAN Guide: **RETAINED RESEARCH CANDIDATE**。Figure-union masked ControlNet: **SUPPORTED RESEARCH CANDIDATE**。M3B-LR4: **PUBLISHED / SOL REVIEWED / TECHNICAL PASS / LOCALITY_SUPPORTED**。M3B-LR5: **LOCAL COMPLETED / TECHNICAL PASS / CAST_MASKED_CONFLICT**。Active Card: **NONE**。M3B-LR5 publication remains LOCAL; Owner push and SOL public review are required。Final Owner product review remains deferred。
+M3B-LR3: **PUBLISHED / SOL REVIEWED / TECHNICAL PASS / OPTION_A_INCONCLUSIVE**。Derived CLEAN Guide: **RETAINED RESEARCH CANDIDATE**。Figure-union masked ControlNet: **SUPPORTED RESEARCH CANDIDATE**。M3B-LR4: **PUBLISHED / SOL REVIEWED / TECHNICAL PASS / LOCALITY_SUPPORTED**。M3B-LR5: **PUBLISHED / SOL REVIEWED / TECHNICAL PASS / CAST_MASKED_CONFLICT**。M3B-LR5 key failure: **HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED**。M3B-LR6: **COMPLETED LOCAL / TECHNICAL PASS / SOFT_MASK_CONFLICT**。Active Card: **NONE**。Final Owner product review remains deferred。Owner push and SOL public review remain required。
 
 Web GPT SOLがGitHubのlive stateを監査して発行したCardを、このdirectoryへ1件だけ置く。
 LUNAはCard ID、baseline SHA、own files、acceptance、stop条件が揃うまで実装を開始しない。

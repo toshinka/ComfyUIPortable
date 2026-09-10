@@ -1,0 +1,121 @@
+{
+  "card": "M3B-LR6",
+  "execution_baseline": {
+    "card_baseline": "224c37b9446c412e0dca9ac04a72e74916059b1d",
+    "final_head": "d067a4170edeffee200a6f1a8d279a1c1b68be28",
+    "origin_main": "d067a4170edeffee200a6f1a8d279a1c1b68be28",
+    "post_baseline_drift": "H3_ONLY",
+    "stage0_publication_truth": "PASS"
+  },
+  "input_mode": "cast",
+  "seeds": [42, 77],
+  "conditions": ["CAST_OFF", "CAST_HARD", "CAST_SOFT"],
+  "compiled_characters": 2,
+  "character_conditioning_active": true,
+  "character_mask_feather": 0,
+  "character_masks": 2,
+  "character_strength": 1.0,
+  "panel_strength": 1.0,
+  "local_region_strength": 1.0,
+  "control_strength": 0.75,
+  "control_start": 0.0,
+  "control_end": 1.0,
+  "hard_figure_mask": true,
+  "soft_figure_mask": true,
+  "hard_mask_sha256": "6246dc79157bdfc75fe4eb6bb1fe14703a9e474e700269bdfdcb45688d2da6fb",
+  "soft_mask_sha256": "801350fdbf41b6cee88143d3cc0f0dc95f5050090b25357e0f249ad4c10cb300",
+  "soft_mask_gaussian_radius_px": 16,
+  "soft_mask_numeric": {
+    "dimensions": "832x1216",
+    "min": 0.0,
+    "max": 1.0,
+    "count_value_0": 665066,
+    "count_value_1": 128158,
+    "count_intermediate_0_lt_value_lt_1": 218488
+  },
+  "figure_center_deltas_px": {
+    "figure_1": 0.256099,
+    "figure_2": 0.363786
+  },
+  "clean_guide_sha256": "96f99a6c1327925b4b7737c9658ffb3e2b69e76ea2b0fe40210a095b9d99ae3a",
+  "controlnet_model": {
+    "path": "E:/EasyReforge/Model/ControlNet/CN-anytest_v4/CN-anytest4_illustrious2_A.safetensors",
+    "bytes": 2502139104,
+    "sha256": "e069d496cc111740716b833238d9bea9cdd59f8623aa85a78d362d088b1f67b8",
+    "storage": "E:/EasyReforge/stable-diffusion-webui-reForge/models/ControlNet -> E:/EasyReforge/Model/ControlNet"
+  },
+  "schema_changed": false,
+  "production_workflow_modified": false,
+  "advanced_controlnet_source_modified": false,
+  "mask_builder_source_modified": false,
+  "graph_provenance": {
+    "cast_off": {"positive_negative": ["3", 0], "controlnet": false},
+    "cast_hard": {"apply_node": "6", "mask_optional": ["4", 1], "mask_source": "bridge Figure-union mask"},
+    "cast_soft": {"apply_node": "9", "mask_optional": ["40", 0], "mask_source": "LoadImageMask M3B_LR6_SOFT_MASK.png"}
+  },
+  "generation": {
+    "workflow": "workflows/manga/research/M3B_LR6_CAST_SOFT_MASK_COMPATIBILITY.json",
+    "prompt_id": "891bed33-0ae4-4046-af9f-2763cc610390",
+    "queue_status": "6/6 PASS",
+    "outputs": [
+      {"seed": 42, "condition": "CAST_OFF", "evidence": "SEED_A_CAST_OFF.png", "sha256": "58985aa62c27d9c210648a9395944f8fd5ec8c5a4764784f6b7006a6301a1a29", "dimensions": "832x1216", "queue_status": "PASS"},
+      {"seed": 42, "condition": "CAST_HARD", "evidence": "SEED_A_CAST_HARD.png", "sha256": "ff59d17d6d6444b95d408e103469b89f3d3290530f6ef772e6001f221c3e7ce8", "dimensions": "832x1216", "queue_status": "PASS"},
+      {"seed": 42, "condition": "CAST_SOFT", "evidence": "SEED_A_CAST_SOFT.png", "sha256": "6de038b2095120ec5649232e1144951e4574d22df40faf2429d7d541b9d61627", "dimensions": "832x1216", "queue_status": "PASS"},
+      {"seed": 77, "condition": "CAST_OFF", "evidence": "SEED_B_CAST_OFF.png", "sha256": "ac4e1538ad01751e6a552f8d75965cf68d8e416917b8e6e7950d52605421a16d", "dimensions": "832x1216", "queue_status": "PASS"},
+      {"seed": 77, "condition": "CAST_HARD", "evidence": "SEED_B_CAST_HARD.png", "sha256": "819e753084b4d795cd9e457c892d38edb7d6148361fa4bf0ba54a9d5fb39ee77", "dimensions": "832x1216", "queue_status": "PASS"},
+      {"seed": 77, "condition": "CAST_SOFT", "evidence": "SEED_B_CAST_SOFT.png", "sha256": "605a1e1668de3e8b10f6b689d205bd1b858784c7137af5d7bd32c356f4c3dded", "dimensions": "832x1216", "queue_status": "PASS"}
+    ]
+  },
+  "visual_review": {
+    "seed_42": {
+      "CAST_OFF": {"placement": "CLEAR", "figure_count": "PASS", "side_association": "MIXED", "quality": "USABLE", "boundary_artifact": "NONE"},
+      "CAST_HARD": {"placement": "CLEAR", "figure_count": "PASS", "side_association": "PASS", "quality": "DEGRADED", "boundary_artifact": "CLEAR"},
+      "CAST_SOFT": {"placement": "CLEAR", "figure_count": "PASS", "side_association": "PASS", "quality": "DEGRADED", "boundary_artifact": "CLEAR"}
+    },
+    "seed_77": {
+      "CAST_OFF": {"placement": "CLEAR", "figure_count": "FAIL", "side_association": "MIXED", "quality": "USABLE", "boundary_artifact": "NONE", "baseline_defect": true},
+      "CAST_HARD": {"placement": "CLEAR", "figure_count": "FAIL", "side_association": "MIXED", "quality": "DEGRADED", "boundary_artifact": "CLEAR"},
+      "CAST_SOFT": {"placement": "CLEAR", "figure_count": "FAIL", "side_association": "MIXED", "quality": "DEGRADED", "boundary_artifact": "CLEAR"}
+    },
+    "aggregate": {
+      "hard_boundary_artifact": "CLEAR",
+      "soft_boundary_artifact": "CLEAR",
+      "hard_quality": "DEGRADED",
+      "soft_quality": "DEGRADED",
+      "soft_placement": "CLEAR",
+      "soft_figure_count": "FAIL",
+      "side_association": "MIXED",
+      "seed_variation": "PRESENT",
+      "live_browser": "PASS",
+      "contact_sheet": "M3B_LR6_CONTACT_SHEET.png"
+    }
+  },
+  "regression": {
+    "lr1_contract": "12/12 PASS",
+    "lr1_runtime_bridge": "5/5 PASS",
+    "lr1_guide_ops": "PASS",
+    "m2b_minimum_hand_frontend": "19/19 PASS",
+    "cast_regression": "PASS",
+    "overall": "PASS"
+  },
+  "canonical_no_guide": {
+    "source_workflow": "workflows/manga/MINIMUM_HAND_MANGA_DRAFT.json",
+    "prompt_id": "fac9d447-be61-4c5b-8ae8-7175ff67eaa1",
+    "queue_status": "PASS",
+    "evidence": "CANONICAL_NO_GUIDE.png",
+    "sha256": "5f2113c971089583f26c59c7da6f2e4296a004d2ebeb26cd0c90411cb7a69212",
+    "dimensions": "832x1216",
+    "controlnet_dependency": false,
+    "advanced_controlnet_dependency": false,
+    "guide_dependency": false,
+    "cast_requirement": false,
+    "result": "PASS"
+  },
+  "compatibility_result": "SOFT_MASK_CONFLICT",
+  "production_integration": "NOT_PERFORMED",
+  "final_owner_product_review": "DEFERRED",
+  "stopped_early": false,
+  "stop_reason": "",
+  "publication": "LOCAL",
+  "owner_push_required": true
+}

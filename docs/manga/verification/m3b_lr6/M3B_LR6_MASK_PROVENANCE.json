@@ -1,0 +1,77 @@
+{
+  "card": "M3B-LR6",
+  "source_hard_mask": "docs/manga/verification/m3b_lr4/M3B_LR4_FIGURE_UNION_MASK.png",
+  "hard_mask_evidence": "docs/manga/verification/m3b_lr6/M3B_LR6_HARD_MASK.png",
+  "soft_mask_evidence": "docs/manga/verification/m3b_lr6/M3B_LR6_SOFT_MASK.png",
+  "hard_sha256": "6246dc79157bdfc75fe4eb6bb1fe14703a9e474e700269bdfdcb45688d2da6fb",
+  "soft_sha256": "801350fdbf41b6cee88143d3cc0f0dc95f5050090b25357e0f249ad4c10cb300",
+  "bridge_reproduction_sha256": "6246dc79157bdfc75fe4eb6bb1fe14703a9e474e700269bdfdcb45688d2da6fb",
+  "dimensions": {
+    "width": 832,
+    "height": 1216
+  },
+  "hard_values": [
+    0.0,
+    1.0
+  ],
+  "soft_mask_gaussian_radius_px": 16,
+  "numeric": {
+    "dimensions": {
+      "width": 832,
+      "height": 1216
+    },
+    "min": 0.0,
+    "max": 1.0,
+    "count_value_0": 665066,
+    "count_value_1": 128158,
+    "count_intermediate_0_lt_value_lt_1": 218488
+  },
+  "figure_centers": {
+    "figure_1": {
+      "hard": [
+        199.5,
+        595.0
+      ],
+      "soft": [
+        199.2439,
+        595.0
+      ],
+      "delta_px": 0.256099
+    },
+    "figure_2": {
+      "hard": [
+        590.0,
+        613.5
+      ],
+      "soft": [
+        590.2602,
+        613.7542
+      ],
+      "delta_px": 0.363786
+    }
+  },
+  "manual_drawing": false,
+  "schema_changed": false,
+  "page_guides_persisted": false,
+  "character_masks_feathered": false,
+  "runtime_input_stage": "ComfyUI/input/M3B_LR6_SOFT_MASK.png",
+  "workflow": "workflows/manga/research/M3B_LR6_CAST_SOFT_MASK_COMPATIBILITY.json",
+  "mask_optional_provenance": {
+    "cast_hard": {
+      "apply_node": "6",
+      "mask_optional": [
+        "4",
+        1
+      ],
+      "source": "bridge Figure-union mask"
+    },
+    "cast_soft": {
+      "apply_node": "9",
+      "mask_optional": [
+        "40",
+        0
+      ],
+      "source": "LoadImageMask M3B_LR6_SOFT_MASK.png"
+    }
+  }
+}
