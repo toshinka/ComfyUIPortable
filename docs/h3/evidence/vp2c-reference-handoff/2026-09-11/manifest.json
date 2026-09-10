@@ -3,8 +3,8 @@
   "card": "VP2C",
   "title": "Reference Handoff and scoped drag-and-drop ergonomics",
   "evidence_date": "2026-09-11",
-  "remote_base": "543d8c2c2817743b10f255c168047e4edd1781a9",
-  "classification": "BLOCKED",
+  "remote_base": "56ad30afa128ef4120f962b6c114fc0e7526aae8",
+  "classification": "PASS WITH LIMITS",
   "scope": {
     "still_to_character": true,
     "video_to_motion": true,
@@ -24,7 +24,7 @@
     "source_boundary": "same-session completed Job output only; safe copy into the existing R2V input boundary",
     "active_generation": "handoff fails closed while QUEUED, RUNNING, or DISCONNECTED",
     "atomicity": "promotion occurs before UI state replacement; UI restores the prior snapshot on failure",
-    "commit": "LOCAL PENDING"
+    "commit": "56ad30afa128ef4120f962b6c114fc0e7526aae8"
   },
   "browser_ui_smoke": {
     "destination": "http://127.0.0.1:8190/",
@@ -41,17 +41,62 @@
     "visual_quality_gate": "NOT APPLIED"
   },
   "browser_acceptance": {
-    "status": "NOT RUN",
-    "reason": "Direct action-time authorization for the exact local PNG/MP4 upload and the two real local generations is still required.",
+    "status": "PASS WITH LIMITS",
+    "destination": "http://127.0.0.1:8190/",
+    "authorization": "OWNER AUTHORIZED EXACT TWO-FILE UPLOAD AND TWO-GENERATION BUDGET",
+    "reason": "Character File D&D was accepted. Motion File D&D produced an actual File drag source, but safe CUA did not reproduce target-slot acceptance; the exact MP4 picker route was accepted and used for the Reference run.",
     "required_generation_budget": 2,
-    "generation_count": 0,
+    "generation_count": 2,
     "cases": {
-      "character_dnd": "PENDING AUTHORIZATION",
-      "still_to_character": "PENDING AUTHORIZATION",
-      "motion_dnd": "PENDING AUTHORIZATION",
-      "reference_generation": "PENDING AUTHORIZATION",
-      "video_to_motion": "PENDING AUTHORIZATION"
-    }
+      "character_dnd": "PASS — actual File accepted by the scoped Character Image target",
+      "still_to_character": "PASS — History handoff completed without auto-generation",
+      "motion_dnd": "PASS WITH LIMITS — actual File dragstart verified; target-slot acceptance not reproduced by safe CUA",
+      "motion_picker": "PASS — exact authorized MP4 accepted by the existing picker route",
+      "still_generation": "PASS — one prompt-only Native Still",
+      "reference_generation": "PASS — one Picture + Motion Native Ref2VA run; playback started",
+      "video_to_motion": "PASS — History handoff completed without auto-generation"
+    },
+    "still": {
+      "job_id": "5feed87a7a3a4072b2d41d658db6dd80",
+      "native_prompt_id": "fc437e73-8e0c-4b6d-a8be-56f3c6b17dd4",
+      "output": "h2a_native_still_00003_.png",
+      "sha256": "6320CDDC990EBDCBAB183DA1A6B60B59AB35FA5672F08E24C9E1B1942C11E1B8",
+      "width": 608,
+      "height": 352,
+      "seed": "7189920060476219937",
+      "elapsed_seconds": 110.76,
+      "promoted_character_asset_id": "1366a9301c5545dfbf1f3d59c520fd45"
+    },
+    "reference_video": {
+      "job_id": "fdeaf8721f0c4349bd4dded751d89eb3",
+      "native_prompt_id": "2815ce83-8059-4c57-bea5-ec2828920a62",
+      "route": "native_ref2va",
+      "output": "vp2b_r2v_reference_00002_.mp4",
+      "sha256": "4CBBCD4D2B8232CAE52A02CBD35C47B04B42C8D1A65F94AA59334751738277A6",
+      "width": 608,
+      "height": 352,
+      "frames": 124,
+      "fps": 24,
+      "duration_seconds": 5.167,
+      "seed": "4321343092772379907",
+      "steps": 20,
+      "elapsed_seconds": 438.82,
+      "promoted_motion_asset_id": "a05ab0b64b9149c0bd6fec48600500cf"
+    },
+    "visual_quality_gate": {
+      "picture_influence": "OBSERVED",
+      "video_influence": "NOT CONVINCING",
+      "note": "Known Native mixed-reference limitation; no quality retry"
+    },
+    "runtime_telemetry": {
+      "vram_peak": "NOT INSTRUMENTED",
+      "vram_min_free": "NOT INSTRUMENTED",
+      "in_run_free_sample_bytes": 1387738700,
+      "oom_count": 0,
+      "retry_count": 0
+    },
+    "original_inputs_preserved": true,
+    "public_payload_filesystem_paths": false
   },
   "local_tests": {
     "vp2c_server": "5 PASS",
@@ -79,7 +124,8 @@
   },
   "publication": {
     "vp2b_closeout_correction": "PUBLISHED ON MAIN at 543d8c2c2817743b10f255c168047e4edd1781a9",
-    "vp2c": "LOCAL MAIN / PUSH PENDING",
+    "vp2c_implementation": "PUBLISHED ON MAIN at 56ad30afa128ef4120f962b6c114fc0e7526aae8",
+    "vp2c_closeout": "LOCAL MAIN / PUSH PENDING",
     "owner_acceptance": "PENDING"
   },
   "stop": "Do not run new Browser generation beyond the two required cases after authorization; do not implement Image Prep or Rev.4 in VP2C."

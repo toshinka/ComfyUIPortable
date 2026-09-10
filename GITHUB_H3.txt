@@ -6,7 +6,7 @@ Updated: 2026-09-11 JST
 
 Current Stage
 -------------
-VP2C / Reference Handoff and scoped D&D — IMPLEMENTED / BROWSER ACCEPTANCE PENDING AUTHORIZATION
+VP2C / Reference Handoff and scoped D&D — ACCEPTANCE VERIFIED WITH LIMITS / CLOSEOUT LOCAL
 VP2B / Experimental R2V Playground — CLOSEOUT PUBLISHED ON MAIN
 H1C / Frame-Bridged Continuation: IMPLEMENTED / VERIFIED (regression foundation)
 Groundwork: PASS (historical)
@@ -99,7 +99,13 @@ VP2B evidence/report: CURRENT REVIEW EVIDENCE; closeout package PUBLISHED ON MAI
 VP2C server handoff contract: IMPLEMENTED / 5 LOCAL TESTS PASS
 VP2C Reference-slot D&D and History handoff UI: IMPLEMENTED / 36 UI TESTS PASS
 VP2C Browser UI smoke: PASS WITHOUT UPLOAD OR GENERATION
-VP2C real Browser acceptance: BLOCKED PENDING ACTION-TIME AUTHORIZATION; generation count 0/2
+VP2C real Browser acceptance: PASS WITH LIMITS; exact Still + Reference Video generation count 2/2
+VP2C Character File D&D: PASS; scoped target accepted an actual File
+VP2C Motion File D&D: PASS WITH LIMITS; actual File drag source verified, safe CUA target acceptance not reproduced
+VP2C Motion picker route: PASS; exact authorized MP4 supplied the Reference run
+VP2C Still / Reference / History handoff: PASS; no auto-generation
+VP2C implementation publication: PUBLISHED ON MAIN at 56ad30afa128ef4120f962b6c114fc0e7526aae8
+VP2C closeout publication: LOCAL MAIN / PUSH PENDING
 H3 external model library: CONFIGURED / VERIFIED
 Portable duplicate heavy weights: REMOVED
 Portable fallback namespace: RETAINED / EMPTY OF FIRST-WAVE HEAVY WEIGHTS
@@ -347,6 +353,11 @@ not a Browser route failure. VP2B implementation is published on `main` at
 the bounded verifier-compatibility fix are published on `main` at
 `543d8c2c2817743b10f255c168047e4edd1781a9`. Owner acceptance remains
 `PENDING`.
-VP2C implementation, evidence, and canonical updates are currently local at
-the live `543d8c2` baseline; publication remains `LOCAL MAIN / PUSH PENDING`.
-Owner acceptance remains `PENDING`.
+VP2C implementation is published on `main` at
+`56ad30afa128ef4120f962b6c114fc0e7526aae8`. The authorized Browser run
+completed exactly one Still and one Reference Video at the local H3 URL.
+Character File D&D passed; Motion File D&D remains `PASS WITH LIMITS` because
+safe CUA did not reproduce target-slot acceptance, while the exact Motion
+picker route passed and supplied the Reference run. Closeout evidence and
+canonical updates are `LOCAL MAIN / PUSH PENDING`; Owner acceptance remains
+`PENDING`.
