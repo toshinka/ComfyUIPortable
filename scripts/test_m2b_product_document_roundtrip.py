@@ -137,10 +137,12 @@ class TestM2BProductDocumentRoundtrip(unittest.TestCase):
         wf_path = os.path.join(_ROOT_DIR, "workflows", "manga", "MINIMUM_HAND_MANGA_DRAFT.json")
         self.assertTrue(os.path.exists(wf_path), f"Canonical workflow missing: {wf_path}")
 
-        # Check only 1 json file at workflows root
+        # Check root production workflows (canonical no-guide and optional guided draft)
         wf_dir = os.path.join(_ROOT_DIR, "workflows", "manga")
-        root_jsons = [f for f in os.listdir(wf_dir) if f.endswith(".json") and os.path.isfile(os.path.join(wf_dir, f))]
-        self.assertEqual(root_jsons, ["MINIMUM_HAND_MANGA_DRAFT.json"], f"Found unexpected root workflows: {root_jsons}")
+        root_jsons = sorted([f for f in os.listdir(wf_dir) if f.endswith(".json") and os.path.isfile(os.path.join(wf_dir, f))])
+        allowed = ["MINIMUM_HAND_MANGA_DRAFT.json", "MINIMUM_HAND_MANGA_GUIDED_DRAFT.json"]
+        self.assertTrue(set(root_jsons).issubset(set(allowed)), f"Found unexpected root workflows: {root_jsons}")
+        self.assertIn("MINIMUM_HAND_MANGA_DRAFT.json", root_jsons)
 
         with open(wf_path, "r", encoding="utf-8") as f:
             raw_text = f.read()

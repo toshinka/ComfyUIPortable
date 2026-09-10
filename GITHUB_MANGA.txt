@@ -38,29 +38,31 @@ soft Figure-union effect-mask research and is PUBLISHED / SOL REVIEWED with
 final result SOFT_MASK_CONFLICT; its key finding was that SOFTENING FIGURE
 EFFECT-MASK EDGE DID NOT REMOVE VISUAL BOUNDARY. Production ControlNet
 integration remains NOT PERFORMED. M3B-LR7 is PUBLISHED / SOL REVIEWED with
-final result EFFECT_MASK_INTERACTION_CONFIRMED. M3B-LR8 completed its bounded
-Core CAST_GLOBAL robustness qualification with provisional qualification
-CORE_GLOBAL_QUALIFIED (3 IMPROVED, 3 NEUTRAL, 0 REGRESSED; 6/6 figure count not worse;
-zero boundary artifacts; zero regional/control conflicts; ComfyUI core
-ControlNetApplyAdvanced verified with 0 Advanced-ControlNet nodes).
-Production ControlNet integration remains NOT PERFORMED. Active Card: NONE.
+final result EFFECT_MASK_INTERACTION_CONFIRMED. M3B-LR8 is PUBLISHED /
+SOL REVIEWED with final classification CORE_GLOBAL_QUALIFIED.
+M3B research qualification is CLOSED FOR CURRENT CLEAN-GLOBAL CANDIDATE.
+Production ControlNet integration: M3B-PI1 BACKEND COMPLETED LOCALLY.
+M3B-PI1 is COMPLETED. Active Card: NONE.
 
 Latest completed operational work:
-M3B-LR8 — Core CAST_GLOBAL Robustness Qualification.
-ComfyUI core ControlNetApplyAdvanced consumed CAST regional conditioning;
-the 12-output research graph, runtime provenance, visual review, regressions,
-and canonical no-Guide regression completed with final result
-CORE_GLOBAL_QUALIFIED. LOCAL / DEFERRED.
+M3B-PI1 — Optional CLEAN Guide Production Backend Integration.
+ComfyUI core ControlNetApplyAdvanced with TegakiMangaGenerationGuideBridge
+promoted to production guided workflow MINIMUM_HAND_MANGA_GUIDED_DRAFT.json
+leaving canonical MINIMUM_HAND_MANGA_DRAFT.json completely untouched.
+The 4-run production matrix, runtime provenance, visual review, regressions,
+and RAW independence proof completed with final local classification
+PI1_BACKEND_INTEGRATED. Publication: LOCAL / Owner push required.
 
 Latest published operational work:
-M3B-LR7 — CAST GLOBAL vs EFFECT-MASK Interaction Isolation Research.
+M3B-LR8 — Core CAST_GLOBAL Robustness Qualification.
 Publication: PUBLISHED
-SOL review: PASS / EFFECT_MASK_INTERACTION_CONFIRMED classification
+SOL review: PASS / CORE_GLOBAL_QUALIFIED classification
+Intermediate milestone acceptance: ACCEPTED_BY_DELEGATED_SOL
 
 Latest operational handoff
 --------------------------
 Latest SOL-verified public commit:
-6dfbf0e5b9d413aba7f6428db22933d5ef451628
+b5c79b85ed2fdeec1bf30254945db569666ecfa4
 
 M3A.1 Core Implementation SHA:
 a7f0baaa89a2e315b0492573c9da19e50727928b
@@ -69,22 +71,22 @@ M3A.1 Current Closure Review Target:
 ad91c9277715e998663e8c12b6c37cca16e53955
 
 Latest published Card:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH.md
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION.md
 
 Latest published report:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH_REPORT.md
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION_REPORT.md
 
 Latest published manifest:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_lr5/M3B_LR5_MANIFEST.json
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_lr8/M3B_LR8_MANIFEST.json
 
 Latest completed Card:
-docs/manga/cards/completed/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION.md
+docs/manga/cards/completed/M3B_PI1_OPTIONAL_CLEAN_GUIDE_PRODUCTION_BACKEND_INTEGRATION.md
 
 Latest completed local report:
-docs/manga/reports/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION_REPORT.md
+docs/manga/reports/M3B_PI1_OPTIONAL_CLEAN_GUIDE_PRODUCTION_BACKEND_INTEGRATION_REPORT.md
 
 Latest local manifest:
-docs/manga/verification/m3b_lr8/M3B_LR8_MANIFEST.json
+docs/manga/verification/m3b_pi1/M3B_PI1_MANIFEST.json
 
 Browser technical verification:
 PASS
@@ -124,12 +126,12 @@ M3B-LR5: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / CAST_MASKED_CONFLICT
 M3B-LR5 key failure: HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED
 M3B-LR6: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / SOFT_MASK_CONFLICT
 M3B-LR7: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / EFFECT_MASK_INTERACTION_CONFIRMED
-M3B-LR8: COMPLETED / CORE_GLOBAL_QUALIFIED
-Active Card: NONE
+M3B-LR8: PUBLISHED / SOL REVIEWED / CORE_GLOBAL_QUALIFIED
+Active Card: M3B-PI1
 
 Next:
-M3B-LR8 Core CAST_GLOBAL Robustness Qualification Research is COMPLETED (CORE_GLOBAL_QUALIFIED).
-Production ControlNet integration remains NOT PERFORMED. Awaiting Web GPT SOL review.
+M3B-PI1 Optional CLEAN Guide Production Backend Integration is ACTIVE.
+Production ControlNet integration is PI1 BACKEND SLICE IN PROGRESS.
 
 Completed review slice:
 M3B-LR1 — Rough Guide Foundation Long-Run Batch.

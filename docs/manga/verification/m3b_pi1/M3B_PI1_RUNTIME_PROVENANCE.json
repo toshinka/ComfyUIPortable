@@ -1,0 +1,108 @@
+{
+  "card": "M3B-PI1",
+  "title": "Optional CLEAN Guide Production Backend Integration",
+  "date": "2026-09-11 JST",
+  "status": "PASS",
+  "clean_guide": {
+    "source": "TegakiMangaGenerationGuideBridge",
+    "sha256": "96f99a6c1327925b4b7737c9658ffb3e2b69e76ea2b0fe40210a095b9d99ae3a",
+    "renderer": "custom_nodes_custom.tegaki_manga_nodes.layout_guide_generator.draw_single_character_mannequin",
+    "renderer_style": "flat_silhouette",
+    "shot_type": "full_body",
+    "pose_preset": "standing_neutral",
+    "figures_count": 2,
+    "figure_ids": [
+      "figure_1",
+      "figure_2"
+    ],
+    "instance_ids": [
+      "inst_1",
+      "inst_2"
+    ]
+  },
+  "controlnet": {
+    "selector": "CN-anytest_v4\\CN-anytest4_illustrious2_A.safetensors",
+    "sha256": "e069d496cc111740716b833238d9bea9cdd59f8623aa85a78d362d088b1f67b8",
+    "apply_class": "ControlNetApplyAdvanced",
+    "strength": 0.75,
+    "start_percent": 0.0,
+    "end_percent": 1.0,
+    "effect_mask": "NONE",
+    "advanced_controlnet_used": false
+  },
+  "workflows": {
+    "canonical_no_guide": {
+      "path": "workflows/manga/MINIMUM_HAND_MANGA_DRAFT.json",
+      "controlnet_nodes": 0,
+      "modified": false
+    },
+    "guided_draft": {
+      "path": "workflows/manga/MINIMUM_HAND_MANGA_GUIDED_DRAFT.json",
+      "controlnet_nodes": 2,
+      "advanced_controlnet_nodes": 0,
+      "effect_mask_inputs": 0
+    }
+  },
+  "runs": [
+    {
+      "run_id": "P0",
+      "name": "P0_NO_GUIDE",
+      "workflow": "MINIMUM_HAND_MANGA_DRAFT.json",
+      "input_mode": "simple",
+      "seed": 42,
+      "guide_condition": "none",
+      "output_file": "P0_NO_GUIDE.png",
+      "sha256": "074e5b9ef95f0870e885197f34f2c79c91f1aa8a4828f3877f9752362e33a721",
+      "controlnet_strength": 0.0,
+      "start_percent": 0.0,
+      "end_percent": 1.0,
+      "effect_mask": "NONE",
+      "advanced_controlnet": false
+    },
+    {
+      "run_id": "P1",
+      "name": "P1_SIMPLE_GUIDED",
+      "workflow": "MINIMUM_HAND_MANGA_GUIDED_DRAFT.json",
+      "input_mode": "simple",
+      "seed": 42,
+      "guide_condition": "qualified_clean_global",
+      "output_file": "P1_SIMPLE_GUIDED.png",
+      "sha256": "e3d5776c690e68dd40fd4df75407be9e209ef75f73efe084a68aaa67281b29d5",
+      "controlnet_strength": 0.75,
+      "start_percent": 0.0,
+      "end_percent": 1.0,
+      "effect_mask": "NONE",
+      "advanced_controlnet": false
+    },
+    {
+      "run_id": "P2",
+      "name": "P2_CAST_GUIDED_SEED42",
+      "workflow": "MINIMUM_HAND_MANGA_GUIDED_DRAFT.json",
+      "input_mode": "cast",
+      "seed": 42,
+      "guide_condition": "qualified_clean_global",
+      "output_file": "P2_CAST_GUIDED_SEED42.png",
+      "sha256": "d10ddbc54d62beab0d8eca21c26754c4a75c5c96170eea4d44bca437e46557ee",
+      "controlnet_strength": 0.75,
+      "start_percent": 0.0,
+      "end_percent": 1.0,
+      "effect_mask": "NONE",
+      "advanced_controlnet": false
+    },
+    {
+      "run_id": "P3",
+      "name": "P3_CAST_GUIDED_SEED202",
+      "workflow": "MINIMUM_HAND_MANGA_GUIDED_DRAFT.json",
+      "input_mode": "cast",
+      "seed": 202,
+      "guide_condition": "qualified_clean_global",
+      "output_file": "P3_CAST_GUIDED_SEED202.png",
+      "sha256": "6ac3682428ef708a39f0e9f099b7bafe990e24dc6aa0e63579495f7d6927a47f",
+      "controlnet_strength": 0.75,
+      "start_percent": 0.0,
+      "end_percent": 1.0,
+      "effect_mask": "NONE",
+      "advanced_controlnet": false
+    }
+  ]
+}
