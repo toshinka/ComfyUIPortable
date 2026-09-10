@@ -1,6 +1,6 @@
 # ComfyUIPortable 現在地 (Status & Direction)
 
-更新: 2026-09-10 JST
+更新: 2026-09-11 JST
 M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`
 M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`
 Manga正本入口: [GITHUB_MANGA.txt](../../GITHUB_MANGA.txt)
@@ -9,10 +9,10 @@ Latest published Card: [M3B-LR7 — CAST GLOBAL vs EFFECT-MASK Interaction Isola
 Latest published report: [M3B-LR7 CAST GLOBAL vs EFFECT-MASK Interaction Isolation Research Report](reports/M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION_RESEARCH_REPORT.md)
 Latest published manifest: [M3B-LR7 Manifest](verification/m3b_lr7/M3B_LR7_MANIFEST.json)
 M3B-LR2 publication: PUBLISHED; SOL public-URL review: PASS; classification: BLOCKED
-Latest completed Card: [M3B-LR7 — CAST GLOBAL vs EFFECT-MASK Interaction Isolation](cards/completed/M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION_RESEARCH.md)
-Latest completed report: [M3B-LR7 CAST GLOBAL vs EFFECT-MASK Interaction Isolation Research Report](reports/M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION_RESEARCH_REPORT.md)
-Latest local manifest: [M3B-LR7 Manifest](verification/m3b_lr7/M3B_LR7_MANIFEST.json)
-Regression: PASS / Runtime: PASS / Browser: PASS / Visual evidence: PASS / M3B-LR1: COMPLETED / M3B-LR1 generation influence: NOT IMPLEMENTED / M3B-LR2: PUBLISHED / SOL REVIEWED / BLOCKED / M3B-LR2 stop: CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED / M3B-LR2R1: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED FOR RESEARCH GRAPH / quality: WEAK / Guide placement: DEGRADED / image quality: DEGRADED / M3B-LR3: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED / result: OPTION_A_INCONCLUSIVE / Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE / Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE / M3B-LR4: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / LOCALITY_SUPPORTED / M3B-LR5: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / CAST_MASKED_CONFLICT / M3B-LR5 key failure: HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED / M3B-LR6: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / SOFT_MASK_CONFLICT (key finding: SOFTENING FIGURE EFFECT-MASK EDGE DID NOT REMOVE VISUAL BOUNDARY) / M3B-LR7: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / EFFECT_MASK_INTERACTION_CONFIRMED / Production ControlNet integration: NOT PERFORMED / Final Owner product review: DEFERRED / Active Card: M3B-LR8.
+Latest completed Card: [M3B-LR8 — Core CAST_GLOBAL Robustness Qualification](cards/completed/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION.md)
+Latest completed report: [M3B-LR8 Core CAST_GLOBAL Robustness Qualification Report](reports/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION_REPORT.md)
+Latest local manifest: [M3B-LR8 Manifest](verification/m3b_lr8/M3B_LR8_MANIFEST.json)
+Regression: PASS / Runtime: PASS / Browser: PASS / Visual evidence: PASS / M3B-LR1: COMPLETED / M3B-LR1 generation influence: NOT IMPLEMENTED / M3B-LR2: PUBLISHED / SOL REVIEWED / BLOCKED / M3B-LR2 stop: CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED / M3B-LR2R1: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED FOR RESEARCH GRAPH / quality: WEAK / Guide placement: DEGRADED / image quality: DEGRADED / M3B-LR3: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED / result: OPTION_A_INCONCLUSIVE / Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE / Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE / M3B-LR4: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / LOCALITY_SUPPORTED / M3B-LR5: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / CAST_MASKED_CONFLICT / M3B-LR5 key failure: HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED / M3B-LR6: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / SOFT_MASK_CONFLICT (key finding: SOFTENING FIGURE EFFECT-MASK EDGE DID NOT REMOVE VISUAL BOUNDARY) / M3B-LR7: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / EFFECT_MASK_INTERACTION_CONFIRMED / M3B-LR8: COMPLETED / CORE_GLOBAL_QUALIFIED / Production ControlNet integration: NOT PERFORMED / Final Owner product review: DEFERRED / Active Card: NONE.
 
 `GITHUB_ComfyUI.txt` はManga/H3を振り分けるCompatibility Routerへ変更した。
 今回のnamespace整理は文書/navigationのみで、Manga runtime・workflow・schema・outputを変更していない。

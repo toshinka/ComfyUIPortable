@@ -4,7 +4,7 @@
 
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
 将来の実装棚とReference Implementation evidenceを一か所から辿るための
-document hub です。現在は **Rev.4 / H3 Roadmap — CURRENT MASTER / DOCS-ONLY / PUBLICATION PENDING** であり、
+document hub です。現在は **IP1 / Native Image Prep / Reference Edit Feasibility — IN PROGRESS / NATIVE-ONLY / NO BROWSER UI** であり、Rev.4 は **CURRENT MASTER / DOCS-ONLY / PUBLISHED ON MAIN** です。
 H1C / Frame-Bridged Continuation は回帰基盤として保持し、
 H1B.1 / Start + End Frame and Native FL2VA vertical slice + UX P0/P1/P2
 Fixes は履歴と回帰対象として保持します。H0/H0.1/H1A/H1B の model
@@ -60,8 +60,11 @@ picker route passed and supplied the Reference run. VP2C implementation is
 published on `main` at `56ad30afa128ef4120f962b6c114fc0e7526aae8`; VP2C
 closeout is published on `main` at
 `1a869125fa95ef4c7b1e94b0ccedab39fc52b4be`. Rev.4 is the current master
-roadmap and remains `LOCAL MAIN / PUSH PENDING` until the new commit is pushed;
-Owner acceptance remains pending.
+roadmap and is published on `main` at
+`3880534af0e26b970a8fd0a1ba564af6bc88c15e`. The current `origin/main` is the
+later Manga-only descendant `df0ad3b389db5149e1b6ab1edb24c568c147a10e`;
+IP1 is the active Native-only Image Prep feasibility gate; Owner acceptance
+remains pending.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
@@ -126,6 +129,9 @@ Owner acceptance remains pending.
 | `docs/h3/reports/VP2C_REFERENCE_HANDOFF_AND_DND_REPORT.md` | VP2C same-session Reference handoff, scoped D&D, local contracts, and Browser gate | CURRENT VP2C REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/VP2C_REFERENCE_HANDOFF_AND_DND_REPORT.md` |
 | `docs/h3/evidence/vp2c-reference-handoff/2026-09-11/README.md` | VP2C implementation, authorized Browser acceptance, and bounded D&D limitation | CURRENT VP2C EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp2c-reference-handoff/2026-09-11/README.md` |
 | `docs/h3/evidence/vp2c-reference-handoff/2026-09-11/manifest.json` | Machine-readable VP2C acceptance manifest | CURRENT VP2C EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp2c-reference-handoff/2026-09-11/manifest.json` |
+| `docs/h3/reports/IP1_NATIVE_IMAGE_PREP_REFERENCE_EDIT_FEASIBILITY_REPORT.md` | IP1 Native Ref2VA Image Prep feasibility, runtime, visual limits, and non-scope | CURRENT IP1 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/IP1_NATIVE_IMAGE_PREP_REFERENCE_EDIT_FEASIBILITY_REPORT.md` |
+| `docs/h3/evidence/ip1-native-image-prep/2026-09-11/README.md` | IP1 Native audit, donor, three edit cases, frame-0, telemetry, and visual evidence | CURRENT IP1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/ip1-native-image-prep/2026-09-11/README.md` |
+| `docs/h3/evidence/ip1-native-image-prep/2026-09-11/manifest.json` | Machine-readable IP1 Native/runtime/output manifest | CURRENT IP1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/ip1-native-image-prep/2026-09-11/manifest.json` |
 | `docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` | H2-INFRA external model migration, isolation, shortcuts, cold restart, and closeout | CURRENT H2-INFRA REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` |
 | `docs/h3/evidence/model-library/2026-09-10/README.md` | H2-INFRA inventory, migration, deletion, shortcut, and runtime evidence index | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/README.md` |
 | `docs/h3/evidence/model-library/2026-09-10/inventory.json` | Machine-readable before/after H3 model inventory | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/inventory.json` |
@@ -156,10 +162,11 @@ Historical Rev.3 canonical GitHub URL:
 
 https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
 
-Rev.4 is the current master roadmap; its publication is pending the new docs
-commit and remote check. Rev.3 remains historical and the root/Archive sources
-are byte-identical. Publication does not imply Owner acceptance or final
-production acceptance.
+Rev.4 is the current master roadmap and is published on `main` at
+`3880534af0e26b970a8fd0a1ba564af6bc88c15e`. The current `origin/main` is the
+later Manga-only descendant `df0ad3b389db5149e1b6ab1edb24c568c147a10e`. Rev.3
+remains historical and the root/Archive sources are byte-identical. Publication
+does not imply Owner acceptance or final production acceptance.
 
 The current `GITHUB_MANGA.txt` is the canonical entry for the Manga Authoring
 line. `GITHUB_ComfyUI.txt` is a thin compatibility router to the separate Manga
@@ -328,7 +335,8 @@ truth, and Still receives no Video option automatically. VP2B adds only the
 experimental one-picture/optional-MP4 Reference Video lens over the Native
 Ref2VA adapter; Standard remains the default, Reference audio is disconnected,
 and Reference settings are server-enforced at `608 x 352 / 5 seconds / 20
-steps`.
+steps`. IP1 adds only the separate Native-only source-plus-optional-donor
+Image Prep feasibility adapter; Browser Prep/Edit remains not implemented.
 
 ## Review recipe
 
@@ -382,10 +390,13 @@ steps`.
     handoff, opaque public asset metadata, source preservation, active-job and
     atomic failure guards, and the two scoped Reference-slot D&D paths. Keep
     the real Browser acceptance and Owner acceptance separate from local tests.
-21. Stop after VP2C review; do not infer Owner acceptance, production identity
-    locking, Image Prep, multiple references, audio conditioning, Segment,
-    Studio, or production deployment from this evidence, and do not start IP1
-    from the roadmap publication.
+21. Review the IP1 Native Image Prep report and dated evidence after the VP2C
+    package; keep source preservation, donor influence, Native packet/frame-0
+    behavior, runtime qualification, Browser UI, publication, and Owner
+    acceptance distinct.
+22. Stop after IP1 review; do not infer Owner acceptance, production identity
+    locking, Browser Prep/Edit UI, multi-character R2V, audio conditioning,
+    Segment, Studio, or production deployment from this evidence.
 
 ## Evidence vocabulary
 

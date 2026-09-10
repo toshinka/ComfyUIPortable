@@ -15,8 +15,8 @@ Latest published Card:
 [M3B-LR7 — CAST GLOBAL vs EFFECT-MASK Interaction Isolation](completed/M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION_RESEARCH.md)
 M3B-LR7 publication: PUBLISHED; SOL public-URL review: PASS; classification: EFFECT_MASK_INTERACTION_CONFIRMED.
 Latest completed Card:
-[M3B-LR7 — CAST GLOBAL vs EFFECT-MASK Interaction Isolation](completed/M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION_RESEARCH.md)
-Stage 1 inventory stop: BLOCKED (`CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED`); LR2R1 technical result: PASS / QUALITY WEAK; LR3 final SOL result: PASS / OPTION_A_INCONCLUSIVE; Derived CLEAN Guide quality improvement: VERIFIED; placement consistency: NOT VERIFIED; Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE; Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE; LR4 result: PASS / LOCALITY_SUPPORTED; LR5 result: PASS / CAST_MASKED_CONFLICT with HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED; LR6 result: PASS / SOFT_MASK_CONFLICT (key finding: SOFTENING FIGURE EFFECT-MASK EDGE DID NOT REMOVE VISUAL BOUNDARY); LR7 result: PASS / EFFECT_MASK_INTERACTION_CONFIRMED; M3A.1 milestone acceptance: ACCEPTED_BY_DELEGATED_SOL; Final Owner product review: DEFERRED; Active Card: M3B-LR8.
+[M3B-LR8 — Core CAST_GLOBAL Robustness Qualification](completed/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION.md)
+Stage 1 inventory stop: BLOCKED (`CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED`); LR2R1 technical result: PASS / QUALITY WEAK; LR3 final SOL result: PASS / OPTION_A_INCONCLUSIVE; Derived CLEAN Guide quality improvement: VERIFIED; placement consistency: NOT VERIFIED; Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE; Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE; LR4 result: PASS / LOCALITY_SUPPORTED; LR5 result: PASS / CAST_MASKED_CONFLICT with HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED; LR6 result: PASS / SOFT_MASK_CONFLICT (key finding: SOFTENING FIGURE EFFECT-MASK EDGE DID NOT REMOVE VISUAL BOUNDARY); LR7 result: PASS / EFFECT_MASK_INTERACTION_CONFIRMED; LR8 result: PASS / CORE_GLOBAL_QUALIFIED (3 IMPROVED, 3 NEUTRAL, 0 REGRESSED; 6/6 figure count not worse; ComfyUI core ControlNetApplyAdvanced verified with 0 ACN nodes); M3A.1 milestone acceptance: ACCEPTED_BY_DELEGATED_SOL; Final Owner product review: DEFERRED; Active Card: NONE.
 
 M3B-LR1 is closed for its bounded foundation slice. M3B-LR2 is published and
 closed as a valid bounded inventory stop. M3B-LR2R1 is locally completed in
@@ -24,7 +24,7 @@ completed/ with the pinned model, verified shared storage, A/B evidence, and
 canonical regression. M3B-LR3 is completed in completed/ with final SOL result
 `OPTION_A_INCONCLUSIVE`; M3B-LR4 is published in completed/ with
 `LOCALITY_SUPPORTED`; M3B-LR5 is published in completed/ with
-`CAST_MASKED_CONFLICT`; M3B-LR6 is published in completed/ with `SOFT_MASK_CONFLICT`; M3B-LR7 is completed locally with `EFFECT_MASK_INTERACTION_CONFIRMED`. Active Card: NONE. Production ControlNet integration remains NOT PERFORMED. Owner push and SOL review remain required. No subsequent Card is issued automatically.
+`CAST_MASKED_CONFLICT`; M3B-LR6 is published in completed/ with `SOFT_MASK_CONFLICT`; M3B-LR7 is completed locally with `EFFECT_MASK_INTERACTION_CONFIRMED`; M3B-LR8 is completed locally with `CORE_GLOBAL_QUALIFIED`. Active Card: NONE. Production ControlNet integration remains NOT PERFORMED. Owner push and SOL review remain required. No subsequent Card is issued automatically.
 When work resumes, SOL audits [`WEBGPT_SOL_LUNA_HANDOFF.md`](../WEBGPT_SOL_LUNA_HANDOFF.md)
 and issues exactly one new limited Card in [`current/`](current/README.md). Do not copy a
 completed Card as a new instruction.
@@ -60,6 +60,7 @@ completed Card as a new instruction.
 | M3B-LR5 | [`M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH.md`](completed/M3B_LR5_CAST_MASKED_CLEAN_COMPATIBILITY_RESEARCH.md) |
 | M3B-LR6 | [`M3B_LR6_CAST_SOFT_EDGE_FIGURE_MASK_COMPATIBILITY_RESEARCH.md`](completed/M3B_LR6_CAST_SOFT_EDGE_FIGURE_MASK_COMPATIBILITY_RESEARCH.md) |
 | M3B-LR7 | [`M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION_RESEARCH.md`](completed/M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION_RESEARCH.md) |
+| M3B-LR8 | [`M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION.md`](completed/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION.md) |
 
 ## Naming rule
 

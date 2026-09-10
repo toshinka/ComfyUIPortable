@@ -1,5 +1,5 @@
 ComfyUIPortable — Manga Authoring External AI Entry (canonical)
-Updated: 2026-09-10 JST
+Updated: 2026-09-11 JST
 Repository: https://github.com/toshinka/tegaki
 Branch: main
 Canonical path: ComfyUIPortable/GITHUB_MANGA.txt
@@ -38,18 +38,19 @@ soft Figure-union effect-mask research and is PUBLISHED / SOL REVIEWED with
 final result SOFT_MASK_CONFLICT; its key finding was that SOFTENING FIGURE
 EFFECT-MASK EDGE DID NOT REMOVE VISUAL BOUNDARY. Production ControlNet
 integration remains NOT PERFORMED. M3B-LR7 is PUBLISHED / SOL REVIEWED with
-final result EFFECT_MASK_INTERACTION_CONFIRMED. CAST_GLOBAL showed usable
-quality in tested LR7 seeds without effect-mask boundary, but robustness is
-not yet established. Production ControlNet integration remains NOT PERFORMED.
-M3B-LR8 is ACTIVE. Web GPT SOL leads Card design; a fresh local Gemini
-executor implements one published Card at a time.
+final result EFFECT_MASK_INTERACTION_CONFIRMED. M3B-LR8 completed its bounded
+Core CAST_GLOBAL robustness qualification with provisional qualification
+CORE_GLOBAL_QUALIFIED (3 IMPROVED, 3 NEUTRAL, 0 REGRESSED; 6/6 figure count not worse;
+zero boundary artifacts; zero regional/control conflicts; ComfyUI core
+ControlNetApplyAdvanced verified with 0 Advanced-ControlNet nodes).
+Production ControlNet integration remains NOT PERFORMED. Active Card: NONE.
 
 Latest completed operational work:
-M3B-LR7 — CAST GLOBAL vs EFFECT-MASK Interaction Isolation Research.
-The existing CAST compiler and Character conditioning path remained active;
-the bounded two-output GLOBAL graph, runtime provenance, visual review,
-regressions, and canonical no-Guide regression completed with final result
-EFFECT_MASK_INTERACTION_CONFIRMED. PUBLISHED / SOL REVIEWED.
+M3B-LR8 — Core CAST_GLOBAL Robustness Qualification.
+ComfyUI core ControlNetApplyAdvanced consumed CAST regional conditioning;
+the 12-output research graph, runtime provenance, visual review, regressions,
+and canonical no-Guide regression completed with final result
+CORE_GLOBAL_QUALIFIED. LOCAL / DEFERRED.
 
 Latest published operational work:
 M3B-LR7 — CAST GLOBAL vs EFFECT-MASK Interaction Isolation Research.
@@ -77,13 +78,13 @@ Latest published manifest:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_lr5/M3B_LR5_MANIFEST.json
 
 Latest completed Card:
-docs/manga/cards/completed/M3B_LR6_CAST_SOFT_EDGE_FIGURE_MASK_COMPATIBILITY_RESEARCH.md
+docs/manga/cards/completed/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION.md
 
 Latest completed local report:
-docs/manga/reports/M3B_LR6_CAST_SOFT_EDGE_FIGURE_MASK_COMPATIBILITY_RESEARCH_REPORT.md
+docs/manga/reports/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION_REPORT.md
 
 Latest local manifest:
-docs/manga/verification/m3b_lr6/M3B_LR6_MANIFEST.json
+docs/manga/verification/m3b_lr8/M3B_LR8_MANIFEST.json
 
 Browser technical verification:
 PASS
@@ -123,11 +124,12 @@ M3B-LR5: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / CAST_MASKED_CONFLICT
 M3B-LR5 key failure: HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED
 M3B-LR6: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / SOFT_MASK_CONFLICT
 M3B-LR7: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / EFFECT_MASK_INTERACTION_CONFIRMED
-Active Card: M3B-LR8
+M3B-LR8: COMPLETED / CORE_GLOBAL_QUALIFIED
+Active Card: NONE
 
 Next:
-M3B-LR8 Core CAST_GLOBAL Robustness Qualification Research is ACTIVE.
-Production ControlNet integration remains NOT PERFORMED.
+M3B-LR8 Core CAST_GLOBAL Robustness Qualification Research is COMPLETED (CORE_GLOBAL_QUALIFIED).
+Production ControlNet integration remains NOT PERFORMED. Awaiting Web GPT SOL review.
 
 Completed review slice:
 M3B-LR1 — Rough Guide Foundation Long-Run Batch.

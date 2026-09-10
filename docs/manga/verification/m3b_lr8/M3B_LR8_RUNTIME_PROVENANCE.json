@@ -1,0 +1,206 @@
+{
+  "card": "M3B-LR8",
+  "target_workflow": "workflows/manga/research/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS.json",
+  "controlnet_apply_class": "ControlNetApplyAdvanced",
+  "controlnet_loader_class": "ControlNetLoader",
+  "advanced_controlnet_nodes_count": 0,
+  "advanced_controlnet_used": false,
+  "effect_mask_used": false,
+  "clean_guide_sha256": "96f99a6c1327925b4b7737c9658ffb3e2b69e76ea2b0fe40210a095b9d99ae3a",
+  "controlnet_model": "CN-anytest_v4\\CN-anytest4_illustrious2_A.safetensors",
+  "controlnet_model_sha256": "e069d496cc111740716b833238d9bea9cdd59f8623aa85a78d362d088b1f67b8",
+  "input_mode": "cast",
+  "compiled_characters_count": 2,
+  "compiled_characters": [
+    {
+      "instance_id": "inst_1",
+      "character_id": "cast_1",
+      "name": "Left Student",
+      "base_prompt": "young student, short dark hair, school uniform",
+      "override_prompt": "standing near the left window",
+      "combined_prompt": "young student, short dark hair, school uniform, standing near the left window, on the left side",
+      "raw_identity_prompt": "young student, short dark hair, school uniform",
+      "raw_acting_prompt": "standing near the left window",
+      "derived_spatial_hint": "on the left side",
+      "scene_presence_hint": "",
+      "effective_character_prompt": "young student, short dark hair, school uniform, standing near the left window, on the left side",
+      "derived_hints_metadata": {
+        "rel_center_x": 0.2045,
+        "rel_center_y": 0.4886,
+        "horizontal_slot": "left",
+        "depth_slot": "neutral",
+        "is_ambiguous": false,
+        "arrangement_hint": "",
+        "mode": "auto",
+        "resolved_mode": "horizontal"
+      },
+      "base_negative_prompt": "",
+      "override_negative_prompt": "",
+      "combined_negative_prompt": "",
+      "area": {
+        "shape_type": "rect",
+        "x": 0.08,
+        "y": 0.18,
+        "w": 0.32,
+        "h": 0.62
+      },
+      "coordinate_space": "page",
+      "loras": [],
+      "metadata": {
+        "instance_id": "inst_1",
+        "cast_id": "cast_1",
+        "scene_id": "scene_main",
+        "order": 1,
+        "display_name": "Left Student",
+        "spatial_hint_mode": "auto"
+      }
+    },
+    {
+      "instance_id": "inst_2",
+      "character_id": "cast_2",
+      "name": "Right Student",
+      "base_prompt": "young student, long light hair, school uniform",
+      "override_prompt": "seated near the right desk",
+      "combined_prompt": "young student, long light hair, school uniform, seated near the right desk, on the right side",
+      "raw_identity_prompt": "young student, long light hair, school uniform",
+      "raw_acting_prompt": "seated near the right desk",
+      "derived_spatial_hint": "on the right side",
+      "scene_presence_hint": "",
+      "effective_character_prompt": "young student, long light hair, school uniform, seated near the right desk, on the right side",
+      "derived_hints_metadata": {
+        "rel_center_x": 0.7614,
+        "rel_center_y": 0.5114,
+        "horizontal_slot": "right",
+        "depth_slot": "neutral",
+        "is_ambiguous": false,
+        "arrangement_hint": "",
+        "mode": "auto",
+        "resolved_mode": "horizontal"
+      },
+      "base_negative_prompt": "",
+      "override_negative_prompt": "",
+      "combined_negative_prompt": "",
+      "area": {
+        "shape_type": "rect",
+        "x": 0.6,
+        "y": 0.26,
+        "w": 0.26,
+        "h": 0.5
+      },
+      "coordinate_space": "page",
+      "loras": [],
+      "metadata": {
+        "instance_id": "inst_2",
+        "cast_id": "cast_2",
+        "scene_id": "scene_main",
+        "order": 2,
+        "display_name": "Right Student",
+        "spatial_hint_mode": "auto"
+      }
+    }
+  ],
+  "character_conditioning_entries_count": 2,
+  "character_conditioning_entries": [
+    {
+      "character_id": "cast_1",
+      "character_name": "Left Student",
+      "panel_id": 1,
+      "index": 0,
+      "positive": "young student, short dark hair, school uniform, standing near the left window, on the left side",
+      "negative": "",
+      "strength": 1.0
+    },
+    {
+      "character_id": "cast_2",
+      "character_name": "Right Student",
+      "panel_id": 1,
+      "index": 1,
+      "positive": "young student, long light hair, school uniform, seated near the right desk, on the right side",
+      "negative": "",
+      "strength": 1.0
+    }
+  ],
+  "character_masks_count": 2,
+  "control_strength": 0.75,
+  "control_start": 0.0,
+  "control_end": 1.0,
+  "seeds": [
+    42,
+    77,
+    101,
+    202,
+    303,
+    404
+  ],
+  "conditions": [
+    "CAST_OFF",
+    "CAST_CORE_GLOBAL"
+  ],
+  "outputs": {
+    "SEED_42_CAST_OFF": {
+      "file": "SEED_42_CAST_OFF.png",
+      "sha256": "7b7fa2450913d6dcaa9338a3b1099597ff29d3fa7b41e2dc740fb99a22ec71ba",
+      "dimensions": "832x1216"
+    },
+    "SEED_42_CAST_CORE_GLOBAL": {
+      "file": "SEED_42_CAST_CORE_GLOBAL.png",
+      "sha256": "52351dc9bc6d68f818c2e4252209effc65c13cac39a2e09a9a89b136952a2b2b",
+      "dimensions": "832x1216"
+    },
+    "SEED_77_CAST_OFF": {
+      "file": "SEED_77_CAST_OFF.png",
+      "sha256": "a9ea2ed04a03c6555e3c6ecaaa40f81206d8bc3e5ce8ac5929c76c274c7189d2",
+      "dimensions": "832x1216"
+    },
+    "SEED_77_CAST_CORE_GLOBAL": {
+      "file": "SEED_77_CAST_CORE_GLOBAL.png",
+      "sha256": "f6b86a070a5d5af485a96f51cff8877abb28e903a55fdc7e29e2a2d4c6cc7765",
+      "dimensions": "832x1216"
+    },
+    "SEED_101_CAST_OFF": {
+      "file": "SEED_101_CAST_OFF.png",
+      "sha256": "24d31fafc7284b8bcb535992a14a7b596dc20bd959e4fce119c3e56c2afa2af4",
+      "dimensions": "832x1216"
+    },
+    "SEED_101_CAST_CORE_GLOBAL": {
+      "file": "SEED_101_CAST_CORE_GLOBAL.png",
+      "sha256": "839dbffa75fd8023346260223aab6321b8cf407cf814c07350ecf06adb83f773",
+      "dimensions": "832x1216"
+    },
+    "SEED_202_CAST_OFF": {
+      "file": "SEED_202_CAST_OFF.png",
+      "sha256": "eb6c52f6bbb33f744f4969017a3cadeb460cdfe539c6d633754933894ee2e329",
+      "dimensions": "832x1216"
+    },
+    "SEED_202_CAST_CORE_GLOBAL": {
+      "file": "SEED_202_CAST_CORE_GLOBAL.png",
+      "sha256": "2503f62ef729d6d6e237288748987a7f90e43173d07e5bd907c7ba4409eb8e4f",
+      "dimensions": "832x1216"
+    },
+    "SEED_303_CAST_OFF": {
+      "file": "SEED_303_CAST_OFF.png",
+      "sha256": "540b989d37d10c3c564b0034b6fdeec81cba6d69b34d6a7dd513696e5bbfd79b",
+      "dimensions": "832x1216"
+    },
+    "SEED_303_CAST_CORE_GLOBAL": {
+      "file": "SEED_303_CAST_CORE_GLOBAL.png",
+      "sha256": "5d60a511997e0c46ef34957e5500562490a8d6f75af7d28b34bbfdd86d109ac7",
+      "dimensions": "832x1216"
+    },
+    "SEED_404_CAST_OFF": {
+      "file": "SEED_404_CAST_OFF.png",
+      "sha256": "d6538a5f91f2cd20dc2654cb73a2f2424be4da7a29691e6c2dff261ef27f34a2",
+      "dimensions": "832x1216"
+    },
+    "SEED_404_CAST_CORE_GLOBAL": {
+      "file": "SEED_404_CAST_CORE_GLOBAL.png",
+      "sha256": "9cdf6a7f4decc2e2e14705016d88f5ca9825d0bbd4b7926c2eb7bca6de7dd167",
+      "dimensions": "832x1216"
+    }
+  },
+  "canonical_no_guide": {
+    "file": "CANONICAL_NO_GUIDE.png",
+    "sha256": "22b9efe10e5ab849f5219ecf18d1157875580c3e45922134d264de22df70d408",
+    "dimensions": "832x1216"
+  }
+}

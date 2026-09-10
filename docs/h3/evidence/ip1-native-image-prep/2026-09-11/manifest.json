@@ -1,0 +1,200 @@
+{
+  "schema": "tegaki.h3.ip1.native-image-prep.evidence/v1",
+  "card": "IP1",
+  "title": "Native Image Prep / Reference Edit Feasibility",
+  "evidence_date": "2026-09-11",
+  "classification": "FEASIBLE WITH LIMITS",
+  "recommendation": "IP2 Browser Prep/Edit lens",
+  "publication": {
+    "status": "LOCAL",
+    "owner_push_required": true,
+    "owner_acceptance": "PENDING"
+  },
+  "native_audit": {
+    "status": "PASS",
+    "source_file": "ComfyUI/comfy_extras/nodes_minimax_h3.py",
+    "source_file_sha256": "49B2CBEA340E5588452BA9BFA84EB17FF7D8B76B4EFE992CC2766B6983A5F66E",
+    "class": "MiniMaxH3ReferenceToVideo",
+    "source_lines": "154-280",
+    "image_reference_contract": "0-9 ordered ref_image_ inputs; IP1 materializes exactly 1 source or 2 source-plus-donor images",
+    "picture_ordinals": "1-based and deterministic by ref_images mapping order",
+    "ref_image_size": "match",
+    "length_contract": "minimum 5, 17n+5 grid; length 5 remains a five-frame packet",
+    "latent_contract": "five-frame packet has temporal latent dimension 2 before video VAE decode",
+    "audio_reference": "not connected",
+    "video_reference": "not connected",
+    "output_contract": "VAEDecode video samples -> ImageFromBatch batch_index 0 length 1 -> SaveImage PNG",
+    "custom_nodes": "none"
+  },
+  "implementation": {
+    "workflow": {
+      "path": "workflows/h3/IP1_NATIVE_IMAGE_PREP_BASE.json",
+      "sha256": "D3D51FEBD2EBDEBED6DA1CA3F1842BA1E9A407610DCA80749C1878E5218D94B5"
+    },
+    "adapter": {
+      "path": "h3/adapters/native_image_prep.py",
+      "sha256": "4DF381CBF3A0D7EA44AC6DADCC2F9E7F612C8E3129D55B9D184C69C7048FBF35"
+    },
+    "runner": {
+      "path": "h3/tests/run_ip1_image_prep.py",
+      "sha256": "0F036C1995FB53B909373E9E78AFB346DFDE91F5DD5FCA67D7438DFECF71957F"
+    },
+    "tests": {
+      "path": "h3/tests/test_ip1_native_image_prep.py",
+      "sha256": "2A61F897695CC1201B7DC2E03D852578F6D68BF49CA20EA2289949921F437B18"
+    },
+    "existing_vp2b_adapter": "unchanged; no Browser route or native_ref2va.py edit"
+  },
+  "baseline": {
+    "model": "minimax_h3_ref2va_pruned_int8_convrot.safetensors",
+    "text_encoder": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+    "video_vae": "minimax_h3_video_vae_fp16.safetensors",
+    "audio_vae": "minimax_h3_audio_vae_fp32.safetensors; required Native node input only",
+    "width": 608,
+    "height": 352,
+    "steps": 20,
+    "seed": 20260911,
+    "fps_basis": 24,
+    "packet_frames": 5,
+    "selected_frame_index": 0,
+    "ref_image_size": "match",
+    "sampler": "res_multistep",
+    "scheduler": "simple",
+    "turbo_lora": false,
+    "custom_nodes": "none",
+    "browser_ui": "NOT IMPLEMENTED",
+    "production_mp4": false
+  },
+  "authorized_inputs": {
+    "source": {
+      "path": "output/h3/tests/reference_robot_v1.png",
+      "sha256": "43D29D07B5D0B4A2C4650A2C840AE6CF07980714008FDDB1D1008B0E08CF030E",
+      "bytes": 206821,
+      "format": "PNG",
+      "dimensions": [608, 352],
+      "external_upload": "NONE"
+    },
+    "donor": {
+      "path": "output/h3/still/h2a_native_still_00004_.png",
+      "sha256": "4338866A7E230F79B08E696571F9321F8E910DA17C0296E9C58C96D89451B6F0",
+      "bytes": 193442,
+      "format": "PNG",
+      "dimensions": [608, 352],
+      "origin": "one prompt-only H2A Still generation",
+      "external_upload": "NONE"
+    }
+  },
+  "donor_generation": {
+    "status": "PASS",
+    "allowed_count": 1,
+    "actual_count": 1,
+    "route": "native_still",
+    "prompt_id": "c91ddfe8-cb01-44a2-bb1f-99b102019a5b",
+    "elapsed_seconds": 110.68,
+    "seed": 20260911,
+    "steps": 20,
+    "output": {
+      "path": "output/h3/still/h2a_native_still_00004_.png",
+      "sha256": "4338866A7E230F79B08E696571F9321F8E910DA17C0296E9C58C96D89451B6F0",
+      "bytes": 193442,
+      "format": "PNG",
+      "dimensions": [608, 352]
+    },
+    "telemetry": {
+      "gpu": "NVIDIA GeForce RTX 4070",
+      "vram_total_mib": 12282,
+      "peak_observed_vram_used_mib": 11743,
+      "minimum_observed_vram_free_mib": 270,
+      "system_ram_total_bytes": 68476002304,
+      "native_process_id": 50352,
+      "peak_native_working_set_bytes": 31249317888,
+      "sample_count": 56
+    },
+    "oom_count": 0,
+    "retry_count": 0
+  },
+  "cases": [
+    {
+      "case": "A",
+      "prompt_id": "06e20bbe-7f36-44f5-ab66-32a7b63e3d49",
+      "user_prompt": "Keep the recognizable red-and-white robot design and approximate framing. Change only the environment to a rainy outdoor setting with visible wet surfaces and rainfall.",
+      "materialized_roles": ["Picture 1=source"],
+      "source_preservation": "STRONG",
+      "requested_environment": "OBSERVED",
+      "drift": "MODERATE",
+      "drift_note": "Identity and red-white design remained recognizable; crop/background/composition changed.",
+      "elapsed_seconds": 99.25,
+      "settings": {"width": 608, "height": 352, "steps": 20, "seed": 20260911, "fps_basis": 24, "packet_frames": 5, "selected_frame_index": 0},
+      "frame_selection": {"packet": "5-frame", "decode_node": "122", "select_node": "132", "selected_frame_index": 0, "output": "SaveImage PNG"},
+      "output": {"path": "output/h3/still/ip1_native_image_prep_00001_.png", "sha256": "84CE9C5B0EC07EFA24CAE3A604144E7EF38ACAB64E677AC6DAE1B32042B9E5AF", "bytes": 243729, "format": "PNG", "dimensions": [608, 352]},
+      "telemetry": {"gpu": "NVIDIA GeForce RTX 4070", "vram_total_mib": 12282, "peak_observed_vram_used_mib": 11748, "minimum_observed_vram_free_mib": 265, "system_ram_total_bytes": 68476002304, "native_process_id": 50352, "peak_native_working_set_bytes": 38368489472, "sample_count": 51},
+      "derived_observed_peak_vram_mib": 11748,
+      "oom_count": 0,
+      "retry_count": 0
+    },
+    {
+      "case": "B",
+      "prompt_id": "2358fbed-bf93-4ecb-963d-f356fd163e26",
+      "user_prompt": "Keep the recognizable source robot design and general composition. Transfer only the bright yellow raincoat or protective-coat material and color treatment from the donor. Do not replace the whole scene.",
+      "materialized_roles": ["Picture 1=source", "Picture 2=optional donor attribute"],
+      "source_preservation": "WEAK",
+      "donor_influence": "STRONG",
+      "over_transfer": "HIGH",
+      "composition_drift": "HIGH",
+      "drift_note": "The output followed the yellow raincoat donor's whole subject/studio composition instead of only the requested attribute.",
+      "elapsed_seconds": 24.98,
+      "settings": {"width": 608, "height": 352, "steps": 20, "seed": 20260911, "fps_basis": 24, "packet_frames": 5, "selected_frame_index": 0},
+      "frame_selection": {"packet": "5-frame", "decode_node": "122", "select_node": "132", "selected_frame_index": 0, "output": "SaveImage PNG"},
+      "output": {"path": "output/h3/still/ip1_native_image_prep_00002_.png", "sha256": "CD09680F816482B009D3F6C2CFBB8DC348845B9D5BE8B384E07934F57070800B", "bytes": 194081, "format": "PNG", "dimensions": [608, 352]},
+      "telemetry": {"gpu": "NVIDIA GeForce RTX 4070", "vram_total_mib": 12282, "peak_observed_vram_used_mib": 11759, "minimum_observed_vram_free_mib": 254, "system_ram_total_bytes": 68476002304, "native_process_id": 50352, "peak_native_working_set_bytes": 43360518144, "sample_count": 15},
+      "derived_observed_peak_vram_mib": 11759,
+      "oom_count": 0,
+      "retry_count": 0
+    },
+    {
+      "case": "C",
+      "prompt_id": "0e2fe9ed-4876-4116-86a9-f112c6b8fbbc",
+      "user_prompt": "Keep the same recognizable robot design. Change only the view to a mild three-quarter angle and raise one arm. Keep a simple background.",
+      "materialized_roles": ["Picture 1=source"],
+      "source_preservation": "STRONG",
+      "requested_angle": "OBSERVED",
+      "requested_pose": "OBSERVED",
+      "structural_drift": "MODERATE",
+      "drift_note": "Identity and red-white design remained recognizable; the new arm, crop, and angle introduced moderate structural change.",
+      "elapsed_seconds": 18.69,
+      "settings": {"width": 608, "height": 352, "steps": 20, "seed": 20260911, "fps_basis": 24, "packet_frames": 5, "selected_frame_index": 0},
+      "frame_selection": {"packet": "5-frame", "decode_node": "122", "select_node": "132", "selected_frame_index": 0, "output": "SaveImage PNG"},
+      "output": {"path": "output/h3/still/ip1_native_image_prep_00003_.png", "sha256": "B6E04D7A43C98C2850692A01D0F8E80DDD6470C1CD5DEC836AFE6E22D6FFB32D", "bytes": 200933, "format": "PNG", "dimensions": [608, 352]},
+      "telemetry": {"gpu": "NVIDIA GeForce RTX 4070", "vram_total_mib": 12282, "peak_observed_vram_used_mib": 11676, "minimum_observed_vram_free_mib": 337, "system_ram_total_bytes": 68476002304, "native_process_id": 50352, "peak_native_working_set_bytes": 43559407616, "sample_count": 12},
+      "derived_observed_peak_vram_mib": 11676,
+      "oom_count": 0,
+      "retry_count": 0
+    }
+  ],
+  "verification": {
+    "native_source_audit": "PASS",
+    "ip1_targeted_contract_tests": "7 PASS",
+    "ip1_runtime_cases": "3 PASS",
+    "donor_generation": "1 PASS / 1 allowed",
+    "browser_ui": "NOT RUN / NOT IMPLEMENTED",
+    "vp2b_route": "unchanged and targeted contract preserved",
+    "owner_acceptance": "PENDING"
+  },
+  "non_scope": [
+    "Browser Prep/Edit UI",
+    "pixel-preserving edit",
+    "masked edit",
+    "region lock",
+    "identity lock",
+    "three-view or turnaround consistency",
+    "T=1 single-frame diffusion claim",
+    "dedicated Image Studio",
+    "multi-character R2V",
+    "video reference",
+    "audio reference",
+    "LoRA runtime or acceleration track",
+    "new model or VAE",
+    "shared ComfyUI core/frontend",
+    "Manga"
+  ]
+}

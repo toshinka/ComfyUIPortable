@@ -1,0 +1,843 @@
+{
+  "card": "M3B-LR8",
+  "kind": "research_api_prompt",
+  "source_workflow": "workflows/manga/research/M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION.json",
+  "model": "CN-anytest4_illustrious2_A.safetensors",
+  "controlnet_selector": "CN-anytest_v4\\CN-anytest4_illustrious2_A.safetensors",
+  "fixed": {
+    "checkpoint": "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors",
+    "resolution": [
+      832,
+      1216
+    ],
+    "steps": 20,
+    "cfg": 7.0,
+    "sampler": "euler",
+    "scheduler": "normal",
+    "denoise": 1.0,
+    "character_strength": 1.0,
+    "panel_strength": 1.0,
+    "local_region_strength": 1.0,
+    "character_mask_feather": 0,
+    "control_strength": 0.75,
+    "start_percent": 0.0,
+    "end_percent": 1.0,
+    "seeds": [
+      42,
+      77,
+      101,
+      202,
+      303,
+      404
+    ],
+    "conditions": [
+      "CAST_OFF",
+      "CAST_CORE_GLOBAL"
+    ],
+    "effect_mask": "NONE",
+    "advanced_apply_node": "NONE",
+    "controlnet_apply_node": "ControlNetApplyAdvanced"
+  },
+  "prompt": {
+    "1": {
+      "class_type": "TegakiMinimumHandSceneEditor",
+      "inputs": {
+        "document_json": "{\"schema_id\":\"TEGAKI_AUTHORING_DOCUMENT\",\"schema_version\":\"1.0.0\",\"document_id\":\"m3b_lr2r1_ab_fixture\",\"pages\":[{\"page_id\":\"page_1\",\"order\":1,\"width_px\":832,\"height_px\":1216,\"style_prompt\":\"manga page, monochrome, expressive linework, high contrast, screentone shading, two students\",\"style_negative_prompt\":\"bad anatomy, blurry, photo, color, 3d render, watermark, text\",\"scenes\":[{\"scene_id\":\"scene_main\",\"name\":\"A/B fixture\",\"prompt\":\"monochrome manga classroom, two students, one standing on the left and one seated on the right, desks and window, clear left-right composition\",\"negative_prompt\":\"\",\"input_mode\":\"cast\",\"area\":{\"shape_type\":\"rect\",\"x\":0.06,\"y\":0.06,\"w\":0.88,\"h\":0.88},\"order\":1,\"metadata\":{}}],\"visual_frames\":[],\"cast\":[{\"cast_id\":\"cast_1\",\"display_name\":\"Left Student\",\"identity_prompt\":\"young student, short dark hair, school uniform\",\"negative_prompt\":\"\",\"loras\":[],\"metadata\":{}},{\"cast_id\":\"cast_2\",\"display_name\":\"Right Student\",\"identity_prompt\":\"young student, long light hair, school uniform\",\"negative_prompt\":\"\",\"loras\":[],\"metadata\":{}}],\"character_instances\":[{\"instance_id\":\"inst_1\",\"cast_id\":\"cast_1\",\"scene_id\":\"scene_main\",\"area\":{\"shape_type\":\"rect\",\"x\":0.08,\"y\":0.18,\"w\":0.32,\"h\":0.62},\"acting_prompt\":\"standing near the left window\",\"negative_prompt_override\":\"\",\"order\":1,\"metadata\":{}},{\"instance_id\":\"inst_2\",\"cast_id\":\"cast_2\",\"scene_id\":\"scene_main\",\"area\":{\"shape_type\":\"rect\",\"x\":0.6,\"y\":0.26,\"w\":0.26,\"h\":0.5},\"acting_prompt\":\"seated near the right desk\",\"negative_prompt_override\":\"\",\"order\":2,\"metadata\":{}}],\"guides\":[{\"guide_id\":\"guide_1\",\"guide_type\":\"rough_manga\",\"asset_reference\":\"tegaki_manga_guides/rough_guide_live.png\",\"placement\":{\"x\":0,\"y\":0.2434,\"w\":1,\"h\":0.5132},\"enabled\":true,\"figure_regions\":[{\"figure_id\":\"figure_1\",\"instance_id\":\"inst_1\",\"area\":{\"shape_type\":\"rect\",\"x\":0.05,\"y\":0.12,\"w\":0.38,\"h\":0.72}},{\"figure_id\":\"figure_2\",\"instance_id\":\"inst_2\",\"area\":{\"shape_type\":\"rect\",\"x\":0.57,\"y\":0.22,\"w\":0.28,\"h\":0.58}}],\"metadata\":{\"fixture\":\"M3B-LR2R1\",\"association\":\"manual\"}}],\"metadata\":{\"fixture\":\"M3B-LR2R1\"},\"generation\":{\"seed\":42}}],\"metadata\":{}}",
+        "seed": 42,
+        "style_template": "Manga Monochrome",
+        "resolution": "Portrait 832x1216"
+      }
+    },
+    "2": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors"
+      }
+    },
+    "3": {
+      "class_type": "TegakiMangaConditioningBuilder",
+      "inputs": {
+        "clip": [
+          "2",
+          1
+        ],
+        "page_compile_plan": [
+          "1",
+          0
+        ],
+        "panel_strength": 1,
+        "character_strength": 1,
+        "set_cond_area": "default",
+        "local_region_strength": 1,
+        "mask_feather": 0
+      }
+    },
+    "5": {
+      "class_type": "ControlNetLoader",
+      "inputs": {
+        "control_net_name": "CN-anytest_v4\\CN-anytest4_illustrious2_A.safetensors"
+      }
+    },
+    "6": {
+      "class_type": "ControlNetApplyAdvanced",
+      "inputs": {
+        "positive": [
+          "3",
+          0
+        ],
+        "negative": [
+          "3",
+          1
+        ],
+        "control_net": [
+          "5",
+          0
+        ],
+        "image": [
+          "8",
+          0
+        ],
+        "strength": 0.75,
+        "start_percent": 0.0,
+        "end_percent": 1.0,
+        "vae": [
+          "2",
+          2
+        ]
+      }
+    },
+    "7": {
+      "class_type": "EmptyLatentImage",
+      "inputs": {
+        "width": 832,
+        "height": 1216,
+        "batch_size": 1
+      }
+    },
+    "8": {
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "tegaki_manga_guides/M3B_LR3_CLEAN_GUIDE.png"
+      }
+    },
+    "10": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "2",
+          0
+        ],
+        "positive": [
+          "3",
+          0
+        ],
+        "negative": [
+          "3",
+          1
+        ],
+        "latent_image": [
+          "7",
+          0
+        ],
+        "seed": 42,
+        "steps": 20,
+        "cfg": 7.0,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1.0
+      }
+    },
+    "20": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "10",
+          0
+        ],
+        "vae": [
+          "2",
+          2
+        ]
+      }
+    },
+    "30": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "20",
+          0
+        ],
+        "filename_prefix": "M3B_LR8_SEED_42_CAST_OFF"
+      }
+    },
+    "11": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "2",
+          0
+        ],
+        "positive": [
+          "6",
+          0
+        ],
+        "negative": [
+          "6",
+          1
+        ],
+        "latent_image": [
+          "7",
+          0
+        ],
+        "seed": 42,
+        "steps": 20,
+        "cfg": 7.0,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1.0
+      }
+    },
+    "21": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "11",
+          0
+        ],
+        "vae": [
+          "2",
+          2
+        ]
+      }
+    },
+    "31": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "21",
+          0
+        ],
+        "filename_prefix": "M3B_LR8_SEED_42_CAST_CORE_GLOBAL"
+      }
+    },
+    "12": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "2",
+          0
+        ],
+        "positive": [
+          "3",
+          0
+        ],
+        "negative": [
+          "3",
+          1
+        ],
+        "latent_image": [
+          "7",
+          0
+        ],
+        "seed": 77,
+        "steps": 20,
+        "cfg": 7.0,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1.0
+      }
+    },
+    "22": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "12",
+          0
+        ],
+        "vae": [
+          "2",
+          2
+        ]
+      }
+    },
+    "32": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "22",
+          0
+        ],
+        "filename_prefix": "M3B_LR8_SEED_77_CAST_OFF"
+      }
+    },
+    "13": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "2",
+          0
+        ],
+        "positive": [
+          "6",
+          0
+        ],
+        "negative": [
+          "6",
+          1
+        ],
+        "latent_image": [
+          "7",
+          0
+        ],
+        "seed": 77,
+        "steps": 20,
+        "cfg": 7.0,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1.0
+      }
+    },
+    "23": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "13",
+          0
+        ],
+        "vae": [
+          "2",
+          2
+        ]
+      }
+    },
+    "33": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "23",
+          0
+        ],
+        "filename_prefix": "M3B_LR8_SEED_77_CAST_CORE_GLOBAL"
+      }
+    },
+    "14": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "2",
+          0
+        ],
+        "positive": [
+          "3",
+          0
+        ],
+        "negative": [
+          "3",
+          1
+        ],
+        "latent_image": [
+          "7",
+          0
+        ],
+        "seed": 101,
+        "steps": 20,
+        "cfg": 7.0,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1.0
+      }
+    },
+    "24": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "14",
+          0
+        ],
+        "vae": [
+          "2",
+          2
+        ]
+      }
+    },
+    "34": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "24",
+          0
+        ],
+        "filename_prefix": "M3B_LR8_SEED_101_CAST_OFF"
+      }
+    },
+    "15": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "2",
+          0
+        ],
+        "positive": [
+          "6",
+          0
+        ],
+        "negative": [
+          "6",
+          1
+        ],
+        "latent_image": [
+          "7",
+          0
+        ],
+        "seed": 101,
+        "steps": 20,
+        "cfg": 7.0,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1.0
+      }
+    },
+    "25": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "15",
+          0
+        ],
+        "vae": [
+          "2",
+          2
+        ]
+      }
+    },
+    "35": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "25",
+          0
+        ],
+        "filename_prefix": "M3B_LR8_SEED_101_CAST_CORE_GLOBAL"
+      }
+    },
+    "16": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "2",
+          0
+        ],
+        "positive": [
+          "3",
+          0
+        ],
+        "negative": [
+          "3",
+          1
+        ],
+        "latent_image": [
+          "7",
+          0
+        ],
+        "seed": 202,
+        "steps": 20,
+        "cfg": 7.0,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1.0
+      }
+    },
+    "26": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "16",
+          0
+        ],
+        "vae": [
+          "2",
+          2
+        ]
+      }
+    },
+    "36": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "26",
+          0
+        ],
+        "filename_prefix": "M3B_LR8_SEED_202_CAST_OFF"
+      }
+    },
+    "17": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "2",
+          0
+        ],
+        "positive": [
+          "6",
+          0
+        ],
+        "negative": [
+          "6",
+          1
+        ],
+        "latent_image": [
+          "7",
+          0
+        ],
+        "seed": 202,
+        "steps": 20,
+        "cfg": 7.0,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1.0
+      }
+    },
+    "27": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "17",
+          0
+        ],
+        "vae": [
+          "2",
+          2
+        ]
+      }
+    },
+    "37": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "27",
+          0
+        ],
+        "filename_prefix": "M3B_LR8_SEED_202_CAST_CORE_GLOBAL"
+      }
+    },
+    "18": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "2",
+          0
+        ],
+        "positive": [
+          "3",
+          0
+        ],
+        "negative": [
+          "3",
+          1
+        ],
+        "latent_image": [
+          "7",
+          0
+        ],
+        "seed": 303,
+        "steps": 20,
+        "cfg": 7.0,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1.0
+      }
+    },
+    "28": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "18",
+          0
+        ],
+        "vae": [
+          "2",
+          2
+        ]
+      }
+    },
+    "38": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "28",
+          0
+        ],
+        "filename_prefix": "M3B_LR8_SEED_303_CAST_OFF"
+      }
+    },
+    "19": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "2",
+          0
+        ],
+        "positive": [
+          "6",
+          0
+        ],
+        "negative": [
+          "6",
+          1
+        ],
+        "latent_image": [
+          "7",
+          0
+        ],
+        "seed": 303,
+        "steps": 20,
+        "cfg": 7.0,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1.0
+      }
+    },
+    "29": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "19",
+          0
+        ],
+        "vae": [
+          "2",
+          2
+        ]
+      }
+    },
+    "39": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "29",
+          0
+        ],
+        "filename_prefix": "M3B_LR8_SEED_303_CAST_CORE_GLOBAL"
+      }
+    },
+    "110": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "2",
+          0
+        ],
+        "positive": [
+          "3",
+          0
+        ],
+        "negative": [
+          "3",
+          1
+        ],
+        "latent_image": [
+          "7",
+          0
+        ],
+        "seed": 404,
+        "steps": 20,
+        "cfg": 7.0,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1.0
+      }
+    },
+    "120": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "110",
+          0
+        ],
+        "vae": [
+          "2",
+          2
+        ]
+      }
+    },
+    "130": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "120",
+          0
+        ],
+        "filename_prefix": "M3B_LR8_SEED_404_CAST_OFF"
+      }
+    },
+    "111": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "2",
+          0
+        ],
+        "positive": [
+          "6",
+          0
+        ],
+        "negative": [
+          "6",
+          1
+        ],
+        "latent_image": [
+          "7",
+          0
+        ],
+        "seed": 404,
+        "steps": 20,
+        "cfg": 7.0,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1.0
+      }
+    },
+    "121": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "111",
+          0
+        ],
+        "vae": [
+          "2",
+          2
+        ]
+      }
+    },
+    "131": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "121",
+          0
+        ],
+        "filename_prefix": "M3B_LR8_SEED_404_CAST_CORE_GLOBAL"
+      }
+    }
+  },
+  "m3b_lr8": {
+    "card": "M3B-LR8",
+    "conditions": [
+      "CAST_OFF",
+      "CAST_CORE_GLOBAL"
+    ],
+    "seeds": [
+      42,
+      77,
+      101,
+      202,
+      303,
+      404
+    ],
+    "controlnet_apply": "ControlNetApplyAdvanced",
+    "control_strength": 0.75,
+    "control_start": 0.0,
+    "control_end": 1.0,
+    "clean_guide_sha256": "96f99a6c1327925b4b7737c9658ffb3e2b69e76ea2b0fe40210a095b9d99ae3a",
+    "controlnet_sha256": "e069d496cc111740716b833238d9bea9cdd59f8623aa85a78d362d088b1f67b8",
+    "outputs": [
+      {
+        "seed": 42,
+        "condition": "CAST_OFF",
+        "ks_node": "10",
+        "save_node": "30",
+        "prefix": "M3B_LR8_SEED_42_CAST_OFF",
+        "expected_file": "SEED_42_CAST_OFF.png"
+      },
+      {
+        "seed": 42,
+        "condition": "CAST_CORE_GLOBAL",
+        "ks_node": "11",
+        "save_node": "31",
+        "prefix": "M3B_LR8_SEED_42_CAST_CORE_GLOBAL",
+        "expected_file": "SEED_42_CAST_CORE_GLOBAL.png"
+      },
+      {
+        "seed": 77,
+        "condition": "CAST_OFF",
+        "ks_node": "12",
+        "save_node": "32",
+        "prefix": "M3B_LR8_SEED_77_CAST_OFF",
+        "expected_file": "SEED_77_CAST_OFF.png"
+      },
+      {
+        "seed": 77,
+        "condition": "CAST_CORE_GLOBAL",
+        "ks_node": "13",
+        "save_node": "33",
+        "prefix": "M3B_LR8_SEED_77_CAST_CORE_GLOBAL",
+        "expected_file": "SEED_77_CAST_CORE_GLOBAL.png"
+      },
+      {
+        "seed": 101,
+        "condition": "CAST_OFF",
+        "ks_node": "14",
+        "save_node": "34",
+        "prefix": "M3B_LR8_SEED_101_CAST_OFF",
+        "expected_file": "SEED_101_CAST_OFF.png"
+      },
+      {
+        "seed": 101,
+        "condition": "CAST_CORE_GLOBAL",
+        "ks_node": "15",
+        "save_node": "35",
+        "prefix": "M3B_LR8_SEED_101_CAST_CORE_GLOBAL",
+        "expected_file": "SEED_101_CAST_CORE_GLOBAL.png"
+      },
+      {
+        "seed": 202,
+        "condition": "CAST_OFF",
+        "ks_node": "16",
+        "save_node": "36",
+        "prefix": "M3B_LR8_SEED_202_CAST_OFF",
+        "expected_file": "SEED_202_CAST_OFF.png"
+      },
+      {
+        "seed": 202,
+        "condition": "CAST_CORE_GLOBAL",
+        "ks_node": "17",
+        "save_node": "37",
+        "prefix": "M3B_LR8_SEED_202_CAST_CORE_GLOBAL",
+        "expected_file": "SEED_202_CAST_CORE_GLOBAL.png"
+      },
+      {
+        "seed": 303,
+        "condition": "CAST_OFF",
+        "ks_node": "18",
+        "save_node": "38",
+        "prefix": "M3B_LR8_SEED_303_CAST_OFF",
+        "expected_file": "SEED_303_CAST_OFF.png"
+      },
+      {
+        "seed": 303,
+        "condition": "CAST_CORE_GLOBAL",
+        "ks_node": "19",
+        "save_node": "39",
+        "prefix": "M3B_LR8_SEED_303_CAST_CORE_GLOBAL",
+        "expected_file": "SEED_303_CAST_CORE_GLOBAL.png"
+      },
+      {
+        "seed": 404,
+        "condition": "CAST_OFF",
+        "ks_node": "110",
+        "save_node": "130",
+        "prefix": "M3B_LR8_SEED_404_CAST_OFF",
+        "expected_file": "SEED_404_CAST_OFF.png"
+      },
+      {
+        "seed": 404,
+        "condition": "CAST_CORE_GLOBAL",
+        "ks_node": "111",
+        "save_node": "131",
+        "prefix": "M3B_LR8_SEED_404_CAST_CORE_GLOBAL",
+        "expected_file": "SEED_404_CAST_CORE_GLOBAL.png"
+      }
+    ]
+  }
+}

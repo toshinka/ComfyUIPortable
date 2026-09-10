@@ -6,7 +6,8 @@ Updated: 2026-09-11 JST
 
 Current Stage
 -------------
-R4 / H3 Roadmap Rev.4 — CURRENT MASTER / DOCS-ONLY / PUBLICATION PENDING
+IP1 / Native Image Prep / Reference Edit Feasibility — IN PROGRESS / NATIVE-ONLY / NO BROWSER UI
+R4 / H3 Roadmap Rev.4 — CURRENT MASTER / DOCS-ONLY / PUBLISHED ON MAIN
 VP2C / Reference Handoff and scoped D&D — ACCEPTANCE VERIFIED WITH LIMITS / PUBLISHED ON MAIN
 VP2B / Experimental R2V Playground — CLOSEOUT PUBLISHED ON MAIN
 H1C / Frame-Bridged Continuation: IMPLEMENTED / VERIFIED (regression foundation)
@@ -107,7 +108,12 @@ VP2C Motion picker route: PASS; exact authorized MP4 supplied the Reference run
 VP2C Still / Reference / History handoff: PASS; no auto-generation
 VP2C implementation publication: PUBLISHED ON MAIN at 56ad30afa128ef4120f962b6c114fc0e7526aae8
 VP2C closeout publication: PUBLISHED ON MAIN at 1a869125fa95ef4c7b1e94b0ccedab39fc52b4be
-R4 publication: LOCAL MAIN / PUSH PENDING
+R4 publication: PUBLISHED ON MAIN at 3880534af0e26b970a8fd0a1ba564af6bc88c15e
+Current origin/main: df0ad3b389db5149e1b6ab1edb24c568c147a10e (later Manga-only descendant)
+IP1 Native source audit: PASS
+IP1 classification: FEASIBLE WITH LIMITS
+IP1 Browser Prep/Edit: NOT IMPLEMENTED
+IP1 recommendation: IP2 Browser Prep/Edit lens
 H3 external model library: CONFIGURED / VERIFIED
 Portable duplicate heavy weights: REMOVED
 Portable fallback namespace: RETAINED / EMPTY OF FIRST-WAVE HEAVY WEIGHTS
@@ -168,6 +174,9 @@ Read Order
 45. ComfyUIPortable/docs/h3/reports/VP2C_REFERENCE_HANDOFF_AND_DND_REPORT.md
 46. ComfyUIPortable/docs/h3/evidence/vp2c-reference-handoff/2026-09-11/README.md
 47. ComfyUIPortable/docs/h3/evidence/vp2c-reference-handoff/2026-09-11/manifest.json
+48. ComfyUIPortable/docs/h3/reports/IP1_NATIVE_IMAGE_PREP_REFERENCE_EDIT_FEASIBILITY_REPORT.md
+49. ComfyUIPortable/docs/h3/evidence/ip1-native-image-prep/2026-09-11/README.md
+50. ComfyUIPortable/docs/h3/evidence/ip1-native-image-prep/2026-09-11/manifest.json
 
 Master Roadmap
 --------------
@@ -260,12 +269,12 @@ Reference run. VP2C closeout is PUBLISHED ON MAIN at `1a869125`; Owner
 acceptance remains pending.
 
 Rev.4 records the verified Video/Still/R2V foundation, formalizes Image Prep as
-a planned Native-first track, and keeps multi-character semantics, spatial
-hard binding, LoRA runtime compatibility, Shot, Storyboard, Timeline, Previz,
-and Manga integration outside the current implementation contract. IP1 —
-Native Image Prep / Reference Edit Feasibility — is the only immediate next
-implementation gate. The Rev.4 file is prepared locally; publication remains
-LOCAL MAIN / PUSH PENDING until the new commit is pushed and remotely checked.
+a Native-first track, and keeps multi-character semantics, spatial hard binding,
+LoRA runtime compatibility, Shot, Storyboard, Timeline, Previz, and Manga
+integration outside the current implementation contract. IP1 — Native Image
+Prep / Reference Edit Feasibility — is now the active implementation gate. Rev.4
+is published on `main` at `3880534a`; `origin/main` is the later Manga-only
+descendant `df0ad3b`. IP1 remains Native-only and does not imply Browser UI work.
 
 H1B.1 remains implemented as the regression foundation and has Start-only,
 Start+End, End-only, and text-only browser completion results plus Native media
@@ -380,5 +389,6 @@ Character File D&D passed; Motion File D&D remains `PASS WITH LIMITS` because
 safe CUA did not reproduce target-slot acceptance, while the exact Motion
 picker route passed and supplied the Reference run. VP2C closeout is published
 on `main` at `1a869125fa95ef4c7b1e94b0ccedab39fc52b4be`. Rev.4 canonical
-updates remain `LOCAL MAIN / PUSH PENDING` until the new commit is pushed and
-checked; Owner acceptance remains `PENDING`.
+updates are published on `main` at `3880534a`; the current `origin/main` is the
+later Manga-only descendant `df0ad3b`. IP1 is `FEASIBLE WITH LIMITS`, Browser
+Prep/Edit is `NOT IMPLEMENTED`, and Owner acceptance remains `PENDING`.

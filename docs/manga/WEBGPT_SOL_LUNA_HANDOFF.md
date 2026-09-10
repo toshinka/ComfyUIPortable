@@ -27,10 +27,10 @@ Repository: `https://github.com/toshinka/tegaki`
 - Latest published Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION_RESEARCH.md
 - Latest published report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION_RESEARCH_REPORT.md
 - Latest published manifest: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_lr7/M3B_LR7_MANIFEST.json
-- Active Card: M3B-LR8
-- Latest completed Card: docs/manga/cards/completed/M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION_RESEARCH.md
-- Latest completed report: docs/manga/reports/M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION_RESEARCH_REPORT.md
-- Latest completed manifest: docs/manga/verification/m3b_lr7/M3B_LR7_MANIFEST.json
+- Active Card: NONE
+- Latest completed Card: docs/manga/cards/completed/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION.md
+- Latest completed report: docs/manga/reports/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION_REPORT.md
+- Latest completed manifest: docs/manga/verification/m3b_lr8/M3B_LR8_MANIFEST.json
 
 repository HEADにはTegaki本体やH3の別作業も進むため、最新HEADをManga実装SHAと読み替えないこと。
 
@@ -52,11 +52,11 @@ Primary flowはScene-firstである。CAST、人物粗領域、ラフ人物/白�
 - M3A1-BC1 technical closure: B0-B9 PASS; routed to completed。
 - M3A1-OA1 gate: CLOSED; M3B eligibility OPEN。
 - Web GPT SOL public-URL review: PASS。
-- Latest completed operation: M3B-LR7 CAST GLOBAL vs EFFECT-MASK Interaction Isolation Research — PUBLISHED / SOL REVIEWED; technical gate 2/2 PASS, CAST runtime provenance and GLOBAL graph PASS, final result EFFECT_MASK_INTERACTION_CONFIRMED.
+- Latest completed operation: M3B-LR8 Core CAST_GLOBAL Robustness Qualification Research — COMPLETED / CORE_GLOBAL_QUALIFIED; 12/12 generation PASS, ComfyUI core ControlNetApplyAdvanced contract verified, 0 ACN nodes, 3 IMPROVED, 3 NEUTRAL, 0 REGRESSED, 6/6 figure count not worse, 0 boundary artifacts, 0 regional/control conflicts. LOCAL / DEFERRED.
 - M3B-LR2 stop reason: `CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED`。
 - M3B-LR2R1 result: pinned model REUSED from the verified reForge shared store; ComfyUI loader, A/B batch, canonical no-Guide, and required regressions PASS。
-- Active Card: M3B-LR8 (ACTIVE). M3B-LR7 is PUBLISHED / SOL REVIEWED with EFFECT_MASK_INTERACTION_CONFIRMED; CAST_GLOBAL showed usable quality without effect-mask boundary, but robustness across seeds is not yet established. Production ControlNet integration remains NOT PERFORMED. Final Owner product review is DEFERRED.
-- M3B-LR1 generation influence: NOT IMPLEMENTED。M3B-LR2 generation influence: BLOCKED。M3B-LR2R1: PUBLISHED / SOL REVIEWED / QUALITY WEAK。M3B-LR3: PUBLISHED / SOL REVIEWED / OPTION_A_INCONCLUSIVE。Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE。Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE。M3B-LR4: PUBLISHED / SOL REVIEWED / LOCALITY_SUPPORTED。M3B-LR5: PUBLISHED / SOL REVIEWED / CAST_MASKED_CONFLICT。M3B-LR6: PUBLISHED / SOL REVIEWED / SOFT_MASK_CONFLICT。M3B-LR7: PUBLISHED / SOL REVIEWED / EFFECT_MASK_INTERACTION_CONFIRMED。
+- Active Card: NONE. M3B-LR8 is COMPLETED with CORE_GLOBAL_QUALIFIED; CAST_CORE_GLOBAL showed non-destructive robust behavior across 6 seeds using ComfyUI core ControlNetApplyAdvanced. Production ControlNet integration remains NOT PERFORMED. Final Owner product review is DEFERRED.
+- M3B-LR1 generation influence: NOT IMPLEMENTED。M3B-LR2 generation influence: BLOCKED。M3B-LR2R1: PUBLISHED / SOL REVIEWED / QUALITY WEAK。M3B-LR3: PUBLISHED / SOL REVIEWED / OPTION_A_INCONCLUSIVE。Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE。Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE。M3B-LR4: PUBLISHED / SOL REVIEWED / LOCALITY_SUPPORTED。M3B-LR5: PUBLISHED / SOL REVIEWED / CAST_MASKED_CONFLICT。M3B-LR6: PUBLISHED / SOL REVIEWED / SOFT_MASK_CONFLICT。M3B-LR7: PUBLISHED / SOL REVIEWED / EFFECT_MASK_INTERACTION_CONFIRMED。M3B-LR8: COMPLETED / CORE_GLOBAL_QUALIFIED。
 - ControlNet production integration: NOT PERFORMED。
 - production output namespace移行: 未実施。`output/Tegaki`を維持する。
 
