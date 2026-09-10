@@ -1,0 +1,107 @@
+{
+  "status": "PASS",
+  "source_workflow": "workflows/manga/research/M3B_LR4_FIGURE_MASK_AB.json",
+  "changed_document_paths": [
+    "pages[0].scenes[0].input_mode"
+  ],
+  "schema_changed": false,
+  "input_mode": "cast",
+  "compiled_character_count": 2,
+  "compiled_characters": [
+    {
+      "instance_id": "inst_1",
+      "character_id": "cast_1",
+      "combined_prompt": "young student, short dark hair, school uniform, standing near the left window, on the left side",
+      "area": {
+        "shape_type": "rect",
+        "x": 0.08,
+        "y": 0.18,
+        "w": 0.32,
+        "h": 0.62
+      },
+      "coordinate_space": "page"
+    },
+    {
+      "instance_id": "inst_2",
+      "character_id": "cast_2",
+      "combined_prompt": "young student, long light hair, school uniform, seated near the right desk, on the right side",
+      "area": {
+        "shape_type": "rect",
+        "x": 0.6,
+        "y": 0.26,
+        "w": 0.26,
+        "h": 0.5
+      },
+      "coordinate_space": "page"
+    }
+  ],
+  "editor_debug": {
+    "compiled_characters": [
+      {
+        "instance_id": "inst_1",
+        "character_id": "cast_1",
+        "raw_identity_prompt": "young student, short dark hair, school uniform",
+        "raw_acting_prompt": "standing near the left window",
+        "derived_spatial_hint": "on the left side",
+        "scene_presence_hint": "",
+        "effective_character_prompt": "young student, short dark hair, school uniform, standing near the left window, on the left side",
+        "derived_hints_metadata": {
+          "rel_center_x": 0.2045,
+          "rel_center_y": 0.4886,
+          "horizontal_slot": "left",
+          "depth_slot": "neutral",
+          "is_ambiguous": false,
+          "arrangement_hint": "",
+          "mode": "auto",
+          "resolved_mode": "horizontal"
+        }
+      },
+      {
+        "instance_id": "inst_2",
+        "character_id": "cast_2",
+        "raw_identity_prompt": "young student, long light hair, school uniform",
+        "raw_acting_prompt": "seated near the right desk",
+        "derived_spatial_hint": "on the right side",
+        "scene_presence_hint": "",
+        "effective_character_prompt": "young student, long light hair, school uniform, seated near the right desk, on the right side",
+        "derived_hints_metadata": {
+          "rel_center_x": 0.7614,
+          "rel_center_y": 0.5114,
+          "horizontal_slot": "right",
+          "depth_slot": "neutral",
+          "is_ambiguous": false,
+          "arrangement_hint": "",
+          "mode": "auto",
+          "resolved_mode": "horizontal"
+        }
+      }
+    ],
+    "cast_count": 2,
+    "character_instances_count": 2
+  },
+  "conditioning": {
+    "status": "success",
+    "character_strength": 1,
+    "character_masks_count": 2,
+    "character_entries": [
+      {
+        "character_id": "cast_1",
+        "character_name": "Left Student",
+        "panel_id": 1,
+        "index": 0,
+        "positive": "young student, short dark hair, school uniform, standing near the left window, on the left side",
+        "negative": "",
+        "strength": 1
+      },
+      {
+        "character_id": "cast_2",
+        "character_name": "Right Student",
+        "panel_id": 1,
+        "index": 1,
+        "positive": "young student, long light hair, school uniform, seated near the right desk, on the right side",
+        "negative": "",
+        "strength": 1
+      }
+    ]
+  }
+}

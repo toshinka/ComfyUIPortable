@@ -1,0 +1,285 @@
+{
+  "card": "M3B-LR5",
+  "execution_baseline": {
+    "final_head": "5d4dde818e9e5155a7fd267c70f5d5980252b98f",
+    "origin_main": "5d4dde818e9e5155a7fd267c70f5d5980252b98f",
+    "latest_sol_reviewed_manga_public_commit": "54b235f1b18c5c4df5aa01f74cd6a87e201dc5bb",
+    "post_baseline_drift": "H3_ONLY",
+    "stage0_publication_truth": "PASS"
+  },
+  "input_mode": "cast",
+  "seeds": [
+    42,
+    77
+  ],
+  "conditions": [
+    "CAST_OFF",
+    "CAST_MASKED"
+  ],
+  "compiled_characters": 2,
+  "character_conditioning_active": true,
+  "character_strength": 1.0,
+  "character_masks": 2,
+  "control_strength": 0.75,
+  "control_start": 0.0,
+  "control_end": 1.0,
+  "figure_union_mask": true,
+  "figure_union_mask_sha256": "6246dc79157bdfc75fe4eb6bb1fe14703a9e474e700269bdfdcb45688d2da6fb",
+  "clean_guide_sha256": "96f99a6c1327925b4b7737c9658ffb3e2b69e76ea2b0fe40210a095b9d99ae3a",
+  "character_specific_controlnet": false,
+  "schema_changed": false,
+  "production_workflow_modified": false,
+  "cast_fixture": {
+    "cast_1": {
+      "display_name": "Left Student",
+      "identity_prompt": "young student, short dark hair, school uniform"
+    },
+    "cast_2": {
+      "display_name": "Right Student",
+      "identity_prompt": "young student, long light hair, school uniform"
+    },
+    "inst_1": {
+      "cast_id": "cast_1",
+      "acting_prompt": "standing near the left window"
+    },
+    "inst_2": {
+      "cast_id": "cast_2",
+      "acting_prompt": "seated near the right desk"
+    },
+    "guide_associations": {
+      "figure_1": "inst_1",
+      "figure_2": "inst_2"
+    }
+  },
+  "spatial_areas": {
+    "character_instances": {
+      "inst_1": {
+        "x": 0.08,
+        "y": 0.18,
+        "w": 0.32,
+        "h": 0.62
+      },
+      "inst_2": {
+        "x": 0.6,
+        "y": 0.26,
+        "w": 0.26,
+        "h": 0.5
+      }
+    },
+    "figure_regions_page": {
+      "figure_1": {
+        "x": 0.05,
+        "y": 0.304984,
+        "w": 0.38,
+        "h": 0.369504
+      },
+      "figure_2": {
+        "x": 0.57,
+        "y": 0.356304,
+        "w": 0.28,
+        "h": 0.297656
+      }
+    }
+  },
+  "cast_compile": {
+    "status": "PASS",
+    "provenance": [
+      "inst_1 -> cast_1",
+      "inst_2 -> cast_2"
+    ],
+    "required_fields": [
+      "instance_id",
+      "character_id",
+      "combined_prompt",
+      "area",
+      "coordinate_space=page"
+    ],
+    "evidence": "M3B_LR5_CONDITIONING_PROVENANCE.json"
+  },
+  "character_conditioning": {
+    "status": "PASS",
+    "builder": "TegakiMangaConditioningBuilder",
+    "debug_status": "success",
+    "characters_count": 2,
+    "character_masks_count": 2,
+    "character_strength": 1.0,
+    "evidence": "M3B_LR5_CONDITIONING_PROVENANCE.json"
+  },
+  "advanced_controlnet_contract": {
+    "status": "PASS",
+    "apply_node": "ACN_AdvancedControlNetApply_v2",
+    "required_inputs": [
+      "positive",
+      "negative",
+      "control_net",
+      "image",
+      "strength",
+      "start_percent",
+      "end_percent"
+    ],
+    "mask_input": "mask_optional",
+    "mask_display_name": "effect_mask",
+    "mask_semantics": "attention mask restricts the spatial part of the image where ControlNet applies; non-binary mask values scale relative strength",
+    "source": "local /object_info, installed source, and Advanced-ControlNet README"
+  },
+  "graph_invariant": {
+    "cast_off_positive_negative": "TegakiMangaConditioningBuilder node 3 direct",
+    "cast_masked_positive_negative": "ACN_AdvancedControlNetApply_v2 node 6",
+    "only_difference": "existing CLEAN Guide + existing Figure-union effect mask applied through node 6",
+    "checkpoint": "waiIllustriousSDXL_v170.safetensors",
+    "vae": "checkpoint VAE",
+    "resolution": "832x1216",
+    "steps": 20,
+    "cfg": 7.0,
+    "sampler": "euler",
+    "scheduler": "normal",
+    "denoise": 1.0,
+    "panel_strength": 1.0,
+    "local_region_strength": 1.0,
+    "mask_feather": 0
+  },
+  "generation": {
+    "workflow": "workflows/manga/research/M3B_LR5_CAST_MASKED_COMPATIBILITY.json",
+    "prompt_id": "367d4e5e-ab85-4b3b-987e-f55f9d326bae",
+    "queue_status": "4/4 PASS",
+    "outputs": [
+      {
+        "seed": 42,
+        "condition": "CAST_OFF",
+        "queue_node": "30",
+        "evidence": "SEED_A_CAST_OFF.png",
+        "sha256": "19cb9d83f9ee5a8e4797d54dfaa1bc311d5083177735372697f3b157c5ca5548",
+        "dimensions": "832x1216",
+        "queue_status": "PASS"
+      },
+      {
+        "seed": 42,
+        "condition": "CAST_MASKED",
+        "queue_node": "31",
+        "evidence": "SEED_A_CAST_MASKED.png",
+        "sha256": "5bd6eb4f17a7c019d8e40f1a4a1bf0cdacc95e55bfa7023d4270df505c4447ae",
+        "dimensions": "832x1216",
+        "queue_status": "PASS"
+      },
+      {
+        "seed": 77,
+        "condition": "CAST_OFF",
+        "queue_node": "33",
+        "evidence": "SEED_B_CAST_OFF.png",
+        "sha256": "08b4c6c16516880f61b98c212a26662c156fec2e4b6f4cd7991963624077cfde",
+        "dimensions": "832x1216",
+        "queue_status": "PASS"
+      },
+      {
+        "seed": 77,
+        "condition": "CAST_MASKED",
+        "queue_node": "34",
+        "evidence": "SEED_B_CAST_MASKED.png",
+        "sha256": "c98737b71b1db7bd6250a86a01b1341d8d13fcc13e5bf756bb15c0ab186e102e",
+        "dimensions": "832x1216",
+        "queue_status": "PASS"
+      }
+    ]
+  },
+  "visual_review": {
+    "seed_42": {
+      "CAST_OFF": {
+        "placement": "CLEAR",
+        "figure_count": "PASS",
+        "side_association": "MIXED",
+        "quality": "USABLE",
+        "regional_control_conflict": "NONE"
+      },
+      "CAST_MASKED": {
+        "placement": "CLEAR",
+        "figure_count": "PASS",
+        "side_association": "PASS",
+        "quality": "DEGRADED",
+        "regional_control_conflict": "CLEAR",
+        "hard_mask_artifact": "PRESENT"
+      }
+    },
+    "seed_77": {
+      "CAST_OFF": {
+        "placement": "CLEAR",
+        "figure_count": "FAIL",
+        "side_association": "MIXED",
+        "quality": "USABLE",
+        "regional_control_conflict": "NONE"
+      },
+      "CAST_MASKED": {
+        "placement": "CLEAR",
+        "figure_count": "FAIL",
+        "side_association": "MIXED",
+        "quality": "DEGRADED",
+        "regional_control_conflict": "CLEAR",
+        "hard_mask_artifact": "PRESENT"
+      }
+    },
+    "aggregate": {
+      "cast_off_placement": "CLEAR",
+      "cast_off_figure_count": "FAIL",
+      "cast_masked_placement": "CLEAR",
+      "cast_masked_figure_count": "FAIL",
+      "cast_masked_quality": "DEGRADED",
+      "side_association": "MIXED",
+      "regional_control_conflict": "CLEAR",
+      "seed_variation": "PRESENT",
+      "hard_mask_artifact": "PRESENT",
+      "browser_live_view": "PASS",
+      "contact_sheet": "M3B_LR5_CONTACT_SHEET.png"
+    }
+  },
+  "regression": {
+    "lr1_contract": "12/12 PASS",
+    "lr1_runtime_bridge": "5/5 PASS",
+    "lr1_guide_ops": "PASS",
+    "m2b_minimum_hand_frontend": "19/19 PASS",
+    "cast_master_persistence": "PASS",
+    "character_instance_foreign_keys": "PASS",
+    "same_cast_multiple_appearances": "PASS",
+    "instance_area_persistence": "PASS",
+    "simple_cast_state_preservation": "PASS",
+    "m2b_cast_authoring": "PASS",
+    "m2b1_authoring_regression": "PASS",
+    "m2a_cast_execution_bridge": "PASS",
+    "overall": "PASS"
+  },
+  "canonical_no_guide": {
+    "source_workflow": "workflows/manga/MINIMUM_HAND_MANGA_DRAFT.json",
+    "prompt_id": "c0ca42ac-85da-44ae-bc44-312305f3196f",
+    "queue_status": "PASS",
+    "evidence": "CANONICAL_NO_GUIDE.png",
+    "sha256": "d284064b7e3e567a2426562750b4fa24cab2c07a357066c93d649d3eeb6cd817",
+    "dimensions": "832x1216",
+    "controlnet_dependency": false,
+    "advanced_controlnet_dependency": false,
+    "guide_dependency": false,
+    "cast_requirement": false,
+    "node_types": [
+      "TegakiMinimumHandSceneEditor",
+      "CheckpointLoaderSimple",
+      "TegakiMangaConditioningBuilder",
+      "EmptyLatentImage",
+      "KSampler",
+      "VAEDecode",
+      "SaveImage"
+    ],
+    "result": "PASS"
+  },
+  "compatibility_result": "CAST_MASKED_CONFLICT",
+  "canonical_regression": "PASS",
+  "lr1_regression": "PASS",
+  "production_integration": "NOT_PERFORMED",
+  "final_owner_product_review": "DEFERRED",
+  "evidence": {
+    "cast_conditioning": "M3B_LR5_CONDITIONING_PROVENANCE.json",
+    "visual_ledger": "M3B_LR5_VISUAL_LEDGER.md",
+    "contact_sheet": "M3B_LR5_CONTACT_SHEET.png",
+    "workflow": "workflows/manga/research/M3B_LR5_CAST_MASKED_COMPATIBILITY.json"
+  },
+  "stopped_early": false,
+  "stop_reason": "",
+  "publication": "LOCAL",
+  "owner_push_required": true
+}
