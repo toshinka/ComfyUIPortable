@@ -1,0 +1,130 @@
+{
+  "card": "M3B-LR4",
+  "execution_baseline": {
+    "final_head": "2b167493ee83df2a4f80c10669d9c4e4387e111e",
+    "origin_main": "2b167493ee83df2a4f80c10669d9c4e4387e111e",
+    "card_latest_sol_reviewed_manga_commit": "d5df3f25866ed05fd147a8b6da2509a6878f7f24",
+    "remote_drift": "H3/model-path files only after the Card baseline; no Manga own-file conflict"
+  },
+  "stage_0_publication_truth": "PASS",
+  "lr3_sol_result": "OPTION_A_INCONCLUSIVE",
+  "derived_clean_guide_quality": "QUALITY_IMPROVEMENT_VERIFIED",
+  "derived_clean_guide_placement": "PLACEMENT_CONSISTENCY_NOT_VERIFIED",
+  "seeds": [42, 77],
+  "conditions": ["OFF", "CLEAN_GLOBAL", "CLEAN_MASKED"],
+  "control_strength": 0.75,
+  "control_start": 0.0,
+  "control_end": 1.0,
+  "preprocessor": "none",
+  "clean_guide_sha256": "96f99a6c1327925b4b7737c9658ffb3e2b69e76ea2b0fe40210a095b9d99ae3a",
+  "schema_changed": false,
+  "input_mode": "simple",
+  "mask_source": "TegakiMangaRoughGuideBridge.figure_union_mask",
+  "mask_sha256": "6246dc79157bdfc75fe4eb6bb1fe14703a9e474e700269bdfdcb45688d2da6fb",
+  "mask_dimensions": "832x1216",
+  "mask_semantics": "1.0 active ControlNet effect region; 0.0 inactive",
+  "mask_transformations": [],
+  "whole_page_global_control": true,
+  "masked_control": true,
+  "character_specific_control": false,
+  "advanced_controlnet": {
+    "contract": "PASS",
+    "apply_node": "ACN_AdvancedControlNetApply_v2",
+    "mask_input": "mask_optional (display_name effect_mask)",
+    "local_object_info": "http://127.0.0.1:8188/object_info/ACN_AdvancedControlNetApply_v2",
+    "source_module": "ComfyUI/custom_nodes/ComfyUI-Advanced-ControlNet/adv_control/nodes_main.py",
+    "documentation": "ComfyUI/custom_nodes/ComfyUI-Advanced-ControlNet/README.md",
+    "production_dependency": false
+  },
+  "figure_bounds": [
+    {"figure_id": "figure_1", "instance_id": "inst_1", "x": 0.05, "y": 0.304984, "w": 0.38, "h": 0.369504},
+    {"figure_id": "figure_2", "instance_id": "inst_2", "x": 0.57, "y": 0.356304, "w": 0.28, "h": 0.297656}
+  ],
+  "model": {
+    "selector": "CN-anytest_v4\\CN-anytest4_illustrious2_A.safetensors",
+    "shared_storage": "E:\\EasyReforge\\Model\\ControlNet\\CN-anytest_v4\\CN-anytest4_illustrious2_A.safetensors",
+    "reForge_storage": "E:\\EasyReforge\\stable-diffusion-webui-reForge\\models\\ControlNet",
+    "reForge_link_type": "Junction",
+    "reForge_target": "E:\\EasyReforge\\Model\\ControlNet",
+    "bytes": 2502139104,
+    "sha256": "e069d496cc111740716b833238d9bea9cdd59f8623aa85a78d362d088b1f67b8",
+    "portable_internal_copy_exists": false,
+    "portable_internal_copy_git_tracked": false,
+    "downloaded_or_copied_by_lr4": false
+  },
+  "generation_settings": {
+    "workflow": "workflows/manga/research/M3B_LR4_FIGURE_MASK_AB.json",
+    "checkpoint": "♃CN_Skeb\\waiIllustriousSDXL_v170.safetensors",
+    "resolution": "832x1216",
+    "steps": 20,
+    "cfg": 7.0,
+    "sampler": "euler",
+    "scheduler": "normal",
+    "denoise": 1.0,
+    "control_interval": "0.0-1.0",
+    "queue_prompt_id": "16523812-a927-404e-85a8-b43cc4f6a52b",
+    "queue_status": "success",
+    "elapsed_seconds": 115.003
+  },
+  "outputs": [
+    {"seed": 42, "condition": "OFF", "evidence": "SEED_A_OFF.png", "sha256": "7a35216efa241080ddbdca8e43e464944b90c2cd8812e7123e8d87078ea03646", "dimensions": "832x1216", "queue_status": "PASS"},
+    {"seed": 42, "condition": "CLEAN_GLOBAL", "evidence": "SEED_A_GLOBAL.png", "sha256": "8d5b30bf97068cc2042237cc96aa5ed6203a955e1f0788d4b673febdc165eff3", "dimensions": "832x1216", "queue_status": "PASS"},
+    {"seed": 42, "condition": "CLEAN_MASKED", "evidence": "SEED_A_MASKED.png", "sha256": "b0c8f0e4d18a9b0b439553d51f548d9134ad711bb9d27411f212ffbe5da03897", "dimensions": "832x1216", "queue_status": "PASS"},
+    {"seed": 77, "condition": "OFF", "evidence": "SEED_B_OFF.png", "sha256": "91ddbfd697ab1be5267bdcf36bf809cd32e7f09cdeb820d9d07fa700b0102a85", "dimensions": "832x1216", "queue_status": "PASS"},
+    {"seed": 77, "condition": "CLEAN_GLOBAL", "evidence": "SEED_B_GLOBAL.png", "sha256": "f6a5b167d7ab7181d0f63388db52240bd22048d1bd3be849b2b06efda0b7e6ae", "dimensions": "832x1216", "queue_status": "PASS"},
+    {"seed": 77, "condition": "CLEAN_MASKED", "evidence": "SEED_B_MASKED.png", "sha256": "908f23d19556c5d4e0df390af4be7cb0b5199e0be0e613a93d68f0da1f548282", "dimensions": "832x1216", "queue_status": "PASS"}
+  ],
+  "technical_gate": {
+    "seed_42": {"OFF": "PASS", "CLEAN_GLOBAL": "PASS", "CLEAN_MASKED": "PASS"},
+    "seed_77": {"OFF": "PASS", "CLEAN_GLOBAL": "PASS", "CLEAN_MASKED": "PASS"},
+    "queues": "6/6 PASS",
+    "hash_difference_is_influence_only": true
+  },
+  "visual_review": {
+    "seed_42": {
+      "OFF": {"placement": "NONE", "quality": "USABLE", "figure_count": "FAIL"},
+      "CLEAN_GLOBAL": {"placement": "CLEAR", "quality": "USABLE", "figure_count": "PASS"},
+      "CLEAN_MASKED": {"placement": "CLEAR", "quality": "USABLE", "figure_count": "PASS", "boundary_artifacts": "NONE"}
+    },
+    "seed_77": {
+      "OFF": {"placement": "NONE", "quality": "USABLE", "figure_count": "FAIL"},
+      "CLEAN_GLOBAL": {"placement": "NONE", "quality": "USABLE", "figure_count": "FAIL"},
+      "CLEAN_MASKED": {"placement": "WEAK", "quality": "USABLE", "figure_count": "PASS", "boundary_artifacts": "NONE"}
+    },
+    "aggregate_global": {"placement": "WEAK", "quality": "USABLE", "figure_count": "FAIL"},
+    "aggregate_masked": {"placement": "WEAK", "quality": "USABLE", "figure_count": "PASS"},
+    "mask_boundary_artifacts": "NONE",
+    "seed_variation": "PRESENT",
+    "browser_live_view": "PASS",
+    "contact_sheet": "M3B_LR4_CONTACT_SHEET.png"
+  },
+  "regression": {
+    "lr1_contract": "12/12 PASS",
+    "lr1_runtime_bridge": "5/5 PASS",
+    "lr1_guide_ops": "PASS",
+    "m2b_minimum_hand_frontend": "19/19 PASS",
+    "lr1_regression": "PASS"
+  },
+  "canonical_no_guide": {
+    "source_workflow": "workflows/manga/MINIMUM_HAND_MANGA_DRAFT.json",
+    "prompt_id": "8d8d149e-c740-4c74-9c00-b6949b5765bf",
+    "queue_status": "PASS",
+    "evidence": "CANONICAL_NO_GUIDE.png",
+    "sha256": "e368484acefcfe2b3fdfc36f5a45d22a2176ddff00597b0e1028a7f2a2c82ff1",
+    "dimensions": "832x1216",
+    "controlnet_dependency": false,
+    "advanced_controlnet_dependency": false,
+    "guide_dependency": false,
+    "result": "PASS"
+  },
+  "locality_result": "LOCALITY_SUPPORTED",
+  "canonical_regression": "PASS",
+  "lr1_regression": "PASS",
+  "production_integration": "NOT_PERFORMED",
+  "production_workflow_modified": false,
+  "final_owner_product_review": "DEFERRED",
+  "stopped_early": false,
+  "stop_reason": "",
+  "publication": "LOCAL",
+  "owner_push_required": true
+}

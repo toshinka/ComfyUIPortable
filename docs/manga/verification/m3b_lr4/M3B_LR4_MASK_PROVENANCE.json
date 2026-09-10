@@ -1,0 +1,108 @@
+{
+  "card": "M3B-LR4",
+  "source": "TegakiMangaRoughGuideBridge.figure_union_mask",
+  "source_workflow": "workflows/manga/research/M3B_LR3_CLEAN_GUIDE_AB.json",
+  "document_id": "m3b_lr2r1_ab_fixture",
+  "canvas_dimensions": {
+    "width": 832,
+    "height": 1216
+  },
+  "mask_dimensions": {
+    "width": 832,
+    "height": 1216
+  },
+  "mask_semantics": "bridge MASK tensor values are normalized 1.0 inside the existing Figure union rectangles and 0.0 outside; consumed as Advanced-ControlNet effect_mask where 1.0 is active and 0.0 is inactive",
+  "orientation": {
+    "active_value": 1.0,
+    "inactive_value": 0.0
+  },
+  "transformations": [],
+  "figures": [
+    {
+      "figure_id": "figure_1",
+      "instance_id": "inst_1",
+      "x": 0.05,
+      "y": 0.304984,
+      "w": 0.38,
+      "h": 0.369504
+    },
+    {
+      "figure_id": "figure_2",
+      "instance_id": "inst_2",
+      "x": 0.57,
+      "y": 0.356304,
+      "w": 0.28,
+      "h": 0.297656
+    }
+  ],
+  "bridge_debug": {
+    "node": "TegakiMangaRoughGuideBridge",
+    "document_id": "m3b_lr2r1_ab_fixture",
+    "resolved_page_index": 0,
+    "guide_count": 1,
+    "figure_count": 2,
+    "guides": [
+      {
+        "guide_id": "guide_1",
+        "guide_type": "rough_manga",
+        "asset_reference": "tegaki_manga_guides/rough_guide_live.png",
+        "source_dimensions": {
+          "width_px": 320,
+          "height_px": 240
+        },
+        "placement": {
+          "x": 0,
+          "y": 0.2434,
+          "w": 1,
+          "h": 0.5132
+        },
+        "figure_regions": [
+          {
+            "figure_id": "figure_1",
+            "instance_id": "inst_1",
+            "local_area": {
+              "shape_type": "rect",
+              "x": 0.05,
+              "y": 0.12,
+              "w": 0.38,
+              "h": 0.72
+            },
+            "derived_page_area": {
+              "x": 0.05,
+              "y": 0.305,
+              "w": 0.38,
+              "h": 0.3695
+            }
+          },
+          {
+            "figure_id": "figure_2",
+            "instance_id": "inst_2",
+            "local_area": {
+              "shape_type": "rect",
+              "x": 0.57,
+              "y": 0.22,
+              "w": 0.28,
+              "h": 0.58
+            },
+            "derived_page_area": {
+              "x": 0.57,
+              "y": 0.3563,
+              "w": 0.28,
+              "h": 0.2977
+            }
+          }
+        ]
+      }
+    ],
+    "generation_influence": "NOT_IMPLEMENTED",
+    "controlnet": "NOT_ADDED",
+    "association_policy": "manual_instance_id_only",
+    "automatic_interpretation": "NOT_PERFORMED",
+    "status": "PASS"
+  },
+  "mask_sha256": "6246dc79157bdfc75fe4eb6bb1fe14703a9e474e700269bdfdcb45688d2da6fb",
+  "mask_file": "docs/manga/verification/m3b_lr4/M3B_LR4_FIGURE_UNION_MASK.png",
+  "clean_guide_sha256": "96f99a6c1327925b4b7737c9658ffb3e2b69e76ea2b0fe40210a095b9d99ae3a",
+  "schema_changed": false,
+  "manual_drawing": false
+}

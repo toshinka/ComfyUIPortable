@@ -4,14 +4,14 @@
 M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`
 M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`
 Manga正本入口: [GITHUB_MANGA.txt](../../GITHUB_MANGA.txt)
-Latest SOL-verified public commit: `cd5dcbf4baca2f6e7ca91dc587dcba013216556b`
+Latest SOL-verified public commit: `d5df3f25866ed05fd147a8b6da2509a6878f7f24`
 Latest published Card: [M3B-LR2R1 — AnyTest v4 Acquisition & A/B Resume Long-Run](cards/completed/M3B_LR2R1_ANYTEST_V4_ACQUISITION_AND_AB_RESUME_LONG_RUN.md)
 Latest published report: [M3B-LR2R1 AnyTest v4 Acquisition & A/B Resume Long-Run Report](reports/M3B_LR2R1_ANYTEST_V4_ACQUISITION_AND_AB_RESUME_REPORT.md)
 M3B-LR2 publication: PUBLISHED; SOL public-URL review: PASS; classification: BLOCKED
-Latest completed Card: [M3B-LR3 — Derived Clean Guide A/B Research Slice](cards/completed/M3B_LR3_DERIVED_CLEAN_GUIDE_AB_RESEARCH.md)
-Latest completed report: [M3B-LR3 Derived Clean Guide A/B Research Report](reports/M3B_LR3_DERIVED_CLEAN_GUIDE_AB_RESEARCH_REPORT.md)
-Latest local manifest: [M3B_LR3 Manifest](verification/m3b_lr3/M3B_LR3_MANIFEST.json)
-Regression: PASS / Runtime: PASS / Browser: PASS / Visual evidence: PASS / M3B-LR1: COMPLETED / M3B-LR1 generation influence: NOT IMPLEMENTED / M3B-LR2: PUBLISHED / SOL REVIEWED / BLOCKED / M3B-LR2 stop: CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED / M3B-LR2R1: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED FOR RESEARCH GRAPH / quality: WEAK / Guide placement: DEGRADED / image quality: DEGRADED / M3B-LR3: LOCAL COMPLETED / generation influence: VERIFIED / result: OPTION_A_INCONCLUSIVE / M3A.1 milestone acceptance: ACCEPTED_BY_DELEGATED_SOL / Final Owner product review: DEFERRED / Active Card: NONE.
+Latest completed Card: [M3B-LR4 — Figure-Union Mask Locality A/B Research Slice](cards/completed/M3B_LR4_FIGURE_UNION_MASK_LOCALITY_AB_RESEARCH.md)
+Latest completed report: [M3B-LR4 Figure-Union Mask Locality A/B Research Report](reports/M3B_LR4_FIGURE_UNION_MASK_LOCALITY_AB_RESEARCH_REPORT.md)
+Latest local manifest: [M3B_LR4 Manifest](verification/m3b_lr4/M3B_LR4_MANIFEST.json)
+Regression: PASS / Runtime: PASS / Browser: PASS / Visual evidence: PASS / M3B-LR1: COMPLETED / M3B-LR1 generation influence: NOT IMPLEMENTED / M3B-LR2: PUBLISHED / SOL REVIEWED / BLOCKED / M3B-LR2 stop: CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED / M3B-LR2R1: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED FOR RESEARCH GRAPH / quality: WEAK / Guide placement: DEGRADED / image quality: DEGRADED / M3B-LR3: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED / result: OPTION_A_INCONCLUSIVE / Derived CLEAN Guide: QUALITY IMPROVEMENT VERIFIED / PLACEMENT CONSISTENCY NOT VERIFIED / M3B-LR4: LOCAL COMPLETED / TECHNICAL PASS / LOCALITY_SUPPORTED / M3A.1 milestone acceptance: ACCEPTED_BY_DELEGATED_SOL / Final Owner product review: DEFERRED / Active Card: NONE.
 
 `GITHUB_ComfyUI.txt` はManga/H3を振り分けるCompatibility Routerへ変更した。
 今回のnamespace整理は文書/navigationのみで、Manga runtime・workflow・schema・outputを変更していない。
@@ -142,8 +142,8 @@ Scene-only Draft (M1) → CAST 複数出演 (M2) → Rough Guide (M3) → UX She
   - **LR1 manifest**: [M3B_LR1_MANIFEST.json](verification/m3b_lr1/M3B_LR1_MANIFEST.json)
 
 - **Latest published closeout**: [M3B-LR2R1 — AnyTest v4 Acquisition & A/B Resume Long-Run](cards/completed/M3B_LR2R1_ANYTEST_V4_ACQUISITION_AND_AB_RESUME_LONG_RUN.md)。既存reForge共有ControlNet storageを検証し、pinned modelの再利用、A/B 8本、canonical no-Guide、LR1/M2B回帰をPASS。SOL reviewは完了、Production integrationは未実施。
-- **Latest local closeout**: [M3B-LR3 — Derived Clean Guide A/B Research Slice](cards/completed/M3B_LR3_DERIVED_CLEAN_GUIDE_AB_RESEARCH.md)。CLEAN guide生成、6条件queue、visual ledger、LR1/M2B回帰、canonical no-GuideをPASS。暫定結果はOPTION_A_INCONCLUSIVE、Production integrationは未実施。
-- **Active Card**: NONE。M3B-LR3 publicationはLOCAL、Owner pushとSOL public reviewが必要。
+- **Latest completed closeout**: [M3B-LR4 — Figure-Union Mask Locality A/B Research Slice](cards/completed/M3B_LR4_FIGURE_UNION_MASK_LOCALITY_AB_RESEARCH.md)。LR3 CLEAN Guideを固定し、OFF/GLOBAL/MASKEDの6条件queue、mask provenance、visual ledger、LR1/M2B回帰、canonical no-GuideをPASS。暫定結果はLOCALITY_SUPPORTED、Production integrationは未実施。
+- **Active Card**: NONE。M3B-LR4 publicationはLOCAL、Owner pushとSOL public reviewが必要。Final Owner product reviewはDEFERRED。次Cardは自動発行しない。
 - 次Cardは自動発行しない。
 
 

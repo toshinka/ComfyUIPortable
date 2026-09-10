@@ -23,8 +23,11 @@ bounded foundation slice. M3B-LR2 is published, SOL-reviewed, and BLOCKED at its
 local model inventory gate. M3B-LR2R1 is published and SOL-reviewed for its
 bounded acquisition/A-B research slice; its final SOL classification is QUALITY
 WEAK and production integration remains not performed. M3B-LR3 completed its
-bounded derived-clean-guide research slice locally with provisional result
-OPTION_A_INCONCLUSIVE.
+bounded derived-clean-guide research slice with final SOL result
+OPTION_A_INCONCLUSIVE. The derived CLEAN Guide quality improvement is
+verified, but placement consistency is not verified. M3B-LR4 completed its
+Figure-union mask locality research slice locally with result
+LOCALITY_SUPPORTED; production integration remains not performed.
 Web GPT SOL leads Card design; a fresh local LUNA chat implements one published
 Card at a time.
 
@@ -41,7 +44,7 @@ SOL review: PASS / QUALITY WEAK classification
 Latest operational handoff
 --------------------------
 Latest SOL-verified public commit:
-cd5dcbf4baca2f6e7ca91dc587dcba013216556b
+d5df3f25866ed05fd147a8b6da2509a6878f7f24
 
 M3A.1 Core Implementation SHA:
 a7f0baaa89a2e315b0492573c9da19e50727928b
@@ -58,14 +61,14 @@ https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/mang
 Latest published manifest:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_lr2r1/M3B_LR2R1_MANIFEST.json
 
-Latest local Card:
-docs/manga/cards/completed/M3B_LR3_DERIVED_CLEAN_GUIDE_AB_RESEARCH.md
+Latest completed Card:
+docs/manga/cards/completed/M3B_LR4_FIGURE_UNION_MASK_LOCALITY_AB_RESEARCH.md
 
-Latest local report:
-docs/manga/reports/M3B_LR3_DERIVED_CLEAN_GUIDE_AB_RESEARCH_REPORT.md
+Latest completed local report:
+docs/manga/reports/M3B_LR4_FIGURE_UNION_MASK_LOCALITY_AB_RESEARCH_REPORT.md
 
 Latest local manifest:
-docs/manga/verification/m3b_lr3/M3B_LR3_MANIFEST.json
+docs/manga/verification/m3b_lr4/M3B_LR4_MANIFEST.json
 
 Browser technical verification:
 PASS
@@ -96,11 +99,14 @@ M3B-LR2R1 generation influence: VERIFIED FOR RESEARCH GRAPH
 M3B-LR2R1 Guide placement: DEGRADED
 M3B-LR2R1 image quality: DEGRADED
 Production ControlNet integration: NOT PERFORMED
-M3B-LR3: LOCAL COMPLETED / TECHNICAL PASS / OPTION_A_INCONCLUSIVE
+M3B-LR3: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / OPTION_A_INCONCLUSIVE
+Derived CLEAN Guide: QUALITY IMPROVEMENT VERIFIED / PLACEMENT CONSISTENCY NOT VERIFIED
+M3B-LR4: LOCAL COMPLETED / TECHNICAL PASS / LOCALITY_SUPPORTED
 Active Card: NONE
 
 Next:
-M3B-LR3 is locally completed. No subsequent Card is issued automatically.
+M3B-LR4 is locally completed. Owner push and SOL public review remain
+required. No subsequent Card is issued automatically.
 
 Completed review slice:
 M3B-LR1 — Rough Guide Foundation Long-Run Batch.
