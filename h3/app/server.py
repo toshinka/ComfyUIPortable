@@ -181,6 +181,20 @@ class ReferenceVideoAssetMissingError(ReferenceVideoRequestError):
     error_kind = "r2v_asset_missing"
 
 
+class R2VHandoffRequestError(ReferenceVideoRequestError):
+    """A History result could not be promoted into an R2V input asset."""
+
+    error_kind = "r2v_handoff_failed"
+
+
+class R2VHandoffJobNotFoundError(R2VHandoffRequestError):
+    status = HTTPStatus.NOT_FOUND
+
+
+class R2VHandoffConflictError(R2VHandoffRequestError):
+    status = HTTPStatus.CONFLICT
+
+
 @dataclass(frozen=True)
 class ReferenceAsset:
     reference: H3Reference
@@ -230,14 +244,19 @@ class R2VPictureAsset:
     content_type: str
     width: int
     height: int
+    source_kind: str = "uploaded"
+    source_job_id: str | None = None
 
     def public(self) -> dict[str, Any]:
         return {
             "id": self.picture_id,
             "name": self.name,
+            "display_name": self.name,
             "content_type": self.content_type,
             "width": self.width,
             "height": self.height,
+            "source_kind": self.source_kind,
+            "source_job_id": self.source_job_id,
             "preview_url": f"/api/r2v/pictures/{quote(self.picture_id, safe='')}",
         }
 
@@ -251,14 +270,19 @@ class R2VMotionVideoAsset:
     content_type: str
     size_bytes: int
     metadata: dict[str, Any]
+    source_kind: str = "uploaded"
+    source_job_id: str | None = None
 
     def public(self) -> dict[str, Any]:
         return {
             "id": self.video_id,
             "name": self.name,
+            "display_name": self.name,
             "content_type": self.content_type,
             "size_bytes": self.size_bytes,
             **self.metadata,
+            "source_kind": self.source_kind,
+            "source_job_id": self.source_job_id,
             "preview_url": f"/api/r2v/videos/{quote(self.video_id, safe='')}",
         }
 
@@ -674,7 +698,15 @@ class H1ASession:
             "model": REF2VA_MODEL,
         }
 
-    def upload_r2v_picture(self, filename: str, body: bytes) -> R2VPictureAsset:
+    def _store_r2v_picture(
+        self,
+        filename: str,
+        body: bytes,
+        *,
+        name: str | None = None,
+        source_kind: str = "uploaded",
+        source_job_id: str | None = None,
+    ) -> R2VPictureAsset:
         suffix, _actual_format, width, height, content_type = _validate_image_upload(
             filename,
             body,
@@ -692,21 +724,38 @@ class H1ASession:
             with path.open("xb") as handle:
                 handle.write(body)
         except OSError as exc:
+            try:
+                path.unlink(missing_ok=True)
+            except OSError:
+                pass
             raise ReferenceVideoRequestError("Character Image could not be stored.") from exc
         asset = R2VPictureAsset(
             picture_id=picture_id,
             path=path,
-            name=Path(filename).name,
+            name=name or Path(filename).name,
             filename=safe_filename,
             content_type=content_type,
             width=width,
             height=height,
+            source_kind=source_kind,
+            source_job_id=source_job_id,
         )
         with self.lock:
             self.r2v_pictures[picture_id] = asset
         return asset
 
-    def upload_r2v_motion_video(self, filename: str, body: bytes) -> R2VMotionVideoAsset:
+    def upload_r2v_picture(self, filename: str, body: bytes) -> R2VPictureAsset:
+        return self._store_r2v_picture(filename, body)
+
+    def _store_r2v_motion_video(
+        self,
+        filename: str,
+        body: bytes,
+        *,
+        name: str | None = None,
+        source_kind: str = "uploaded",
+        source_job_id: str | None = None,
+    ) -> R2VMotionVideoAsset:
         if not isinstance(body, bytes) or not body:
             raise ReferenceVideoRequestError("Motion Video upload is empty.")
         if len(body) > R2V_VIDEO_MAX_BYTES:
@@ -751,15 +800,20 @@ class H1ASession:
         asset = R2VMotionVideoAsset(
             video_id=video_id,
             path=path,
-            name=Path(filename).name,
+            name=name or Path(filename).name,
             filename=safe_filename,
             content_type="video/mp4",
             size_bytes=len(body),
             metadata=metadata,
+            source_kind=source_kind,
+            source_job_id=source_job_id,
         )
         with self.lock:
             self.r2v_motion_videos[video_id] = asset
         return asset
+
+    def upload_r2v_motion_video(self, filename: str, body: bytes) -> R2VMotionVideoAsset:
+        return self._store_r2v_motion_video(filename, body)
 
     def get_r2v_picture(self, picture_id: str) -> R2VPictureAsset | None:
         with self.lock:
@@ -768,6 +822,97 @@ class H1ASession:
     def get_r2v_motion_video(self, video_id: str) -> R2VMotionVideoAsset | None:
         with self.lock:
             return self.r2v_motion_videos.get(video_id)
+
+    def _assert_no_active_generation_for_handoff(self) -> None:
+        if any(
+            job.state in {"QUEUED", "RUNNING", "DISCONNECTED"}
+            for job in self.jobs.values()
+        ):
+            raise R2VHandoffConflictError(
+                "Handoff is unavailable while an H3 generation is active."
+            )
+
+    def _handoff_job_output(
+        self,
+        job_id: str,
+        *,
+        media_kind: str,
+        suffixes: set[str],
+        label: str,
+    ) -> tuple[Job, Path]:
+        if not isinstance(job_id, str) or not SERVER_ASSET_ID_PATTERN.fullmatch(job_id):
+            raise R2VHandoffRequestError("Handoff job id is invalid.")
+        job = self.get_job(job_id)
+        if job is None:
+            raise R2VHandoffJobNotFoundError("Handoff source job is not in this session.")
+        self.refresh_job(job)
+        with self.lock:
+            self._assert_no_active_generation_for_handoff()
+            if job.state != "COMPLETED":
+                raise R2VHandoffConflictError(
+                    f"Only a completed {label} result can be handed off."
+                )
+            if job.media_kind != media_kind:
+                raise R2VHandoffRequestError(
+                    f"Only a completed {label} result can be handed off."
+                )
+            if not isinstance(job.output, Mapping):
+                raise R2VHandoffConflictError(f"The completed {label} output is unavailable.")
+            path = self._safe_media_path(job.output, suffixes)
+            if path is None or not path.is_file():
+                raise R2VHandoffConflictError(f"The completed {label} output is unavailable.")
+            return job, path
+
+    def promote_still_to_character(self, job_id: str) -> R2VPictureAsset:
+        job, path = self._handoff_job_output(
+            job_id,
+            media_kind="still",
+            suffixes=R2V_PICTURE_SUFFIXES,
+            label="Still",
+        )
+        with self.lock:
+            # Keep the active-generation guard and the source-boundary check
+            # adjacent to the copy so a concurrent submit cannot create a
+            # partial handoff.
+            self._assert_no_active_generation_for_handoff()
+            try:
+                body = path.read_bytes()
+            except OSError as exc:
+                raise R2VHandoffConflictError("The completed Still output is unavailable.") from exc
+            try:
+                return self._store_r2v_picture(
+                    path.name,
+                    body,
+                    name="Generated Still",
+                    source_kind="generated_still",
+                    source_job_id=job.job_id,
+                )
+            except ReferenceVideoRequestError as exc:
+                raise R2VHandoffConflictError(str(exc)) from exc
+
+    def promote_video_to_motion(self, job_id: str) -> R2VMotionVideoAsset:
+        job, path = self._handoff_job_output(
+            job_id,
+            media_kind="video",
+            suffixes=R2V_VIDEO_SUFFIXES,
+            label="Video",
+        )
+        with self.lock:
+            self._assert_no_active_generation_for_handoff()
+            try:
+                body = path.read_bytes()
+            except OSError as exc:
+                raise R2VHandoffConflictError("The completed Video output is unavailable.") from exc
+            try:
+                return self._store_r2v_motion_video(
+                    path.name,
+                    body,
+                    name="Generated Video",
+                    source_kind="generated_video",
+                    source_job_id=job.job_id,
+                )
+            except ReferenceVideoRequestError as exc:
+                raise R2VHandoffConflictError(str(exc)) from exc
 
     def submit_reference_video(self, payload: Mapping[str, Any]) -> Job:
         """Submit the bounded one-picture/optional-motion Ref2VA route."""
@@ -1340,6 +1485,12 @@ class H1AHandler(BaseHTTPRequestHandler):
             raise RequestValidationError("Request body must be a JSON object.")
         return value
 
+    def _read_handoff_job_id(self) -> str:
+        payload = self._read_json()
+        if set(payload) != {"job_id"} or not isinstance(payload.get("job_id"), str):
+            raise R2VHandoffRequestError("Handoff accepts a server-issued job_id only.")
+        return payload["job_id"]
+
     def _read_multipart_upload(
         self,
         *,
@@ -1727,6 +1878,16 @@ class H1AHandler(BaseHTTPRequestHandler):
             if path == "/api/r2v/video":
                 filename, body = self._read_multipart_r2v_video()
                 asset = self.server.session.upload_r2v_motion_video(filename, body)
+                self._send_json(HTTPStatus.CREATED, {"motion_video": asset.public()})
+                return
+            if path == "/api/r2v/from-still":
+                job_id = self._read_handoff_job_id()
+                asset = self.server.session.promote_still_to_character(job_id)
+                self._send_json(HTTPStatus.CREATED, {"picture": asset.public()})
+                return
+            if path == "/api/r2v/from-video":
+                job_id = self._read_handoff_job_id()
+                asset = self.server.session.promote_video_to_motion(job_id)
                 self._send_json(HTTPStatus.CREATED, {"motion_video": asset.public()})
                 return
             if path == "/api/r2v/generate":

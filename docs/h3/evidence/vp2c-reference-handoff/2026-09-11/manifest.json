@@ -1,0 +1,86 @@
+{
+  "schema": "tegaki.h3.vp2c.reference-handoff-dnd.evidence/v1",
+  "card": "VP2C",
+  "title": "Reference Handoff and scoped drag-and-drop ergonomics",
+  "evidence_date": "2026-09-11",
+  "remote_base": "543d8c2c2817743b10f255c168047e4edd1781a9",
+  "classification": "BLOCKED",
+  "scope": {
+    "still_to_character": true,
+    "video_to_motion": true,
+    "reference_slot_drag_and_drop": true,
+    "new_generation_capabilities": false,
+    "image_prep": false,
+    "multi_reference": false,
+    "manga_changes": false
+  },
+  "implementation": {
+    "status": "IMPLEMENTED LOCALLY",
+    "server": [
+      "POST /api/r2v/from-still",
+      "POST /api/r2v/from-video"
+    ],
+    "public_asset_boundary": "opaque id, display name, preview URL, dimensions or video metadata, source_kind, source_job_id; no filesystem path",
+    "source_boundary": "same-session completed Job output only; safe copy into the existing R2V input boundary",
+    "active_generation": "handoff fails closed while QUEUED, RUNNING, or DISCONNECTED",
+    "atomicity": "promotion occurs before UI state replacement; UI restores the prior snapshot on failure",
+    "commit": "LOCAL PENDING"
+  },
+  "browser_ui_smoke": {
+    "destination": "http://127.0.0.1:8190/",
+    "result": "PASS",
+    "observed": [
+      "Video mode loaded",
+      "Reference Experimental became enabled after isolated Native startup",
+      "Reference mode showed exactly one Character Image dropzone and one Motion Video dropzone",
+      "Standard Start/End Reference card was hidden in Reference mode",
+      "Generate remained disabled without the required Character Image"
+    ],
+    "uploads": 0,
+    "generations": 0,
+    "visual_quality_gate": "NOT APPLIED"
+  },
+  "browser_acceptance": {
+    "status": "NOT RUN",
+    "reason": "Direct action-time authorization for the exact local PNG/MP4 upload and the two real local generations is still required.",
+    "required_generation_budget": 2,
+    "generation_count": 0,
+    "cases": {
+      "character_dnd": "PENDING AUTHORIZATION",
+      "still_to_character": "PENDING AUTHORIZATION",
+      "motion_dnd": "PENDING AUTHORIZATION",
+      "reference_generation": "PENDING AUTHORIZATION",
+      "video_to_motion": "PENDING AUTHORIZATION"
+    }
+  },
+  "local_tests": {
+    "vp2c_server": "5 PASS",
+    "vp2c_ui": "36 PASS",
+    "vp2b_server": "5 PASS",
+    "vp2b_ui": "28 PASS",
+    "all_h3_python": "65 PASS",
+    "vp1_ui": "PASS",
+    "h2c_ui": "52 PASS",
+    "h1c_ui": "38 PASS",
+    "h1b1_p2_ui": "44 PASS",
+    "h1b1_p1_ui": "36 PASS",
+    "javascript_syntax": "PASS",
+    "python_compile": "PASS",
+    "json_validation": "PASS",
+    "diff_check": "PASS"
+  },
+  "regression_boundary": {
+    "vp2b_standard_generation": "NOT REPEATED; prior VP2B evidence retained",
+    "extra_browser_generations": 0,
+    "manga_files_changed": false,
+    "shared_comfyui_core_or_frontend_changed": false,
+    "runtime_media_committed": false,
+    "model_or_local_yaml_committed": false
+  },
+  "publication": {
+    "vp2b_closeout_correction": "PUBLISHED ON MAIN at 543d8c2c2817743b10f255c168047e4edd1781a9",
+    "vp2c": "LOCAL MAIN / PUSH PENDING",
+    "owner_acceptance": "PENDING"
+  },
+  "stop": "Do not run new Browser generation beyond the two required cases after authorization; do not implement Image Prep or Rev.4 in VP2C."
+}

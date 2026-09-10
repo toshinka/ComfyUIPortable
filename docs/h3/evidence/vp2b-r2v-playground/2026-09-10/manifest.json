@@ -12,8 +12,9 @@
     "scope": "H3-only relative to f482b90d124c39f603f6863ac35aefb586e95bfd"
   },
   "closeout_publication": {
-    "status": "LOCAL MAIN / PUSH PENDING",
-    "owner_push_required": true,
+    "status": "PUBLISHED ON MAIN",
+    "commit": "543d8c2c2817743b10f255c168047e4edd1781a9",
+    "owner_push_required": false,
     "owner_acceptance": "PENDING"
   },
   "authorization": {

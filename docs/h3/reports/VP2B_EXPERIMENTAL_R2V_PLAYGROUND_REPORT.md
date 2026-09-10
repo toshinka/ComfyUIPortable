@@ -204,10 +204,12 @@ Reference contract changed. The affected verifiers were rerun successfully.
 Implementation commit `cfc8161ab0399338824e175b95ea0763281d57e6` is published on
 `main` and is H3-only relative to `f482b90d124c39f603f6863ac35aefb586e95bfd`.
 The closeout report, dated evidence, canonical H3 wording, and the bounded
-verifier-compatibility fix are committed locally in this closeout package and
-remain unpushed; final closeout publication remains Owner-controlled. No Manga files, shared
-ComfyUI core/frontend, model weights, local YAML, runtime uploads, or MP4 files
-are included.
+verifier-compatibility fix are published on `main` at
+`543d8c2c2817743b10f255c168047e4edd1781a9`. The preceding Browser acceptance
+snapshot was taken against `cfc8161ab0399338824e175b95ea0763281d57e6`; that
+historical baseline is retained above. No Manga files, shared ComfyUI
+core/frontend, model weights, local YAML, runtime uploads, or MP4 files are
+included.
 
 The next direction is exactly one: `Owner hands-on evaluation of Experimental
 R2V Playground`. Do not start VP2C/VP3 or multi-reference work from this report.

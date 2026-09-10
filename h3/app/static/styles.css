@@ -296,6 +296,13 @@ textarea::placeholder, input::placeholder { color: #a58a82; }
 .video-type-button:disabled { cursor: not-allowed; opacity: 0.5; }
 
 .r2v-card { border-color: var(--light-medium); }
+.r2v-dropzone { transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease; }
+.r2v-dropzone.drag-active {
+  border-color: var(--maroon);
+  background: var(--surface-rose);
+  box-shadow: inset 0 0 0 1px var(--maroon);
+}
+.r2v-drop-hint { margin-top: 4px; color: var(--light-maroon); font-size: 0.68rem; }
 .required-mark, .optional-mark {
   margin-left: 4px;
   color: var(--light-maroon);

@@ -4,7 +4,7 @@
 
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
 将来の実装棚とReference Implementation evidenceを一か所から辿るための
-document hub です。現在は **VP2B / Experimental R2V Playground — Browser Acceptance Closeout** であり、
+document hub です。現在は **VP2C / Reference Handoff and scoped Drag-and-Drop — Browser Acceptance pending authorization** であり、
 H1C / Frame-Bridged Continuation は回帰基盤として保持し、
 H1B.1 / Start + End Frame and Native FL2VA vertical slice + UX P0/P1/P2
 Fixes は履歴と回帰対象として保持します。H0/H0.1/H1A/H1B の model
@@ -40,7 +40,9 @@ report, and evidence are published on `main` at
 `d067a4170edeffee200a6f1a8d279a1c1b68be28`. The current classification is
 `FEASIBLE WITH LIMITS`; its Browser R2V boundary was intentionally deferred to
 VP2B. VP2B is implemented and published on `main` at
-`cfc8161ab0399338824e175b95ea0763281d57e6`. Its experimental Reference path
+`cfc8161ab0399338824e175b95ea0763281d57e6`; its closeout evidence/report and
+verifier-compatibility fix are published on `main` at
+`543d8c2c2817743b10f255c168047e4edd1781a9`. Its experimental Reference path
 accepts one Character Image and optionally one MP4 Motion Video, uses fixed
 `608 x 352 / 5 seconds / 20 steps`, keeps audio disconnected, and completed one
 real Picture+Motion Browser generation plus one post-Reference Standard
@@ -48,7 +50,11 @@ Text-only baseline. Browser playback, History route labeling, atomic Use
 settings, Continue absence for Reference, Standard/Reference isolation, and
 Still isolation passed. The result records Picture influence as `OBSERVED` and
 Video influence as `NOT CONVINCING`, a known Native mixed-reference limitation;
-Owner acceptance remains pending.
+Owner acceptance remains pending. VP2C adds only same-session History handoff
+from completed Still/Video results and scoped drag-and-drop ergonomics for the
+existing Character Image and Motion Video slots. Its local server/UI contracts
+pass, and its Browser UI smoke used zero uploads and zero generations; real
+Browser acceptance remains pending action-time authorization.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
@@ -108,6 +114,9 @@ Owner acceptance remains pending.
 | `docs/h3/reports/VP2B_EXPERIMENTAL_R2V_PLAYGROUND_REPORT.md` | VP2B experimental Reference Video playground, Browser acceptance, fixed contract, visual limitation, and closeout boundary | CURRENT VP2B REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/VP2B_EXPERIMENTAL_R2V_PLAYGROUND_REPORT.md` |
 | `docs/h3/evidence/vp2b-r2v-playground/2026-09-10/README.md` | VP2B authorized Picture+Motion Browser run, Standard regression, History/Use settings, isolation, and telemetry | CURRENT VP2B EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp2b-r2v-playground/2026-09-10/README.md` |
 | `docs/h3/evidence/vp2b-r2v-playground/2026-09-10/manifest.json` | Machine-readable VP2B Browser/runtime/media manifest | CURRENT VP2B EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp2b-r2v-playground/2026-09-10/manifest.json` |
+| `docs/h3/reports/VP2C_REFERENCE_HANDOFF_AND_DND_REPORT.md` | VP2C same-session Reference handoff, scoped D&D, local contracts, and Browser gate | CURRENT VP2C REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/VP2C_REFERENCE_HANDOFF_AND_DND_REPORT.md` |
+| `docs/h3/evidence/vp2c-reference-handoff/2026-09-11/README.md` | VP2C implementation, Browser UI smoke, and pending acceptance evidence | CURRENT VP2C EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp2c-reference-handoff/2026-09-11/README.md` |
+| `docs/h3/evidence/vp2c-reference-handoff/2026-09-11/manifest.json` | Machine-readable VP2C evidence manifest | CURRENT VP2C EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp2c-reference-handoff/2026-09-11/manifest.json` |
 | `docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` | H2-INFRA external model migration, isolation, shortcuts, cold restart, and closeout | CURRENT H2-INFRA REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` |
 | `docs/h3/evidence/model-library/2026-09-10/README.md` | H2-INFRA inventory, migration, deletion, shortcut, and runtime evidence index | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/README.md` |
 | `docs/h3/evidence/model-library/2026-09-10/inventory.json` | Machine-readable before/after H3 model inventory | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/inventory.json` |
@@ -351,9 +360,13 @@ steps`.
     motion Browser path, deterministic prompt adapter, fixed settings, public
     History route, atomic `Use settings`, Continue absence, Standard regression,
     state isolation, Still isolation, media hashes, telemetry, and visual limit.
-20. Stop after VP2B; do not infer Owner acceptance, production identity locking,
-    multiple references, audio conditioning, Segment, Studio, or production
-    deployment from this evidence, and do not start VP2C/VP3.
+20. Read the VP2C report and dated evidence; verify same-session completed-job
+    handoff, opaque public asset metadata, source preservation, active-job and
+    atomic failure guards, and the two scoped Reference-slot D&D paths. Keep
+    the real Browser acceptance and Owner acceptance separate from local tests.
+21. Stop after VP2C; do not infer Owner acceptance, production identity locking,
+    Image Prep, multiple references, audio conditioning, Segment, Studio, or
+    production deployment from this evidence, and do not start Rev.4 work.
 
 ## Evidence vocabulary
 

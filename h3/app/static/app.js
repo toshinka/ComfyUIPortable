@@ -23,6 +23,7 @@ const state = {
   r2vMotionVideo: null,
   r2vPictureUploading: false,
   r2vMotionUploading: false,
+  handoffInFlight: false,
   pollTimer: null,
   backendTimer: null,
 };
@@ -47,6 +48,7 @@ const r2vPictureSelected = $("r2v-picture-selected");
 const r2vPictureThumbnail = $("r2v-picture-thumbnail");
 const r2vPictureName = $("r2v-picture-name");
 const r2vPictureStatus = $("r2v-picture-status");
+const r2vPictureDropzone = document.querySelector('[data-r2v-dropzone="picture"]');
 const r2vMotionFile = $("r2v-motion-file");
 const r2vMotionAdd = $("r2v-motion-add");
 const r2vMotionReplace = $("r2v-motion-replace");
@@ -55,6 +57,7 @@ const r2vMotionEmpty = $("r2v-motion-empty");
 const r2vMotionSelected = $("r2v-motion-selected");
 const r2vMotionName = $("r2v-motion-name");
 const r2vMotionStatus = $("r2v-motion-status");
+const r2vMotionDropzone = document.querySelector('[data-r2v-dropzone="motion"]');
 const videoReferenceCard = $("video-reference-card");
 const stillSourceCard = $("still-source-card");
 const durationField = $("duration-field");
@@ -268,7 +271,8 @@ function updateGenerateAvailability() {
   const uploading = Object.values(state.referenceUploading).some(Boolean)
     || state.stillSourceUploading
     || state.r2vPictureUploading
-    || state.r2vMotionUploading;
+    || state.r2vMotionUploading
+    || state.handoffInFlight;
   const referenceMode = state.mode === "video" && state.videoType === "reference";
   const referenceReady = !referenceMode
     || (referenceVideoEnabled() && state.backend === "READY" && Boolean(state.r2vPicture));
@@ -448,6 +452,65 @@ async function uploadR2VMotionVideo(file) {
     r2vMotionFile.value = "";
     updateGenerateAvailability();
   }
+}
+
+function isFileDrag(event) {
+  return Array.from(event.dataTransfer?.types || []).includes("Files");
+}
+
+function singleDroppedFile(event, label) {
+  const files = Array.from(event.dataTransfer?.files || []);
+  if (files.length !== 1) {
+    throw new Error(`${label}: drop exactly one local file.`);
+  }
+  const file = files[0];
+  if (typeof File === "undefined" || !(file instanceof File)) {
+    throw new Error(`${label}: only a local file can be dropped.`);
+  }
+  return file;
+}
+
+function installR2VDropzone(dropzone, label, upload) {
+  if (!dropzone) return;
+  let dragDepth = 0;
+  const clearActive = () => {
+    dragDepth = 0;
+    dropzone.classList.remove("drag-active");
+  };
+  const activate = (event) => {
+    if (!isFileDrag(event)) return;
+    event.preventDefault();
+    dragDepth += 1;
+    dropzone.classList.add("drag-active");
+  };
+  dropzone.addEventListener("dragenter", activate);
+  dropzone.addEventListener("dragover", (event) => {
+    if (!isFileDrag(event)) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+    dropzone.classList.add("drag-active");
+  });
+  dropzone.addEventListener("dragleave", (event) => {
+    if (!isFileDrag(event)) return;
+    if (event.relatedTarget instanceof Node && dropzone.contains(event.relatedTarget)) return;
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (!dragDepth) clearActive();
+  });
+  dropzone.addEventListener("drop", async (event) => {
+    // This is deliberately scoped to the two R2V slots so dropping a URL on
+    // the rest of the page retains the existing browser behavior.
+    if (event.dataTransfer?.types?.length || event.dataTransfer?.files?.length) {
+      event.preventDefault();
+    }
+    clearActive();
+    try {
+      await upload(singleDroppedFile(event, label));
+    } catch (error) {
+      const status = label === "Character Image" ? r2vPictureStatus : r2vMotionStatus;
+      status.textContent = error.message;
+      setDetails(error.message);
+    }
+  });
 }
 
 function setReferenceSlotView(slot, reference) {
@@ -852,6 +915,117 @@ async function useHistorySettings(entry) {
   }
 }
 
+function generationIsActive() {
+  return Boolean(state.activeJob && !TERMINAL.has(state.activeJob.state));
+}
+
+function snapshotR2VHandoffState() {
+  return {
+    mode: state.mode,
+    videoType: state.videoType,
+    videoResolution: state.videoResolution,
+    stillResolution: state.stillResolution,
+    videoDuration: state.videoDuration,
+    prompt: promptInput.value,
+    resolution: resolutionInput.value,
+    duration: durationInput.value,
+    seed: seedInput.value,
+    steps: stepsInput.value,
+    references: {
+      start_frame: state.references.start_frame,
+      end_frame: state.references.end_frame,
+    },
+    stillSource: state.stillSource,
+    r2vPicture: state.r2vPicture,
+    r2vMotionVideo: state.r2vMotionVideo,
+  };
+}
+
+function restoreR2VHandoffState(snapshot) {
+  state.mode = snapshot.mode;
+  state.videoType = snapshot.videoType;
+  setMode(snapshot.mode);
+  state.videoType = snapshot.videoType;
+  state.videoResolution = snapshot.videoResolution;
+  state.stillResolution = snapshot.stillResolution;
+  state.videoDuration = snapshot.videoDuration;
+  promptInput.value = snapshot.prompt;
+  resolutionInput.value = snapshot.resolution;
+  durationInput.value = snapshot.duration;
+  seedInput.value = snapshot.seed;
+  stepsInput.value = snapshot.steps;
+  setReferenceSlotView("start_frame", snapshot.references.start_frame);
+  setReferenceSlotView("end_frame", snapshot.references.end_frame);
+  setStillSourceView(snapshot.stillSource);
+  setR2VPictureView(snapshot.r2vPicture);
+  setR2VMotionView(snapshot.r2vMotionVideo);
+  populateResolutionOptions();
+  populateDurationOptions();
+  resolutionInput.value = snapshot.resolution;
+  durationInput.value = snapshot.duration;
+  updatePromptCount();
+  updateVideoTypeView();
+  updateGenerateAvailability();
+}
+
+async function useHistoryHandoff(entry, kind) {
+  const isStill = kind === "picture";
+  const label = isStill ? "Generated Still" : "Generated Video";
+  const expectedMediaKind = isStill ? "still" : "video";
+  const sourceUrl = isStill ? entry?.image_url : entry?.video_url;
+  if (state.handoffInFlight) return;
+  if (generationIsActive()) {
+    setHistoryActionStatus("Handoff is unavailable while a generation is active.", true);
+    return;
+  }
+  if (
+    !entry
+    || entry.state !== "COMPLETED"
+    || entry.media_kind !== expectedMediaKind
+    || typeof sourceUrl !== "string"
+    || !sourceUrl.trim()
+  ) {
+    setHistoryActionStatus(`${label} is available only for a completed ${isStill ? "Still" : "Video"} result.`, true);
+    return;
+  }
+  const snapshot = snapshotR2VHandoffState();
+  state.handoffInFlight = true;
+  updateGenerateAvailability();
+  setHistoryActionStatus(`Preparing ${label}…`);
+  try {
+    const endpoint = isStill ? "/api/r2v/from-still" : "/api/r2v/from-video";
+    const result = await requestJson(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_id: entry.job_id }),
+    });
+    const rawAsset = isStill ? result.picture : result.motion_video;
+    const asset = normalizeR2VAsset(rawAsset, isStill ? "picture" : "motion");
+    const expectedSourceKind = isStill ? "generated_still" : "generated_video";
+    if (asset.source_kind !== expectedSourceKind || asset.source_job_id !== entry.job_id) {
+      throw new Error(`${label} provenance could not be verified.`);
+    }
+    await verifyR2VAsset(asset, isStill ? "picture" : "motion");
+    if (generationIsActive()) {
+      throw new Error("Handoff was stopped because a generation became active.");
+    }
+    setMode("video");
+    setVideoType("reference");
+    if (state.videoType !== "reference") {
+      throw new Error("Reference · Experimental is unavailable in the current Native session.");
+    }
+    if (isStill) setR2VPictureView(asset);
+    else setR2VMotionView(asset);
+    setHistoryActionStatus(`${label} is ready in Reference.`);
+  } catch (error) {
+    restoreR2VHandoffState(snapshot);
+    setHistoryActionStatus(`Handoff was not applied. ${error.message}`, true);
+  } finally {
+    state.handoffInFlight = false;
+    updateGenerateAvailability();
+  }
+}
+
 function captureContinuationFrame(sourceUrl) {
   return new Promise((resolve, reject) => {
     const video = document.createElement("video");
@@ -1151,6 +1325,24 @@ function createHistoryCard(entry) {
   const actions = document.createElement("div");
   actions.className = "history-actions";
   actions.append(useSettings);
+  if (isStill && entry.state === "COMPLETED" && typeof entry.image_url === "string" && entry.image_url.trim()) {
+    const characterButton = document.createElement("button");
+    characterButton.type = "button";
+    characterButton.className = "quiet-button history-handoff";
+    characterButton.textContent = "Use as Character";
+    characterButton.setAttribute("aria-label", `Use ${routeLabel} Still as Character Image`);
+    characterButton.addEventListener("click", () => useHistoryHandoff(entry, "picture"));
+    actions.append(characterButton);
+  }
+  if (!isStill && entry.state === "COMPLETED" && typeof entry.video_url === "string" && entry.video_url.trim()) {
+    const motionButton = document.createElement("button");
+    motionButton.type = "button";
+    motionButton.className = "quiet-button history-handoff";
+    motionButton.textContent = "Use as Motion";
+    motionButton.setAttribute("aria-label", `Use ${routeLabel} Video as Motion Video`);
+    motionButton.addEventListener("click", () => useHistoryHandoff(entry, "motion"));
+    actions.append(motionButton);
+  }
   if (!isStill && entry.state === "COMPLETED" && typeof entry.video_url === "string" && entry.video_url.trim() && entry.video_type !== "reference") {
     const continueButton = document.createElement("button");
     continueButton.type = "button";
@@ -1236,6 +1428,8 @@ r2vMotionAdd.addEventListener("click", () => r2vMotionFile.click());
 r2vMotionReplace.addEventListener("click", () => r2vMotionFile.click());
 r2vMotionFile.addEventListener("change", () => uploadR2VMotionVideo(r2vMotionFile.files?.[0]));
 r2vMotionRemove.addEventListener("click", () => setR2VMotionView(null));
+installR2VDropzone(r2vPictureDropzone, "Character Image", uploadR2VPicture);
+installR2VDropzone(r2vMotionDropzone, "Motion Video", uploadR2VMotionVideo);
 
 updatePromptCount();
 setReferenceSlotView("start_frame", null);

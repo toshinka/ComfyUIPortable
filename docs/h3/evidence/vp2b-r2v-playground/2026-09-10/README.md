@@ -9,8 +9,9 @@ Decision: `PASS WITH KNOWN NATIVE LIMIT`
 Implementation: `PUBLISHED ON MAIN` at
 `cfc8161ab0399338824e175b95ea0763281d57e6`
 
-Owner acceptance remains `PENDING`. Closeout docs and the bounded verifier-
-compatibility fix are local until Owner push.
+Owner acceptance remains `PENDING`. The closeout docs and bounded verifier-
+compatibility fix are published on `main` at
+`543d8c2c2817743b10f255c168047e4edd1781a9`.
 
 Report: [VP2B_EXPERIMENTAL_R2V_PLAYGROUND_REPORT.md](../../../reports/VP2B_EXPERIMENTAL_R2V_PLAYGROUND_REPORT.md)
 

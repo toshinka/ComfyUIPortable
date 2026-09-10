@@ -73,7 +73,7 @@
               </div>
             </div>
             <div class="reference-slots">
-              <div class="reference-slot" data-reference-slot="r2v_picture">
+              <div class="reference-slot r2v-dropzone" data-reference-slot="r2v_picture" data-r2v-dropzone="picture">
                 <div class="reference-slot-heading">
                   <div>
                     <strong>Character Image <span class="required-mark">Required</span></strong>
@@ -83,6 +83,7 @@
                   <button class="quiet-button reference-add" id="r2v-picture-add" type="button">Add image</button>
                 </div>
                 <div class="reference-slot-empty" id="r2v-picture-empty">No Character Image selected.</div>
+                <div class="r2v-drop-hint">Drop one local image here, or use Add image.</div>
                 <div class="reference-selected" id="r2v-picture-selected" hidden>
                   <img id="r2v-picture-thumbnail" class="reference-thumbnail" alt="Selected Character Image" />
                   <div class="reference-selected-body">
@@ -96,7 +97,7 @@
                 </div>
                 <div class="reference-status" id="r2v-picture-status" aria-live="polite"></div>
               </div>
-              <div class="reference-slot" data-reference-slot="r2v_motion_video">
+              <div class="reference-slot r2v-dropzone" data-reference-slot="r2v_motion_video" data-r2v-dropzone="motion">
                 <div class="reference-slot-heading">
                   <div>
                     <strong>Motion Video <span class="optional-mark">Optional</span></strong>
@@ -106,6 +107,7 @@
                   <button class="quiet-button reference-add" id="r2v-motion-add" type="button">Add video</button>
                 </div>
                 <div class="reference-slot-empty" id="r2v-motion-empty">No Motion Video selected.</div>
+                <div class="r2v-drop-hint">Drop one local MP4 here, or use Add video.</div>
                 <div class="reference-selected" id="r2v-motion-selected" hidden>
                   <div class="reference-thumbnail motion-thumbnail" aria-hidden="true">MP4</div>
                   <div class="reference-selected-body">

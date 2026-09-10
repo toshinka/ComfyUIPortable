@@ -6,7 +6,8 @@ Updated: 2026-09-11 JST
 
 Current Stage
 -------------
-VP2B / Experimental R2V Playground — Browser Acceptance Closeout
+VP2C / Reference Handoff and scoped D&D — IMPLEMENTED / BROWSER ACCEPTANCE PENDING AUTHORIZATION
+VP2B / Experimental R2V Playground — CLOSEOUT PUBLISHED ON MAIN
 H1C / Frame-Bridged Continuation: IMPLEMENTED / VERIFIED (regression foundation)
 Groundwork: PASS (historical)
 Semantic Alignment: PASS (historical)
@@ -94,7 +95,11 @@ VP2B Reference route: native_ref2va; audio reference NOT CONNECTED
 VP2B Picture + Motion Browser: TECHNICALLY PASS WITH KNOWN NATIVE LIMIT
 VP2B Standard post-Reference baseline: VERIFIED BROWSER UI GENERATION
 VP2B History / Use settings / state isolation / Still isolation: VERIFIED BROWSER UI
-VP2B evidence/report: CURRENT REVIEW EVIDENCE; closeout package LOCAL until Owner push
+VP2B evidence/report: CURRENT REVIEW EVIDENCE; closeout package PUBLISHED ON MAIN at 543d8c2c2817743b10f255c168047e4edd1781a9
+VP2C server handoff contract: IMPLEMENTED / 5 LOCAL TESTS PASS
+VP2C Reference-slot D&D and History handoff UI: IMPLEMENTED / 36 UI TESTS PASS
+VP2C Browser UI smoke: PASS WITHOUT UPLOAD OR GENERATION
+VP2C real Browser acceptance: BLOCKED PENDING ACTION-TIME AUTHORIZATION; generation count 0/2
 H3 external model library: CONFIGURED / VERIFIED
 Portable duplicate heavy weights: REMOVED
 Portable fallback namespace: RETAINED / EMPTY OF FIRST-WAVE HEAVY WEIGHTS
@@ -151,6 +156,9 @@ Read Order
 42. ComfyUIPortable/docs/h3/reports/VP2B_EXPERIMENTAL_R2V_PLAYGROUND_REPORT.md
 43. ComfyUIPortable/docs/h3/evidence/vp2b-r2v-playground/2026-09-10/README.md
 44. ComfyUIPortable/docs/h3/evidence/vp2b-r2v-playground/2026-09-10/manifest.json
+45. ComfyUIPortable/docs/h3/reports/VP2C_REFERENCE_HANDOFF_AND_DND_REPORT.md
+46. ComfyUIPortable/docs/h3/evidence/vp2c-reference-handoff/2026-09-11/README.md
+47. ComfyUIPortable/docs/h3/evidence/vp2c-reference-handoff/2026-09-11/manifest.json
 
 Master Roadmap
 --------------
@@ -222,7 +230,17 @@ uploaded runtime inputs, and model weights remain ignored.
 
 Current Review Gate
 -------------------
-VP2B Experimental R2V Playground — Browser acceptance and closeout
+VP2C Reference Handoff and scoped Drag-and-Drop — implementation and Browser gate
+
+VP2C adds no new generation model or route. It implements same-session completed
+Still→Character and Video→Motion History promotion through opaque job IDs, safe
+copy-only staging, provenance metadata, and atomic UI restore on failure. The
+existing Reference Character Image and Motion Video slots now accept one local
+browser File through scoped drag-and-drop while preserving Add/Replace/Remove.
+Local server/UI and H3 regression checks pass, and isolated Browser UI smoke
+shows the two dropzones with Reference-only visibility. Exact local PNG/MP4
+upload and the required one Still plus one Reference Video generation remain
+blocked pending action-time authorization; Owner acceptance is pending.
 
 H1B.1 remains implemented as the regression foundation and has Start-only,
 Start+End, End-only, and text-only browser completion results plus Native media
@@ -326,5 +344,9 @@ classified Picture influence as `OBSERVED` and Video influence as `NOT
 CONVINCING`; this is recorded as a Native mixed-reference quality limitation,
 not a Browser route failure. VP2B implementation is published on `main` at
 `cfc8161ab0399338824e175b95ea0763281d57e6`; the closeout evidence/report and
-the bounded verifier-compatibility fix are local until Owner push. Owner
-acceptance remains `PENDING`.
+the bounded verifier-compatibility fix are published on `main` at
+`543d8c2c2817743b10f255c168047e4edd1781a9`. Owner acceptance remains
+`PENDING`.
+VP2C implementation, evidence, and canonical updates are currently local at
+the live `543d8c2` baseline; publication remains `LOCAL MAIN / PUSH PENDING`.
+Owner acceptance remains `PENDING`.
