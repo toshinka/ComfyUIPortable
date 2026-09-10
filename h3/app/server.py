@@ -18,6 +18,7 @@ import json
 import mimetypes
 import os
 from pathlib import Path
+import re
 import sys
 import threading
 import time
@@ -59,6 +60,20 @@ from h3.adapters.native_i2v import (  # noqa: E402
     fl2va_workflow_metadata,
     workflow_metadata as i2v_workflow_metadata,
 )
+from h3.adapters.native_still import (  # noqa: E402
+    H3StillRequest,
+    ROUTE_STILL,
+    compile_workflow as compile_still,
+    validate_still_request,
+    workflow_metadata as still_workflow_metadata,
+)
+from h3.adapters.native_source_anchored_still import (  # noqa: E402
+    H3SourceAnchorRequest,
+    ROUTE_SOURCE_ANCHORED_STILL,
+    compile_workflow as compile_source_anchored_still,
+    validate_source_anchor_request,
+    workflow_metadata as source_anchored_still_workflow_metadata,
+)
 
 
 STATE_LABELS = {
@@ -73,9 +88,12 @@ STATE_LABELS = {
 TERMINAL_STATES = {"COMPLETED", "FAILED", "CANCELLED"}
 VIDEO_SUFFIXES = {".mp4", ".webm", ".mov", ".mkv"}
 REFERENCE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
+STILL_SOURCE_SUFFIXES = {".png", ".jpg", ".jpeg"}
+STILL_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg"}
 REFERENCE_MAX_BYTES = 20 * 1024 * 1024
 REFERENCE_MAX_PIXELS = 16_777_216
 MULTIPART_OVERHEAD_LIMIT = 512 * 1024
+SERVER_ASSET_ID_PATTERN = re.compile(r"^[0-9a-f]{32}$")
 
 
 class BackendError(RuntimeError):
@@ -106,6 +124,23 @@ class ReferenceAssetMissingError(ReferenceRequestError):
     error_kind = "reference_asset_missing"
 
 
+class StillSourceRequestError(ReferenceRequestError):
+    error_kind = "still_source_upload_failed"
+
+
+class StillSourceTooLargeError(StillSourceRequestError):
+    error_kind = "still_source_upload_failed"
+    status = HTTPStatus.REQUEST_ENTITY_TOO_LARGE
+
+
+class StillSourceDecodeError(StillSourceRequestError):
+    error_kind = "still_source_decode_failed"
+
+
+class StillSourceMissingError(StillSourceRequestError):
+    error_kind = "still_source_missing"
+
+
 @dataclass(frozen=True)
 class ReferenceAsset:
     reference: H3Reference
@@ -123,6 +158,26 @@ class ReferenceAsset:
             "width": self.width,
             "height": self.height,
             "preview_url": f"/api/references/{quote(self.reference.id, safe='')}",
+        }
+
+
+@dataclass(frozen=True)
+class StillSourceAsset:
+    source_id: str
+    path: Path
+    filename: str
+    content_type: str
+    width: int
+    height: int
+
+    def public(self) -> dict[str, Any]:
+        return {
+            "id": self.source_id,
+            "filename": self.filename,
+            "content_type": self.content_type,
+            "width": self.width,
+            "height": self.height,
+            "preview_url": f"/api/still/sources/{quote(self.source_id, safe='')}",
         }
 
 
@@ -277,16 +332,19 @@ def map_history_state(history_entry: Any, cancel_requested: bool = False) -> str
     return "RUNNING"
 
 
-def _iter_media(value: Any) -> Iterable[dict[str, Any]]:
+def _iter_media(
+    value: Any,
+    suffixes: set[str] = VIDEO_SUFFIXES,
+) -> Iterable[dict[str, Any]]:
     if isinstance(value, Mapping):
         filename = value.get("filename")
-        if isinstance(filename, str) and Path(filename).suffix.lower() in VIDEO_SUFFIXES:
+        if isinstance(filename, str) and Path(filename).suffix.lower() in suffixes:
             yield dict(value)
         for child in value.values():
-            yield from _iter_media(child)
+            yield from _iter_media(child, suffixes)
     elif isinstance(value, (list, tuple)):
         for child in value:
-            yield from _iter_media(child)
+            yield from _iter_media(child, suffixes)
 
 
 def _error_text(history_entry: Mapping[str, Any]) -> str:
@@ -305,12 +363,14 @@ def _error_text(history_entry: Mapping[str, Any]) -> str:
 @dataclass
 class Job:
     job_id: str
-    request: H3Request
+    request: H3Request | H3StillRequest | H3SourceAnchorRequest
     created_at: str
     created_epoch: float
     route: str = ROUTE_T2V
+    media_kind: str = "video"
     reference: dict[str, Any] | None = None
     references: dict[str, dict[str, Any] | None] | None = None
+    still_source: dict[str, Any] | None = None
     prompt_id: str | None = None
     state: str = "QUEUED"
     error: str | None = None
@@ -326,26 +386,44 @@ class Job:
         return round(max(0.0, end - self.created_epoch), 2)
 
     def public(self) -> dict[str, Any]:
-        video_url = f"/api/jobs/{quote(self.job_id, safe='')}/video" if self.media_path else None
+        media_url = None
+        if self.media_path:
+            media_endpoint = "image" if self.media_kind == "still" else "video"
+            media_url = f"/api/jobs/{quote(self.job_id, safe='')}/{media_endpoint}"
+        video_url = media_url if self.media_kind == "video" else None
+        image_url = media_url if self.media_kind == "still" else None
         references = self.references or {
             REFERENCE_ROLE_START_FRAME: None,
             REFERENCE_ROLE_END_FRAME: None,
         }
         has_start_frame = references.get(REFERENCE_ROLE_START_FRAME) is not None
         has_end_frame = references.get(REFERENCE_ROLE_END_FRAME) is not None
+        route_label = (
+            ("Source Image" if self.still_source else "Text only")
+            if self.media_kind == "still"
+            else reference_route_label(self.request.references)
+        )
+        request = self.request.public()
+        if self.media_kind == "still":
+            request = {
+                **request,
+                "source_id": self.still_source.get("id") if self.still_source else None,
+            }
         return {
             "job_id": self.job_id,
             "prompt_id": self.prompt_id,
             "state": self.state,
             "label": STATE_LABELS.get(self.state, self.state),
             "route": self.route,
-            "route_label": reference_route_label(self.request.references),
-            "reference_used": has_start_frame or has_end_frame,
+            "media_kind": self.media_kind,
+            "route_label": route_label,
+            "reference_used": self.media_kind == "video" and (has_start_frame or has_end_frame),
             "reference": self.reference,
             "references": references,
             "has_start_frame": has_start_frame,
             "has_end_frame": has_end_frame,
-            "request": self.request.public(),
+            "source": self.still_source,
+            "request": request,
             "created_at": self.created_at,
             "completed_at": self.completed_at,
             "elapsed_seconds": self.elapsed_seconds(),
@@ -353,7 +431,8 @@ class Job:
             "progress": None,
             "output": self.output,
             "video_url": video_url,
-            "thumbnail_url": video_url,
+            "image_url": image_url,
+            "thumbnail_url": video_url or image_url,
             "cancel_available": self.state in {"QUEUED", "RUNNING"},
         }
 
@@ -367,6 +446,7 @@ class H1ASession:
         self.client_id = f"tegaki-h1a-{os.getpid()}-{uuid_token()}"
         self.jobs: OrderedDict[str, Job] = OrderedDict()
         self.references: dict[str, ReferenceAsset] = {}
+        self.still_sources: dict[str, StillSourceAsset] = {}
         self.lock = threading.RLock()
 
     def upload_reference(
@@ -375,63 +455,17 @@ class H1ASession:
         body: bytes,
         role: str = REFERENCE_ROLE_START_FRAME,
     ) -> ReferenceAsset:
-        if not isinstance(body, bytes) or not body:
-            raise ReferenceRequestError("Reference upload is empty.")
         if role not in REFERENCE_ROLES:
             raise ReferenceRequestError("Reference slot is unsupported.")
-        if len(body) > REFERENCE_MAX_BYTES:
-            raise ReferenceTooLargeError(
-                f"Reference image must be {REFERENCE_MAX_BYTES // (1024 * 1024)} MB or smaller."
-            )
-        if not isinstance(filename, str) or not filename.strip():
-            raise ReferenceRequestError("Reference filename is required.")
-        filename = filename.strip()
-        if (
-            filename in {".", ".."}
-            or "/" in filename
-            or "\\" in filename
-            or ":" in filename
-            or Path(filename).is_absolute()
-        ):
-            raise ReferenceRequestError("Reference filename is unsafe.")
-        suffix = Path(filename).suffix.lower()
-        if suffix not in REFERENCE_SUFFIXES:
-            raise ReferenceRequestError("Reference must be PNG, JPEG, or WebP.")
-
-        try:
-            with warnings.catch_warnings():
-                warnings.simplefilter("error", Image.DecompressionBombWarning)
-                with Image.open(BytesIO(body)) as image:
-                    actual_format = (image.format or "").upper()
-                    width, height = image.size
-                    if width <= 0 or height <= 0 or width * height > REFERENCE_MAX_PIXELS:
-                        raise ReferenceDecodeError("Reference image dimensions are too large.")
-                    image.verify()
-            with Image.open(BytesIO(body)) as image:
-                image.load()
-        except ReferenceRequestError:
-            raise
-        except (
-            Image.DecompressionBombError,
-            Image.DecompressionBombWarning,
-            OSError,
-            SyntaxError,
-            UnidentifiedImageError,
-        ) as exc:
-            raise ReferenceDecodeError("Reference image could not be decoded.") from exc
-
-        format_suffixes = {
-            "PNG": {".png"},
-            "JPEG": {".jpg", ".jpeg"},
-            "WEBP": {".webp"},
-        }
-        if suffix not in format_suffixes.get(actual_format, set()):
-            raise ReferenceDecodeError("Reference extension does not match its image format.")
-        content_types = {
-            "PNG": "image/png",
-            "JPEG": "image/jpeg",
-            "WEBP": "image/webp",
-        }
+        suffix, actual_format, width, height, content_type = _validate_image_upload(
+            filename,
+            body,
+            suffixes=REFERENCE_SUFFIXES,
+            label="Reference",
+            request_error=ReferenceRequestError,
+            too_large_error=ReferenceTooLargeError,
+            decode_error=ReferenceDecodeError,
+        )
 
         reference_id = uuid_token()
         safe_filename = f"{reference_id}{suffix}"
@@ -447,7 +481,7 @@ class H1ASession:
             reference=H3Reference(reference_id, role),
             path=path,
             filename=safe_filename,
-            content_type=content_types[actual_format],
+            content_type=content_type,
             width=width,
             height=height,
         )
@@ -455,9 +489,45 @@ class H1ASession:
             self.references[reference_id] = asset
         return asset
 
+    def upload_still_source(self, filename: str, body: bytes) -> StillSourceAsset:
+        suffix, _actual_format, width, height, content_type = _validate_image_upload(
+            filename,
+            body,
+            suffixes=STILL_SOURCE_SUFFIXES,
+            label="Still source",
+            request_error=StillSourceRequestError,
+            too_large_error=StillSourceTooLargeError,
+            decode_error=StillSourceDecodeError,
+        )
+        source_id = uuid_token()
+        safe_filename = f"{source_id}{suffix}"
+        path = (self.input_root / safe_filename).resolve()
+        try:
+            path.relative_to(self.input_root)
+            with path.open("xb") as handle:
+                handle.write(body)
+        except OSError as exc:
+            raise StillSourceRequestError("Still source could not be stored.") from exc
+
+        asset = StillSourceAsset(
+            source_id=source_id,
+            path=path,
+            filename=safe_filename,
+            content_type=content_type,
+            width=width,
+            height=height,
+        )
+        with self.lock:
+            self.still_sources[source_id] = asset
+        return asset
+
     def get_reference(self, reference_id: str) -> ReferenceAsset | None:
         with self.lock:
             return self.references.get(reference_id)
+
+    def get_still_source(self, source_id: str) -> StillSourceAsset | None:
+        with self.lock:
+            return self.still_sources.get(source_id)
 
     def submit(self, payload: Mapping[str, Any]) -> Job:
         request = validate_request(payload)
@@ -515,6 +585,63 @@ class H1ASession:
             job.state = "QUEUED"
         return job
 
+    def submit_still(self, payload: Mapping[str, Any]) -> Job:
+        """Submit one H2A/H2B Still request without exposing local paths."""
+
+        if not isinstance(payload, Mapping):
+            raise RequestValidationError("Still request must be a JSON object.")
+        for field in ("source_path", "source_images", "source_paths", "reference", "references"):
+            if payload.get(field) not in (None, "", {}):
+                raise RequestValidationError(
+                    "Still source must be supplied as a server-issued source_id."
+                )
+
+        source_id = payload.get("source_id")
+        source: StillSourceAsset | None = None
+        if source_id in (None, ""):
+            request = validate_still_request(payload)
+            graph = compile_still(request)
+            route = ROUTE_STILL
+        else:
+            if not isinstance(source_id, str) or not SERVER_ASSET_ID_PATTERN.fullmatch(source_id):
+                raise RequestValidationError("Still source id is invalid.")
+            source = self.get_still_source(source_id)
+            if source is None or not source.path.is_file():
+                raise StillSourceMissingError("Still source asset is missing.")
+            source_path = f"inputs/{source.filename}"
+            request = validate_source_anchor_request(
+                {**payload, "source_path": source_path}
+            )
+            graph = compile_source_anchored_still(request)
+            route = ROUTE_SOURCE_ANCHORED_STILL
+
+        job_id = uuid_token()
+        job = Job(
+            job_id,
+            request,
+            now_iso(),
+            time.time(),
+            route=route,
+            media_kind="still",
+            references={
+                REFERENCE_ROLE_START_FRAME: None,
+                REFERENCE_ROLE_END_FRAME: None,
+            },
+            still_source=source.public() if source else None,
+        )
+        with self.lock:
+            self.jobs[job_id] = job
+        try:
+            response = self.backend.submit(graph, self.client_id)
+        except Exception:
+            with self.lock:
+                self.jobs.pop(job_id, None)
+            raise
+        with self.lock:
+            job.prompt_id = response["prompt_id"]
+            job.state = "QUEUED"
+        return job
+
     def get_job(self, job_id: str) -> Job | None:
         with self.lock:
             return self.jobs.get(job_id)
@@ -554,15 +681,18 @@ class H1ASession:
             elif job.state == "FAILED":
                 job.error = _error_text(entry)
             elif job.state == "COMPLETED":
-                media = next(_iter_media(entry.get("outputs")), None)
+                suffixes = STILL_IMAGE_SUFFIXES if job.media_kind == "still" else VIDEO_SUFFIXES
+                media = next(_iter_media(entry.get("outputs"), suffixes), None)
                 if media is None:
                     job.state = "FAILED"
-                    job.error = "Job completed without a video output."
+                    output_label = "image" if job.media_kind == "still" else "video"
+                    job.error = f"Job completed without a {output_label} output."
                 else:
-                    path = self._safe_media_path(media)
+                    path = self._safe_media_path(media, suffixes)
                     if path is None or not path.is_file():
                         job.state = "FAILED"
-                        job.error = "Job completed but the video output is unavailable."
+                        output_label = "image" if job.media_kind == "still" else "video"
+                        job.error = f"Job completed but the {output_label} output is unavailable."
                     else:
                         job.state = "COMPLETED"
                         job.output = media
@@ -571,10 +701,16 @@ class H1ASession:
             job.completed_at = job.completed_at or now_iso()
             job.completed_epoch = job.completed_epoch or time.time()
 
-    def _safe_media_path(self, media: Mapping[str, Any]) -> Path | None:
+    def _safe_media_path(
+        self,
+        media: Mapping[str, Any],
+        suffixes: set[str] = VIDEO_SUFFIXES,
+    ) -> Path | None:
         filename = media.get("filename")
         subfolder = media.get("subfolder") or ""
         if not isinstance(filename, str) or not isinstance(subfolder, str):
+            return None
+        if Path(filename).suffix.lower() not in suffixes:
             return None
         candidate = (self.output_root / subfolder / filename).resolve()
         try:
@@ -631,6 +767,78 @@ def json_bytes(value: Any) -> bytes:
     return json.dumps(value, ensure_ascii=False).encode("utf-8")
 
 
+def _validate_image_upload(
+    filename: str,
+    body: bytes,
+    *,
+    suffixes: set[str],
+    label: str,
+    request_error: type[ReferenceRequestError],
+    too_large_error: type[ReferenceRequestError],
+    decode_error: type[ReferenceRequestError],
+) -> tuple[str, str, int, int, str]:
+    """Validate one bounded PNG/JPEG/WebP upload before it reaches disk."""
+
+    if not isinstance(body, bytes) or not body:
+        raise request_error(f"{label} upload is empty.")
+    if len(body) > REFERENCE_MAX_BYTES:
+        raise too_large_error(
+            f"{label} image must be {REFERENCE_MAX_BYTES // (1024 * 1024)} MB or smaller."
+        )
+    if not isinstance(filename, str) or not filename.strip():
+        raise request_error(f"{label} filename is required.")
+    filename = filename.strip()
+    if (
+        filename in {".", ".."}
+        or "/" in filename
+        or "\\" in filename
+        or ":" in filename
+        or Path(filename).is_absolute()
+    ):
+        raise request_error(f"{label} filename is unsafe.")
+    suffix = Path(filename).suffix.lower()
+    allowed_formats = {"PNG", "JPEG", "WEBP"} if ".webp" in suffixes else {"PNG", "JPEG"}
+    if suffix not in suffixes:
+        allowed_text = "PNG, JPEG, or WebP" if "WEBP" in allowed_formats else "PNG or JPEG"
+        raise request_error(f"{label} must be {allowed_text}.")
+
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", Image.DecompressionBombWarning)
+            with Image.open(BytesIO(body)) as image:
+                actual_format = (image.format or "").upper()
+                width, height = image.size
+                if width <= 0 or height <= 0 or width * height > REFERENCE_MAX_PIXELS:
+                    raise decode_error(f"{label} image dimensions are too large.")
+                image.verify()
+        with Image.open(BytesIO(body)) as image:
+            image.load()
+    except ReferenceRequestError:
+        raise
+    except (
+        Image.DecompressionBombError,
+        Image.DecompressionBombWarning,
+        OSError,
+        SyntaxError,
+        UnidentifiedImageError,
+    ) as exc:
+        raise decode_error(f"{label} image could not be decoded.") from exc
+
+    format_suffixes = {
+        "PNG": {".png"},
+        "JPEG": {".jpg", ".jpeg"},
+        "WEBP": {".webp"},
+    }
+    if actual_format not in allowed_formats or suffix not in format_suffixes.get(actual_format, set()):
+        raise decode_error(f"{label} extension does not match its image format.")
+    content_types = {
+        "PNG": "image/png",
+        "JPEG": "image/jpeg",
+        "WEBP": "image/webp",
+    }
+    return suffix, actual_format, width, height, content_types[actual_format]
+
+
 class H1AHandler(BaseHTTPRequestHandler):
     server: "H1AServer"
 
@@ -662,20 +870,27 @@ class H1AHandler(BaseHTTPRequestHandler):
             raise RequestValidationError("Request body must be a JSON object.")
         return value
 
-    def _read_multipart_reference(self) -> tuple[str, str, bytes]:
+    def _read_multipart_upload(
+        self,
+        *,
+        file_names: set[str],
+        allow_slot: bool,
+        request_error: type[ReferenceRequestError],
+        too_large_error: type[ReferenceRequestError],
+    ) -> tuple[str | None, str, bytes]:
         try:
             length = int(self.headers.get("Content-Length", "0"))
         except ValueError as exc:
-            raise ReferenceRequestError("Invalid reference upload length.") from exc
+            raise request_error("Invalid upload length.") from exc
         if length <= 0:
-            raise ReferenceRequestError("Reference upload is empty.")
+            raise request_error("Upload is empty.")
         if length > REFERENCE_MAX_BYTES + MULTIPART_OVERHEAD_LIMIT:
-            raise ReferenceTooLargeError(
-                f"Reference image must be {REFERENCE_MAX_BYTES // (1024 * 1024)} MB or smaller."
+            raise too_large_error(
+                f"Image must be {REFERENCE_MAX_BYTES // (1024 * 1024)} MB or smaller."
             )
         content_type = self.headers.get("Content-Type", "")
         if not content_type.lower().startswith("multipart/form-data"):
-            raise ReferenceRequestError("Reference upload must use multipart/form-data.")
+            raise request_error("Upload must use multipart/form-data.")
         raw = self.rfile.read(length)
         header = (
             f"Content-Type: {content_type}\r\n"
@@ -685,10 +900,10 @@ class H1AHandler(BaseHTTPRequestHandler):
         try:
             message = BytesParser(policy=email_default).parsebytes(header + raw)
         except (TypeError, ValueError) as exc:
-            raise ReferenceRequestError("Reference upload could not be parsed.") from exc
+            raise request_error("Upload could not be parsed.") from exc
         if not message.is_multipart():
-            raise ReferenceRequestError("Reference upload must contain a file part.")
-        role = REFERENCE_ROLE_START_FRAME
+            raise request_error("Upload must contain a file part.")
+        role: str | None = REFERENCE_ROLE_START_FRAME if allow_slot else None
         file_part: tuple[str, bytes] | None = None
         for part in message.walk():
             if part.is_multipart():
@@ -696,22 +911,42 @@ class H1AHandler(BaseHTTPRequestHandler):
             disposition = part.get("Content-Disposition", "")
             name = part.get_param("name", header="content-disposition")
             if name == "slot" and "filename" not in disposition:
+                if not allow_slot:
+                    raise request_error("Still source upload does not accept a slot.")
                 slot_body = part.get_payload(decode=True)
                 if isinstance(slot_body, bytes):
                     try:
                         role = slot_body.decode("utf-8").strip()
                     except UnicodeDecodeError as exc:
-                        raise ReferenceRequestError("Reference slot is malformed.") from exc
+                        raise request_error("Upload slot is malformed.") from exc
                 continue
-            if name in {"reference", "file"} and "filename" in disposition:
+            if name in file_names and "filename" in disposition:
                 filename = part.get_filename()
                 body = part.get_payload(decode=True)
                 if not isinstance(filename, str) or not isinstance(body, bytes):
-                    raise ReferenceRequestError("Reference upload file is malformed.")
+                    raise request_error("Upload file is malformed.")
                 file_part = (filename, body)
         if file_part is not None:
             return role, file_part[0], file_part[1]
-        raise ReferenceRequestError("Reference upload file is missing.")
+        raise request_error("Upload file is missing.")
+
+    def _read_multipart_reference(self) -> tuple[str, str, bytes]:
+        role, filename, body = self._read_multipart_upload(
+            file_names={"reference", "file"},
+            allow_slot=True,
+            request_error=ReferenceRequestError,
+            too_large_error=ReferenceTooLargeError,
+        )
+        return role or REFERENCE_ROLE_START_FRAME, filename, body
+
+    def _read_multipart_still_source(self) -> tuple[str, bytes]:
+        _role, filename, body = self._read_multipart_upload(
+            file_names={"source"},
+            allow_slot=False,
+            request_error=StillSourceRequestError,
+            too_large_error=StillSourceTooLargeError,
+        )
+        return filename, body
 
     def do_GET(self) -> None:  # noqa: N802
         path = urlparse(self.path).path
@@ -725,6 +960,20 @@ class H1AHandler(BaseHTTPRequestHandler):
                     "workflow": workflow_metadata(),
                     "i2v_workflow": i2v_workflow_metadata(),
                     "fl2va_workflow": fl2va_workflow_metadata(),
+                    "still": {
+                        "workflows": [
+                            still_workflow_metadata(),
+                            source_anchored_still_workflow_metadata(),
+                        ],
+                        "resolution_options": [
+                            {"label": "608 x 352", "width": 608, "height": 352}
+                        ],
+                        "default_steps": 20,
+                        "source": {
+                            "extensions": [".png", ".jpg", ".jpeg"],
+                            "max_bytes": REFERENCE_MAX_BYTES,
+                        },
+                    },
                     "reference": {
                         "roles": list(REFERENCE_ROLES),
                         "schema": "h3.references/v1",
@@ -757,10 +1006,18 @@ class H1AHandler(BaseHTTPRequestHandler):
             if len(segments) == 3:
                 self._serve_reference(segments[2])
                 return
+        if path.startswith("/api/still/sources/"):
+            segments = [segment for segment in path.split("/") if segment]
+            if len(segments) == 4:
+                self._serve_still_source(segments[3])
+                return
         if path.startswith("/api/jobs/"):
             segments = [segment for segment in path.split("/") if segment]
             if len(segments) == 4 and segments[-1] == "video":
                 self._serve_job_video(segments[2])
+                return
+            if len(segments) == 4 and segments[-1] == "image":
+                self._serve_job_image(segments[2])
                 return
             if len(segments) == 3:
                 self._serve_job(segments[2])
@@ -790,6 +1047,26 @@ class H1AHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _serve_still_source(self, source_id: str) -> None:
+        if not SERVER_ASSET_ID_PATTERN.fullmatch(source_id):
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Still source not found"})
+            return
+        asset = self.server.session.get_still_source(source_id)
+        if asset is None or not asset.path.is_file():
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Still source not found"})
+            return
+        try:
+            body = asset.path.read_bytes()
+        except OSError:
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Still source not found"})
+            return
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", asset.content_type)
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def _serve_job(self, job_id: str) -> None:
         job = self.server.session.get_job(job_id)
         if job is None:
@@ -804,7 +1081,7 @@ class H1AHandler(BaseHTTPRequestHandler):
             self._send_json(HTTPStatus.NOT_FOUND, {"error": "Job not found"})
             return
         self.server.session.refresh_job(job)
-        if job.media_path is None or not job.media_path.is_file():
+        if job.media_kind != "video" or job.media_path is None or not job.media_path.is_file():
             self._send_json(HTTPStatus.NOT_FOUND, {"error": "Video is not available"})
             return
         try:
@@ -814,6 +1091,27 @@ class H1AHandler(BaseHTTPRequestHandler):
             return
         self.send_response(HTTPStatus.OK)
         self.send_header("Content-Type", mimetypes.guess_type(job.media_path.name)[0] or "video/mp4")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _serve_job_image(self, job_id: str) -> None:
+        job = self.server.session.get_job(job_id)
+        if job is None:
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Job not found"})
+            return
+        self.server.session.refresh_job(job)
+        if job.media_kind != "still" or job.media_path is None or not job.media_path.is_file():
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Still image is not available"})
+            return
+        try:
+            body = job.media_path.read_bytes()
+        except OSError:
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Still image is not available"})
+            return
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", mimetypes.guess_type(job.media_path.name)[0] or "image/png")
         self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
@@ -848,6 +1146,16 @@ class H1AHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802
         path = urlparse(self.path).path
         try:
+            if path == "/api/still/source":
+                filename, body = self._read_multipart_still_source()
+                asset = self.server.session.upload_still_source(filename, body)
+                self._send_json(HTTPStatus.CREATED, {"source": asset.public()})
+                return
+            if path == "/api/still/generate":
+                payload = self._read_json()
+                job = self.server.session.submit_still(payload)
+                self._send_json(HTTPStatus.ACCEPTED, {"job": job.public()})
+                return
             if path == "/api/references":
                 role, filename, body = self._read_multipart_reference()
                 asset = self.server.session.upload_reference(filename, body, role=role)

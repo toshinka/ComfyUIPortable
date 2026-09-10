@@ -1,8 +1,7 @@
 # H3 Model Library / Shortcut Normalization — 2026-09-10 evidence
 
-Status: `PASS` for the H2-INFRA closeout. This is local technical evidence;
-Owner acceptance remains `PENDING`, and the closeout publication state is
-`LOCAL MAIN / PUSH PENDING`.
+Status: `PASS` for the H2-INFRA closeout. This is technical evidence published
+on GitHub `main`; Owner acceptance remains `PENDING`.
 
 ## Scope and result
 

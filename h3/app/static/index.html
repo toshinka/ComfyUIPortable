@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="TEGAKI H3 Native video skin" />
+    <meta name="description" content="TEGAKI H3 Native Video and Still skin" />
     <title>TEGAKI / Video</title>
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
@@ -13,11 +13,17 @@
         <span class="brand-mark">T</span>
         <span>TEGAKI</span>
         <span class="brand-separator">/</span>
-        <span class="brand-mode">Video</span>
+        <span class="brand-mode" id="brand-mode">Video</span>
       </a>
-      <div class="backend-pill connecting" id="backend-pill" aria-live="polite">
-        <span class="status-dot" aria-hidden="true"></span>
-        <span id="backend-label">Connecting</span>
+      <div class="topbar-actions">
+        <div class="mode-switch" role="group" aria-label="Media mode">
+          <button class="mode-button active" id="mode-video" type="button" data-mode="video" aria-pressed="true">Video</button>
+          <button class="mode-button" id="mode-still" type="button" data-mode="still" aria-pressed="false">Still</button>
+        </div>
+        <div class="backend-pill connecting" id="backend-pill" aria-live="polite">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="backend-label">Connecting</span>
+        </div>
       </div>
     </header>
 
@@ -28,9 +34,10 @@
           <div class="preview-empty" id="preview-empty">
             <div class="preview-icon" aria-hidden="true">▶</div>
             <h1 id="preview-heading">Your video will appear here</h1>
-            <p>Enter a prompt and generate a short Native H3 video.</p>
+            <p id="preview-empty-copy">Enter a prompt and generate a short Native H3 video.</p>
           </div>
           <video id="preview-video" class="preview-video" controls playsinline preload="metadata" hidden></video>
+          <img id="preview-image" class="preview-image" alt="Generated Still preview" hidden />
           <div class="preview-overlay" id="preview-overlay" hidden>
             <span id="preview-state">Queued</span>
             <span class="overlay-separator">·</span>
@@ -40,14 +47,14 @@
         <div class="preview-meta" id="preview-meta">No generation in this session.</div>
       </section>
 
-      <aside class="control-column" aria-label="Video controls">
+      <aside class="control-column" id="control-column" aria-label="Video controls">
         <form id="generate-form" novalidate>
           <div class="section-kicker">Create</div>
           <label class="field-label" for="prompt">Prompt</label>
           <textarea id="prompt" name="prompt" rows="5" maxlength="4000" placeholder="Describe the video..." required></textarea>
           <div class="field-hint"><span>Prompt</span><span id="prompt-count">0 / 4000</span></div>
 
-          <section class="reference-card" aria-labelledby="reference-heading">
+          <section class="reference-card" id="video-reference-card" aria-labelledby="reference-heading">
             <div class="reference-heading-row">
               <div>
                 <label class="field-label" id="reference-heading">Reference</label>
@@ -104,6 +111,38 @@
             </div>
           </section>
 
+          <section class="reference-card still-source-card" id="still-source-card" aria-labelledby="still-source-heading" hidden>
+            <div class="reference-heading-row">
+              <div>
+                <label class="field-label" id="still-source-heading">Source Image</label>
+                <div class="reference-helper">Optional source image<br /><span>Use one PNG or JPEG to anchor subject and composition.</span></div>
+              </div>
+            </div>
+            <div class="reference-slot" data-reference-slot="still_source">
+              <div class="reference-slot-heading">
+                <div>
+                  <strong>Source Image</strong>
+                  <span>One image maximum</span>
+                </div>
+                <input id="still-source-file" type="file" accept="image/png,image/jpeg,.png,.jpg,.jpeg" hidden />
+                <button class="quiet-button reference-add" id="still-source-add" type="button">Add image</button>
+              </div>
+              <div class="reference-slot-empty" id="still-source-empty">No Source Image selected.</div>
+              <div class="reference-selected" id="still-source-selected" hidden>
+                <img id="still-source-thumbnail" class="reference-thumbnail" alt="Selected Still Source Image" />
+                <div class="reference-selected-body">
+                  <strong>Source Image</strong>
+                  <span id="still-source-name" class="reference-name"></span>
+                  <div class="reference-actions">
+                    <button class="quiet-button" id="still-source-replace" type="button">Replace</button>
+                    <button class="quiet-button" id="still-source-remove" type="button">Remove</button>
+                  </div>
+                </div>
+              </div>
+              <div class="reference-status" id="still-source-status" aria-live="polite"></div>
+            </div>
+          </section>
+
           <div class="control-grid">
             <div>
               <label class="field-label" for="resolution">Resolution</label>
@@ -111,7 +150,7 @@
                 <option value="608x352">608 x 352</option>
               </select>
             </div>
-            <div>
+            <div id="duration-field">
               <label class="field-label" for="duration">Duration</label>
               <select id="duration" name="duration">
                 <option value="5">5 seconds</option>
@@ -180,7 +219,7 @@
     </section>
 
     <footer class="footer-note">
-      <span>H3 / Native Video</span>
+      <span id="footer-mode">H3 / Native Video</span>
       <span>Model terms are separate from TEGAKI code. See the H3 model acquisition manifest.</span>
     </footer>
 

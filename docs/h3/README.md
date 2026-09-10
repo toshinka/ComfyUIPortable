@@ -19,7 +19,8 @@ Native route; no production Still UI was added and H2A is published on GitHub
 `main`. H2B source-anchored Still feasibility is implemented and locally
 verified through a matched Native pair; its implementation, evidence, and
 docs are published on GitHub `main`. Owner acceptance remains pending.
-H2-INFRA external model library normalization is `CONFIGURED / VERIFIED`:
+H2-INFRA external model library normalization is `CONFIGURED / VERIFIED` and
+`PUBLISHED ON MAIN`:
 the four first-wave heavy Portable copies are removed, the Portable fallback
 namespace is retained without bundled heavy weights, and the local shortcut
 collection is configured. H2B remains the capability gate; Still UI remains

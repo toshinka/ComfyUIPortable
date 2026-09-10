@@ -6,7 +6,7 @@ Status: `PASS` / `CONFIGURED` / `VERIFIED`
 Infrastructure base commit: `bbb9f6720c9a4ed8fb7a029814bd10a5442542fd`
 Closeout commit: this containing closeout commit; the final SHA is reported
 with the Git closeout
-Publication: `LOCAL MAIN / PUSH PENDING`
+Publication: `PUBLISHED ON MAIN`
 Owner acceptance: `PENDING`
 
 ## 1. Outcome
@@ -162,9 +162,8 @@ ignored.
 
 ## 8. Publication and acceptance boundary
 
-H2B implementation/evidence/docs are `PUBLISHED ON MAIN`. This H2-INFRA
-closeout change is local until an Owner-authorized push and remote verification;
-it must not be called public from this local commit. Owner acceptance remains
+H2B implementation/evidence/docs and this H2-INFRA closeout package are
+`PUBLISHED ON MAIN`. Publication does not imply Owner acceptance, which remains
 `PENDING`.
 
 After this closeout, STOP. Do not automatically start Still UI or any later

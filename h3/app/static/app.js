@@ -1,15 +1,19 @@
 import { activeStatusDetail, previewStatusDetail } from "./job-status-copy.js";
 import { resolveHistorySettings } from "./history-settings.js";
 import { resolveHistoryScalars } from "./history-settings.js";
+import { resolveStillHistorySettings } from "./still-history-settings.js";
 import { validateContinuationSource } from "./continuation-source.js";
 
 const state = {
+  mode: "video",
   backend: "CONNECTING",
   activeJob: null,
   previewJob: null,
   references: { start_frame: null, end_frame: null },
   reference: null,
   referenceUploading: { start_frame: false, end_frame: false },
+  stillSource: null,
+  stillSourceUploading: false,
   pollTimer: null,
   backendTimer: null,
 };
@@ -17,6 +21,22 @@ const state = {
 const $ = (id) => document.getElementById(id);
 const form = $("generate-form");
 const promptInput = $("prompt");
+const brandMode = $("brand-mode");
+const modeVideo = $("mode-video");
+const modeStill = $("mode-still");
+const controlColumn = $("control-column");
+const videoReferenceCard = $("video-reference-card");
+const stillSourceCard = $("still-source-card");
+const durationField = $("duration-field");
+const stillSourceFile = $("still-source-file");
+const stillSourceAdd = $("still-source-add");
+const stillSourceReplace = $("still-source-replace");
+const stillSourceRemove = $("still-source-remove");
+const stillSourceEmpty = $("still-source-empty");
+const stillSourceSelected = $("still-source-selected");
+const stillSourceThumbnail = $("still-source-thumbnail");
+const stillSourceName = $("still-source-name");
+const stillSourceStatus = $("still-source-status");
 const referenceFile = $("reference-file");
 const referenceAdd = $("reference-add");
 const referenceReplace = $("reference-replace");
@@ -48,6 +68,7 @@ const queueCount = $("queue-count");
 const historyCount = $("history-count");
 const previewEmpty = $("preview-empty");
 const previewVideo = $("preview-video");
+const previewImage = $("preview-image");
 const previewOverlay = $("preview-overlay");
 const previewState = $("preview-state");
 const previewElapsed = $("preview-elapsed");
@@ -56,6 +77,7 @@ const detailsPanel = $("details-panel");
 const detailsText = $("details-text");
 const historyList = $("history-list");
 const historyActionStatus = $("history-action-status");
+const footerMode = $("footer-mode");
 
 const TERMINAL = new Set(["COMPLETED", "FAILED", "CANCELLED"]);
 
@@ -78,8 +100,34 @@ function setBackendStatus(next, message = "") {
   if (message && !state.activeJob) statusDetail.textContent = message;
 }
 
+function setMode(nextMode) {
+  if (nextMode !== "video" && nextMode !== "still") return;
+  state.mode = nextMode;
+  const still = nextMode === "still";
+  modeVideo.classList.toggle("active", !still);
+  modeStill.classList.toggle("active", still);
+  modeVideo.setAttribute("aria-pressed", String(!still));
+  modeStill.setAttribute("aria-pressed", String(still));
+  brandMode.textContent = still ? "Still" : "Video";
+  document.title = `TEGAKI / ${still ? "Still" : "Video"}`;
+  document.body.dataset.mode = nextMode;
+  videoReferenceCard.hidden = still;
+  stillSourceCard.hidden = !still;
+  durationField.hidden = still;
+  durationInput.disabled = still;
+  controlColumn.setAttribute("aria-label", `${still ? "Still" : "Video"} controls`);
+  previewEmpty.querySelector("#preview-heading").textContent = still
+    ? "Your still will appear here"
+    : "Your video will appear here";
+  $("preview-empty-copy").textContent = still
+    ? "Enter a prompt and generate a Native H3 still."
+    : "Enter a prompt and generate a short Native H3 video.";
+  footerMode.textContent = `H3 / Native ${still ? "Still" : "Video"}`;
+  updateGenerateAvailability();
+}
+
 function updateGenerateAvailability() {
-  const uploading = Object.values(state.referenceUploading).some(Boolean);
+  const uploading = Object.values(state.referenceUploading).some(Boolean) || state.stillSourceUploading;
   generateButton.disabled = !promptInput.value.trim() || uploading || Boolean(state.activeJob && !TERMINAL.has(state.activeJob.state));
 }
 
@@ -122,6 +170,52 @@ const referenceViews = {
     status: endReferenceStatus,
   },
 };
+
+function setStillSourceView(source) {
+  state.stillSource = source;
+  stillSourceSelected.hidden = !source;
+  stillSourceEmpty.hidden = Boolean(source);
+  if (!source) {
+    stillSourceThumbnail.removeAttribute("src");
+    stillSourceName.textContent = "";
+    stillSourceStatus.textContent = "";
+    updateGenerateAvailability();
+    return;
+  }
+  stillSourceThumbnail.src = `${source.preview_url}?v=${encodeURIComponent(source.id)}`;
+  stillSourceName.textContent = source.width && source.height
+    ? `${source.width} x ${source.height}`
+    : "Source image";
+  stillSourceStatus.textContent = "";
+  updateGenerateAvailability();
+}
+
+async function uploadStillSource(file) {
+  if (!file) return;
+  const body = new FormData();
+  body.append("source", file, file.name);
+  state.stillSourceUploading = true;
+  stillSourceAdd.disabled = true;
+  stillSourceReplace.disabled = true;
+  stillSourceStatus.textContent = "Uploading source image…";
+  updateGenerateAvailability();
+  try {
+    const result = await requestJson("/api/still/source", { method: "POST", body });
+    if (!result.source || typeof result.source.id !== "string") {
+      throw new Error("The Still source was not accepted by the upload boundary.");
+    }
+    setStillSourceView(result.source);
+  } catch (error) {
+    stillSourceStatus.textContent = error.message;
+    setDetails(error.message);
+  } finally {
+    state.stillSourceUploading = false;
+    stillSourceAdd.disabled = false;
+    stillSourceReplace.disabled = false;
+    stillSourceFile.value = "";
+    updateGenerateAvailability();
+  }
+}
 
 function setReferenceSlotView(slot, reference) {
   const view = referenceViews[slot];
@@ -207,8 +301,19 @@ function showPreviewJob(job) {
   previewState.textContent = job.label || job.state;
   previewElapsed.textContent = `${Number(job.elapsed_seconds || 0).toFixed(1)}s`;
   previewOverlay.hidden = TERMINAL.has(job.state) && job.state !== "COMPLETED";
-  if (job.state === "COMPLETED" && job.video_url) {
+  const isStill = job.media_kind === "still";
+  if (job.state === "COMPLETED" && isStill && job.image_url) {
     previewEmpty.hidden = true;
+    previewVideo.hidden = true;
+    previewImage.hidden = false;
+    if (!previewImage.src.includes(job.image_url)) {
+      previewImage.src = `${job.image_url}?v=${encodeURIComponent(job.job_id)}`;
+    }
+    const request = job.request || {};
+    previewMeta.textContent = `${routeLabelFor(job)} · Completed in ${Number(job.elapsed_seconds || 0).toFixed(1)}s · ${request.width} x ${request.height}`;
+  } else if (job.state === "COMPLETED" && !isStill && job.video_url) {
+    previewEmpty.hidden = true;
+    previewImage.hidden = true;
     previewVideo.hidden = false;
     if (!previewVideo.src.includes(job.video_url)) {
       previewVideo.src = `${job.video_url}?v=${encodeURIComponent(job.job_id)}`;
@@ -216,6 +321,9 @@ function showPreviewJob(job) {
     }
     previewMeta.textContent = `${routeLabelFor(job)} · Completed in ${Number(job.elapsed_seconds || 0).toFixed(1)}s · ${job.request.width} x ${job.request.height} · ${job.request.duration}s`;
   } else {
+    previewEmpty.hidden = false;
+    previewVideo.hidden = true;
+    previewImage.hidden = true;
     previewMeta.textContent = previewStatusDetail(job);
   }
 }
@@ -255,25 +363,32 @@ async function submitGeneration(event) {
   const seed = seedInput.value.trim() === "" ? "random" : Number(seedInput.value);
   setDetails("");
   try {
-    const body = await requestJson("/api/generate", {
+    const payload = {
+      prompt: promptInput.value,
+      width,
+      height,
+      seed,
+      steps: Number(stepsInput.value),
+    };
+    let endpoint = "/api/generate";
+    if (state.mode === "still") {
+      endpoint = "/api/still/generate";
+      if (state.stillSource) payload.source_id = state.stillSource.id;
+    } else {
+      payload.duration = Number(durationInput.value);
+      payload.references = {
+        start_frame: state.references.start_frame
+          ? { id: state.references.start_frame.id, role: "start_frame" }
+          : null,
+        end_frame: state.references.end_frame
+          ? { id: state.references.end_frame.id, role: "end_frame" }
+          : null,
+      };
+    }
+    const body = await requestJson(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        prompt: promptInput.value,
-        width,
-        height,
-        duration: Number(durationInput.value),
-        seed,
-        steps: Number(stepsInput.value),
-        references: {
-          start_frame: state.references.start_frame
-            ? { id: state.references.start_frame.id, role: "start_frame" }
-            : null,
-          end_frame: state.references.end_frame
-            ? { id: state.references.end_frame.id, role: "end_frame" }
-            : null,
-        },
-      }),
+      body: JSON.stringify(payload),
     });
     setActiveJob(body.job, { selectPreview: true });
     await pollJob();
@@ -332,6 +447,20 @@ async function verifyHistoryReference(reference, slot) {
   }
 }
 
+async function verifyStillSource(source) {
+  let response;
+  try {
+    response = await fetch(source.preview_url, { cache: "no-store" });
+  } catch {
+    throw new Error("Still Source Image could not be verified.");
+  }
+  if (!response.ok) throw new Error("Still Source Image is no longer available.");
+  const contentType = response.headers.get("content-type") || "";
+  if (!/^image\/(png|jpeg)(?:;|$)/i.test(contentType)) {
+    throw new Error("Still Source Image is not a supported PNG or JPEG.");
+  }
+}
+
 function historyScalarOptions() {
   return {
     resolutionValues: Array.from(resolutionInput.options, (option) => option.value),
@@ -352,14 +481,35 @@ function applyHistorySettings(settings) {
   updatePromptCount();
 }
 
+function applyStillHistorySettings(settings) {
+  promptInput.value = settings.prompt;
+  resolutionInput.value = settings.resolution;
+  seedInput.value = settings.seed;
+  stepsInput.value = settings.steps;
+  setStillSourceView(settings.source);
+  updatePromptCount();
+}
+
 async function useHistorySettings(entry) {
   setHistoryActionStatus("Checking saved settings…");
   try {
-    const settings = await resolveHistorySettings(entry, {
-      ...historyScalarOptions(),
-      verifyReference: verifyHistoryReference,
-    });
-    applyHistorySettings(settings);
+    if (entry.media_kind === "still") {
+      const settings = await resolveStillHistorySettings(entry, {
+        resolutionValues: Array.from(resolutionInput.options, (option) => option.value),
+        stepsValue: stepsInput.value,
+        maxPromptLength: promptInput.maxLength,
+        verifySource: verifyStillSource,
+      });
+      setMode("still");
+      applyStillHistorySettings(settings);
+    } else {
+      const settings = await resolveHistorySettings(entry, {
+        ...historyScalarOptions(),
+        verifyReference: verifyHistoryReference,
+      });
+      setMode("video");
+      applyHistorySettings(settings);
+    }
     setHistoryActionStatus("Settings loaded.");
   } catch (error) {
     setHistoryActionStatus(`Settings were not changed. ${error.message}`, true);
@@ -586,6 +736,7 @@ async function prepareContinuation(entry) {
     const sourceUrl = validateContinuationSource(entry);
     const frame = await captureContinuationFrame(sourceUrl);
     const reference = await uploadContinuationReference(frame, entry.job_id);
+    setMode("video");
     applyContinuationSettings({ ...scalarSettings, reference });
     historyActionStatus.dataset.continuationDuration = String(frame.duration);
     historyActionStatus.dataset.continuationCurrentTime = String(frame.currentTime);
@@ -601,7 +752,15 @@ async function prepareContinuation(entry) {
 function createHistoryCard(entry) {
   const card = document.createElement("article");
   card.className = "history-card";
-  if (entry.video_url) {
+  const isStill = entry.media_kind === "still";
+  if (isStill && entry.image_url) {
+    const image = document.createElement("img");
+    image.className = "history-thumb history-image";
+    image.src = entry.image_url;
+    image.alt = "Generated Still result";
+    image.addEventListener("click", () => { showPreviewJob(entry); window.scrollTo({ top: 0, behavior: "smooth" }); });
+    card.append(image);
+  } else if (!isStill && entry.video_url) {
     const video = document.createElement("video");
     video.className = "history-thumb";
     video.src = entry.video_url;
@@ -620,6 +779,9 @@ function createHistoryCard(entry) {
   }
   const content = document.createElement("div");
   content.className = "history-content";
+  const kindBadge = document.createElement("span");
+  kindBadge.className = `history-kind-badge ${isStill ? "still" : "video"}`;
+  kindBadge.textContent = isStill ? "Still" : "Video";
   const open = document.createElement("button");
   open.type = "button";
   const routeLabel = entry.route_label || (
@@ -648,7 +810,7 @@ function createHistoryCard(entry) {
   const actions = document.createElement("div");
   actions.className = "history-actions";
   actions.append(useSettings);
-  if (entry.state === "COMPLETED" && typeof entry.video_url === "string" && entry.video_url.trim()) {
+  if (!isStill && entry.state === "COMPLETED" && typeof entry.video_url === "string" && entry.video_url.trim()) {
     const continueButton = document.createElement("button");
     continueButton.type = "button";
     continueButton.className = "quiet-button history-continue";
@@ -658,7 +820,7 @@ function createHistoryCard(entry) {
     continueButton.addEventListener("click", () => prepareContinuation(entry));
     actions.append(continueButton);
   }
-  content.append(open, prompt, time, actions);
+  content.append(kindBadge, open, prompt, time, actions);
   card.append(content);
   return card;
 }
@@ -712,6 +874,8 @@ async function loadConfig() {
 promptInput.addEventListener("input", updatePromptCount);
 form.addEventListener("submit", submitGeneration);
 cancelButton.addEventListener("click", cancelGeneration);
+modeVideo.addEventListener("click", () => setMode("video"));
+modeStill.addEventListener("click", () => setMode("still"));
 $("random-seed").addEventListener("click", () => { seedInput.value = ""; seedInput.focus(); });
 referenceAdd.addEventListener("click", () => referenceFile.click());
 referenceReplace.addEventListener("click", () => referenceFile.click());
@@ -721,10 +885,16 @@ endReferenceAdd.addEventListener("click", () => endReferenceFile.click());
 endReferenceReplace.addEventListener("click", () => endReferenceFile.click());
 endReferenceFile.addEventListener("change", () => uploadReference("end_frame", endReferenceFile.files?.[0]));
 endReferenceRemove.addEventListener("click", () => setReferenceSlotView("end_frame", null));
+stillSourceAdd.addEventListener("click", () => stillSourceFile.click());
+stillSourceReplace.addEventListener("click", () => stillSourceFile.click());
+stillSourceFile.addEventListener("change", () => uploadStillSource(stillSourceFile.files?.[0]));
+stillSourceRemove.addEventListener("click", () => setStillSourceView(null));
 
 updatePromptCount();
 setReferenceSlotView("start_frame", null);
 setReferenceSlotView("end_frame", null);
+setStillSourceView(null);
+setMode("video");
 loadConfig();
 loadHistory();
 pollBackend();

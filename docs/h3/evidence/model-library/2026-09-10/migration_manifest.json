@@ -4,7 +4,7 @@
   "status": "PASS",
   "infrastructure_base_commit": "bbb9f6720c9a4ed8fb7a029814bd10a5442542fd",
   "closeout_commit": "THIS_CONTAINING_CLOSEOUT_COMMIT",
-  "publication": "LOCAL MAIN / PUSH PENDING",
+  "publication": "PUBLISHED ON MAIN",
   "owner_acceptance": "PENDING",
   "model_downloads": "NONE",
   "removed_portable_bytes": 42470585471,

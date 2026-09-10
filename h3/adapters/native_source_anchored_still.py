@@ -55,6 +55,15 @@ class H3SourceAnchorRequest:
     seed: int = 0
     steps: int = DEFAULT_STEPS
 
+    def public(self) -> dict[str, Any]:
+        return {
+            "prompt": self.prompt,
+            "width": self.width,
+            "height": self.height,
+            "seed": self.seed,
+            "steps": self.steps,
+        }
+
 
 def _coerce_int(value: Any, field: str) -> int:
     if isinstance(value, bool):
