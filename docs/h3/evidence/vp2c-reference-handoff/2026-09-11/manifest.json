@@ -125,7 +125,7 @@
   "publication": {
     "vp2b_closeout_correction": "PUBLISHED ON MAIN at 543d8c2c2817743b10f255c168047e4edd1781a9",
     "vp2c_implementation": "PUBLISHED ON MAIN at 56ad30afa128ef4120f962b6c114fc0e7526aae8",
-    "vp2c_closeout": "LOCAL MAIN / PUSH PENDING",
+    "vp2c_closeout": "PUBLISHED ON MAIN at 1a869125fa95ef4c7b1e94b0ccedab39fc52b4be",
     "owner_acceptance": "PENDING"
   },
   "stop": "Do not run new Browser generation beyond the two required cases after authorization; do not implement Image Prep or Rev.4 in VP2C."

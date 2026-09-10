@@ -51,8 +51,8 @@ multi-reference semantics.
 | Still prompt/seed | `A small friendly red robot standing still in a clean studio, centered, full body, simple background.` / `7189920060476219937` |
 | VRAM/OOM/retry | `Peak/min not instrumented; in-run free sample 1,387,738,700 bytes; OOM 0 / retry 0` |
 | Visual review | `Picture influence OBSERVED; Video influence NOT CONVINCING` |
-| Evidence/docs commit SHA | `LOCAL CLOSEOUT COMMIT (reported after commit)` |
-| Publication | `LOCAL MAIN / PUSH PENDING` for this closeout; implementation is `PUBLISHED ON MAIN` |
+| Evidence/docs commit SHA | `1a869125fa95ef4c7b1e94b0ccedab39fc52b4be` |
+| Publication | `PUBLISHED ON MAIN` at `1a869125fa95ef4c7b1e94b0ccedab39fc52b4be`; implementation is `PUBLISHED ON MAIN` |
 | Image Prep | `NOT IMPLEMENTED` |
 | LoRA | `UNCHANGED` |
 | Multi-reference | `NOT IMPLEMENTED` |
@@ -143,15 +143,14 @@ authorized generated media files were preserved locally for evidence only.
 ## Publication and next gate
 
 The implementation commit is `56ad30afa128ef4120f962b6c114fc0e7526aae8`,
-published on `main` per the current repository baseline. This evidence and
-closeout update remains local until Owner performs the push; therefore its
-publication state is `LOCAL MAIN / PUSH PENDING`. Implementation publication,
-technical verification, Browser acceptance, visual review, and Owner
-acceptance remain separate gates.
+and the evidence/closeout commit is
+`1a869125fa95ef4c7b1e94b0ccedab39fc52b4be`; both are published on `main`.
+Implementation publication, technical verification, Browser acceptance,
+visual review, and Owner acceptance remain separate gates.
 
 The next bounded gate is Owner hands-on evaluation of the exact local results.
-Only after that may Web-GPT decide Rev.4 ordering. Image Prep remains a
-roadmap note only; no Rev.4 document is authored here.
+Rev.4 is now the separate current H3 roadmap; Image Prep remains a roadmap
+track only and is not implemented by VP2C.
 
 Owner acceptance: `PENDING`
 

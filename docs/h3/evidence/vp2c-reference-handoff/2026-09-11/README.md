@@ -116,7 +116,7 @@ Report: [VP2C_REFERENCE_HANDOFF_AND_DND_REPORT.md](../../../reports/VP2C_REFEREN
 
 Implementation: `PUBLISHED ON MAIN` at `56ad30afa128ef4120f962b6c114fc0e7526aae8`
 
-Closeout publication: `LOCAL MAIN / PUSH PENDING`
+Closeout publication: `PUBLISHED ON MAIN` at `1a869125fa95ef4c7b1e94b0ccedab39fc52b4be`
 
 Owner acceptance: `PENDING`
 

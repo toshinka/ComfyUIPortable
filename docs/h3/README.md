@@ -4,7 +4,7 @@
 
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
 将来の実装棚とReference Implementation evidenceを一か所から辿るための
-document hub です。現在は **VP2C / Reference Handoff and scoped Drag-and-Drop — Browser Acceptance PASS WITH LIMITS / Closeout LOCAL** であり、
+document hub です。現在は **Rev.4 / H3 Roadmap — CURRENT MASTER / DOCS-ONLY / PUBLICATION PENDING** であり、
 H1C / Frame-Bridged Continuation は回帰基盤として保持し、
 H1B.1 / Start + End Frame and Native FL2VA vertical slice + UX P0/P1/P2
 Fixes は履歴と回帰対象として保持します。H0/H0.1/H1A/H1B の model
@@ -57,8 +57,11 @@ pass, and the authorized Browser run completed exactly one Still and one
 Reference Video at `http://127.0.0.1:8190/`. Character File D&D passed; Motion
 File D&D was limited by safe CUA target acceptance, while the exact Motion
 picker route passed and supplied the Reference run. VP2C implementation is
-published on `main` at `56ad30afa128ef4120f962b6c114fc0e7526aae8`; closeout
-docs remain `LOCAL MAIN / PUSH PENDING`, and Owner acceptance remains pending.
+published on `main` at `56ad30afa128ef4120f962b6c114fc0e7526aae8`; VP2C
+closeout is published on `main` at
+`1a869125fa95ef4c7b1e94b0ccedab39fc52b4be`. Rev.4 is the current master
+roadmap and remains `LOCAL MAIN / PUSH PENDING` until the new commit is pushed;
+Owner acceptance remains pending.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
@@ -69,6 +72,8 @@ docs remain `LOCAL MAIN / PUSH PENDING`, and Owner acceptance remains pending.
 |---|---|---|---|
 | `GITHUB_H3.txt` | H3 External AI Entry | CURRENT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/GITHUB_H3.txt` |
 | `docs/h3/README.md` | H3 document hub | CURRENT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/README.md` |
+| `MiniMax H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md` | Current H3 master roadmap | CURRENT / DOCS-ONLY | `https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md` |
+| `MiniMax H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md` | Historical H3 master roadmap | HISTORICAL / SUPERSEDED | `https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md` |
 | `docs/h3/research/H3_CURRENT_LANDSCAPE.md` | Current candidate landscape summary | CURRENT RESEARCH | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/research/H3_CURRENT_LANDSCAPE.md` |
 | `docs/h3/references/H3_REFERENCE_INVENTORY.md` | Candidate and provenance inventory | CURRENT RESEARCH | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/references/H3_REFERENCE_INVENTORY.md` |
 | `docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md` | Rev.3 GUI principle summary | CURRENT DESIGN SUMMARY | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md` |
@@ -128,7 +133,11 @@ docs remain `LOCAL MAIN / PUSH PENDING`, and Owner acceptance remains pending.
 
 ## External master roadmap
 
-The current local Rev.3 master is:
+The current local Rev.4 master is:
+
+D:/GitHub/tegaki/MiniMax H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md
+
+The historical Rev.3 master is:
 
 D:/GitHub/tegaki/MiniMax H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
 
@@ -139,14 +148,18 @@ D:/GitHub/tegaki/MiniMax H3/Archive/H3_VIDEO導入・Still対応基盤・動画�
 The two files are byte-identical. The Archive source was not deleted, moved,
 renamed, merged, or edited.
 
-Canonical GitHub URL:
+Current Rev.4 canonical GitHub URL:
+
+https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md
+
+Historical Rev.3 canonical GitHub URL:
 
 https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
 
-The root master path is present in the local `origin/main` tracking ref at
-commit `47056a7c972f187f0ce9686db1ae7bb93ce8aca3`. This confirms the repository
-publication state represented by `origin/main`; it does not imply Owner
-acceptance or final production acceptance.
+Rev.4 is the current master roadmap; its publication is pending the new docs
+commit and remote check. Rev.3 remains historical and the root/Archive sources
+are byte-identical. Publication does not imply Owner acceptance or final
+production acceptance.
 
 The current `GITHUB_MANGA.txt` is the canonical entry for the Manga Authoring
 line. `GITHUB_ComfyUI.txt` is a thin compatibility router to the separate Manga
@@ -320,15 +333,16 @@ steps`.
 ## Review recipe
 
 1. Start at `GITHUB_H3.txt`.
-2. Read the current Rev.3 master and confirm the Archive source is preserved.
-3. Read the landscape and inventory together; do not treat a candidate as
+2. Read the current Rev.4 master and confirm the Rev.3 root/Archive sources are preserved.
+3. Read the historical Rev.3 master for inherited GUI and phase principles.
+4. Read the landscape and inventory together; do not treat a candidate as
    adopted because it appears in either document.
-4. Check licenses and model provenance before any code reuse or installation.
-5. Confirm that H3 Video remains first, H3 Still is an acceptance capability,
+5. Check licenses and model provenance before any code reuse or installation.
+6. Confirm that H3 Video remains first, H3 Still is an acceptance capability,
    and H3 Manga remains later research.
-6. Review the visual language and Astra handoff as review boundaries, not
+7. Review the visual language and Astra handoff as review boundaries, not
    implementation instructions.
-7. Review the H1A/H1B implementation boundary and confirm that existing
+7a. Review the H1A/H1B implementation boundary and confirm that existing
    Illustrious files, shared ComfyUI core/frontend, and Manga runtime were not changed.
 8. Read the H0.1 model manifest and generation evidence; verify that generation,
    startup, blocked, owner-action-required, and not-tested states are not conflated.
@@ -368,9 +382,10 @@ steps`.
     handoff, opaque public asset metadata, source preservation, active-job and
     atomic failure guards, and the two scoped Reference-slot D&D paths. Keep
     the real Browser acceptance and Owner acceptance separate from local tests.
-21. Stop after VP2C; do not infer Owner acceptance, production identity locking,
-    Image Prep, multiple references, audio conditioning, Segment, Studio, or
-    production deployment from this evidence, and do not start Rev.4 work.
+21. Stop after VP2C review; do not infer Owner acceptance, production identity
+    locking, Image Prep, multiple references, audio conditioning, Segment,
+    Studio, or production deployment from this evidence, and do not start IP1
+    from the roadmap publication.
 
 ## Evidence vocabulary
 

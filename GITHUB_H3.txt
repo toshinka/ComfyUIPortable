@@ -6,7 +6,8 @@ Updated: 2026-09-11 JST
 
 Current Stage
 -------------
-VP2C / Reference Handoff and scoped D&D — ACCEPTANCE VERIFIED WITH LIMITS / CLOSEOUT LOCAL
+R4 / H3 Roadmap Rev.4 — CURRENT MASTER / DOCS-ONLY / PUBLICATION PENDING
+VP2C / Reference Handoff and scoped D&D — ACCEPTANCE VERIFIED WITH LIMITS / PUBLISHED ON MAIN
 VP2B / Experimental R2V Playground — CLOSEOUT PUBLISHED ON MAIN
 H1C / Frame-Bridged Continuation: IMPLEMENTED / VERIFIED (regression foundation)
 Groundwork: PASS (historical)
@@ -105,7 +106,8 @@ VP2C Motion File D&D: PASS WITH LIMITS; actual File drag source verified, safe C
 VP2C Motion picker route: PASS; exact authorized MP4 supplied the Reference run
 VP2C Still / Reference / History handoff: PASS; no auto-generation
 VP2C implementation publication: PUBLISHED ON MAIN at 56ad30afa128ef4120f962b6c114fc0e7526aae8
-VP2C closeout publication: LOCAL MAIN / PUSH PENDING
+VP2C closeout publication: PUBLISHED ON MAIN at 1a869125fa95ef4c7b1e94b0ccedab39fc52b4be
+R4 publication: LOCAL MAIN / PUSH PENDING
 H3 external model library: CONFIGURED / VERIFIED
 Portable duplicate heavy weights: REMOVED
 Portable fallback namespace: RETAINED / EMPTY OF FIRST-WAVE HEAVY WEIGHTS
@@ -120,7 +122,8 @@ Read Order
 ----------
 1. ComfyUIPortable/GITHUB_H3.txt
 2. ComfyUIPortable/docs/h3/README.md
-3. MiniMax H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
+3. MiniMax H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md
+3a. MiniMax H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md (historical)
 4. ComfyUIPortable/docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md
 5. ComfyUIPortable/docs/h3/plans/H3_GUI_VISUAL_LANGUAGE_AND_BRAND.md
 6. ComfyUIPortable/docs/h3/research/H3_CURRENT_LANDSCAPE.md
@@ -168,24 +171,29 @@ Read Order
 
 Master Roadmap
 --------------
-Current local Rev.3 master:
+Current local Rev.4 master:
+D:\GitHub\tegaki\MiniMax H3\H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md
+
+Historical Rev.3 master:
 D:\GitHub\tegaki\MiniMax H3\H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
 
 Preserved Archive source:
 D:\GitHub\tegaki\MiniMax H3\Archive\H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
 
-The root master and Archive source are byte-identical. Archive was preserved;
+The Rev.3 root master and Archive source are byte-identical. Archive was preserved;
 it was not deleted, moved, renamed, or edited.
 
 Canonical GitHub URL:
+https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md
+
+Historical Rev.3 canonical URL:
 https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
 
-The root master path is present in the local `origin/main` tracking ref at
-commit `47056a7c972f187f0ce9686db1ae7bb93ce8aca3`. This confirms the repository
-publication state represented by `origin/main`; it does not imply Owner
-acceptance or final production acceptance.
+The Rev.4 file and pointer updates are prepared locally for publication. The
+Rev.3 root and Archive source remain byte-identical and historical; their
+preservation does not imply Owner acceptance or final production acceptance.
 
-Rev.3 direction, summarized:
+Rev.3 direction, summarized for historical continuity:
 - H3 VIDEO first, using existing implementations where useful.
 - Keep the initial base able to accept H3 Still routes and ordered references.
 - Grow toward Studio / Storyboard / Previz only after a practical video path.
@@ -205,7 +213,8 @@ H3 Document Map
 - ComfyUIPortable/docs/h3/research/
 - ComfyUIPortable/docs/h3/evidence/
 - ComfyUIPortable/docs/h3/reports/
-- MiniMax H3/<Rev.3 current master>
+- MiniMax H3/<Rev.4 current master>
+- MiniMax H3/<Rev.3 historical master>
 - ComfyUIPortable/h3/
 - ComfyUIPortable/workflows/h3/
 
@@ -236,17 +245,27 @@ uploaded runtime inputs, and model weights remain ignored.
 
 Current Review Gate
 -------------------
-VP2C Reference Handoff and scoped Drag-and-Drop — implementation and Browser gate
+R4 H3 Roadmap Rev.4 — docs-only publication and canonical pointer gate
 
 VP2C adds no new generation model or route. It implements same-session completed
 Still→Character and Video→Motion History promotion through opaque job IDs, safe
 copy-only staging, provenance metadata, and atomic UI restore on failure. The
 existing Reference Character Image and Motion Video slots now accept one local
 browser File through scoped drag-and-drop while preserving Add/Replace/Remove.
-Local server/UI and H3 regression checks pass, and isolated Browser UI smoke
-shows the two dropzones with Reference-only visibility. Exact local PNG/MP4
-upload and the required one Still plus one Reference Video generation remain
-blocked pending action-time authorization; Owner acceptance is pending.
+Local server/UI and H3 regression checks pass. The authorized Browser run
+completed exactly one Still and one Reference Video; Character File D&D passed,
+Motion File D&D remains PASS WITH LIMITS because safe CUA did not reproduce
+target-slot acceptance, and the exact Motion picker route supplied the
+Reference run. VP2C closeout is PUBLISHED ON MAIN at `1a869125`; Owner
+acceptance remains pending.
+
+Rev.4 records the verified Video/Still/R2V foundation, formalizes Image Prep as
+a planned Native-first track, and keeps multi-character semantics, spatial
+hard binding, LoRA runtime compatibility, Shot, Storyboard, Timeline, Previz,
+and Manga integration outside the current implementation contract. IP1 —
+Native Image Prep / Reference Edit Feasibility — is the only immediate next
+implementation gate. The Rev.4 file is prepared locally; publication remains
+LOCAL MAIN / PUSH PENDING until the new commit is pushed and remotely checked.
 
 H1B.1 remains implemented as the regression foundation and has Start-only,
 Start+End, End-only, and text-only browser completion results plus Native media
@@ -291,9 +310,10 @@ Publication Note
 ----------------
 The H1A files are published on `main` in implementation commit
 `925596b9d7fbd731290fe9869ea34a0006249130`. H1B implementation and evidence
-are recorded in the H1B report and dated evidence directory. The current Rev.3
-root path is present in `origin/main` at `47056a7c972f187f0ce9686db1ae7bb93ce8aca3`.
-Publication does not imply Owner acceptance. Historical H0/H0.1/H1A reports
+are recorded in the H1B report and dated evidence directory. The Rev.3 root
+and Archive paths remain preserved as historical evidence. Rev.4 is the current
+master roadmap; its publication is tracked separately below. Publication does
+not imply Owner acceptance. Historical H0/H0.1/H1A reports
 remain historical records and are not rewritten to claim later work. H1B.1
 implementation is recorded in `48adcb27cfc24d9c0f0e2b0b27f2284621a4a18d`; the
 dated evidence/report commit is recorded with the evidence package. The H1B.1
@@ -358,6 +378,7 @@ VP2C implementation is published on `main` at
 completed exactly one Still and one Reference Video at the local H3 URL.
 Character File D&D passed; Motion File D&D remains `PASS WITH LIMITS` because
 safe CUA did not reproduce target-slot acceptance, while the exact Motion
-picker route passed and supplied the Reference run. Closeout evidence and
-canonical updates are `LOCAL MAIN / PUSH PENDING`; Owner acceptance remains
-`PENDING`.
+picker route passed and supplied the Reference run. VP2C closeout is published
+on `main` at `1a869125fa95ef4c7b1e94b0ccedab39fc52b4be`. Rev.4 canonical
+updates remain `LOCAL MAIN / PUSH PENDING` until the new commit is pushed and
+checked; Owner acceptance remains `PENDING`.
