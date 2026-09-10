@@ -6,7 +6,7 @@ Updated: 2026-09-11 JST
 
 Current Stage
 -------------
-IP1 / Native Image Prep / Reference Edit Feasibility — FEASIBLE WITH LIMITS / NATIVE-ONLY / NO BROWSER UI
+IP1 / Native Image Prep / Reference Edit Feasibility — FEASIBLE WITH LIMITS / NATIVE-ONLY / NO BROWSER UI / PUBLISHED ON MAIN
 R4 / H3 Roadmap Rev.4 — CURRENT MASTER / DOCS-ONLY / PUBLISHED ON MAIN
 VP2C / Reference Handoff and scoped D&D — ACCEPTANCE VERIFIED WITH LIMITS / PUBLISHED ON MAIN
 VP2B / Experimental R2V Playground — CLOSEOUT PUBLISHED ON MAIN
@@ -109,11 +109,14 @@ VP2C Still / Reference / History handoff: PASS; no auto-generation
 VP2C implementation publication: PUBLISHED ON MAIN at 56ad30afa128ef4120f962b6c114fc0e7526aae8
 VP2C closeout publication: PUBLISHED ON MAIN at 1a869125fa95ef4c7b1e94b0ccedab39fc52b4be
 R4 publication: PUBLISHED ON MAIN at 3880534af0e26b970a8fd0a1ba564af6bc88c15e
-Current origin/main: df0ad3b389db5149e1b6ab1edb24c568c147a10e (later Manga-only descendant)
+Current origin/main at IP1 reconciliation: b5c79b85ed2fdeec1bf30254945db569666ecfa4 (later Manga-only descendant)
 IP1 Native source audit: PASS
 IP1 classification: FEASIBLE WITH LIMITS
 IP1 Browser Prep/Edit: NOT IMPLEMENTED
 IP1 recommendation: IP2 Browser Prep/Edit lens
+IP1 implementation publication: PUBLISHED ON MAIN at d8b1a7ca070db1fe78b6d07ef0db01500e88c828 (published history; this historical commit also contains concurrent Manga material)
+IP1 H3 closeout publication: PUBLISHED ON MAIN at 35e49859f3beb3bd0b4b1b2d2dd793897dc6b479 (H3-only relative to d8b1a7ca)
+IP1 publication wording: reconciled in a later H3 docs-only descendant
 H3 external model library: CONFIGURED / VERIFIED
 Portable duplicate heavy weights: REMOVED
 Portable fallback namespace: RETAINED / EMPTY OF FIRST-WAVE HEAVY WEIGHTS

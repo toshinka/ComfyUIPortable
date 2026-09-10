@@ -8,8 +8,10 @@ Recommendation: `IP2 Browser Prep/Edit lens` — not implemented in this Card.
 
 Owner acceptance: `PENDING`
 
-Publication: `LOCAL` until the bounded IP1 commit is pushed and checked on
-GitHub `main`.
+Publication: `PUBLISHED ON MAIN` at the H3-only IP1 closeout
+`35e49859f3beb3bd0b4b1b2d2dd793897dc6b479`; the package first entered published
+history at `d8b1a7ca070db1fe78b6d07ef0db01500e88c828`. The current main at
+reconciliation is `b5c79b85ed2fdeec1bf30254945db569666ecfa4`.
 
 Report: [IP1_NATIVE_IMAGE_PREP_REFERENCE_EDIT_FEASIBILITY_REPORT.md](../../../reports/IP1_NATIVE_IMAGE_PREP_REFERENCE_EDIT_FEASIBILITY_REPORT.md)
 

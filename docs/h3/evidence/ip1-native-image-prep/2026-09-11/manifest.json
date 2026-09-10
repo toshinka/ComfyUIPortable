@@ -6,8 +6,11 @@
   "classification": "FEASIBLE WITH LIMITS",
   "recommendation": "IP2 Browser Prep/Edit lens",
   "publication": {
-    "status": "LOCAL",
-    "owner_push_required": true,
+    "status": "PUBLISHED ON MAIN",
+    "published_package_commit": "d8b1a7ca070db1fe78b6d07ef0db01500e88c828",
+    "published_closeout_commit": "35e49859f3beb3bd0b4b1b2d2dd793897dc6b479",
+    "current_main_at_reconciliation": "b5c79b85ed2fdeec1bf30254945db569666ecfa4",
+    "owner_push_required": false,
     "owner_acceptance": "PENDING"
   },
   "native_audit": {
