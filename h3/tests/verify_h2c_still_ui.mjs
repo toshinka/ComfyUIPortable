@@ -105,6 +105,17 @@ const promptOnly = await resolveStillHistorySettings(
 );
 assert.equal(promptOnly.source, null);
 
+const losslessSeed = "4121755688520062686";
+const lossless = await resolveStillHistorySettings(
+  {
+    media_kind: "still",
+    request: { ...request, seed: losslessSeed },
+    source,
+  },
+  { resolutionValues: ["608x352"], stepsValue: "20", verifySource: async () => {} },
+);
+assert.equal(lossless.seed, losslessSeed);
+
 await assert.rejects(
   resolveStillHistorySettings(
     { media_kind: "still", request, source },

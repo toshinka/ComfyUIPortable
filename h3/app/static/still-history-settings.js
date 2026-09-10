@@ -47,6 +47,29 @@ function sourceValue(entry, request) {
   return null;
 }
 
+function normalizeSeed(value) {
+  let text;
+  if (typeof value === "number") {
+    if (!Number.isSafeInteger(value) || value < 0) {
+      invalidSettings("Seed cannot be restored as a safe numeric value.");
+    }
+    text = String(value);
+  } else if (typeof value === "string" && /^\d+$/.test(value)) {
+    text = value;
+  } else {
+    invalidSettings("Seed cannot be restored as a safe numeric value.");
+  }
+  try {
+    const seed = BigInt(text);
+    if (seed < 0n || seed > 9223372036854775807n) {
+      invalidSettings("Seed cannot be restored as a safe numeric value.");
+    }
+    return seed.toString();
+  } catch {
+    invalidSettings("Seed cannot be restored as a safe numeric value.");
+  }
+}
+
 export async function resolveStillHistorySettings(entry, {
   resolutionValues = [],
   stepsValue,
@@ -77,9 +100,7 @@ export async function resolveStillHistorySettings(entry, {
   if (Object.prototype.hasOwnProperty.call(request, "duration")) {
     invalidSettings("Still Duration metadata is invalid.");
   }
-  if (typeof request.seed !== "number" || !Number.isSafeInteger(request.seed) || request.seed < 0) {
-    invalidSettings("Seed cannot be restored as a safe numeric value.");
-  }
+  const seed = normalizeSeed(request.seed);
   if (typeof request.steps !== "number" || !Number.isSafeInteger(request.steps) || request.steps < 0) {
     invalidSettings("Steps metadata is invalid.");
   }
@@ -96,7 +117,7 @@ export async function resolveStillHistorySettings(entry, {
   return {
     prompt: request.prompt,
     resolution,
-    seed: String(request.seed),
+    seed,
     steps: String(request.steps),
     source,
   };

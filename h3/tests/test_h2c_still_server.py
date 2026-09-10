@@ -132,6 +132,7 @@ class H2CStillServerTests(unittest.TestCase):
         self.assertEqual(public["route_label"], "Text only")
         self.assertIsNone(public["source"])
         self.assertIsNone(public["request"]["source_id"])
+        self.assertEqual(public["request"]["seed"], "123")
         self.assertIsNone(public["video_url"])
         self.assertIsNone(public["image_url"])
         self.assertEqual(session.backend.graph["131"]["inputs"]["length"], 5)
@@ -146,6 +147,7 @@ class H2CStillServerTests(unittest.TestCase):
         self.assertEqual(job.route, "native_source_anchored_still")
         self.assertEqual(job.public()["route_label"], "Source Image")
         self.assertEqual(job.public()["source"]["id"], source.source_id)
+        self.assertEqual(job.public()["request"]["seed"], "456")
         self.assertEqual(
             session.backend.graph["133"]["inputs"]["image"],
             f"inputs/{source.filename}",

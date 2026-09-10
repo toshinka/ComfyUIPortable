@@ -360,7 +360,10 @@ async function submitGeneration(event) {
   event.preventDefault();
   if (!promptInput.value.trim()) return;
   const [width, height] = resolutionInput.value.split("x").map(Number);
-  const seed = seedInput.value.trim() === "" ? "random" : Number(seedInput.value);
+  const seedText = seedInput.value.trim();
+  const seed = state.mode === "still"
+    ? (seedText === "" ? "random" : seedText)
+    : (seedText === "" ? "random" : Number(seedText));
   setDetails("");
   try {
     const payload = {

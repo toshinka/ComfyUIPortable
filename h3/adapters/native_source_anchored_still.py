@@ -60,7 +60,8 @@ class H3SourceAnchorRequest:
             "prompt": self.prompt,
             "width": self.width,
             "height": self.height,
-            "seed": self.seed,
+            # Keep the 64-bit seed lossless across the JavaScript boundary.
+            "seed": str(self.seed),
             "steps": self.steps,
         }
 
