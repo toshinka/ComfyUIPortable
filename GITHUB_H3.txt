@@ -6,7 +6,7 @@ Updated: 2026-09-10 JST
 
 Current Stage
 -------------
-VP2A / Native Ref2VA / R2V Feasibility — Acquisition Gate
+VP2A / Native Ref2VA / R2V Feasibility — R1 Native Feasibility Closeout
 H1C / Frame-Bridged Continuation: IMPLEMENTED / VERIFIED (regression foundation)
 Groundwork: PASS (historical)
 Semantic Alignment: PASS (historical)
@@ -77,11 +77,14 @@ VP1 safe Video options: 608 x 352 or 736 x 416; 5 or 15 seconds
 VP1 Still isolation: VERIFIED BROWSER UI (608 x 352 only; Duration hidden)
 VP1 evidence/report: CURRENT REVIEW EVIDENCE; PUBLISHED ON MAIN
 VP1 publication: PUBLISHED ON MAIN (commit 41da0bf804d049adc40e2ae2d5abfdd59eabc703)
-VP2A native Ref2VA source contract: AUDITED; runtime NOT TESTED
-VP2A classification: ACQUISITION REQUIRED
-VP2A Ref2VA model: NOT PRESENT / NOT ACQUIRED
-VP2A Picture-only feasibility: NOT TESTED (blocked before acquisition)
-VP2A Picture + Video feasibility: NOT TESTED (blocked before acquisition)
+VP2A native Ref2VA source contract: AUDITED / RUNTIME VERIFIED
+VP2A-R1 classification: FEASIBLE WITH LIMITS
+VP2A acquisition-gate publication: PUBLISHED ON MAIN (commit e4e078490cd2f96a953e6261399f268652d49c04)
+VP2A Ref2VA model: ACQUIRED / SHA-256 VERIFIED / EXTERNAL STORE
+VP2A Picture-only feasibility: VERIFIED LOCAL GENERATION; PICTURE REF INFLUENCE OBSERVED
+VP2A Picture + Video feasibility: VERIFIED LOCAL GENERATION; PICTURE REF INFLUENCE NOT CONVINCING; VIDEO REF INFLUENCE OBSERVED
+VP2A 12GB runtime: VERIFIED WITH NEAR-LIMIT HEADROOM; OOM 0 / RETRY 0
+VP2A standard FL2VA/T2V transition: BUILT-IN MODEL TRANSITION PASS
 VP2A Browser R2V: NOT IMPLEMENTED
 H3 external model library: CONFIGURED / VERIFIED
 Portable duplicate heavy weights: REMOVED
@@ -283,9 +286,14 @@ Owner acceptance remains `PENDING`.
 
 VP1 implementation, evidence, and canonical publication wording are recorded
 as published on `main` at `41da0bf804d049adc40e2ae2d5abfdd59eabc703`.
-VP2A is the current gate. Its Native `MiniMaxH3ReferenceToVideo` source
-contract was audited, but the exact Ref2VA artifact is absent from the
-approved external H3 model locations and no explicit Owner authorization for
-that artifact is recorded. VP2A therefore stops before download and generation
-with `ACQUISITION REQUIRED`; no adapter, Browser R2V UI, model, or MP4 was
-added. Owner acceptance remains `PENDING`.
+VP2A acquisition-gate evidence/report is published on `main` at
+`e4e078490cd2f96a953e6261399f268652d49c04`; that historical stop remains
+preserved. Owner later explicitly authorized the exact Ref2VA artifact for
+acquisition, local use, external placement, and hash verification in the
+current Web-GPT handoff. VP2A-R1 acquired and verified the model, completed
+Picture-only and Picture+Video Native generation, and completed exactly one
+standard FL2VA/T2V transition. Current R1 implementation/evidence/docs are
+`LOCAL MAIN / PUSH PENDING` with no model/MP4/runtime input committed.
+Picture-only reference influence is `OBSERVED`; the matched Picture+Video row
+records `PICTURE REF INFLUENCE NOT CONVINCING` and `VIDEO REF INFLUENCE
+OBSERVED`. Owner acceptance remains `PENDING`.

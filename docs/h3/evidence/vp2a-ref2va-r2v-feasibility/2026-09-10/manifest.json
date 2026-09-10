@@ -1,71 +1,82 @@
 {
   "schema": "tegaki.h3.vp2a.ref2va-r2v-feasibility.evidence/v1",
-  "card": "VP2A",
-  "title": "Native Ref2VA / R2V Feasibility Single Picture + Single Motion Video Model Acquisition Gate",
+  "card": "VP2A-R1",
+  "title": "Native Ref2VA / R2V Feasibility: exact model acquisition, Picture, motion Video, and runtime transition",
   "evidence_date": "2026-09-10",
-  "captured_at": "2026-09-10T20:25:18+09:00",
-  "classification": "ACQUISITION REQUIRED",
+  "captured_at": "2026-09-10T21:27:43+09:00",
+  "completed_at": "2026-09-10T21:36:53+09:00",
+  "classification": "FEASIBLE WITH LIMITS",
+  "previous_acquisition_gate_publication": {
+    "status": "PUBLISHED ON MAIN",
+    "commit": "e4e078490cd2f96a953e6261399f268652d49c04"
+  },
+  "r1_publication": "LOCAL MAIN / PUSH PENDING",
   "status": [
     "NATIVE REF2VA SOURCE CONTRACT AUDITED",
-    "REF2VA MODEL NOT FOUND",
-    "OWNER LICENSE/AUTHORIZATION REQUIRED",
-    "PICTURE STAGE NOT TESTED",
-    "VIDEO STAGE NOT TESTED",
+    "EXACT REF2VA MODEL ACQUIRED / HASH VERIFIED / EXTERNAL STORE",
+    "PICTURE-ONLY VERIFIED LOCAL GENERATION",
+    "PICTURE+VIDEO VERIFIED LOCAL GENERATION",
+    "STANDARD FL2VA/T2V TRANSITION VERIFIED LOCAL GENERATION",
+    "12GB VERIFIED WITH NEAR-LIMIT HEADROOM",
     "BROWSER R2V NOT IMPLEMENTED",
     "OWNER ACCEPTANCE PENDING"
   ],
-  "base_remote_main": "41da0bf804d049adc40e2ae2d5abfdd59eabc703",
+  "base_remote_main": "e4e078490cd2f96a953e6261399f268652d49c04",
   "vp1_publication": {
     "status": "PUBLISHED ON MAIN",
     "commit": "41da0bf804d049adc40e2ae2d5abfdd59eabc703",
-    "live_external_fetch": "NOT VERIFIED IN THIS RUN; git ls-remote connection failed"
+    "live_external_fetch": "NOT VERIFIED IN THIS RUN; git ls-remote connection failed in the previous gate"
   },
   "owner_acceptance": "PENDING",
+  "owner_acquisition_authorization": {
+    "status": "RECORDED",
+    "basis": "explicit Owner authorization in current Web-GPT handoff",
+    "scope": "exact Ref2VA artifact acquisition, local use, canonical external placement, hash verification, and Native feasibility testing",
+    "third_party_click_through_or_unrelated_license_authorized": false
+  },
   "license_gate": {
-    "status": "OWNER ACTION REQUIRED",
+    "status": "RESOLVED FOR EXACT ARTIFACT; NO NEW TERMS ACCEPTED",
     "terms": "MiniMax H3 Community License Agreement",
     "local_evidence": [
       "docs/h3/evidence/H3_MODEL_ACQUISITION_MANIFEST.md",
       "docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_GENERATION_EVALUATION_REPORT.md"
     ],
-    "recorded_authorization_for_exact_ref2va": false,
-    "download_or_terms_acceptance_attempted": false
+    "recorded_authorization_for_exact_ref2va": true,
+    "third_party_clickthrough_or_unrelated_license": "NOT AUTHORIZED / NOT USED"
   },
   "model": {
     "filename": "minimax_h3_ref2va_pruned_int8_convrot.safetensors",
     "role": "Native MiniMax H3 Ref2VA / R2V diffusion model",
     "official_source_repository": "https://huggingface.co/Comfy-Org/MiniMax-H3",
     "source_subpath": "diffusion_models/minimax_h3_ref2va_pruned_int8_convrot.safetensors",
+    "source_revision": "a98869194787969724c7425d95d0ed73ce9202af",
     "expected_bytes": 20970379616,
+    "observed_bytes": 20970379616,
     "expected_sha256": "9255F52B6677845AD238F20DFAAFA94727053694127AB7F255C048F0F9365779",
+    "observed_sha256": "9255F52B6677845AD238F20DFAAFA94727053694127AB7F255C048F0F9365779",
     "canonical_destination": "E:\\Data\\Models\\StableDiffusion\\minimaxH3\\diffusion_models\\minimax_h3_ref2va_pruned_int8_convrot.safetensors",
-    "portable_destination_forbidden": "h3/model_store/",
-    "acquisition": "NOT ACQUIRED",
-    "hash_verification": "NOT APPLICABLE; file absent"
+    "acquisition": "ACQUIRED ONCE; VERIFIED BEFORE FINAL RENAME",
+    "hash_verification": "PASS",
+    "portable_duplicate": false
   },
-  "path_checks": [
-    {
-      "scope": "E:\\Data\\Models\\StableDiffusion\\minimaxH3\\diffusion_models",
-      "directory_exists": true,
-      "exact_file_exists": false,
-      "observed_directory_note": "Existing diffusion directory listing contained minimax_h3_fl2va_pruned_int8_convrot.safetensors only",
-      "observed_fl2va_bytes": 20970379616
+  "acquisition_checks": {
+    "official_head": {
+      "repo_commit": "a98869194787969724c7425d95d0ed73ce9202af",
+      "linked_size": 20970379616,
+      "linked_etag_sha256": "9255f52b6677845ad238f20dfaafa94727053694127ab7f255c048f0f9365779"
     },
-    {
-      "scope": "E:\\Data\\Models\\StableDiffusion\\minimaxH3 recursive exact filename check",
-      "directory_exists": true,
-      "exact_filename_hits": 0
-    },
-    {
-      "scope": "h3/model_store/ and ComfyUI/models/ exact filename checks",
-      "exact_file_hits": 0
-    }
-  ],
+    "transfer": "one curl transfer, retry 0, no second download",
+    "download_hash_interval": "2026-09-10T21:06:17+09:00 to 2026-09-10T21:06:37+09:00",
+    "free_bytes_before_transfer": 1201586282496,
+    "partial_renamed_after_hash_match": true,
+    "partial_file_remains": false
+  },
   "native_source_audit": {
-    "status": "PASS SOURCE AUDIT / RUNTIME NOT TESTED",
+    "status": "PASS SOURCE AUDIT / RUNTIME PASS",
     "file": "ComfyUI/comfy_extras/nodes_minimax_h3.py",
     "class": "MiniMaxH3ReferenceToVideo",
     "source_lines": "154-269",
+    "runtime_object_info": "PASS",
     "inputs": {
       "required_model_inputs": ["clip", "vae", "audio_vae"],
       "scalar_inputs": {
@@ -84,62 +95,196 @@
       "outputs": ["positive conditioning", "AV latent"]
     },
     "observed_semantics": [
-      "Picture refs are scaled down only; match uses generation pixel area and max uses the 2048 short-edge limit",
+      "Picture refs are scaled down only; match uses generation pixel area",
       "Video refs are canvas-adapted, capped to output frame_count, require at least 5 frames, and truncate to 17n+5",
       "Qwen receives reference video frames at 2 fps with timestamps",
-      "ref_video_audio_N is paired to ref_video_N and is optional",
-      "Presentation order is images, then videos, then standalone audio with typed ordinal labels"
+      "ref_video_audio_N is optional and was not connected",
+      "Presentation order is images, then videos, then standalone audio"
     ]
+  },
+  "runtime": {
+    "backend": "isolated Native ComfyUI",
+    "url": "http://127.0.0.1:8189",
+    "process_id": 45540,
+    "comfyui_version": "0.30.0",
+    "python_version": "3.13.14",
+    "pytorch_version": "2.13.0+cu130",
+    "gpu": "NVIDIA GeForce RTX 4070",
+    "vram_total_mib": 12282,
+    "system_ram_total_bytes": 68476002304,
+    "input_boundary": "output/h3/inputs/",
+    "output_boundary": "output/h3/video/",
+    "custom_nodes": "disabled",
+    "model_manager": "not used"
+  },
+  "implementation": {
+    "status": "LOCAL / UNCOMMITTED",
+    "adapter": "h3/adapters/native_ref2va.py",
+    "workflow": "workflows/h3/VP2A_NATIVE_REF2VA_BASE.json",
+    "runner": "h3/tests/run_vp2a_ref2va.py",
+    "contract_test": "h3/tests/test_vp2a_ref2va_adapter.py",
+    "browser_changes": false,
+    "shared_comfyui_changes": false,
+    "manga_changes": false
+  },
+  "sources": {
+    "picture": {
+      "path": "output/h3/tests/reference_robot_v1.png",
+      "staged_path": "output/h3/inputs/vp2a_r1_picture_43d29d07b5d0b4a2.png",
+      "bytes": 206821,
+      "sha256": "43D29D07B5D0B4A2C4650A2C840AE6CF07980714008FDDB1D1008B0E08CF030E"
+    },
+    "motion_video": {
+      "path": "output/h3/video/h1a_native_t2v_00010_.mp4",
+      "staged_path": "output/h3/inputs/vp2a_r1_motion_412b6f8ec11aa09b.mp4",
+      "bytes": 471184,
+      "sha256": "412B6F8EC11AA09BE770AC6B1EEAE31E77768AA584A22D40AA108C90EAF84254",
+      "ffprobe": {"width": 608, "height": 352, "encoded_frame_count": 124, "fps": 24.0, "duration_seconds": 5.167},
+      "external_download": false,
+      "reference_audio_used": false
+    }
+  },
+  "contract": {
+    "width": 608,
+    "height": 352,
+    "duration_seconds": 5.0,
+    "frames": 124,
+    "fps": 24,
+    "steps": 20,
+    "seed": 20260910,
+    "ref_image_size": "match",
+    "sampler": "res_multistep",
+    "scheduler": "simple",
+    "audio_reference": "NOT USED",
+    "standalone_audio": "NOT TESTED"
   },
   "stages": {
     "picture_only": {
-      "status": "NOT TESTED",
-      "reason": "Stopped before acquisition; no workflow or model load",
-      "planned_baseline": {"width": 608, "height": 352, "duration_seconds": 5, "steps": 20, "fps": 24, "ref_image_size": "match", "picture_count": 1},
-      "output": null,
-      "oom_count": null,
-      "retry_count": null,
-      "peak_vram_mib": null,
-      "working_set_mib": null
+      "status": "PASS",
+      "prompt_id": "f201dc61-48ac-4ae4-be1c-59d4668e211d",
+      "prompt_role": "<Picture 1> identity and appearance",
+      "output": {
+        "path": "output/h3/video/vp2a_r1_ref2va_picture_00001_.mp4",
+        "bytes": 352750,
+        "sha256": "A3C4899BFDFA63084031D885B6EAA17B97149D108796638AC26E55CF6962202F",
+        "ffprobe": {"width": 608, "height": 352, "encoded_frame_count": 124, "fps": 24.0, "duration_seconds": 5.167}
+      },
+      "elapsed_seconds": 238.09,
+      "telemetry_sample_interval_seconds": 2.0,
+      "telemetry_samples": 118,
+      "peak_vram_used_mib": 11669,
+      "minimum_vram_free_mib": 344,
+      "peak_native_working_set_bytes": 44376182784,
+      "oom_count": 0,
+      "accepted_job_retry_count": 0,
+      "visual_classification": "PICTURE REF INFLUENCE OBSERVED"
     },
     "picture_plus_one_video": {
-      "status": "NOT TESTED",
-      "reason": "Conditional on a technically complete Picture-only stage",
-      "picture_count": 1,
-      "video_count": 1,
-      "reference_video_audio_connected": false,
-      "output": null,
-      "oom_count": null,
-      "retry_count": null
+      "status": "PASS",
+      "prompt_id": "8a9d8a84-7c38-4bea-9e20-3038dbf738b0",
+      "prompt_role": "<Picture 1> identity/appearance; <Video 1> motion/timing/camera",
+      "output": {
+        "path": "output/h3/video/vp2a_r1_ref2va_picture_video_00001_.mp4",
+        "bytes": 467724,
+        "sha256": "790392A527A4C13DF65092FB57887C31D386AF5F7A404F40A7AB3C1FC424851E",
+        "ffprobe": {"width": 608, "height": 352, "encoded_frame_count": 124, "fps": 24.0, "duration_seconds": 5.167}
+      },
+      "elapsed_seconds": 375.46,
+      "telemetry_sample_interval_seconds": 2.0,
+      "telemetry_samples": 185,
+      "peak_vram_used_mib": 11678,
+      "minimum_vram_free_mib": 335,
+      "peak_native_working_set_bytes": 45711646720,
+      "oom_count": 0,
+      "accepted_job_retry_count": 0,
+      "picture_visual_classification": "PICTURE REF INFLUENCE NOT CONVINCING",
+      "video_visual_classification": "VIDEO REF INFLUENCE OBSERVED",
+      "reference_video_audio_connected": false
     }
   },
   "runtime_transition": {
-    "post_ref2va_t2v_baseline": "NOT TESTED",
-    "automatic_model_swap_manager": "NOT ADDED"
+    "status": "PASS",
+    "classification": "BUILT-IN MODEL TRANSITION PASS",
+    "prompt_id": "1b457097-b2cc-4284-a89c-24aa971e0c67",
+    "route": "existing standard FL2VA/T2V",
+    "model": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+    "output": {
+      "path": "output/h3/video/vp2a_r1_transition_fl2va_00001_.mp4",
+      "bytes": 359588,
+      "sha256": "CF2E69472CA11EB03151DF1B725B0EF215CA5668271116E956AAA8ED8A8D1222",
+      "ffprobe": {"width": 608, "height": 352, "encoded_frame_count": 124, "fps": 24.0, "duration_seconds": 5.167}
+    },
+    "elapsed_seconds": 175.99,
+    "telemetry_sample_interval_seconds": 2.0,
+    "telemetry_samples": 88,
+    "peak_vram_used_mib": 11657,
+    "minimum_vram_free_mib": 356,
+    "peak_native_working_set_bytes": 46405963776,
+    "oom_count": 0,
+    "accepted_job_retry_count": 0,
+    "restart_required": false
+  },
+  "preflight_correction": {
+    "status": "NON-OOM API SHAPE CORRECTION",
+    "detail": "One initial prompt used direct AutoGrow key ref_image_1 and stopped at node 131 before sampling; final graph uses ComfyUI V3 dotted dynamic paths ref_images.ref_image_1 and ref_videos.ref_video_1.",
+    "generation_retry_count": 0,
+    "oom_count": 0
   },
   "browser": {
     "r2v_ui": "NOT IMPLEMENTED",
-    "existing_video_still_ui_changed": false,
-    "requested_css_viewport_readback": "NOT APPLICABLE TO VP2A; VP1 retained NOT AVAILABLE / CUA HOST LIMIT"
+    "existing_video_still_ui_changed": false
   },
   "artifacts": {
     "model_committed": false,
     "mp4_committed": false,
     "reference_video_downloaded": false,
+    "runtime_inputs_committed": false,
+    "visual_review_contact_sheets": [
+      "picture_only_contact_sheet.png",
+      "motion_reference_contact_sheet.png",
+      "picture_plus_video_contact_sheet.png",
+      "transition_contact_sheet.png"
+    ],
     "implementation_commit": null,
     "evidence_docs_commit": null
   },
   "regression": {
-    "status": "DOCS-ONLY VALIDATION",
-    "runtime_suites_run": false,
-    "reason": "No runtime or Browser code changed; generation suites remain prior evidence",
-    "required_checks": ["JSON parse", "git diff --check"]
+    "status": "PASS",
+    "results": {
+      "vp1_verifier": "PASS",
+      "h2c_verifier": "52 PASS",
+      "h1c_verifier": "38 PASS",
+      "h1b1_p2_verifier": "44 PASS",
+      "h1b_ui_verifier": "36 PASS",
+      "python_unittest_discovery": "55 tests, OK",
+      "javascript_syntax": "PASS for five existing H3 static JS files",
+      "compileall": "PASS",
+      "json_parse": "PASS",
+      "git_diff_check": "PASS"
+    },
+    "required": [
+      "VP1 verifier",
+      "H2C 52",
+      "H1C 38",
+      "P2 44",
+      "H1B UI 36",
+      "full Python",
+      "JavaScript syntax",
+      "Python compileall",
+      "git diff --check"
+    ],
+    "browser_generation_suites": "NOT RERUN; no Browser code changed",
+    "runtime_regression": "single standard FL2VA/T2V transition recorded above"
   },
-  "validation": {
-    "vp2a_manifest_json": "PASS",
-    "vp1_manifest_json": "PASS",
-    "git_diff_check": "PASS",
-    "vp1_publication_stale_wording_in_targeted_files": "NONE"
+  "recommended_next_direction": "Owner review of VP2A-R1 evidence and acceptance decision",
+  "historical_acquisition_gate": {
+    "publication": "PUBLISHED ON MAIN",
+    "commit": "e4e078490cd2f96a953e6261399f268652d49c04",
+    "classification_at_that_time": "ACQUISITION REQUIRED",
+    "exact_file_at_that_time": "NOT FOUND",
+    "recorded_authorization_at_that_time": false,
+    "download_attempted_at_that_time": false,
+    "preserved": true
   },
-  "stop": "STOP BEFORE DOWNLOAD: exact Ref2VA acquisition and license authorization are required from Owner"
+  "stop": "STOP AFTER VP2A-R1: do not start VP2B; Browser R2V, production UI, Image Prep, LoRA, Manga, and new memory/offload work remain out of scope."
 }
