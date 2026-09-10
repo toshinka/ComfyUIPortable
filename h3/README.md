@@ -6,6 +6,13 @@ bounded fixed Start/End Frame FL2VA route: a small local Python server and
 static vanilla UI that submit separate verified Native ComfyUI H3 workflows
 without exposing the node graph.
 
+VP1 keeps the H3 Video envelope deliberately small: `/api/config` advertises
+only the verified `608 x 352` and `736 x 416` resolutions plus `5` and `15`
+second durations. Native converts seconds to the model's `17k+5` frame grid at
+24 fps (`5s -> 124 frames`, `15s -> 362 frames`). Both options were exercised
+through Native T2V and fixed-slot Start+End FL2VA before Browser exposure. Still
+remains `608 x 352` with Duration hidden; it does not inherit Video options.
+
 ## Canonical launcher
 
 Run:
@@ -48,6 +55,12 @@ custom nodes for this Native baseline.
   exposed.
 - Turbo/PDD/FastH3, H3 Easy, Antares, onigirikiller vendoring, and Manga
   integration are deferred.
+
+Video History `Use settings` preserves the verified resolution/duration and
+64-bit seed as a lossless decimal string, and rejects unsupported values before
+mutating the form. The existing Continuation path preserves the same supported
+Video scalars while setting only the captured Start Frame; it does not auto-
+generate.
 
 Model terms are separate from TEGAKI code. See
 `docs/h3/evidence/H3_MODEL_ACQUISITION_MANIFEST.md`.

@@ -4,7 +4,7 @@
 
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
 将来の実装棚とReference Implementation evidenceを一か所から辿るための
-document hub です。現在は **H2C / Still UI Browser Acceptance / Source Image + cross-media vertical slice** であり、
+document hub です。現在は **VP1 / Video Practicalization Safe Resolution / Duration Envelope + Browser Unlock** であり、
 H1C / Frame-Bridged Continuation は回帰基盤として保持し、
 H1B.1 / Start + End Frame and Native FL2VA vertical slice + UX P0/P1/P2
 Fixes は履歴と回帰対象として保持します。H0/H0.1/H1A/H1B の model
@@ -24,10 +24,12 @@ H2-INFRA external model library normalization is `CONFIGURED / VERIFIED` and
 the four first-wave heavy Portable copies are removed, the Portable fallback
 namespace is retained without bundled heavy weights, and the local shortcut
 collection is configured. H2C is the bounded Browser-facing Still UI gate over
-the H2B source route; production I2I semantics remain out of scope. The H2C
-base implementation is in the current `origin/main` history, while the
-seed-losslessness fix and this closeout package are local until Owner push.
-Owner acceptance remains pending.
+the H2B source route; production I2I semantics remain out of scope. Its base
+implementation, seed-losslessness fix, evidence, and closeout docs are present
+in the current `origin/main` history. VP1 adds only the verified Video options
+`608 x 352` / `736 x 416` and `5` / `15` seconds; Still remains `608 x 352`
+with Duration hidden. VP1 implementation and evidence are local until Owner
+push. Owner acceptance remains pending.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
@@ -78,6 +80,9 @@ Owner acceptance remains pending.
 | `docs/h3/reports/H2C_STILL_UI_VERTICAL_SLICE_REPORT.md` | H2C Still UI Browser acceptance, state separation, visual review, and closeout | CURRENT H2C REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H2C_STILL_UI_VERTICAL_SLICE_REPORT.md` |
 | `docs/h3/evidence/h2c-still-ui/2026-09-10/README.md` | H2C prompt-only/source Still Browser, History, cross-media, and visual evidence | CURRENT H2C EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2c-still-ui/2026-09-10/README.md` |
 | `docs/h3/evidence/h2c-still-ui/2026-09-10/manifest.json` | Machine-readable H2C Browser/runtime/output manifest | CURRENT H2C EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2c-still-ui/2026-09-10/manifest.json` |
+| `docs/h3/reports/VP1_VIDEO_RESOLUTION_DURATION_ENVELOPE_REPORT.md` | VP1 safe Video resolution/duration envelope, Native matrix, Browser unlock, and closeout boundary | CURRENT VP1 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/VP1_VIDEO_RESOLUTION_DURATION_ENVELOPE_REPORT.md` |
+| `docs/h3/evidence/vp1-video-envelope/2026-09-10/README.md` | VP1 Native/Browser media, config, History, Still-isolation, and telemetry evidence | CURRENT VP1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp1-video-envelope/2026-09-10/README.md` |
+| `docs/h3/evidence/vp1-video-envelope/2026-09-10/manifest.json` | Machine-readable VP1 runtime/output manifest | CURRENT VP1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp1-video-envelope/2026-09-10/manifest.json` |
 | `docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` | H2-INFRA external model migration, isolation, shortcuts, cold restart, and closeout | CURRENT H2-INFRA REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` |
 | `docs/h3/evidence/model-library/2026-09-10/README.md` | H2-INFRA inventory, migration, deletion, shortcut, and runtime evidence index | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/README.md` |
 | `docs/h3/evidence/model-library/2026-09-10/inventory.json` | Machine-readable before/after H3 model inventory | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/inventory.json` |
@@ -174,6 +179,9 @@ implementation follows from that result automatically.
 - [H2C_STILL_UI_VERTICAL_SLICE_REPORT.md](reports/H2C_STILL_UI_VERTICAL_SLICE_REPORT.md)
   — H2C Still Browser acceptance, source upload, History restore, mode crossing,
   cross-media active/preview separation, visual review, and explicit limits.
+- [VP1_VIDEO_RESOLUTION_DURATION_ENVELOPE_REPORT.md](reports/VP1_VIDEO_RESOLUTION_DURATION_ENVELOPE_REPORT.md)
+  — VP1 safe Video resolution/duration envelope, Native T2V/Start+End matrix,
+  Browser unlock, History restore, Still isolation, and explicit limits.
 - [H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md](reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md)
   — H2-INFRA external model locations, Portable fallback semantics, shortcut
   collection, cold restart, post-delete Still, and closeout boundary.
@@ -213,6 +221,9 @@ implementation follows from that result automatically.
 - [H2C evidence](evidence/h2c-still-ui/2026-09-10/) — prompt-only and
   source-anchored Still Browser results, History `Use settings`, mode crossing,
   active-job/preview-job separation, Video regression, and visual review.
+- [VP1 evidence](evidence/vp1-video-envelope/2026-09-10/) — baseline and
+  candidate Native media, Browser dropdown/completion records, config source of
+  truth, 64-bit seed-safe History restore, Still isolation, and telemetry.
 - [H2-INFRA model-library evidence](evidence/model-library/2026-09-10/) —
   before/after inventory, external hashes, exact Portable deletion, shortcut
   regeneration, cold-start path observation, and post-delete H2B Still.
@@ -220,7 +231,7 @@ implementation follows from that result automatically.
   alongside it. Existing `output/` content and Manga output are outside this slice.
 
 The historical groundwork reports remain historical records. The current gate
-is the H2C report and evidence above; it does not imply Owner acceptance,
+is the VP1 report and evidence above; it does not imply Owner acceptance,
 public production deployment, or adoption of a candidate implementation.
 
 ## H3 implementation boundary
@@ -249,7 +260,9 @@ is canonical and `run_h1a.bat` delegates to it. Do not infer REF2VA, ordered
 generic multi-reference, production I2I semantics, source-fidelity controls,
 Segment, Studio, Timeline, Storyboard, Cast, 3D, Manga, or a persistent project
 schema from these paths. H2C adds only the bounded Still Source Image lens over
-the H2B first-frame route.
+the H2B first-frame route. VP1 adds only the two verified Video resolution enums
+and two verified Video duration enums; `/api/config` is the source of truth, and
+Still receives no Video option automatically.
 
 ## Review recipe
 
@@ -286,7 +299,11 @@ the H2B first-frame route.
     Browser completions, the authorized upload path, `Use settings`, mode
     crossing, active-job/preview-job separation, Video regression, and the
     recorded viewport qualification separately.
-17. Stop at the H2C gate; do not infer Owner acceptance, production I2I,
+17. Read the VP1 report and dated evidence; verify the Native baseline,
+    duration-only and resolution-only candidate matrices, Browser option
+    population/completions, History restore, 64-bit seed preservation, and
+    Still isolation separately.
+18. Stop at the VP1 gate; do not infer Owner acceptance, production I2I,
     REF2VA, ordered multi-reference, Segment, Studio, or production deployment
     from this bounded Browser slice.
 
@@ -299,7 +316,7 @@ the H2B first-frame route.
 - `VERIFIED BROWSER UI GENERATION`: the prompt and, for H1B, the single Start
   Frame were submitted through the browser controls and the job reached a visible
   completed Preview; it does not replace runtime/media evidence or Owner acceptance.
-- `IMPLEMENTED`: the bounded H1A/H1B/H1C/H2C source and canonical launcher are present and tested;
+- `IMPLEMENTED`: the bounded H1A/H1B/H1C/H2C/VP1 source and canonical launcher are present and tested;
   it does not mean the whole H3 roadmap is implemented.
 - `BLOCKED`: a concrete dependency, model, or scope boundary stopped the relevant
   runtime path.

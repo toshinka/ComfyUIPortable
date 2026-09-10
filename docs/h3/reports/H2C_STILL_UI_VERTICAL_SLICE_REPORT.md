@@ -35,7 +35,7 @@ implementation.
 | `VERIFIED STILL USE SETTINGS` | `PASS` | Deliberate prompt/seed mutations were restored atomically; `Settings loaded.` appeared and no job was submitted. |
 | `VERIFIED CROSS-MEDIA STATE` | `PASS` | Running Still remained active while a completed Video History result was previewed; completion returned the Still Preview. |
 | `VERIFIED VIDEO REGRESSION` | `PASS` | Browser text-only Video regenerated after the backend restart and produced a playable Preview. |
-| `PUBLISHED ON MAIN` | `PASS for base implementation` | H2C base commit `2b167493...` and H2-INFRA history are present in the current `origin/main`; this new fix/evidence package is local until Owner push. |
+| `PUBLISHED ON MAIN` | `PASS` | H2C base, seed-losslessness fix, evidence, report, and canonical updates are present in the current `origin/main` at `224c37b9`. |
 | `OWNER ACCEPTED` | `PENDING` | Technical and Browser evidence does not replace Owner acceptance. |
 
 ## 1. Implementation and boundary
@@ -262,9 +262,10 @@ Committed PNG evidence:
 - [source_anchored.png](../evidence/h2c-still-ui/2026-09-10/source_anchored.png)
 
 The H2C base implementation is published in the current `origin/main` history
-through `2b167493...`; the seed fix is local commit `0df5f865`. The evidence,
-report, and canonical-index updates in this closeout are also local until the
-Owner performs the normal push and verifies the public raw/GitHub URLs.
+through `2b167493...`; the seed fix is published in `0df5f865`. The evidence,
+report, and canonical-index updates are published in `0438dc93`, verified as
+ancestors of `origin/main` at `224c37b9`. Publication remains distinct from
+Owner acceptance.
 
 ## Final report format
 
@@ -278,6 +279,6 @@ VERIFIED BROWSER STILL SOURCE-ANCHORED: PASS
 VERIFIED STILL USE SETTINGS: PASS
 VERIFIED CROSS-MEDIA STATE: PASS
 VERIFIED VIDEO REGRESSION: PASS
-PUBLISHED ON MAIN: base implementation PASS; new fix/evidence LOCAL MAIN
+PUBLISHED ON MAIN: PASS
 OWNER ACCEPTED: PENDING
 ```

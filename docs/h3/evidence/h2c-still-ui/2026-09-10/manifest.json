@@ -14,7 +14,7 @@
     "VERIFIED VIDEO REGRESSION",
     "OWNER ACCEPTANCE PENDING"
   ],
-  "publication": "LOCAL MAIN",
+  "publication": "PUBLISHED ON MAIN",
   "owner_acceptance": "PENDING",
   "implementation": {
     "base_commit": "2b167493ee83df2a4f80c10669d9c4e4387e111e",
@@ -200,6 +200,6 @@
     "external_upload": false,
     "mp4_committed": false,
     "owner_acceptance": "PENDING",
-    "github_push": false
+    "github_push": true
   }
 }

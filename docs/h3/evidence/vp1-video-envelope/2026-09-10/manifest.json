@@ -1,0 +1,297 @@
+{
+  "schema": "tegaki.h3.vp1.video-envelope.evidence/v1",
+  "card": "VP1",
+  "title": "Video Practicalization Safe Resolution / Duration Envelope + Browser Unlock",
+  "evidence_date": "2026-09-10",
+  "captured_at": "2026-09-10T14:49:24+09:00",
+  "status": [
+    "IMPLEMENTED",
+    "VERIFIED NATIVE BASELINE",
+    "VERIFIED NATIVE DURATION CANDIDATE",
+    "VERIFIED NATIVE RESOLUTION CANDIDATE",
+    "VERIFIED BROWSER UI GENERATION",
+    "VERIFIED BROWSER HISTORY RESTORE",
+    "VERIFIED BROWSER STILL ISOLATION",
+    "OWNER ACCEPTANCE PENDING"
+  ],
+  "publication": "LOCAL MAIN",
+  "owner_acceptance": "PENDING",
+  "implementation": {
+    "base_origin_main": "224c37b9446c412e0dca9ac04a72e74916059b1d",
+    "skin_url": "http://127.0.0.1:8192/",
+    "native_backend_url": "http://127.0.0.1:8189/",
+    "config_source_of_truth": "h3/adapters/native_t2v.py -> /api/config -> h3/app/static/app.js",
+    "video_options": {
+      "resolution": [
+        {"label": "608 x 352", "width": 608, "height": 352},
+        {"label": "736 x 416", "width": 736, "height": 416}
+      ],
+      "duration_seconds": [5, 15]
+    },
+    "still_options": {
+      "resolution": [
+        {"label": "608 x 352", "width": 608, "height": 352}
+      ],
+      "duration_field": "HIDDEN / NOT EXPOSED"
+    }
+  },
+  "environment": {
+    "host_gpu": "NVIDIA GeForce RTX 4070",
+    "vram_total_bytes": 12878086144,
+    "ram_total_bytes": 68476002304,
+    "native_backend": "ComfyUI 0.30.0",
+    "python": "3.13.14 embedded",
+    "pytorch": "2.13.0+cu130",
+    "native_pid": 47156,
+    "custom_nodes": "disabled",
+    "model_store": "h3/model_store/",
+    "shared_comfyui_models_used": false
+  },
+  "provenance": {
+    "native_source": "ComfyUI/comfy_extras/nodes_minimax_h3.py",
+    "official_workflow": "h3/eval_workflows/video_minimax_h3_t2v.json",
+    "official_workflow_url": "https://github.com/Comfy-Org/workflow_templates/blob/main/templates/video_minimax_h3_t2v.json",
+    "official_workflow_commit": "7c25a3c586484601f94b7e8f8b14c23b2c95a096",
+    "official_workflow_sha256": "2400B01A7C8ACAE3FED038C0372F08BACB90D2CDF915FEBADBE7E3F9802506EA",
+    "fps": 24,
+    "frame_grid": "17k+5",
+    "duration_formula": "max(5, round(seconds * 24)) + (5 - (max(5, round(seconds * 24)) % 17)) % 17",
+    "candidate_selection": {
+      "duration": {
+        "value_seconds": 15,
+        "basis": "Native MiniMax H3 node tooltip trained range upper boundary: 362 frames, approximately 15 seconds",
+        "native_length_frames": 362,
+        "classification": "UI VERIFIED"
+      },
+      "resolution": {
+        "value": [736, 416],
+        "basis": "Official/native 16:9 Size Settings Reference 0.3 MP rung",
+        "classification": "UI VERIFIED"
+      }
+    }
+  },
+  "reference": {
+    "authorized_local_source": "output/h3/tests/reference_robot_v1.png",
+    "staged_runtime_source": "inputs/h2b_source_43d29d07b5d0b4a2.png",
+    "sha256": "43D29D07B5D0B4A2C4650A2C840AE6CF07980714008FDDB1D1008B0E08CF030E",
+    "dimensions": [608, 352],
+    "used_for": "Native baseline and candidate Start+End FL2VA Stage 2",
+    "external_upload": false
+  },
+  "native_matrix": {
+    "execution_rule": "Baseline T2V and Start+End FL2VA; each candidate Stage 1 T2V, then Stage 2 only after Stage 1 PASS",
+    "all_runs_status": "PASS",
+    "runs": [
+      {
+        "case_id": "baseline-t2v",
+        "axis": "baseline",
+        "route": "native_t2v",
+        "prompt_id": "9e3194a3-4c90-48ac-b5c7-e8c21015b8ee",
+        "requested": {"width": 608, "height": 352, "duration_seconds": 5, "steps": 20, "seed": 20260910},
+        "native": {"length_frames": 124, "duration_seconds": 5.1666667, "fps": 24},
+        "output": {
+          "path": "output/h3/video/h1a_native_t2v_00010_.mp4",
+          "bytes": 471184,
+          "sha256": "412B6F8EC11AA09BE770AC6B1EEAE31E77768AA584A22D40AA108C90EAF84254",
+          "ffprobe": {"width": 608, "height": 352, "encoded_frame_count": 124, "fps": 24, "duration_seconds": 5.167}
+        },
+        "elapsed_seconds": 166.24,
+        "telemetry": {"minimum_free_vram_mib": 510, "observed_peak_used_vram_mib": 11503, "peak_native_working_set_bytes": 41107660800, "samples": 81, "oom_count": 0, "retry_count": 0}
+      },
+      {
+        "case_id": "baseline-fl2va",
+        "axis": "baseline",
+        "route": "native_i2v",
+        "prompt_id": "d749f665-db14-4456-aa4e-3129ad7e66cf",
+        "requested": {"width": 608, "height": 352, "duration_seconds": 5, "steps": 20, "seed": 20260910},
+        "native": {"length_frames": 124, "duration_seconds": 5.1666667, "fps": 24},
+        "output": {
+          "path": "output/h3/video/h1b1_native_fl2va_00007_.mp4",
+          "bytes": 439192,
+          "sha256": "69528C9456A65CCC3D032505D0A4589846C586BC9DDD8B15173D302FC785C719",
+          "ffprobe": {"width": 608, "height": 352, "encoded_frame_count": 124, "fps": 24, "duration_seconds": 5.167}
+        },
+        "elapsed_seconds": 147.81,
+        "telemetry": {"minimum_free_vram_mib": 744, "observed_peak_used_vram_mib": 11269, "peak_native_working_set_bytes": 42827325440, "samples": 74, "oom_count": 0, "retry_count": 0}
+      },
+      {
+        "case_id": "duration-15s-t2v",
+        "axis": "duration",
+        "route": "native_t2v",
+        "prompt_id": "2d66cff5-13fc-41b8-acfb-6927c60ca014",
+        "requested": {"width": 608, "height": 352, "duration_seconds": 15, "steps": 20, "seed": 20260910},
+        "native": {"length_frames": 362, "duration_seconds": 15.0833333, "fps": 24},
+        "output": {
+          "path": "output/h3/video/h1a_native_t2v_00011_.mp4",
+          "bytes": 1799129,
+          "sha256": "2EACA918BE8DA9B3F22CDA11626406072D3291171714E37A3A93B02383248528",
+          "ffprobe": {"width": 608, "height": 352, "encoded_frame_count": 362, "fps": 24, "duration_seconds": 15.083333}
+        },
+        "elapsed_seconds": 552.23,
+        "telemetry": {"minimum_free_vram_mib": 1009, "observed_peak_used_vram_mib": 11004, "peak_native_working_set_bytes": 38976303104, "samples": 265, "oom_count": 0, "retry_count": 0}
+      },
+      {
+        "case_id": "duration-15s-fl2va",
+        "axis": "duration",
+        "route": "native_i2v",
+        "prompt_id": "57a4f75c-886c-4e9c-a54f-d8ae0bba9e70",
+        "requested": {"width": 608, "height": 352, "duration_seconds": 15, "steps": 20, "seed": 20260910},
+        "native": {"length_frames": 362, "duration_seconds": 15.0833333, "fps": 24},
+        "output": {
+          "path": "output/h3/video/h1b1_native_fl2va_00008_.mp4",
+          "bytes": 1185457,
+          "sha256": "AC5262D1F68D585EB994451639ADFB6F95A48B237B1F3F164D178A46CD04468C",
+          "ffprobe": {"width": 608, "height": 352, "encoded_frame_count": 362, "fps": 24, "duration_seconds": 15.083333}
+        },
+        "elapsed_seconds": 579.51,
+        "telemetry": {"minimum_free_vram_mib": 856, "observed_peak_used_vram_mib": 11157, "peak_native_working_set_bytes": 28278849536, "samples": 278, "oom_count": 0, "retry_count": 0}
+      },
+      {
+        "case_id": "resolution-736x416-t2v",
+        "axis": "resolution",
+        "route": "native_t2v",
+        "prompt_id": "cccc842a-6bf3-4f58-b3b5-ba011c3ac776",
+        "requested": {"width": 736, "height": 416, "duration_seconds": 5, "steps": 20, "seed": 20260910},
+        "native": {"length_frames": 124, "duration_seconds": 5.1666667, "fps": 24},
+        "output": {
+          "path": "output/h3/video/h1a_native_t2v_00012_.mp4",
+          "bytes": 609590,
+          "sha256": "188549CD2C77F4A0B72D4E7EAC470FD9F7405E02C272C1754DF94A892AB8D950",
+          "ffprobe": {"width": 736, "height": 416, "encoded_frame_count": 124, "fps": 24, "duration_seconds": 5.167}
+        },
+        "elapsed_seconds": 189.13,
+        "telemetry": {"minimum_free_vram_mib": 892, "observed_peak_used_vram_mib": 11121, "peak_native_working_set_bytes": 29399924736, "samples": 93, "oom_count": 0, "retry_count": 0}
+      },
+      {
+        "case_id": "resolution-736x416-fl2va",
+        "axis": "resolution",
+        "route": "native_i2v",
+        "prompt_id": "0fbed74f-d9e2-4b5a-820e-6e909d9e6bf3",
+        "requested": {"width": 736, "height": 416, "duration_seconds": 5, "steps": 20, "seed": 20260910},
+        "native": {"length_frames": 124, "duration_seconds": 5.1666667, "fps": 24},
+        "output": {
+          "path": "output/h3/video/h1b1_native_fl2va_00009_.mp4",
+          "bytes": 743589,
+          "sha256": "13DFDE0E32E4AF61FD751DD03D8A214D5F4EFDB1BA214E6BB990570FC83F2698",
+          "ffprobe": {"width": 736, "height": 416, "encoded_frame_count": 124, "fps": 24, "duration_seconds": 5.167}
+        },
+        "elapsed_seconds": 224.13,
+        "telemetry": {"minimum_free_vram_mib": 1407, "observed_peak_used_vram_mib": 10606, "peak_native_working_set_bytes": 27442601984, "samples": 110, "oom_count": 0, "retry_count": 0}
+      }
+    ],
+    "oom_count": 0,
+    "retry_count": 0
+  },
+  "browser": {
+    "capture_method": "Codex in-app Browser via CUA/Playwright",
+    "requested_css_viewport": [1280, 720],
+    "exact_css_viewport_readback": "NOT AVAILABLE / CUA HOST LIMIT; no exact 1280 x 720 claim",
+    "config_ui_observed": {
+      "video_resolution_options": ["608 x 352", "736 x 416"],
+      "video_duration_options": ["5 seconds", "15 seconds"],
+      "still_resolution_options": ["608 x 352"],
+      "still_duration": "ABSENT / HIDDEN",
+      "unsupported_generate_api_statuses": [400, 400]
+    },
+    "generation_runs": [
+      {
+        "phase": "option-and-generation-acceptance",
+        "case": "baseline",
+        "job_id": "ade3fd1860a64ba68b8bf044c6665c4d",
+        "prompt_id": "0e9ddf2a-e27f-4de9-b6f9-92f4d172c6ff",
+        "request": {"width": 608, "height": 352, "duration_seconds": 5, "steps": 20},
+        "visible_result": "Text only · Completed in 125.7s · 608 x 352 · 5s",
+        "output": {"path": "output/h3/video/h1a_native_t2v_00013_.mp4", "bytes": 254005, "sha256": "C03B00BB3BEFF2B4994584F21C8D6EAFA5AF81B1C7AF2F3870024CE5F8059FC5", "ffprobe": {"width": 608, "height": 352, "encoded_frame_count": 124, "fps": 24, "duration_seconds": 5.167}},
+        "elapsed_seconds": 125.69,
+        "history_error": null
+      },
+      {
+        "phase": "option-and-generation-acceptance",
+        "case": "duration-15s",
+        "job_id": "d0db87f0654a41a2b9adc790ab2c838f",
+        "prompt_id": "48e6b2fe-ef96-4280-a89b-4d050a5b4665",
+        "request": {"width": 608, "height": 352, "duration_seconds": 15, "steps": 20},
+        "visible_result": "Text only · Completed in 558.1s · 608 x 352 · 15s",
+        "output": {"path": "output/h3/video/h1a_native_t2v_00014_.mp4", "bytes": 805913, "sha256": "AA7A538582B3C1EB6C824D98BCE75DA36281A76B111567DEA1127BE503899A93", "ffprobe": {"width": 608, "height": 352, "encoded_frame_count": 362, "fps": 24, "duration_seconds": 15.083333}},
+        "elapsed_seconds": 558.09,
+        "history_error": null
+      },
+      {
+        "phase": "option-and-generation-acceptance",
+        "case": "resolution-736x416",
+        "job_id": "58cf0211964b484fb79e9669eac2758c",
+        "prompt_id": "37541980-cb41-4b52-a6d1-ee2a5d6cacba",
+        "request": {"width": 736, "height": 416, "duration_seconds": 5, "steps": 20},
+        "visible_result": "Text only · Completed in 179.1s · 736 x 416 · 5s",
+        "output": {"path": "output/h3/video/h1a_native_t2v_00015_.mp4", "bytes": 328051, "sha256": "5A341F67988E5D505908BA136E24A3C1B3CB7B67B89B398F85F46BB231DB89E5", "ffprobe": {"width": 736, "height": 416, "encoded_frame_count": 124, "fps": 24, "duration_seconds": 5.167}},
+        "elapsed_seconds": 179.11,
+        "history_error": null
+      },
+      {
+        "phase": "post-video-seed-lossless-fix-recheck",
+        "case": "resolution-736x416",
+        "job_id": "1cd7c04a13594771b415021a8eb86655",
+        "prompt_id": "c1ae3137-166a-4e78-b44b-11ec61984464",
+        "request": {"width": 736, "height": 416, "duration_seconds": 5, "steps": 20, "seed_public_type": "string"},
+        "visible_result": "Text only · Completed in 190.0s · 736 x 416 · 5s",
+        "output": {"path": "output/h3/video/h1a_native_t2v_00016_.mp4", "bytes": 315885, "sha256": "3A0DBC41C65780F0C0DC70E31D030C748EDA42D23C78BE5B1C1F01FD2A5423F9", "ffprobe": {"width": 736, "height": 416, "encoded_frame_count": 124, "fps": 24, "duration_seconds": 5.167}},
+        "elapsed_seconds": 190.0,
+        "history_error": null
+      }
+    ],
+    "history_restore": {
+      "initial_diagnostic": "FAIL CLOSED: pre-fix Video History exposed random 64-bit seed as JSON number; UI reported Seed cannot be restored as a safe numeric value and did not mutate the form.",
+      "post_fix": {
+        "source_job_id": "1cd7c04a13594771b415021a8eb86655",
+        "result": "PASS",
+        "feedback": "Settings loaded.",
+        "restored": {"resolution": "736x416", "duration": "5", "seed": "4654562559140587881"},
+        "history_count_before": 1,
+        "history_count_after": 1,
+        "auto_generate": false
+      },
+      "duration_candidate_logic": "PASS for 608x352 / 15 via verify_vp1_video_ui.mjs with lossless decimal seed",
+      "unsupported_resolution_and_duration": "FAIL CLOSED before mutation via Python and JavaScript VP1 tests"
+    },
+    "still_isolation": {
+      "result": "PASS",
+      "still_ax_observation": "608 x 352 only; Source Image present; Duration absent",
+      "video_ax_observation": "608 x 352 and 736 x 416; Duration 5 seconds and 15 seconds",
+      "no_video_options_auto_added_to_still": true
+    }
+  },
+  "verification": {
+    "vp1_python_unittest": "51 tests OK",
+    "h2a_adapter": "included and PASS in 51 Python tests",
+    "h2b_adapter": "included and PASS in 51 Python tests",
+    "vp1_ui": "PASS",
+    "h1c_ui": "38 PASS",
+    "h1b_ui": "36 PASS",
+    "p2_ui": "44 PASS",
+    "h2c_ui": "52 PASS",
+    "javascript_syntax": "PASS for 5 h3/app/static/*.js files",
+    "compileall": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "artifacts": {
+    "evidence_files": [
+      "docs/h3/evidence/vp1-video-envelope/2026-09-10/README.md",
+      "docs/h3/evidence/vp1-video-envelope/2026-09-10/manifest.json"
+    ],
+    "generated_mp4_committed": false,
+    "model_weights_committed": false,
+    "screenshots_persisted": false,
+    "runtime_outputs_remain_ignored": true
+  },
+  "scope_audit": {
+    "new_model": false,
+    "new_dependency": false,
+    "quantization_or_offload_change": false,
+    "shared_comfyui_changes": false,
+    "manga_changes": false,
+    "custom_node_changes": false,
+    "external_upload": false,
+    "github_push": false,
+    "owner_acceptance": "PENDING"
+  }
+}

@@ -36,7 +36,7 @@ class H1AAdapterTests(unittest.TestCase):
                 "steps": 20,
             }
         )
-        self.assertEqual(request.public()["seed"], 123)
+        self.assertEqual(request.public()["seed"], "123")
         self.assertEqual(request.public()["duration"], 5.0)
 
     def test_invalid_request_values_fail_closed(self) -> None:

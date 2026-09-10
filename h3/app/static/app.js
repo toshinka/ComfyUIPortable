@@ -7,6 +7,10 @@ import { validateContinuationSource } from "./continuation-source.js";
 const state = {
   mode: "video",
   backend: "CONNECTING",
+  config: null,
+  videoResolution: "608x352",
+  stillResolution: "608x352",
+  videoDuration: "5",
   activeJob: null,
   previewJob: null,
   references: { start_frame: null, end_frame: null },
@@ -100,8 +104,66 @@ function setBackendStatus(next, message = "") {
   if (message && !state.activeJob) statusDetail.textContent = message;
 }
 
+function resolutionValue(option) {
+  return `${Number(option.width)}x${Number(option.height)}`;
+}
+
+function configuredResolutionOptions(still = false) {
+  const configured = still
+    ? state.config?.still?.resolution_options
+    : state.config?.resolution_options;
+  if (Array.isArray(configured) && configured.length) return configured;
+  return [{ label: "608 x 352", width: 608, height: 352 }];
+}
+
+function configuredDurationOptions() {
+  const configured = state.config?.duration_options;
+  if (Array.isArray(configured) && configured.length) return configured;
+  return [{ label: "5 seconds", value: 5 }];
+}
+
+function rememberCurrentResolution() {
+  const key = state.mode === "still" ? "stillResolution" : "videoResolution";
+  if (resolutionInput.value) state[key] = resolutionInput.value;
+}
+
+function populateResolutionOptions() {
+  const still = state.mode === "still";
+  const key = still ? "stillResolution" : "videoResolution";
+  const options = configuredResolutionOptions(still).filter((item) =>
+    Number.isInteger(Number(item.width)) && Number.isInteger(Number(item.height)),
+  );
+  const values = options.map(resolutionValue);
+  if (!values.length) return;
+  resolutionInput.replaceChildren();
+  options.forEach((item, index) => {
+    const option = document.createElement("option");
+    option.value = values[index];
+    option.textContent = item.label || `${item.width} x ${item.height}`;
+    resolutionInput.append(option);
+  });
+  state[key] = values.includes(state[key]) ? state[key] : values[0];
+  resolutionInput.value = state[key];
+}
+
+function populateDurationOptions() {
+  const options = configuredDurationOptions().filter((item) => Number.isFinite(Number(item.value)));
+  const values = options.map((item) => String(item.value));
+  if (!values.length) return;
+  durationInput.replaceChildren();
+  options.forEach((item, index) => {
+    const option = document.createElement("option");
+    option.value = values[index];
+    option.textContent = item.label || `${item.value} seconds`;
+    durationInput.append(option);
+  });
+  state.videoDuration = values.includes(state.videoDuration) ? state.videoDuration : values[0];
+  durationInput.value = state.videoDuration;
+}
+
 function setMode(nextMode) {
   if (nextMode !== "video" && nextMode !== "still") return;
+  rememberCurrentResolution();
   state.mode = nextMode;
   const still = nextMode === "still";
   modeVideo.classList.toggle("active", !still);
@@ -115,6 +177,7 @@ function setMode(nextMode) {
   stillSourceCard.hidden = !still;
   durationField.hidden = still;
   durationInput.disabled = still;
+  populateResolutionOptions();
   controlColumn.setAttribute("aria-label", `${still ? "Still" : "Video"} controls`);
   previewEmpty.querySelector("#preview-heading").textContent = still
     ? "Your still will appear here"
@@ -361,9 +424,7 @@ async function submitGeneration(event) {
   if (!promptInput.value.trim()) return;
   const [width, height] = resolutionInput.value.split("x").map(Number);
   const seedText = seedInput.value.trim();
-  const seed = state.mode === "still"
-    ? (seedText === "" ? "random" : seedText)
-    : (seedText === "" ? "random" : Number(seedText));
+  const seed = seedText === "" ? "random" : seedText;
   setDetails("");
   try {
     const payload = {
@@ -466,8 +527,8 @@ async function verifyStillSource(source) {
 
 function historyScalarOptions() {
   return {
-    resolutionValues: Array.from(resolutionInput.options, (option) => option.value),
-    durationValues: Array.from(durationInput.options, (option) => option.value),
+    resolutionValues: configuredResolutionOptions(false).map(resolutionValue),
+    durationValues: configuredDurationOptions().map((option) => String(option.value)),
     stepsValue: stepsInput.value,
     maxPromptLength: promptInput.maxLength,
   };
@@ -475,6 +536,8 @@ function historyScalarOptions() {
 
 function applyHistorySettings(settings) {
   promptInput.value = settings.prompt;
+  state.videoResolution = settings.resolution;
+  state.videoDuration = settings.duration;
   resolutionInput.value = settings.resolution;
   durationInput.value = settings.duration;
   seedInput.value = settings.seed;
@@ -486,6 +549,7 @@ function applyHistorySettings(settings) {
 
 function applyStillHistorySettings(settings) {
   promptInput.value = settings.prompt;
+  state.stillResolution = settings.resolution;
   resolutionInput.value = settings.resolution;
   seedInput.value = settings.seed;
   stepsInput.value = settings.steps;
@@ -498,7 +562,7 @@ async function useHistorySettings(entry) {
   try {
     if (entry.media_kind === "still") {
       const settings = await resolveStillHistorySettings(entry, {
-        resolutionValues: Array.from(resolutionInput.options, (option) => option.value),
+        resolutionValues: configuredResolutionOptions(true).map(resolutionValue),
         stepsValue: stepsInput.value,
         maxPromptLength: promptInput.maxLength,
         verifySource: verifyStillSource,
@@ -706,6 +770,9 @@ function snapshotFormSettings() {
 
 function restoreFormSettings(snapshot) {
   promptInput.value = snapshot.prompt;
+  if (state.mode === "still") state.stillResolution = snapshot.resolution;
+  else state.videoResolution = snapshot.resolution;
+  state.videoDuration = snapshot.duration;
   resolutionInput.value = snapshot.resolution;
   durationInput.value = snapshot.duration;
   seedInput.value = snapshot.seed;
@@ -719,6 +786,8 @@ function applyContinuationSettings(settings) {
   const before = snapshotFormSettings();
   try {
     promptInput.value = settings.prompt;
+    state.videoResolution = settings.resolution;
+    state.videoDuration = settings.duration;
     resolutionInput.value = settings.resolution;
     durationInput.value = settings.duration;
     seedInput.value = settings.seed;
@@ -851,30 +920,17 @@ async function loadHistory() {
 async function loadConfig() {
   try {
     const config = await requestJson("/api/config");
-    if (config.resolution_options?.length) {
-      resolutionInput.replaceChildren();
-      config.resolution_options.forEach((item) => {
-        const option = document.createElement("option");
-        option.value = `${item.width}x${item.height}`;
-        option.textContent = item.label;
-        resolutionInput.append(option);
-      });
-    }
-    if (config.duration_options?.length) {
-      durationInput.replaceChildren();
-      config.duration_options.forEach((item) => {
-        const option = document.createElement("option");
-        option.value = String(item.value);
-        option.textContent = item.label;
-        durationInput.append(option);
-      });
-    }
+    state.config = config;
+    populateResolutionOptions();
+    populateDurationOptions();
   } catch (error) {
     setDetails(error.message);
   }
 }
 
 promptInput.addEventListener("input", updatePromptCount);
+resolutionInput.addEventListener("change", rememberCurrentResolution);
+durationInput.addEventListener("change", () => { state.videoDuration = durationInput.value; });
 form.addEventListener("submit", submitGeneration);
 cancelButton.addEventListener("click", cancelGeneration);
 modeVideo.addEventListener("click", () => setMode("video"));

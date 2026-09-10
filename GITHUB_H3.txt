@@ -6,7 +6,7 @@ Updated: 2026-09-10 JST
 
 Current Stage
 -------------
-H2C / Still UI Browser Acceptance / Source Image + cross-media vertical slice
+VP1 / Video Practicalization Safe Resolution / Duration Envelope + Browser Unlock
 H1C / Frame-Bridged Continuation: IMPLEMENTED / VERIFIED (regression foundation)
 Groundwork: PASS (historical)
 Semantic Alignment: PASS (historical)
@@ -65,14 +65,23 @@ H2C Still History Use settings: VERIFIED BROWSER UI
 H2C mode crossing: VERIFIED BROWSER UI
 H2C cross-media activeJob/previewJob: VERIFIED BROWSER UI
 H2C Video regression: VERIFIED BROWSER UI GENERATION
-H2C additional seed fix: IMPLEMENTED / VERIFIED; LOCAL MAIN
-H2C evidence/report: CURRENT REVIEW EVIDENCE; LOCAL MAIN (`0438dc93`)
-H2C publication: BASE IMPLEMENTATION PUBLISHED ON MAIN / NEW CLOSEOUT LOCAL
+H2C additional seed fix: IMPLEMENTED / VERIFIED; PUBLISHED ON MAIN
+H2C evidence/report: CURRENT REVIEW EVIDENCE; PUBLISHED ON MAIN (`0438dc93`)
+H2C publication: PUBLISHED ON MAIN
+VP1 implementation: IMPLEMENTED
+VP1 Native matrix: VERIFIED LOCAL GENERATION (baseline + 2 candidates; T2V and Start+End FL2VA)
+VP1 Browser baseline: VERIFIED BROWSER UI GENERATION
+VP1 Browser duration candidate: VERIFIED BROWSER UI GENERATION (608 x 352 / 15 seconds)
+VP1 Browser resolution candidate: VERIFIED BROWSER UI GENERATION (736 x 416 / 5 seconds)
+VP1 safe Video options: 608 x 352 or 736 x 416; 5 or 15 seconds
+VP1 Still isolation: VERIFIED BROWSER UI (608 x 352 only; Duration hidden)
+VP1 evidence/report: CURRENT REVIEW EVIDENCE; LOCAL MAIN
+VP1 publication: LOCAL MAIN (Owner push/public URL verification pending)
 H3 external model library: CONFIGURED / VERIFIED
 Portable duplicate heavy weights: REMOVED
 Portable fallback namespace: RETAINED / EMPTY OF FIRST-WAVE HEAVY WEIGHTS
 Model shortcuts: CONFIGURED LOCAL
-Still UI: BOUNDED H2C VERTICAL SLICE IMPLEMENTED / VERIFIED
+Still UI: BOUNDED H2C VERTICAL SLICE IMPLEMENTED / VERIFIED / PUBLISHED ON MAIN
 Owner acceptance: PENDING
 
 This entry is the starting point for external AI review of MiniMax H3 work. It
@@ -115,6 +124,9 @@ Read Order
 33. ComfyUIPortable/docs/h3/reports/H2C_STILL_UI_VERTICAL_SLICE_REPORT.md
 34. ComfyUIPortable/docs/h3/evidence/h2c-still-ui/2026-09-10/README.md
 35. ComfyUIPortable/docs/h3/evidence/h2c-still-ui/2026-09-10/manifest.json
+36. ComfyUIPortable/docs/h3/reports/VP1_VIDEO_RESOLUTION_DURATION_ENVELOPE_REPORT.md
+37. ComfyUIPortable/docs/h3/evidence/vp1-video-envelope/2026-09-10/README.md
+38. ComfyUIPortable/docs/h3/evidence/vp1-video-envelope/2026-09-10/manifest.json
 
 Master Roadmap
 --------------
@@ -186,7 +198,7 @@ uploaded runtime inputs, and model weights remain ignored.
 
 Current Review Gate
 -------------------
-H2C Still UI Browser Acceptance / Closeout
+VP1 Video Practicalization Safe Resolution / Duration Envelope + Browser Unlock
 
 H1B.1 remains implemented as the regression foundation and has Start-only,
 Start+End, End-only, and text-only browser completion results plus Native media
@@ -209,12 +221,23 @@ source/logic, local generation, Browser UI N/A, publication, and Owner
 acceptance. H2C adds one Source Image slot to the Still lens, records
 prompt-only and source-anchored Browser completions, History `Use settings`,
 mode crossing, and the separate active-job/preview-job cross-media behavior.
-The additional 64-bit seed boundary fix is local in `0df5f865`; the base H2C
-implementation is in the current `origin/main` history. Exact 1280 x 720 CSS
+The additional 64-bit seed boundary fix is published in `0df5f865`; the base H2C
+implementation and evidence/report package are in the current `origin/main` history. Exact 1280 x 720 CSS
 viewport readback was not available in the CUA Chrome host and is recorded as
 a visual-review qualification. REF2VA, ordered generic multi-reference,
 production I2I semantics, source-fidelity controls, Segment, Studio, Timeline,
 Storyboard, Cast, 3D, and Manga are not started by this slice.
+
+VP1 keeps the public Video envelope to the verified values `608 x 352` /
+`736 x 416` and `5` / `15` seconds. The Native baseline plus duration-only and
+resolution-only candidates each passed T2V and fixed-slot Start+End FL2VA with
+valid dimensions, 24 fps, expected `17k+5` frame counts, OOM 0, and retry 0.
+The Browser showed both options, completed the baseline and each candidate,
+and verified candidate History restore. Video seeds are now lossless decimal
+strings across the JSON/JavaScript boundary. Still remains H2C `608 x 352`
+only, with Duration hidden and no automatic Video-option inheritance. Exact
+1280 x 720 CSS readback remains unavailable in the CUA Browser host and is not
+claimed.
 
 Publication Note
 ----------------
@@ -245,6 +268,6 @@ verified in the closeout evidence/report, and the closeout package is
 `PUBLISHED ON MAIN`. Owner acceptance remains `PENDING`.
 H2C base implementation is present in `origin/main` through
 `2b167493ee83df2a4f80c10669d9c4e4387e111e`. The Browser seed-losslessness fix
-is local commit `0df5f865`; H2C evidence/report/canonical updates are local
-commit `0438dc93` until Owner push and public URL verification. Owner
-acceptance remains `PENDING`.
+is published in `0df5f865`; H2C evidence/report/canonical updates are published
+in `0438dc93` and verified as ancestors of `origin/main` at `224c37b9`.
+Owner acceptance remains `PENDING`.

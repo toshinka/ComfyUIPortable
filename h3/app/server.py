@@ -51,6 +51,7 @@ from h3.adapters.native_t2v import (  # noqa: E402
     resolve_route,
     reference_route_label,
     validate_request,
+    video_option_metadata,
     workflow_metadata,
 )
 from h3.adapters.native_t2v import compile_workflow as compile_t2v  # noqa: E402
@@ -951,11 +952,11 @@ class H1AHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802
         path = urlparse(self.path).path
         if path == "/api/config":
+            video_options = video_option_metadata()
             self._send_json(
                 HTTPStatus.OK,
                 {
-                    "resolution_options": [{"label": "608 x 352", "width": 608, "height": 352}],
-                    "duration_options": [{"label": "5 seconds", "value": 5}],
+                    **video_options,
                     "default_steps": 20,
                     "workflow": workflow_metadata(),
                     "i2v_workflow": i2v_workflow_metadata(),

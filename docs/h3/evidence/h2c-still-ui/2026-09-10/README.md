@@ -15,8 +15,8 @@ Report: [H2C_STILL_UI_VERTICAL_SLICE_REPORT.md](../../../reports/H2C_STILL_UI_VE
 
 Owner acceptance: `PENDING`
 
-Publication of this evidence package: `LOCAL MAIN` (Owner push/public GitHub
-verification remains separate).
+Publication of this evidence package: `PUBLISHED ON MAIN` (verified in the
+current `origin/main` at `224c37b9`). Owner acceptance remains separate.
 
 ## Scope
 
@@ -242,6 +242,6 @@ the sampled minimum free VRAM was `4649273804` bytes; OOM and retry were also
 
 H2C is a bounded Browser-facing Still UI vertical slice over the H2B source
 route. It does not establish production I2I, a source-strength/fidelity
-control, multi-reference semantics, or Owner acceptance. Publication of the
-existing implementation/H2-INFRA work on `main` and this local closeout
-package remain distinct; `OWNER ACCEPTED = PENDING`.
+control, multi-reference semantics, or Owner acceptance. The H2C implementation,
+fix, evidence, and closeout package are published on `main`; publication
+remains distinct from `OWNER ACCEPTED = PENDING`.

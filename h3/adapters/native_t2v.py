@@ -21,18 +21,38 @@ PORTABLE_ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_PATH = PORTABLE_ROOT / "workflows" / "h3" / "H1A_NATIVE_T2V_BASE.json"
 
 FPS = 24
-ALLOWED_RESOLUTIONS = ((608, 352),)
 DEFAULT_DURATION_SECONDS = 5.0
 DEFAULT_STEPS = 20
 MAX_PROMPT_LENGTH = 4000
 MIN_DURATION_SECONDS = 0.2
 MAX_DURATION_SECONDS = 15.0
+VIDEO_RESOLUTION_OPTIONS = (
+    {"label": "608 x 352", "width": 608, "height": 352},
+    {"label": "736 x 416", "width": 736, "height": 416},
+)
+VIDEO_DURATION_OPTIONS = (
+    {"label": "5 seconds", "value": 5},
+    {"label": "15 seconds", "value": 15},
+)
+ALLOWED_RESOLUTIONS = tuple(
+    (option["width"], option["height"]) for option in VIDEO_RESOLUTION_OPTIONS
+)
+ALLOWED_DURATIONS = tuple(float(option["value"]) for option in VIDEO_DURATION_OPTIONS)
 REFERENCE_ROLE_START_FRAME = "start_frame"
 REFERENCE_ROLE_END_FRAME = "end_frame"
 REFERENCE_ROLES = (REFERENCE_ROLE_START_FRAME, REFERENCE_ROLE_END_FRAME)
 ROUTE_T2V = "native_t2v"
 ROUTE_I2V = "native_i2v"
 REFERENCE_ID_PATTERN = re.compile(r"^[0-9a-f]{32}$")
+
+
+def video_option_metadata() -> dict[str, list[dict[str, Any]]]:
+    """Return the verified Video enum options used by /api/config."""
+
+    return {
+        "resolution_options": [dict(option) for option in VIDEO_RESOLUTION_OPTIONS],
+        "duration_options": [dict(option) for option in VIDEO_DURATION_OPTIONS],
+    }
 
 
 class RequestValidationError(ValueError):
@@ -105,7 +125,8 @@ class H3Request:
             "width": self.width,
             "height": self.height,
             "duration": self.duration,
-            "seed": self.seed,
+            # Keep the 64-bit seed lossless across the JavaScript boundary.
+            "seed": str(self.seed) if self.seed is not None else None,
             "steps": self.steps,
             "reference": self.reference.public() if self.reference else None,
             "references": self.references.public(),
@@ -242,7 +263,9 @@ def validate_request(payload: Mapping[str, Any]) -> H3Request:
     width = _coerce_int(payload.get("width", 608), "Width")
     height = _coerce_int(payload.get("height", 352), "Height")
     if (width, height) not in ALLOWED_RESOLUTIONS:
-        raise RequestValidationError("H3 currently supports 608 x 352 only.")
+        raise RequestValidationError(
+            "H3 currently supports the verified resolutions 608 x 352 and 736 x 416 only."
+        )
 
     duration_value = payload.get("duration", DEFAULT_DURATION_SECONDS)
     if isinstance(duration_value, str):
@@ -255,6 +278,10 @@ def validate_request(payload: Mapping[str, Any]) -> H3Request:
     except (TypeError, ValueError) as exc:
         raise RequestValidationError("Duration must be a number of seconds.") from exc
     duration_to_frames(duration)
+    if duration not in ALLOWED_DURATIONS:
+        raise RequestValidationError(
+            "H3 currently supports the verified duration options 5 and 15 seconds only."
+        )
 
     steps = _coerce_int(payload.get("steps", DEFAULT_STEPS), "Steps")
     if steps != DEFAULT_STEPS:
