@@ -8,8 +8,10 @@ Recommendation: **IP2 Browser Prep/Edit lens**
 
 Owner acceptance: `PENDING`
 
-Publication: `LOCAL` until the bounded IP1 commit is pushed and checked on
-GitHub `main`.
+Publication: `PUBLISHED ON MAIN` at the H3-only IP1 closeout
+`35e49859f3beb3bd0b4b1b2d2dd793897dc6b479`. The IP1 package first entered
+published history at `d8b1a7ca070db1fe78b6d07ef0db01500e88c828`; that historical
+commit also contains concurrent Manga material.
 
 ## 1. Decision summary
 
@@ -35,10 +37,13 @@ not start IP2 or a dedicated Image Studio audit.
 ## 2. Scope and authority
 
 The initial document correction recorded Rev.4 as `PUBLISHED ON MAIN` at
-`3880534af0e26b970a8fd0a1ba564af6bc88c15e`. The current `origin/main` is the
-later Manga-only descendant `df0ad3b389db5149e1b6ab1edb24c568c147a10e`.
-Unrelated Manga working-tree artifacts were preserved and were not staged or
-edited.
+`3880534af0e26b970a8fd0a1ba564af6bc88c15e`. At this reconciliation,
+`origin/main` was the later descendant `b5c79b85ed2fdeec1bf30254945db569666ecfa4`.
+The IP1 package is present in published history at `d8b1a7ca070db1fe78b6d07ef0db01500e88c828`;
+that historical commit also contains concurrent Manga changes. The H3-only
+IP1 closeout update is `35e49859f3beb3bd0b4b1b2d2dd793897dc6b479`, relative to
+`d8b1a7ca`. Unrelated Manga working-tree artifacts were preserved and were not
+staged or edited.
 
 This Card used only the installed external H3 model library selected by
 `h3/config/extra_model_paths.local.yaml`:
@@ -285,7 +290,9 @@ Owner acceptance:
 PENDING
 
 Publication:
-LOCAL — Owner push and remote verification remain separate from local PASS
+PUBLISHED ON MAIN at 35e49859f3beb3bd0b4b1b2d2dd793897dc6b479; current main at
+reconciliation: b5c79b85ed2fdeec1bf30254945db569666ecfa4 (later Manga-only
+descendant)
 
 STOP
 ```

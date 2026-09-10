@@ -4,7 +4,7 @@
 
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
 将来の実装棚とReference Implementation evidenceを一か所から辿るための
-document hub です。現在は **IP1 / Native Image Prep / Reference Edit Feasibility — FEASIBLE WITH LIMITS / NATIVE-ONLY / NO BROWSER UI** であり、Rev.4 は **CURRENT MASTER / DOCS-ONLY / PUBLISHED ON MAIN** です。
+document hub です。現在は **IP1 / Native Image Prep / Reference Edit Feasibility — FEASIBLE WITH LIMITS / NATIVE-ONLY / NO BROWSER UI / PUBLISHED ON MAIN** であり、Rev.4 は **CURRENT MASTER / DOCS-ONLY / PUBLISHED ON MAIN** です。
 H1C / Frame-Bridged Continuation は回帰基盤として保持し、
 H1B.1 / Start + End Frame and Native FL2VA vertical slice + UX P0/P1/P2
 Fixes は履歴と回帰対象として保持します。H0/H0.1/H1A/H1B の model
@@ -61,10 +61,13 @@ published on `main` at `56ad30afa128ef4120f962b6c114fc0e7526aae8`; VP2C
 closeout is published on `main` at
 `1a869125fa95ef4c7b1e94b0ccedab39fc52b4be`. Rev.4 is the current master
 roadmap and is published on `main` at
-`3880534af0e26b970a8fd0a1ba564af6bc88c15e`. The current `origin/main` is the
-later Manga-only descendant `df0ad3b389db5149e1b6ab1edb24c568c147a10e`;
-IP1 is the active Native-only Image Prep feasibility gate; Owner acceptance
-remains pending.
+`3880534af0e26b970a8fd0a1ba564af6bc88c15e`. The IP1 implementation/evidence
+package is published on `main` at `d8b1a7ca070db1fe78b6d07ef0db01500e88c828`;
+that historical commit also carries concurrent Manga material. The H3-only
+IP1 closeout is published at `35e49859f3beb3bd0b4b1b2d2dd793897dc6b479`, and
+the current `origin/main` at reconciliation is the later Manga-only descendant
+`b5c79b85ed2fdeec1bf30254945db569666ecfa4`. IP1 is the active Native-only
+Image Prep feasibility gate; Owner acceptance remains pending.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
