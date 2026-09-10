@@ -20,14 +20,14 @@ Repository: `https://github.com/toshinka/tegaki`
 - M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`
 - M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`
 - Manga namespace/card migration publication: `ef7daa502f501211cd6b06f378e9024dbff6f284`
-- Latest SOL-verified public commit: `f482b90d124c39f603f6863ac35aefb586e95bfd`
+- Latest SOL-verified public commit: `6dfbf0e5b9d413aba7f6428db22933d5ef451628`
 - M3B-LR2R1 publication: PUBLISHED; SOL public-URL review: PASS; final classification: QUALITY WEAK.
 - M3B-LR2 publication: PUBLISHED; SOL public-URL review: PASS; classification: BLOCKED.
 - Web GPT SOL public-URL review: PASS
-- Latest published Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_LR6_CAST_SOFT_EDGE_FIGURE_MASK_COMPATIBILITY_RESEARCH.md
-- Latest published report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_LR6_CAST_SOFT_EDGE_FIGURE_MASK_COMPATIBILITY_RESEARCH_REPORT.md
-- Latest published manifest: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_lr6/M3B_LR6_MANIFEST.json
-- Active Card: NONE
+- Latest published Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION_RESEARCH.md
+- Latest published report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION_RESEARCH_REPORT.md
+- Latest published manifest: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_lr7/M3B_LR7_MANIFEST.json
+- Active Card: M3B-LR8
 - Latest completed Card: docs/manga/cards/completed/M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION_RESEARCH.md
 - Latest completed report: docs/manga/reports/M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION_RESEARCH_REPORT.md
 - Latest completed manifest: docs/manga/verification/m3b_lr7/M3B_LR7_MANIFEST.json
@@ -52,11 +52,11 @@ Primary flowはScene-firstである。CAST、人物粗領域、ラフ人物/白�
 - M3A1-BC1 technical closure: B0-B9 PASS; routed to completed。
 - M3A1-OA1 gate: CLOSED; M3B eligibility OPEN。
 - Web GPT SOL public-URL review: PASS。
-- Latest completed operation: M3B-LR7 CAST GLOBAL vs EFFECT-MASK Interaction Isolation Research — LOCAL COMPLETED; technical gate 2/2 PASS, CAST runtime provenance and GLOBAL graph PASS, final result EFFECT_MASK_INTERACTION_CONFIRMED.
+- Latest completed operation: M3B-LR7 CAST GLOBAL vs EFFECT-MASK Interaction Isolation Research — PUBLISHED / SOL REVIEWED; technical gate 2/2 PASS, CAST runtime provenance and GLOBAL graph PASS, final result EFFECT_MASK_INTERACTION_CONFIRMED.
 - M3B-LR2 stop reason: `CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED`。
 - M3B-LR2R1 result: pinned model REUSED from the verified reForge shared store; ComfyUI loader, A/B batch, canonical no-Guide, and required regressions PASS。
-- Active Card: NONE. M3B-LR7 is locally completed with EFFECT_MASK_INTERACTION_CONFIRMED; M3B-LR6 is PUBLISHED / SOL REVIEWED with SOFT_MASK_CONFLICT; production integration remains NOT PERFORMED. Final Owner product review is DEFERRED. No subsequent Card is issued automatically.
-- M3B-LR1 generation influence: NOT IMPLEMENTED。M3B-LR2 generation influence: BLOCKED。M3B-LR2R1: PUBLISHED / SOL REVIEWED / QUALITY WEAK。M3B-LR3: PUBLISHED / SOL REVIEWED / OPTION_A_INCONCLUSIVE。Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE。Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE。M3B-LR4: PUBLISHED / SOL REVIEWED / LOCALITY_SUPPORTED。M3B-LR5: PUBLISHED / SOL REVIEWED / CAST_MASKED_CONFLICT。M3B-LR6: PUBLISHED / SOL REVIEWED / SOFT_MASK_CONFLICT。M3B-LR7: COMPLETED LOCAL / EFFECT_MASK_INTERACTION_CONFIRMED。
+- Active Card: M3B-LR8 (ACTIVE). M3B-LR7 is PUBLISHED / SOL REVIEWED with EFFECT_MASK_INTERACTION_CONFIRMED; CAST_GLOBAL showed usable quality without effect-mask boundary, but robustness across seeds is not yet established. Production ControlNet integration remains NOT PERFORMED. Final Owner product review is DEFERRED.
+- M3B-LR1 generation influence: NOT IMPLEMENTED。M3B-LR2 generation influence: BLOCKED。M3B-LR2R1: PUBLISHED / SOL REVIEWED / QUALITY WEAK。M3B-LR3: PUBLISHED / SOL REVIEWED / OPTION_A_INCONCLUSIVE。Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE。Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE。M3B-LR4: PUBLISHED / SOL REVIEWED / LOCALITY_SUPPORTED。M3B-LR5: PUBLISHED / SOL REVIEWED / CAST_MASKED_CONFLICT。M3B-LR6: PUBLISHED / SOL REVIEWED / SOFT_MASK_CONFLICT。M3B-LR7: PUBLISHED / SOL REVIEWED / EFFECT_MASK_INTERACTION_CONFIRMED。
 - ControlNet production integration: NOT PERFORMED。
 - production output namespace移行: 未実施。`output/Tegaki`を維持する。
 
