@@ -34,27 +34,31 @@ completed its bounded CAST plus Figure-masked CLEAN compatibility research
 and is PUBLISHED / SOL REVIEWED with result CAST_MASKED_CONFLICT; its key
 failure was a HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED. Production
 integration remains not performed. M3B-LR6 completed its bounded radius-16
-soft Figure-union effect-mask research with result SOFT_MASK_CONFLICT.
-Web GPT SOL leads Card design; a fresh local LUNA chat implements one published
-Card at a time.
+soft Figure-union effect-mask research and is PUBLISHED / SOL REVIEWED with
+final result SOFT_MASK_CONFLICT; its key finding was that SOFTENING FIGURE
+EFFECT-MASK EDGE DID NOT REMOVE VISUAL BOUNDARY. Production ControlNet
+integration remains NOT PERFORMED. M3B-LR7 completed locally with
+EFFECT_MASK_INTERACTION_CONFIRMED. Active Card is NONE. Web GPT SOL leads
+Card design; a fresh local Gemini executor implements one published Card at
+a time.
 
 Latest completed operational work:
-M3B-LR6 — CAST Soft-Edge Figure Mask Compatibility Research.
+M3B-LR7 — CAST GLOBAL vs EFFECT-MASK Interaction Isolation Research.
 The existing CAST compiler and Character conditioning path remained active;
-the bounded six-output OFF/HARD/SOFT graph, mask provenance, visual review,
+the bounded two-output GLOBAL graph, runtime provenance, visual review,
 regressions, and canonical no-Guide regression completed with final result
-SOFT_MASK_CONFLICT. Publication remains LOCAL pending Owner push and SOL
-review.
+EFFECT_MASK_INTERACTION_CONFIRMED. Publication remains LOCAL pending Owner
+push and SOL review.
 
 Latest published operational work:
-M3B-LR5 — CAST + Figure-Masked CLEAN Compatibility Research.
+M3B-LR6 — CAST Soft-Edge Figure Mask Compatibility Research.
 Publication: PUBLISHED
-SOL review: PASS / CAST_MASKED_CONFLICT classification
+SOL review: PASS / SOFT_MASK_CONFLICT classification
 
 Latest operational handoff
 --------------------------
 Latest SOL-verified public commit:
-224c37b9446c412e0dca9ac04a72e74916059b1d
+f482b90d124c39f603f6863ac35aefb586e95bfd
 
 M3A.1 Core Implementation SHA:
 a7f0baaa89a2e315b0492573c9da19e50727928b
@@ -116,12 +120,14 @@ Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE
 M3B-LR4: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / LOCALITY_SUPPORTED
 M3B-LR5: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / CAST_MASKED_CONFLICT
 M3B-LR5 key failure: HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED
-M3B-LR6: COMPLETED LOCAL / TECHNICAL PASS / SOFT_MASK_CONFLICT
+M3B-LR6: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / SOFT_MASK_CONFLICT
+M3B-LR7: COMPLETED LOCAL / TECHNICAL PASS / EFFECT_MASK_INTERACTION_CONFIRMED
 Active Card: NONE
 
 Next:
-M3B-LR6 is locally completed with SOFT_MASK_CONFLICT. Owner push and SOL
-public review remain required; no additional Card is issued automatically.
+M3B-LR7 is locally completed with EFFECT_MASK_INTERACTION_CONFIRMED.
+Owner push and SOL public review remain required; no additional Card is issued
+automatically. Production ControlNet integration remains NOT PERFORMED.
 
 Completed review slice:
 M3B-LR1 — Rough Guide Foundation Long-Run Batch.

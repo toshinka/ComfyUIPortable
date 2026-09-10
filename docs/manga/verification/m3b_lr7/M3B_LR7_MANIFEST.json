@@ -1,0 +1,141 @@
+{
+  "card": "M3B-LR7",
+  "execution_baseline": {
+    "card_baseline": "f482b90d124c39f603f6863ac35aefb586e95bfd",
+    "final_head": "1a869125fa95ef4c7b1e94b0ccedab39fc52b4be",
+    "origin_main": "1a869125fa95ef4c7b1e94b0ccedab39fc52b4be",
+    "post_baseline_drift": "H3_ONLY",
+    "stage0_publication_truth": "PASS"
+  },
+  "question": "Is the LR5/LR6 visual conflict caused by CAST + ControlNet generally, or specifically by combining CAST regional conditioning with the ControlNet effect mask?",
+  "answer": "SPECIFICALLY_EFFECT_MASK_INTERACTION",
+  "input_mode": "cast",
+  "seeds": [42, 77],
+  "conditions": ["CAST_GLOBAL"],
+  "compiled_characters": 2,
+  "character_conditioning_active": true,
+  "character_mask_feather": 0,
+  "character_masks": 2,
+  "character_strength": 1.0,
+  "panel_strength": 1.0,
+  "local_region_strength": 1.0,
+  "control_strength": 0.75,
+  "control_start": 0.0,
+  "control_end": 1.0,
+  "clean_guide_sha256": "96f99a6c1327925b4b7737c9658ffb3e2b69e76ea2b0fe40210a095b9d99ae3a",
+  "controlnet_model": {
+    "selector": "CN-anytest_v4\\CN-anytest4_illustrious2_A.safetensors",
+    "path": "E:/EasyReforge/Model/ControlNet/CN-anytest_v4/CN-anytest4_illustrious2_A.safetensors",
+    "bytes": 2502139104,
+    "sha256": "e069d496cc111740716b833238d9bea9cdd59f8623aa85a78d362d088b1f67b8"
+  },
+  "schema_changed": false,
+  "production_workflow_modified": false,
+  "graph_provenance": {
+    "cast_global": {
+      "apply_node": "6",
+      "class_type": "ACN_AdvancedControlNetApply_v2",
+      "positive": ["3", 0],
+      "negative": ["3", 1],
+      "control_net": ["5", 0],
+      "image": ["8", 0],
+      "strength": 0.75,
+      "start_percent": 0.0,
+      "end_percent": 1.0,
+      "mask_optional": "UNCONNECTED",
+      "mask_optional_present_in_inputs": false
+    }
+  },
+  "generation": {
+    "workflow": "workflows/manga/research/M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION.json",
+    "prompt_id": "7d705115-f499-4ca0-9c4d-a76037d57dda",
+    "queue_status": "2/2 PASS",
+    "outputs": [
+      {
+        "seed": 42,
+        "condition": "CAST_GLOBAL",
+        "evidence": "SEED_A_CAST_GLOBAL.png",
+        "sha256": "51154a6680303d62736456553752a01731fa37f5c90658ee66fd459f4d24a6e5",
+        "dimensions": "832x1216",
+        "queue_status": "PASS"
+      },
+      {
+        "seed": 77,
+        "condition": "CAST_GLOBAL",
+        "evidence": "SEED_B_CAST_GLOBAL.png",
+        "sha256": "7d1149c25124d6690a24153929d344164320840e843fa443f05ef8913a829e0d",
+        "dimensions": "832x1216",
+        "queue_status": "PASS"
+      }
+    ]
+  },
+  "visual_review": {
+    "seed_42": {
+      "CAST_GLOBAL": {
+        "placement": "CLEAR",
+        "figure_count": "PASS",
+        "side_association": "PASS",
+        "quality": "USABLE",
+        "boundary_artifact": "NONE",
+        "regional_control_conflict": "NONE",
+        "extra_faint_figure": "YES"
+      }
+    },
+    "seed_77": {
+      "CAST_GLOBAL": {
+        "placement": "WEAK",
+        "figure_count": "FAIL",
+        "side_association": "FAIL",
+        "quality": "USABLE",
+        "boundary_artifact": "NONE",
+        "regional_control_conflict": "NONE",
+        "extra_faint_figure": "NO",
+        "baseline_defect": true
+      }
+    },
+    "comparator": {
+      "primary": "existing LR5 CAST_HARD",
+      "cast_hard_boundary_artifact": "CLEAR",
+      "cast_hard_quality": "DEGRADED",
+      "cast_global_boundary_artifact": "NONE",
+      "cast_global_quality": "USABLE"
+    },
+    "aggregate": {
+      "hard_boundary_artifact": "CLEAR",
+      "global_boundary_artifact": "NONE",
+      "hard_quality": "DEGRADED",
+      "global_quality": "USABLE",
+      "regional_control_conflict": "NONE",
+      "seed_variation": "PRESENT",
+      "contact_sheet": "M3B_LR7_CONTACT_SHEET.png"
+    }
+  },
+  "regression": {
+    "lr1_contract": "12/12 PASS",
+    "lr1_runtime_bridge": "5/5 PASS",
+    "lr1_guide_ops": "PASS",
+    "m2b_minimum_hand_frontend": "19/19 PASS",
+    "cast_regression": "PASS",
+    "overall": "PASS"
+  },
+  "canonical_no_guide": {
+    "source_workflow": "workflows/manga/MINIMUM_HAND_MANGA_DRAFT.json",
+    "prompt_id": "942e1c10-02c3-416e-93ee-d8933abe2e95",
+    "queue_status": "PASS",
+    "evidence": "CANONICAL_NO_GUIDE.png",
+    "sha256": "d360fee987fa36590bb49981b4f2faf99307c24e7e708cc82abffbf6744c55d9",
+    "dimensions": "832x1216",
+    "controlnet_dependency": false,
+    "advanced_controlnet_dependency": false,
+    "guide_dependency": false,
+    "cast_requirement": false,
+    "result": "PASS"
+  },
+  "classification": "EFFECT_MASK_INTERACTION_CONFIRMED",
+  "production_integration": "NOT_PERFORMED",
+  "final_owner_product_review": "DEFERRED",
+  "stopped_early": false,
+  "stop_reason": "",
+  "publication": "LOCAL",
+  "owner_push_required": true
+}

@@ -1,0 +1,182 @@
+{
+  "card": "M3B-LR7",
+  "source_workflow": "workflows/manga/research/M3B_LR5_CAST_MASKED_COMPATIBILITY.json",
+  "target_workflow": "workflows/manga/research/M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION.json",
+  "input_mode": "cast",
+  "compiled_characters_count": 2,
+  "compiled_characters": [
+    {
+      "instance_id": "inst_1",
+      "character_id": "cast_1",
+      "name": "Left Student",
+      "base_prompt": "young student, short dark hair, school uniform",
+      "override_prompt": "standing near the left window",
+      "combined_prompt": "young student, short dark hair, school uniform, standing near the left window, on the left side",
+      "raw_identity_prompt": "young student, short dark hair, school uniform",
+      "raw_acting_prompt": "standing near the left window",
+      "derived_spatial_hint": "on the left side",
+      "scene_presence_hint": "",
+      "effective_character_prompt": "young student, short dark hair, school uniform, standing near the left window, on the left side",
+      "derived_hints_metadata": {
+        "rel_center_x": 0.2045,
+        "rel_center_y": 0.4886,
+        "horizontal_slot": "left",
+        "depth_slot": "neutral",
+        "is_ambiguous": false,
+        "arrangement_hint": "",
+        "mode": "auto",
+        "resolved_mode": "horizontal"
+      },
+      "base_negative_prompt": "",
+      "override_negative_prompt": "",
+      "combined_negative_prompt": "",
+      "area": {
+        "shape_type": "rect",
+        "x": 0.08,
+        "y": 0.18,
+        "w": 0.32,
+        "h": 0.62
+      },
+      "coordinate_space": "page",
+      "loras": [],
+      "metadata": {
+        "instance_id": "inst_1",
+        "cast_id": "cast_1",
+        "scene_id": "scene_main",
+        "order": 1,
+        "display_name": "Left Student",
+        "spatial_hint_mode": "auto"
+      }
+    },
+    {
+      "instance_id": "inst_2",
+      "character_id": "cast_2",
+      "name": "Right Student",
+      "base_prompt": "young student, long light hair, school uniform",
+      "override_prompt": "seated near the right desk",
+      "combined_prompt": "young student, long light hair, school uniform, seated near the right desk, on the right side",
+      "raw_identity_prompt": "young student, long light hair, school uniform",
+      "raw_acting_prompt": "seated near the right desk",
+      "derived_spatial_hint": "on the right side",
+      "scene_presence_hint": "",
+      "effective_character_prompt": "young student, long light hair, school uniform, seated near the right desk, on the right side",
+      "derived_hints_metadata": {
+        "rel_center_x": 0.7614,
+        "rel_center_y": 0.5114,
+        "horizontal_slot": "right",
+        "depth_slot": "neutral",
+        "is_ambiguous": false,
+        "arrangement_hint": "",
+        "mode": "auto",
+        "resolved_mode": "horizontal"
+      },
+      "base_negative_prompt": "",
+      "override_negative_prompt": "",
+      "combined_negative_prompt": "",
+      "area": {
+        "shape_type": "rect",
+        "x": 0.6,
+        "y": 0.26,
+        "w": 0.26,
+        "h": 0.5
+      },
+      "coordinate_space": "page",
+      "loras": [],
+      "metadata": {
+        "instance_id": "inst_2",
+        "cast_id": "cast_2",
+        "scene_id": "scene_main",
+        "order": 2,
+        "display_name": "Right Student",
+        "spatial_hint_mode": "auto"
+      }
+    }
+  ],
+  "character_conditioning_entries_count": 2,
+  "character_conditioning_entries": [
+    {
+      "character_id": "cast_1",
+      "character_name": "Left Student",
+      "panel_id": 1,
+      "index": 0,
+      "positive": "young student, short dark hair, school uniform, standing near the left window, on the left side",
+      "negative": "",
+      "strength": 1.0
+    },
+    {
+      "character_id": "cast_2",
+      "character_name": "Right Student",
+      "panel_id": 1,
+      "index": 1,
+      "positive": "young student, long light hair, school uniform, seated near the right desk, on the right side",
+      "negative": "",
+      "strength": 1.0
+    }
+  ],
+  "character_masks_count": 2,
+  "clean_guide": {
+    "path": "tegaki_manga_guides/M3B_LR3_CLEAN_GUIDE.png",
+    "sha256": "96f99a6c1327925b4b7737c9658ffb3e2b69e76ea2b0fe40210a095b9d99ae3a",
+    "verified": true
+  },
+  "controlnet_model": {
+    "selector": "CN-anytest_v4\\CN-anytest4_illustrious2_A.safetensors",
+    "path": "E:/EasyReforge/Model/ControlNet/CN-anytest_v4/CN-anytest4_illustrious2_A.safetensors",
+    "sha256": "e069d496cc111740716b833238d9bea9cdd59f8623aa85a78d362d088b1f67b8",
+    "verified": true
+  },
+  "cast_global_graph": {
+    "apply_node": "6",
+    "class_type": "ACN_AdvancedControlNetApply_v2",
+    "positive": [
+      "3",
+      0
+    ],
+    "negative": [
+      "3",
+      1
+    ],
+    "control_net": [
+      "5",
+      0
+    ],
+    "image": [
+      "8",
+      0
+    ],
+    "strength": 0.75,
+    "start_percent": 0.0,
+    "end_percent": 1.0,
+    "mask_optional": "UNCONNECTED",
+    "mask_optional_present_in_inputs": false
+  },
+  "seeds": [
+    42,
+    77
+  ],
+  "outputs": [
+    {
+      "seed": 42,
+      "sampler_node": "11",
+      "save_node": "31",
+      "prefix": "M3B_LR7_SEED_A_CAST_GLOBAL",
+      "expected_file": "SEED_A_CAST_GLOBAL.png"
+    },
+    {
+      "seed": 77,
+      "sampler_node": "14",
+      "save_node": "34",
+      "prefix": "M3B_LR7_SEED_B_CAST_GLOBAL",
+      "expected_file": "SEED_B_CAST_GLOBAL.png"
+    }
+  ],
+  "schema_changed": false,
+  "production_workflow_modified": false,
+  "comparator": {
+    "primary": "existing LR5 CAST_HARD",
+    "historical_off_a": "docs/manga/verification/m3b_lr6/SEED_A_CAST_OFF.png",
+    "historical_hard_a": "docs/manga/verification/m3b_lr6/SEED_A_CAST_HARD.png",
+    "historical_off_b": "docs/manga/verification/m3b_lr6/SEED_B_CAST_OFF.png",
+    "historical_hard_b": "docs/manga/verification/m3b_lr6/SEED_B_CAST_HARD.png"
+  }
+}
