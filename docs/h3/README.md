@@ -4,7 +4,7 @@
 
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
 将来の実装棚とReference Implementation evidenceを一か所から辿るための
-document hub です。現在は **VP1 / Video Practicalization Safe Resolution / Duration Envelope + Browser Unlock** であり、
+document hub です。現在は **VP2A / Native Ref2VA / R2V Feasibility — Acquisition Gate** であり、
 H1C / Frame-Bridged Continuation は回帰基盤として保持し、
 H1B.1 / Start + End Frame and Native FL2VA vertical slice + UX P0/P1/P2
 Fixes は履歴と回帰対象として保持します。H0/H0.1/H1A/H1B の model
@@ -28,8 +28,11 @@ the H2B source route; production I2I semantics remain out of scope. Its base
 implementation, seed-losslessness fix, evidence, and closeout docs are present
 in the current `origin/main` history. VP1 adds only the verified Video options
 `608 x 352` / `736 x 416` and `5` / `15` seconds; Still remains `608 x 352`
-with Duration hidden. VP1 implementation and evidence are local until Owner
-push. Owner acceptance remains pending.
+with Duration hidden. VP1 implementation, evidence, and canonical publication
+wording are published on `main` at `41da0bf804d049adc40e2ae2d5abfdd59eabc703`.
+VP2A audited the Native Ref2VA source contract but stopped before download and
+generation because the exact Ref2VA artifact is absent and exact Owner
+authorization is not recorded. Owner acceptance remains pending.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
@@ -83,6 +86,9 @@ push. Owner acceptance remains pending.
 | `docs/h3/reports/VP1_VIDEO_RESOLUTION_DURATION_ENVELOPE_REPORT.md` | VP1 safe Video resolution/duration envelope, Native matrix, Browser unlock, and closeout boundary | CURRENT VP1 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/VP1_VIDEO_RESOLUTION_DURATION_ENVELOPE_REPORT.md` |
 | `docs/h3/evidence/vp1-video-envelope/2026-09-10/README.md` | VP1 Native/Browser media, config, History, Still-isolation, and telemetry evidence | CURRENT VP1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp1-video-envelope/2026-09-10/README.md` |
 | `docs/h3/evidence/vp1-video-envelope/2026-09-10/manifest.json` | Machine-readable VP1 runtime/output manifest | CURRENT VP1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp1-video-envelope/2026-09-10/manifest.json` |
+| `docs/h3/reports/VP2A_NATIVE_REF2VA_R2V_FEASIBILITY_REPORT.md` | VP2A Native Ref2VA/R2V acquisition gate, source contract audit, and stop result | CURRENT VP2A REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/VP2A_NATIVE_REF2VA_R2V_FEASIBILITY_REPORT.md` |
+| `docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/README.md` | VP2A license gate, exact model path check, Native source audit, and stop evidence | CURRENT VP2A EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/README.md` |
+| `docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/manifest.json` | Machine-readable VP2A acquisition-gate manifest | CURRENT VP2A EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/manifest.json` |
 | `docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` | H2-INFRA external model migration, isolation, shortcuts, cold restart, and closeout | CURRENT H2-INFRA REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` |
 | `docs/h3/evidence/model-library/2026-09-10/README.md` | H2-INFRA inventory, migration, deletion, shortcut, and runtime evidence index | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/README.md` |
 | `docs/h3/evidence/model-library/2026-09-10/inventory.json` | Machine-readable before/after H3 model inventory | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/inventory.json` |
@@ -230,9 +236,12 @@ implementation follows from that result automatically.
 - Production H3 output is isolated at `output/h3/video/`, with `debug/` and `tests/`
   alongside it. Existing `output/` content and Manga output are outside this slice.
 
-The historical groundwork reports remain historical records. The current gate
-is the VP1 report and evidence above; it does not imply Owner acceptance,
-public production deployment, or adoption of a candidate implementation.
+The historical groundwork reports remain historical records. VP1 is the
+published Video baseline. The current gate is the VP2A report and evidence
+above: it records a Native source audit and an acquisition stop, not a model
+download, runtime feasibility result, Browser R2V implementation, Owner
+acceptance, public production deployment, or adoption of a candidate
+implementation.
 
 ## H3 implementation boundary
 
@@ -303,9 +312,13 @@ Still receives no Video option automatically.
     duration-only and resolution-only candidate matrices, Browser option
     population/completions, History restore, 64-bit seed preservation, and
     Still isolation separately.
-18. Stop at the VP1 gate; do not infer Owner acceptance, production I2I,
-    REF2VA, ordered multi-reference, Segment, Studio, or production deployment
-    from this bounded Browser slice.
+18. Read the VP2A report and dated evidence; verify the exact model filename,
+    expected bytes/SHA-256, official license gate, external path check, and
+    Native `MiniMaxH3ReferenceToVideo` source contract separately.
+19. Stop at the VP2A acquisition gate; do not infer Owner acceptance, Picture
+    influence, Video influence, 12GB feasibility, production I2I, ordered
+    multi-reference, Browser R2V, Segment, Studio, or production deployment
+    from this evidence.
 
 ## Evidence vocabulary
 

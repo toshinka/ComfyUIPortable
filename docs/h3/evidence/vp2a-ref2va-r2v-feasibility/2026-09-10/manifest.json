@@ -1,0 +1,145 @@
+{
+  "schema": "tegaki.h3.vp2a.ref2va-r2v-feasibility.evidence/v1",
+  "card": "VP2A",
+  "title": "Native Ref2VA / R2V Feasibility Single Picture + Single Motion Video Model Acquisition Gate",
+  "evidence_date": "2026-09-10",
+  "captured_at": "2026-09-10T20:25:18+09:00",
+  "classification": "ACQUISITION REQUIRED",
+  "status": [
+    "NATIVE REF2VA SOURCE CONTRACT AUDITED",
+    "REF2VA MODEL NOT FOUND",
+    "OWNER LICENSE/AUTHORIZATION REQUIRED",
+    "PICTURE STAGE NOT TESTED",
+    "VIDEO STAGE NOT TESTED",
+    "BROWSER R2V NOT IMPLEMENTED",
+    "OWNER ACCEPTANCE PENDING"
+  ],
+  "base_remote_main": "41da0bf804d049adc40e2ae2d5abfdd59eabc703",
+  "vp1_publication": {
+    "status": "PUBLISHED ON MAIN",
+    "commit": "41da0bf804d049adc40e2ae2d5abfdd59eabc703",
+    "live_external_fetch": "NOT VERIFIED IN THIS RUN; git ls-remote connection failed"
+  },
+  "owner_acceptance": "PENDING",
+  "license_gate": {
+    "status": "OWNER ACTION REQUIRED",
+    "terms": "MiniMax H3 Community License Agreement",
+    "local_evidence": [
+      "docs/h3/evidence/H3_MODEL_ACQUISITION_MANIFEST.md",
+      "docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_GENERATION_EVALUATION_REPORT.md"
+    ],
+    "recorded_authorization_for_exact_ref2va": false,
+    "download_or_terms_acceptance_attempted": false
+  },
+  "model": {
+    "filename": "minimax_h3_ref2va_pruned_int8_convrot.safetensors",
+    "role": "Native MiniMax H3 Ref2VA / R2V diffusion model",
+    "official_source_repository": "https://huggingface.co/Comfy-Org/MiniMax-H3",
+    "source_subpath": "diffusion_models/minimax_h3_ref2va_pruned_int8_convrot.safetensors",
+    "expected_bytes": 20970379616,
+    "expected_sha256": "9255F52B6677845AD238F20DFAAFA94727053694127AB7F255C048F0F9365779",
+    "canonical_destination": "E:\\Data\\Models\\StableDiffusion\\minimaxH3\\diffusion_models\\minimax_h3_ref2va_pruned_int8_convrot.safetensors",
+    "portable_destination_forbidden": "h3/model_store/",
+    "acquisition": "NOT ACQUIRED",
+    "hash_verification": "NOT APPLICABLE; file absent"
+  },
+  "path_checks": [
+    {
+      "scope": "E:\\Data\\Models\\StableDiffusion\\minimaxH3\\diffusion_models",
+      "directory_exists": true,
+      "exact_file_exists": false,
+      "observed_directory_note": "Existing diffusion directory listing contained minimax_h3_fl2va_pruned_int8_convrot.safetensors only",
+      "observed_fl2va_bytes": 20970379616
+    },
+    {
+      "scope": "E:\\Data\\Models\\StableDiffusion\\minimaxH3 recursive exact filename check",
+      "directory_exists": true,
+      "exact_filename_hits": 0
+    },
+    {
+      "scope": "h3/model_store/ and ComfyUI/models/ exact filename checks",
+      "exact_file_hits": 0
+    }
+  ],
+  "native_source_audit": {
+    "status": "PASS SOURCE AUDIT / RUNTIME NOT TESTED",
+    "file": "ComfyUI/comfy_extras/nodes_minimax_h3.py",
+    "class": "MiniMaxH3ReferenceToVideo",
+    "source_lines": "154-269",
+    "inputs": {
+      "required_model_inputs": ["clip", "vae", "audio_vae"],
+      "scalar_inputs": {
+        "prompt": "multiline dynamic prompt",
+        "width": {"default": 1344, "min": 32, "max": "nodes.MAX_RESOLUTION", "step": 32},
+        "height": {"default": 768, "min": 32, "max": "nodes.MAX_RESOLUTION", "step": 32},
+        "length": {"default": 124, "min": 5, "max": 3600, "step": 17, "fps": 24},
+        "ref_image_size": ["match", "max"]
+      },
+      "reference_groups": {
+        "ref_images": {"prefix": "ref_image_", "max": 9, "representation": "IMAGE"},
+        "ref_videos": {"prefix": "ref_video_", "max": 3, "representation": "IMAGE frames"},
+        "ref_video_audios": {"prefix": "ref_video_audio_", "max": 3, "representation": "AUDIO, numeric-suffix paired"},
+        "ref_audios": {"prefix": "ref_audio_", "max": 3, "representation": "AUDIO, standalone"}
+      },
+      "outputs": ["positive conditioning", "AV latent"]
+    },
+    "observed_semantics": [
+      "Picture refs are scaled down only; match uses generation pixel area and max uses the 2048 short-edge limit",
+      "Video refs are canvas-adapted, capped to output frame_count, require at least 5 frames, and truncate to 17n+5",
+      "Qwen receives reference video frames at 2 fps with timestamps",
+      "ref_video_audio_N is paired to ref_video_N and is optional",
+      "Presentation order is images, then videos, then standalone audio with typed ordinal labels"
+    ]
+  },
+  "stages": {
+    "picture_only": {
+      "status": "NOT TESTED",
+      "reason": "Stopped before acquisition; no workflow or model load",
+      "planned_baseline": {"width": 608, "height": 352, "duration_seconds": 5, "steps": 20, "fps": 24, "ref_image_size": "match", "picture_count": 1},
+      "output": null,
+      "oom_count": null,
+      "retry_count": null,
+      "peak_vram_mib": null,
+      "working_set_mib": null
+    },
+    "picture_plus_one_video": {
+      "status": "NOT TESTED",
+      "reason": "Conditional on a technically complete Picture-only stage",
+      "picture_count": 1,
+      "video_count": 1,
+      "reference_video_audio_connected": false,
+      "output": null,
+      "oom_count": null,
+      "retry_count": null
+    }
+  },
+  "runtime_transition": {
+    "post_ref2va_t2v_baseline": "NOT TESTED",
+    "automatic_model_swap_manager": "NOT ADDED"
+  },
+  "browser": {
+    "r2v_ui": "NOT IMPLEMENTED",
+    "existing_video_still_ui_changed": false,
+    "requested_css_viewport_readback": "NOT APPLICABLE TO VP2A; VP1 retained NOT AVAILABLE / CUA HOST LIMIT"
+  },
+  "artifacts": {
+    "model_committed": false,
+    "mp4_committed": false,
+    "reference_video_downloaded": false,
+    "implementation_commit": null,
+    "evidence_docs_commit": null
+  },
+  "regression": {
+    "status": "DOCS-ONLY VALIDATION",
+    "runtime_suites_run": false,
+    "reason": "No runtime or Browser code changed; generation suites remain prior evidence",
+    "required_checks": ["JSON parse", "git diff --check"]
+  },
+  "validation": {
+    "vp2a_manifest_json": "PASS",
+    "vp1_manifest_json": "PASS",
+    "git_diff_check": "PASS",
+    "vp1_publication_stale_wording_in_targeted_files": "NONE"
+  },
+  "stop": "STOP BEFORE DOWNLOAD: exact Ref2VA acquisition and license authorization are required from Owner"
+}

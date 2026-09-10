@@ -7,9 +7,10 @@ Decision: `PASS`
 Status: `IMPLEMENTED + VERIFIED NATIVE MATRIX + VERIFIED BROWSER UI + VERIFIED
 HISTORY RESTORE + VERIFIED STILL ISOLATION`
 
-Publication: `LOCAL MAIN` for the VP1 implementation and this evidence package.
-The H2C package was separately verified as published in the current
-`origin/main` at `224c37b9`. Owner acceptance remains `PENDING`.
+Publication: `PUBLISHED ON MAIN` for the VP1 implementation and this evidence
+package at commit `41da0bf804d049adc40e2ae2d5abfdd59eabc703`. The H2C package
+was separately verified as an ancestor of the current local `origin/main` at
+`41da0bf8`. Owner acceptance remains `PENDING`.
 
 Report: [VP1_VIDEO_RESOLUTION_DURATION_ENVELOPE_REPORT.md](../../../reports/VP1_VIDEO_RESOLUTION_DURATION_ENVELOPE_REPORT.md)
 
@@ -148,13 +149,13 @@ visual review still showed the Preview as the dominant surface, visible
 completion metadata, Generate before Advanced, and the expected Video/Still
 control separation.
 
-VP1 source/code/docs are local and unpushed. Generated MP4s, runtime inputs,
-models, and caches remain outside the evidence package and are not committed.
-H2C publication is a separate verified fact: its seed fix/evidence/report
-commits are ancestors of current `origin/main` `224c37b9`. Neither publication
-status replaces Owner acceptance.
+VP1 source/code/docs are published in the commit above. Generated MP4s,
+runtime inputs, models, and caches remain outside the evidence package and are
+not committed. H2C publication is a separate verified fact: its seed
+fix/evidence/report commits are ancestors of current `origin/main` `41da0bf8`.
+Neither publication status replaces Owner acceptance.
 
 Owner acceptance: `PENDING`
 
-STOP. Next direction: Owner review, acceptance, and normal publication of the
-VP1 local package; do not issue a later feature Card until that review is done.
+STOP. Next direction: Owner review and acceptance remain pending; VP1
+publication does not replace Owner acceptance.

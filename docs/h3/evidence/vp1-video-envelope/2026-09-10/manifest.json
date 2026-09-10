@@ -14,7 +14,8 @@
     "VERIFIED BROWSER STILL ISOLATION",
     "OWNER ACCEPTANCE PENDING"
   ],
-  "publication": "LOCAL MAIN",
+  "publication": "PUBLISHED ON MAIN",
+  "publication_commit": "41da0bf804d049adc40e2ae2d5abfdd59eabc703",
   "owner_acceptance": "PENDING",
   "implementation": {
     "base_origin_main": "224c37b9446c412e0dca9ac04a72e74916059b1d",

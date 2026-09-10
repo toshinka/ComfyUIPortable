@@ -214,14 +214,14 @@ LOCAL IMPLEMENTATION: PASS
 NATIVE TECHNICAL/RUNTIME: PASS (6/6 matrix runs; OOM 0; retry 0)
 BROWSER UI: PASS (baseline + duration + resolution; post-fix History recheck)
 STILL ISOLATION: PASS
-GITHUB PUBLICATION: VP1 LOCAL MAIN / NOT PUSHED
+GITHUB PUBLICATION: VP1 PUBLISHED ON MAIN (commit 41da0bf804d049adc40e2ae2d5abfdd59eabc703)
 H2C PUBLICATION: PUBLISHED ON MAIN, verified at origin/main 224c37b9
 OWNER ACCEPTED: PENDING
 ```
 
 The VP1 changes are confined to the H3 adapter/server/UI/tests and this
 report/evidence package. No MP4, model, runtime input, cache, or generated
-asset is committed. GitHub push and Owner acceptance remain separate actions.
+asset is committed. Publication and Owner acceptance remain separate actions.
 
 ## 8. Closeout boundary
 
