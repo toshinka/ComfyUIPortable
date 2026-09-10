@@ -1,0 +1,293 @@
+{
+  "schema": "tegaki.h3.model-library.inventory/v1",
+  "captured_at": "2026-09-10T08:56:16+09:00",
+  "status": "PASS",
+  "scope": {
+    "card": "H2-INFRA",
+    "model_downloads": "NONE",
+    "shared_comfyui_changes": "NONE",
+    "manga_changes": "NONE",
+    "scan_scope": [
+      "h3/model_store/",
+      "E:/Data/Models/StableDiffusion/minimaxH3",
+      "D:/Models/Lora/minimaxH3",
+      "E:/Data/Models/VAE/minimaxH3",
+      "named shared and EasyReforge shortcut targets"
+    ]
+  },
+  "pre_migration_environment": {
+    "drive_free_bytes": {
+      "D:": 337474592768,
+      "E:": 1244249120768
+    },
+    "target_write_probe": "PASS",
+    "portable_model_store_reparse_points": [],
+    "external_h3_model_root_before": {
+      "path": "E:/Data/Models/StableDiffusion/minimaxH3",
+      "present": true,
+      "contents_before": "EMPTY"
+    },
+    "external_h3_vae_root_before": {
+      "path": "E:/Data/Models/VAE/minimaxH3",
+      "present": false,
+      "created_for_migration": true
+    },
+    "h3_lora_root": {
+      "path": "D:/Models/Lora/minimaxH3",
+      "present": true,
+      "file_count": 19,
+      "classification": "ALREADY EXTERNAL",
+      "load_test": "NOT TESTED"
+    }
+  },
+  "assets": [
+    {
+      "role": "diffusion_model",
+      "logical_comfyui_category": "diffusion_models",
+      "classification": "MOVE EXTERNAL",
+      "filename": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "portable_path_before": "D:/GitHub/tegaki/ComfyUIPortable/h3/model_store/diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "external_canonical_path": "E:/Data/Models/StableDiffusion/minimaxH3/diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "bytes": 20970379616,
+      "sha256": "E889202C41DAFB67B10D67B97F0D8541508036A6090AF23425A5C2615D03C47A",
+      "portable_link_status_before": "regular file; not a reparse point",
+      "external_link_status_after": "regular file; not a reparse point",
+      "workflow_usage": [
+        "workflows/h3/H1A_NATIVE_T2V_BASE.json",
+        "workflows/h3/H1B_NATIVE_I2V_BASE.json",
+        "workflows/h3/H1B1_NATIVE_FL2VA_BASE.json",
+        "workflows/h3/H2A_NATIVE_STILL_BASE.json",
+        "workflows/h3/H2B_SOURCE_ANCHORED_STILL_BASE.json",
+        "H1C continuation through the existing H1B.1 route"
+      ],
+      "pre_delete_external": {
+        "present": true,
+        "sha256": "E889202C41DAFB67B10D67B97F0D8541508036A6090AF23425A5C2615D03C47A",
+        "hash_match": true
+      },
+      "portable_deletion": {
+        "authorized_exact_path": true,
+        "deleted": true,
+        "portable_path_after": null
+      },
+      "post_delete_external": {
+        "present": true,
+        "sha256": "E889202C41DAFB67B10D67B97F0D8541508036A6090AF23425A5C2615D03C47A",
+        "unchanged": true
+      },
+      "runtime_usage": [
+        "pre-delete H2B external Still",
+        "pre-delete H1A external Video",
+        "post-delete cold-start H2B Still"
+      ]
+    },
+    {
+      "role": "text_encoder",
+      "logical_comfyui_category": "text_encoders",
+      "classification": "MOVE EXTERNAL",
+      "filename": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "portable_path_before": "D:/GitHub/tegaki/ComfyUIPortable/h3/model_store/text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "external_canonical_path": "E:/Data/Models/StableDiffusion/minimaxH3/text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "bytes": 15687142551,
+      "sha256": "35A88D51044231FE332301D7A62AA81E3F2CBA62FEBEB446E2C1E3E0EF76F2C6",
+      "portable_link_status_before": "regular file; not a reparse point",
+      "external_link_status_after": "regular file; not a reparse point",
+      "workflow_usage": [
+        "workflows/h3/H1A_NATIVE_T2V_BASE.json",
+        "workflows/h3/H1B_NATIVE_I2V_BASE.json",
+        "workflows/h3/H1B1_NATIVE_FL2VA_BASE.json",
+        "workflows/h3/H2A_NATIVE_STILL_BASE.json",
+        "workflows/h3/H2B_SOURCE_ANCHORED_STILL_BASE.json",
+        "H1C continuation through the existing H1B.1 route"
+      ],
+      "pre_delete_external": {
+        "present": true,
+        "sha256": "35A88D51044231FE332301D7A62AA81E3F2CBA62FEBEB446E2C1E3E0EF76F2C6",
+        "hash_match": true
+      },
+      "portable_deletion": {
+        "authorized_exact_path": true,
+        "deleted": true,
+        "portable_path_after": null
+      },
+      "post_delete_external": {
+        "present": true,
+        "sha256": "35A88D51044231FE332301D7A62AA81E3F2CBA62FEBEB446E2C1E3E0EF76F2C6",
+        "unchanged": true
+      },
+      "runtime_usage": [
+        "pre-delete H2B external Still",
+        "pre-delete H1A external Video",
+        "post-delete cold-start H2B Still"
+      ]
+    },
+    {
+      "role": "video_vae",
+      "logical_comfyui_category": "vae",
+      "classification": "MOVE EXTERNAL",
+      "filename": "minimax_h3_video_vae_fp16.safetensors",
+      "portable_path_before": "D:/GitHub/tegaki/ComfyUIPortable/h3/model_store/vae/minimax_h3_video_vae_fp16.safetensors",
+      "external_canonical_path": "E:/Data/Models/VAE/minimaxH3/minimax_h3_video_vae_fp16.safetensors",
+      "bytes": 5207808496,
+      "sha256": "7C1F131492E7EDDACAAC9069A61B81BDD39DE5CC96561E677C5EAB1CDCE5E522",
+      "portable_link_status_before": "regular file; not a reparse point",
+      "external_link_status_after": "regular file; not a reparse point",
+      "workflow_usage": [
+        "workflows/h3/H1A_NATIVE_T2V_BASE.json",
+        "workflows/h3/H1B_NATIVE_I2V_BASE.json",
+        "workflows/h3/H1B1_NATIVE_FL2VA_BASE.json",
+        "workflows/h3/H2A_NATIVE_STILL_BASE.json",
+        "workflows/h3/H2B_SOURCE_ANCHORED_STILL_BASE.json",
+        "H1C continuation through the existing H1B.1 route"
+      ],
+      "pre_delete_external": {
+        "present": true,
+        "sha256": "7C1F131492E7EDDACAAC9069A61B81BDD39DE5CC96561E677C5EAB1CDCE5E522",
+        "hash_match": true
+      },
+      "portable_deletion": {
+        "authorized_exact_path": true,
+        "deleted": true,
+        "portable_path_after": null
+      },
+      "post_delete_external": {
+        "present": true,
+        "sha256": "7C1F131492E7EDDACAAC9069A61B81BDD39DE5CC96561E677C5EAB1CDCE5E522",
+        "unchanged": true
+      },
+      "runtime_usage": [
+        "pre-delete H2B external Still",
+        "pre-delete H1A external Video",
+        "post-delete cold-start H2B Still"
+      ]
+    },
+    {
+      "role": "audio_vae",
+      "logical_comfyui_category": "vae",
+      "classification": "MOVE EXTERNAL",
+      "filename": "minimax_h3_audio_vae_fp32.safetensors",
+      "portable_path_before": "D:/GitHub/tegaki/ComfyUIPortable/h3/model_store/vae/minimax_h3_audio_vae_fp32.safetensors",
+      "external_canonical_path": "E:/Data/Models/VAE/minimaxH3/minimax_h3_audio_vae_fp32.safetensors",
+      "bytes": 605254808,
+      "sha256": "8E505D95DD1561D47ABD43D4238FD40D9BB1AE9E147ED0A4CBA778D76AE4DB48",
+      "portable_link_status_before": "regular file; not a reparse point",
+      "external_link_status_after": "regular file; not a reparse point",
+      "workflow_usage": [
+        "workflows/h3/H1A_NATIVE_T2V_BASE.json",
+        "workflows/h3/H1B_NATIVE_I2V_BASE.json",
+        "workflows/h3/H1B1_NATIVE_FL2VA_BASE.json",
+        "H1C continuation through the existing H1B.1 route"
+      ],
+      "pre_delete_external": {
+        "present": true,
+        "sha256": "8E505D95DD1561D47ABD43D4238FD40D9BB1AE9E147ED0A4CBA778D76AE4DB48",
+        "hash_match": true
+      },
+      "portable_deletion": {
+        "authorized_exact_path": true,
+        "deleted": true,
+        "portable_path_after": null
+      },
+      "post_delete_external": {
+        "present": true,
+        "sha256": "8E505D95DD1561D47ABD43D4238FD40D9BB1AE9E147ED0A4CBA778D76AE4DB48",
+        "unchanged": true
+      },
+      "runtime_usage": [
+        "pre-delete H1A external Video audio path",
+        "post-delete external hash/path verification"
+      ]
+    }
+  ],
+  "partial_cache_inventory": [
+    {
+      "path": "D:/GitHub/tegaki/ComfyUIPortable/h3/model_store/.cache/huggingface/download/diffusion_models/l0yYA8B7hEmatK0ewUoO7iUuuzE=.e889202c41dafb67b10d67b97f0d8541508036a6090af23425a5c2615d03c47a.incomplete",
+      "bytes": 3858759680,
+      "classification": "KEEP PORTABLE",
+      "status": "partial cache; not a production weight; not deleted under exact-file authorization",
+      "sha256": "NOT COLLECTED"
+    },
+    {
+      "path": "D:/GitHub/tegaki/ComfyUIPortable/h3/model_store/.cache/huggingface/download/text_encoders/6Sq2OqJZlJL9UgSXxkWcJQNMeBs=.35a88d51044231fe332301d7a62aa81e3f2cba62febeb446e2c1e3e0ef76f2c6.incomplete",
+      "bytes": 5609881600,
+      "classification": "KEEP PORTABLE",
+      "status": "partial cache; not a production weight; not deleted under exact-file authorization",
+      "sha256": "NOT COLLECTED"
+    },
+    {
+      "path": "D:/GitHub/tegaki/ComfyUIPortable/h3/model_store/.cache/huggingface/download/diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors.lock",
+      "bytes": 0,
+      "classification": "KEEP PORTABLE",
+      "status": "download lock; not a production weight; not deleted under exact-file authorization",
+      "sha256": "NOT COLLECTED"
+    },
+    {
+      "path": "D:/GitHub/tegaki/ComfyUIPortable/h3/model_store/.cache/huggingface/download/text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors.lock",
+      "bytes": 0,
+      "classification": "KEEP PORTABLE",
+      "status": "download lock; not a production weight; not deleted under exact-file authorization",
+      "sha256": "NOT COLLECTED"
+    }
+  ],
+  "shared_sources": [
+    { "role": "shared_checkpoint", "path": "E:/Data/Models/StableDiffusion", "classification": "SHARED EXISTING", "link_status": "normal directory", "wired_into_h3_local_override": false },
+    { "role": "shared_lora", "path": "D:/Models/Lora", "classification": "SHARED EXISTING", "link_status": "normal directory", "wired_into_h3_local_override": false },
+    { "role": "shared_vae", "path": "E:/Data/Models/VAE", "classification": "SHARED EXISTING", "link_status": "normal directory", "wired_into_h3_local_override": false },
+    { "role": "shared_controlnet", "path": "E:/Data/Models/ControlNet", "classification": "SHARED EXISTING", "link_status": "normal directory", "wired_into_h3_local_override": false },
+    { "role": "shared_embeddings", "path": "E:/Data/Models/Embeddings", "classification": "SHARED EXISTING", "link_status": "normal directory", "wired_into_h3_local_override": false },
+    { "role": "shared_upscaler", "path": "E:/Data/Models/ESRGAN", "classification": "SHARED EXISTING", "link_status": "normal directory", "wired_into_h3_local_override": false },
+    { "role": "easyreforge_checkpoint", "path": "E:/EasyReforge/Model/Stable-diffusion", "classification": "SHARED EXISTING", "link_status": "existing SymbolicLink", "wired_into_h3_local_override": false },
+    { "role": "easyreforge_lora", "path": "E:/EasyReforge/Model/Lora", "classification": "SHARED EXISTING", "link_status": "existing SymbolicLink", "wired_into_h3_local_override": false },
+    { "role": "easyreforge_vae", "path": "E:/EasyReforge/Model/VAE", "classification": "SHARED EXISTING", "link_status": "normal directory", "wired_into_h3_local_override": false },
+    { "role": "easyreforge_controlnet", "path": "E:/EasyReforge/Model/ControlNet", "classification": "SHARED EXISTING", "link_status": "normal directory", "wired_into_h3_local_override": false },
+    { "role": "easyreforge_upscaler", "path": "E:/EasyReforge/Model/ESRGAN", "classification": "SHARED EXISTING", "link_status": "normal directory", "wired_into_h3_local_override": false }
+  ],
+  "after_delete": {
+    "portable_model_store": "AVAILABLE",
+    "portable_fallback_directories": [
+      "D:/GitHub/tegaki/ComfyUIPortable/h3/model_store",
+      "D:/GitHub/tegaki/ComfyUIPortable/h3/model_store/diffusion_models",
+      "D:/GitHub/tegaki/ComfyUIPortable/h3/model_store/text_encoders",
+      "D:/GitHub/tegaki/ComfyUIPortable/h3/model_store/vae"
+    ],
+    "bundled_first_wave_heavy_weights": "NONE",
+    "portable_heavy_weight_paths_present": [],
+    "duplicate_heavy_production_copies": "NONE",
+    "removed_bytes": 42470585471
+  },
+  "shortcut_targets": {
+    "directory": "D:/GitHub/tegaki/ComfyUIPortable/MODEL_SHORTCUTS",
+    "owned_shortcuts": [
+      "DOWNLOAD_H3_MODELS.lnk",
+      "DOWNLOAD_H3_LORA.lnk",
+      "H3_VAE.lnk",
+      "SHARED_CHECKPOINTS.lnk",
+      "SHARED_LORA.lnk",
+      "SHARED_VAE.lnk",
+      "SHARED_CONTROLNET.lnk",
+      "SHARED_EMBEDDINGS.lnk",
+      "SHARED_UPSCALER.lnk",
+      "EASYREFORGE_CHECKPOINTS.lnk",
+      "EASYREFORGE_LORA.lnk",
+      "EASYREFORGE_VAE.lnk",
+      "EASYREFORGE_CONTROLNET.lnk",
+      "EASYREFORGE_UPSCALER.lnk"
+    ],
+    "first_run": "PASS",
+    "second_run": "PASS",
+    "lnk_committed": false,
+    "runtime_links_created": false
+  },
+  "checks": {
+    "external_hashes_pre_delete": "PASS",
+    "portable_exact_files_deleted": "PASS",
+    "external_hashes_post_delete": "PASS",
+    "local_config_only_h3_categories": "PASS",
+    "shared_illustrious_paths_in_h3_config": "NONE",
+    "canonical_launcher_cold_start": "PASS",
+    "post_delete_h2b_still": "PASS",
+    "h2b_gate_retained": true,
+    "still_ui": "NOT STARTED",
+    "owner_acceptance": "PENDING"
+  }
+}

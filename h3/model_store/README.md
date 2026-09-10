@@ -11,6 +11,10 @@ Model weights, Hugging Face cache files, and partial downloads are ignored and
 must never be committed. After external migration, redundant heavy production
 weights should not be kept here.
 
+Portable fallback namespace: `AVAILABLE`
+
+Bundled heavy fallback weights: `NOT PRESENT BY DESIGN`
+
 The tracked acquisition record lives at:
 
 `docs/h3/evidence/H3_MODEL_ACQUISITION_MANIFEST.md`

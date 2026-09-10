@@ -16,8 +16,10 @@ ComfyUIPortable/h3/run_h3.bat
 
 The launcher starts the Native backend on `127.0.0.1:8188` and the TEGAKI H3
 UI on `127.0.0.1:8190`. Set `TEGAKI_H3_NO_BROWSER=1` when the browser should
-not be opened automatically. `run_h1a.bat` remains a compatibility wrapper that
-delegates to this canonical launcher.
+not be opened automatically. For a local port collision, the optional
+`TEGAKI_H3_NATIVE_PORT` and `TEGAKI_H3_SKIN_PORT` variables override those
+defaults. `run_h1a.bat` remains a compatibility wrapper that delegates to this
+canonical launcher.
 
 The launcher uses the machine-local
 `h3/config/extra_model_paths.local.yaml` when it exists, otherwise it falls

@@ -19,6 +19,11 @@ Native route; no production Still UI was added and H2A is published on GitHub
 `main`. H2B source-anchored Still feasibility is implemented and locally
 verified through a matched Native pair; its implementation, evidence, and
 docs are published on GitHub `main`. Owner acceptance remains pending.
+H2-INFRA external model library normalization is `CONFIGURED / VERIFIED`:
+the four first-wave heavy Portable copies are removed, the Portable fallback
+namespace is retained without bundled heavy weights, and the local shortcut
+collection is configured. H2B remains the capability gate; Still UI remains
+not started. Owner acceptance remains pending.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
@@ -66,6 +71,10 @@ docs are published on GitHub `main`. Owner acceptance remains pending.
 | `docs/h3/reports/H2B_SOURCE_ANCHORED_STILL_FEASIBILITY_REPORT.md` | H2B single-source anchored Still feasibility route, matched comparison, telemetry, and closeout boundary | CURRENT H2B REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H2B_SOURCE_ANCHORED_STILL_FEASIBILITY_REPORT.md` |
 | `docs/h3/evidence/h2b-source-anchor/2026-09-10/README.md` | H2B source image, prompt-only/anchored outputs, source-influence review, and runtime evidence | CURRENT H2B EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2b-source-anchor/2026-09-10/README.md` |
 | `docs/h3/evidence/h2b-source-anchor/2026-09-10/manifest.json` | Machine-readable H2B source/runtime/output manifest | CURRENT H2B EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2b-source-anchor/2026-09-10/manifest.json` |
+| `docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` | H2-INFRA external model migration, isolation, shortcuts, cold restart, and closeout | CURRENT H2-INFRA REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` |
+| `docs/h3/evidence/model-library/2026-09-10/README.md` | H2-INFRA inventory, migration, deletion, shortcut, and runtime evidence index | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/README.md` |
+| `docs/h3/evidence/model-library/2026-09-10/inventory.json` | Machine-readable before/after H3 model inventory | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/inventory.json` |
+| `docs/h3/evidence/model-library/2026-09-10/migration_manifest.json` | Machine-readable migration, deletion, runtime, and regression manifest | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/migration_manifest.json` |
 
 ## External master roadmap
 
@@ -155,6 +164,9 @@ implementation follows from that result automatically.
 - [H2B_SOURCE_ANCHORED_STILL_FEASIBILITY_REPORT.md](reports/H2B_SOURCE_ANCHORED_STILL_FEASIBILITY_REPORT.md)
   — H2B one-source anchored Still feasibility, matched prompt-only comparison,
   Native conditioning semantics, source influence, and explicit non-scope.
+- [H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md](reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md)
+  — H2-INFRA external model locations, Portable fallback semantics, shortcut
+  collection, cold restart, post-delete Still, and closeout boundary.
 
 ## Evidence
 
@@ -188,6 +200,9 @@ implementation follows from that result automatically.
 - [H2B evidence](evidence/h2b-source-anchor/2026-09-10/) — one source image,
   matched prompt-only and anchored Still outputs, contact sheet, hashes, and
   RTX 4070 telemetry.
+- [H2-INFRA model-library evidence](evidence/model-library/2026-09-10/) —
+  before/after inventory, external hashes, exact Portable deletion, shortcut
+  regeneration, cold-start path observation, and post-delete H2B Still.
 - Production H3 output is isolated at `output/h3/video/`, with `debug/` and `tests/`
   alongside it. Existing `output/` content and Manga output are outside this slice.
 

@@ -1,0 +1,143 @@
+{
+  "schema": "tegaki.h3.model-library.migration/v1",
+  "card": "H2-INFRA",
+  "status": "PASS",
+  "infrastructure_base_commit": "bbb9f6720c9a4ed8fb7a029814bd10a5442542fd",
+  "closeout_commit": "THIS_CONTAINING_CLOSEOUT_COMMIT",
+  "publication": "LOCAL MAIN / PUSH PENDING",
+  "owner_acceptance": "PENDING",
+  "model_downloads": "NONE",
+  "removed_portable_bytes": 42470585471,
+  "assets": [
+    {
+      "role": "diffusion_model",
+      "category": "diffusion_models",
+      "filename": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "portable_before": "D:/GitHub/tegaki/ComfyUIPortable/h3/model_store/diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "external_canonical": "E:/Data/Models/StableDiffusion/minimaxH3/diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "bytes": 20970379616,
+      "sha256": "E889202C41DAFB67B10D67B97F0D8541508036A6090AF23425A5C2615D03C47A",
+      "pre_delete": { "external_present": true, "external_sha256": "E889202C41DAFB67B10D67B97F0D8541508036A6090AF23425A5C2615D03C47A", "hash_match": true, "portable_present": true },
+      "deletion": { "authorized_exact_path": true, "portable_deleted": true, "directories_deleted": false, "links_created": false },
+      "post_delete": { "portable_present": false, "external_present": true, "external_sha256": "E889202C41DAFB67B10D67B97F0D8541508036A6090AF23425A5C2615D03C47A", "external_hash_unchanged": true },
+      "runtime_usage": ["H2B Still", "H1A Video", "post-delete H2B Still"]
+    },
+    {
+      "role": "text_encoder",
+      "category": "text_encoders",
+      "filename": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "portable_before": "D:/GitHub/tegaki/ComfyUIPortable/h3/model_store/text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "external_canonical": "E:/Data/Models/StableDiffusion/minimaxH3/text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "bytes": 15687142551,
+      "sha256": "35A88D51044231FE332301D7A62AA81E3F2CBA62FEBEB446E2C1E3E0EF76F2C6",
+      "pre_delete": { "external_present": true, "external_sha256": "35A88D51044231FE332301D7A62AA81E3F2CBA62FEBEB446E2C1E3E0EF76F2C6", "hash_match": true, "portable_present": true },
+      "deletion": { "authorized_exact_path": true, "portable_deleted": true, "directories_deleted": false, "links_created": false },
+      "post_delete": { "portable_present": false, "external_present": true, "external_sha256": "35A88D51044231FE332301D7A62AA81E3F2CBA62FEBEB446E2C1E3E0EF76F2C6", "external_hash_unchanged": true },
+      "runtime_usage": ["H2B Still", "H1A Video", "post-delete H2B Still"]
+    },
+    {
+      "role": "video_vae",
+      "category": "vae",
+      "filename": "minimax_h3_video_vae_fp16.safetensors",
+      "portable_before": "D:/GitHub/tegaki/ComfyUIPortable/h3/model_store/vae/minimax_h3_video_vae_fp16.safetensors",
+      "external_canonical": "E:/Data/Models/VAE/minimaxH3/minimax_h3_video_vae_fp16.safetensors",
+      "bytes": 5207808496,
+      "sha256": "7C1F131492E7EDDACAAC9069A61B81BDD39DE5CC96561E677C5EAB1CDCE5E522",
+      "pre_delete": { "external_present": true, "external_sha256": "7C1F131492E7EDDACAAC9069A61B81BDD39DE5CC96561E677C5EAB1CDCE5E522", "hash_match": true, "portable_present": true },
+      "deletion": { "authorized_exact_path": true, "portable_deleted": true, "directories_deleted": false, "links_created": false },
+      "post_delete": { "portable_present": false, "external_present": true, "external_sha256": "7C1F131492E7EDDACAAC9069A61B81BDD39DE5CC96561E677C5EAB1CDCE5E522", "external_hash_unchanged": true },
+      "runtime_usage": ["H2B Still", "H1A Video", "post-delete H2B Still"]
+    },
+    {
+      "role": "audio_vae",
+      "category": "vae",
+      "filename": "minimax_h3_audio_vae_fp32.safetensors",
+      "portable_before": "D:/GitHub/tegaki/ComfyUIPortable/h3/model_store/vae/minimax_h3_audio_vae_fp32.safetensors",
+      "external_canonical": "E:/Data/Models/VAE/minimaxH3/minimax_h3_audio_vae_fp32.safetensors",
+      "bytes": 605254808,
+      "sha256": "8E505D95DD1561D47ABD43D4238FD40D9BB1AE9E147ED0A4CBA778D76AE4DB48",
+      "pre_delete": { "external_present": true, "external_sha256": "8E505D95DD1561D47ABD43D4238FD40D9BB1AE9E147ED0A4CBA778D76AE4DB48", "hash_match": true, "portable_present": true },
+      "deletion": { "authorized_exact_path": true, "portable_deleted": true, "directories_deleted": false, "links_created": false },
+      "post_delete": { "portable_present": false, "external_present": true, "external_sha256": "8E505D95DD1561D47ABD43D4238FD40D9BB1AE9E147ED0A4CBA778D76AE4DB48", "external_hash_unchanged": true },
+      "runtime_usage": ["pre-delete H1A Video audio path", "post-delete hash/path verification"]
+    }
+  ],
+  "runtime": {
+    "external_config": "D:/GitHub/tegaki/ComfyUIPortable/h3/config/extra_model_paths.local.yaml",
+    "external_categories": ["diffusion_models", "text_encoders", "vae", "loras"],
+    "shared_automatic_extra_config_loaded": false,
+    "portable_heavy_weights_required_after_delete": false,
+    "pre_delete_h1a_video": {
+      "status": "PASS",
+      "route": "native_t2v",
+      "job_id": "bc6487c2ca6449c3a27ac73730e9676b",
+      "prompt_id": "d4777cfb-4a22-40d0-b7e0-4a062596767e",
+      "elapsed_seconds": 149.74,
+      "output": "D:/GitHub/tegaki/ComfyUIPortable/output/h3/video/h1a_native_t2v_00007_.mp4",
+      "output_bytes": 684609,
+      "output_sha256": "D3C05CD151C23ED7E01237CF8F7BE19370C48B83C72C66FBD599448534378CB2",
+      "peak_vram_used_mib": 11493,
+      "minimum_vram_free_mib": 520,
+      "oom": 0,
+      "retry": 0,
+      "audio_vae_external_hash_verified": true
+    },
+    "post_delete_cold_start": {
+      "status": "PASS",
+      "launcher": "h3/run_h3.bat",
+      "native_port": 8189,
+      "skin_port": 8191,
+      "native_pid": 51324,
+      "launcher_local_override": true,
+      "external_paths_observed": [
+        "E:/Data/Models/StableDiffusion/minimaxH3/diffusion_models",
+        "E:/Data/Models/StableDiffusion/minimaxH3/text_encoders",
+        "E:/Data/Models/VAE/minimaxH3",
+        "D:/Models/Lora/minimaxH3"
+      ],
+      "shared_auto_config_loaded": false,
+      "unrelated_default_port_process": { "pid": 40892, "stopped": false }
+    },
+    "post_delete_h2b_still": {
+      "status": "PASS",
+      "route": "native_source_anchored_still",
+      "prompt_id": "44f9763e-d5a0-4272-a6da-12649635674b",
+      "source_sha256": "43D29D07B5D0B4A2C4650A2C840AE6CF07980714008FDDB1D1008B0E08CF030E",
+      "elapsed_seconds": 83.18,
+      "output": "D:/GitHub/tegaki/ComfyUIPortable/output/h3/still/h2b_source_anchor_00003_.png",
+      "output_bytes": 283098,
+      "output_sha256": "1EC4ACA74707C74F13ABCFADBB00304B9F1611787C593455A459A8D0543B49F5",
+      "peak_vram_used_mib": 11521,
+      "minimum_vram_free_mib": 492,
+      "oom": 0,
+      "retry": 0,
+      "native_pid": 51324
+    }
+  },
+  "shortcuts": {
+    "generator": "h3/tools/create_model_shortcuts.ps1",
+    "run_1": "PASS",
+    "run_2": "PASS",
+    "owned_lnk_count": 14,
+    "lnk_committed": false
+  },
+  "regression": {
+    "h2a_tests": { "status": "PASS", "count": 4 },
+    "h2b_tests": { "status": "PASS", "count": 5 },
+    "h1c_smoke": { "status": "PASS", "count": 38 },
+    "p2_smoke": { "status": "PASS", "count": 44 },
+    "h1b_ui_smoke": { "status": "PASS", "count": 36 },
+    "python_full_suite": { "status": "PASS", "count": 41 },
+    "javascript_syntax": { "status": "PASS", "files": 7 },
+    "compileall": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "boundaries": {
+    "h2b_capability_gate": "RETAINED",
+    "still_ui": "NOT STARTED",
+    "lo_ra_load": "NOT TESTED",
+    "shared_comfyui_change": "NONE",
+    "manga_change": "NONE",
+    "feature_expansion": "NONE"
+  }
+}

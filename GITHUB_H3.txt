@@ -57,6 +57,11 @@ H2B source influence: OBSERVED / PASS
 H2B Browser UI: N/A (feasibility path intentionally has no new Still UI)
 H2B evidence: CURRENT FEASIBILITY EVIDENCE
 H2B publication: PUBLISHED ON MAIN
+H3 external model library: CONFIGURED / VERIFIED
+Portable duplicate heavy weights: REMOVED
+Portable fallback namespace: RETAINED / EMPTY OF FIRST-WAVE HEAVY WEIGHTS
+Model shortcuts: CONFIGURED LOCAL
+Still UI: NOT STARTED
 Owner acceptance: PENDING
 
 This entry is the starting point for external AI review of MiniMax H3 work. It
@@ -213,3 +218,6 @@ published on `main`; its publication wording correction is in `67a8bd47`. H2B
 implementation is recorded in `8a6b74f4`; its evidence/report/canonical-doc
 package is published on `main`. Owner acceptance remains `PENDING`.
 H2B evidence/report/canonical-doc commit: `828524e8700d4c36906e692e3153ed9e17772ee5`.
+H2-INFRA external model library and shortcut normalization is technically
+verified in the local closeout evidence/report. The closeout remains
+`LOCAL MAIN / PUSH PENDING` until an Owner-authorized push is completed.
