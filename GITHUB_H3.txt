@@ -2,11 +2,11 @@ ComfyUIPortable — MiniMax H3 External AI Entry
 Repository: https://github.com/toshinka/tegaki
 Branch: main
 Canonical path: ComfyUIPortable/GITHUB_H3.txt
-Updated: 2026-09-10 JST
+Updated: 2026-09-11 JST
 
 Current Stage
 -------------
-VP2A / Native Ref2VA / R2V Feasibility — R1 Native Feasibility Closeout
+VP2B / Experimental R2V Playground — Browser Acceptance Closeout
 H1C / Frame-Bridged Continuation: IMPLEMENTED / VERIFIED (regression foundation)
 Groundwork: PASS (historical)
 Semantic Alignment: PASS (historical)
@@ -85,7 +85,16 @@ VP2A Picture-only feasibility: VERIFIED LOCAL GENERATION; PICTURE REF INFLUENCE 
 VP2A Picture + Video feasibility: VERIFIED LOCAL GENERATION; PICTURE REF INFLUENCE NOT CONVINCING; VIDEO REF INFLUENCE OBSERVED
 VP2A 12GB runtime: VERIFIED WITH NEAR-LIMIT HEADROOM; OOM 0 / RETRY 0
 VP2A standard FL2VA/T2V transition: BUILT-IN MODEL TRANSITION PASS
-VP2A Browser R2V: NOT IMPLEMENTED
+VP2A Browser R2V: NOT IMPLEMENTED (historical VP2A-R1 boundary)
+VP2B implementation: IMPLEMENTED / PUBLISHED ON MAIN
+VP2B implementation commit: cfc8161ab0399338824e175b95ea0763281d57e6
+VP2B Reference Browser generation: VERIFIED BROWSER UI GENERATION
+VP2B Reference contract: 1 Character Image + 0 or 1 Motion Video; 608 x 352 / 5 seconds / 20 steps
+VP2B Reference route: native_ref2va; audio reference NOT CONNECTED
+VP2B Picture + Motion Browser: TECHNICALLY PASS WITH KNOWN NATIVE LIMIT
+VP2B Standard post-Reference baseline: VERIFIED BROWSER UI GENERATION
+VP2B History / Use settings / state isolation / Still isolation: VERIFIED BROWSER UI
+VP2B evidence/report: CURRENT REVIEW EVIDENCE; closeout package LOCAL until Owner push
 H3 external model library: CONFIGURED / VERIFIED
 Portable duplicate heavy weights: REMOVED
 Portable fallback namespace: RETAINED / EMPTY OF FIRST-WAVE HEAVY WEIGHTS
@@ -139,6 +148,9 @@ Read Order
 39. ComfyUIPortable/docs/h3/reports/VP2A_NATIVE_REF2VA_R2V_FEASIBILITY_REPORT.md
 40. ComfyUIPortable/docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/README.md
 41. ComfyUIPortable/docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/manifest.json
+42. ComfyUIPortable/docs/h3/reports/VP2B_EXPERIMENTAL_R2V_PLAYGROUND_REPORT.md
+43. ComfyUIPortable/docs/h3/evidence/vp2b-r2v-playground/2026-09-10/README.md
+44. ComfyUIPortable/docs/h3/evidence/vp2b-r2v-playground/2026-09-10/manifest.json
 
 Master Roadmap
 --------------
@@ -210,7 +222,7 @@ uploaded runtime inputs, and model weights remain ignored.
 
 Current Review Gate
 -------------------
-VP1 Video Practicalization Safe Resolution / Duration Envelope + Browser Unlock
+VP2B Experimental R2V Playground — Browser acceptance and closeout
 
 H1B.1 remains implemented as the regression foundation and has Start-only,
 Start+End, End-only, and text-only browser completion results plus Native media
@@ -299,3 +311,20 @@ Manga-only descendant `f482b90d124c39f603f6863ac35aefb586e95bfd`.
 Picture-only reference influence is `OBSERVED`; the matched Picture+Video row
 records `PICTURE REF INFLUENCE NOT CONVINCING` and `VIDEO REF INFLUENCE
 OBSERVED`. Owner acceptance remains `PENDING`.
+
+VP2B adds a compact `Video Type` choice inside the existing Video mode. The
+Standard path remains the default and retains its Start/End controls and
+verified resolution/duration envelope. The experimental Reference path accepts
+one required Character Image and an optional MP4 Motion Video, materializes a
+deterministic Ref2VA role prefix, enforces `608 x 352 / 5 seconds / 20 steps`,
+and keeps Reference audio disconnected. The Browser run submitted exactly one
+Picture+Motion job through `native_ref2va`, completed playback, created a public
+History entry with the bounded route label, restored settings atomically, and
+did not expose Continue for the Reference result. A single post-Reference
+Standard Text-only baseline also completed and played back. The Browser result
+classified Picture influence as `OBSERVED` and Video influence as `NOT
+CONVINCING`; this is recorded as a Native mixed-reference quality limitation,
+not a Browser route failure. VP2B implementation is published on `main` at
+`cfc8161ab0399338824e175b95ea0763281d57e6`; the closeout evidence/report and
+the bounded verifier-compatibility fix are local until Owner push. Owner
+acceptance remains `PENDING`.

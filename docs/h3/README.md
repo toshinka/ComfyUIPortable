@@ -1,10 +1,10 @@
 # MiniMax H3 Document Hub
 
-更新: 2026-09-10 JST
+更新: 2026-09-11 JST
 
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
 将来の実装棚とReference Implementation evidenceを一か所から辿るための
-document hub です。現在は **VP2A / Native Ref2VA / R2V Feasibility — R1 Native Feasibility Closeout** であり、
+document hub です。現在は **VP2B / Experimental R2V Playground — Browser Acceptance Closeout** であり、
 H1C / Frame-Bridged Continuation は回帰基盤として保持し、
 H1B.1 / Start + End Frame and Native FL2VA vertical slice + UX P0/P1/P2
 Fixes は履歴と回帰対象として保持します。H0/H0.1/H1A/H1B の model
@@ -38,8 +38,17 @@ the external store, completed Picture-only and Picture+Video Native rows, and
 completed exactly one standard FL2VA/T2V transition. The R1 implementation,
 report, and evidence are published on `main` at
 `d067a4170edeffee200a6f1a8d279a1c1b68be28`. The current classification is
-`FEASIBLE WITH LIMITS`; Browser R2V remains unimplemented and Owner acceptance
-remains pending.
+`FEASIBLE WITH LIMITS`; its Browser R2V boundary was intentionally deferred to
+VP2B. VP2B is implemented and published on `main` at
+`cfc8161ab0399338824e175b95ea0763281d57e6`. Its experimental Reference path
+accepts one Character Image and optionally one MP4 Motion Video, uses fixed
+`608 x 352 / 5 seconds / 20 steps`, keeps audio disconnected, and completed one
+real Picture+Motion Browser generation plus one post-Reference Standard
+Text-only baseline. Browser playback, History route labeling, atomic Use
+settings, Continue absence for Reference, Standard/Reference isolation, and
+Still isolation passed. The result records Picture influence as `OBSERVED` and
+Video influence as `NOT CONVINCING`, a known Native mixed-reference limitation;
+Owner acceptance remains pending.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
@@ -96,6 +105,9 @@ remains pending.
 | `docs/h3/reports/VP2A_NATIVE_REF2VA_R2V_FEASIBILITY_REPORT.md` | VP2A Native Ref2VA/R2V R1 acquisition, source contract, feasibility, transition, and historical stop | CURRENT VP2A-R1 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/VP2A_NATIVE_REF2VA_R2V_FEASIBILITY_REPORT.md` |
 | `docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/README.md` | VP2A-R1 exact model verification, Native Picture/Video rows, telemetry, visual review, and historical gate | CURRENT VP2A-R1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/README.md` |
 | `docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/manifest.json` | Machine-readable VP2A-R1 acquisition/runtime manifest | CURRENT VP2A-R1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/manifest.json` |
+| `docs/h3/reports/VP2B_EXPERIMENTAL_R2V_PLAYGROUND_REPORT.md` | VP2B experimental Reference Video playground, Browser acceptance, fixed contract, visual limitation, and closeout boundary | CURRENT VP2B REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/VP2B_EXPERIMENTAL_R2V_PLAYGROUND_REPORT.md` |
+| `docs/h3/evidence/vp2b-r2v-playground/2026-09-10/README.md` | VP2B authorized Picture+Motion Browser run, Standard regression, History/Use settings, isolation, and telemetry | CURRENT VP2B EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp2b-r2v-playground/2026-09-10/README.md` |
+| `docs/h3/evidence/vp2b-r2v-playground/2026-09-10/manifest.json` | Machine-readable VP2B Browser/runtime/media manifest | CURRENT VP2B EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp2b-r2v-playground/2026-09-10/manifest.json` |
 | `docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` | H2-INFRA external model migration, isolation, shortcuts, cold restart, and closeout | CURRENT H2-INFRA REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` |
 | `docs/h3/evidence/model-library/2026-09-10/README.md` | H2-INFRA inventory, migration, deletion, shortcut, and runtime evidence index | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/README.md` |
 | `docs/h3/evidence/model-library/2026-09-10/inventory.json` | Machine-readable before/after H3 model inventory | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/inventory.json` |
@@ -198,6 +210,10 @@ implementation follows from that result automatically.
 - [H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md](reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md)
   — H2-INFRA external model locations, Portable fallback semantics, shortcut
   collection, cold restart, post-delete Still, and closeout boundary.
+- [VP2B_EXPERIMENTAL_R2V_PLAYGROUND_REPORT.md](reports/VP2B_EXPERIMENTAL_R2V_PLAYGROUND_REPORT.md)
+  — experimental one-picture/optional-motion Reference Video playground,
+  Browser acceptance, fixed settings, History restore, isolation, visual
+  limitation, and explicit non-scope.
 
 ## Evidence
 
@@ -240,14 +256,18 @@ implementation follows from that result automatically.
 - [H2-INFRA model-library evidence](evidence/model-library/2026-09-10/) —
   before/after inventory, external hashes, exact Portable deletion, shortcut
   regeneration, cold-start path observation, and post-delete H2B Still.
+- [VP2B evidence](evidence/vp2b-r2v-playground/2026-09-10/) — authorized local
+  Picture+Motion Browser completion, public History/Use settings, Standard
+  baseline, media hashes/ffprobe, sampled VRAM, OOM/retry, and isolation checks.
 - Production H3 output is isolated at `output/h3/video/`, with `debug/` and `tests/`
   alongside it. Existing `output/` content and Manga output are outside this slice.
 
 The historical groundwork reports remain historical records. VP1 is the
-published Video baseline. The current VP2A report and evidence above record a
-bounded Native Ref2VA feasibility result after the exact model acquisition
-gate was resolved. They do not imply Browser R2V implementation, Owner
-acceptance, public production deployment, or adoption of a broader candidate
+published Video baseline, and VP2A-R1 remains the Native feasibility gate with
+its known mixed-reference quality limits. The current VP2B report and evidence
+above record a bounded experimental Browser Reference path over that Native
+route. They do not imply production identity locking, multiple references,
+audio conditioning, Owner acceptance, or adoption of a broader candidate
 implementation.
 
 ## H3 implementation boundary
@@ -276,9 +296,13 @@ is canonical and `run_h1a.bat` delegates to it. Do not infer REF2VA, ordered
 generic multi-reference, production I2I semantics, source-fidelity controls,
 Segment, Studio, Timeline, Storyboard, Cast, 3D, Manga, or a persistent project
 schema from these paths. H2C adds only the bounded Still Source Image lens over
-the H2B first-frame route. VP1 adds only the two verified Video resolution enums
-and two verified Video duration enums; `/api/config` is the source of truth, and
-Still receives no Video option automatically.
+the H2B first-frame route. VP1 adds only the two verified Video resolution
+enums and two verified Video duration enums; `/api/config` is the source of
+truth, and Still receives no Video option automatically. VP2B adds only the
+experimental one-picture/optional-MP4 Reference Video lens over the Native
+Ref2VA adapter; Standard remains the default, Reference audio is disconnected,
+and Reference settings are server-enforced at `608 x 352 / 5 seconds / 20
+steps`.
 
 ## Review recipe
 
@@ -323,9 +347,13 @@ Still receives no Video option automatically.
     gate, exact model filename/bytes/SHA-256, Native source contract, Picture
     and Video rows, telemetry, visual classifications, and one FL2VA/T2V
     transition separately.
-19. Stop after VP2A-R1; do not infer Owner acceptance, production I2I, ordered
-    multi-reference, Browser R2V, Segment, Studio, or production deployment
-    from this evidence, and do not start VP2B.
+19. Read the VP2B report and dated evidence; verify the one-picture/optional-
+    motion Browser path, deterministic prompt adapter, fixed settings, public
+    History route, atomic `Use settings`, Continue absence, Standard regression,
+    state isolation, Still isolation, media hashes, telemetry, and visual limit.
+20. Stop after VP2B; do not infer Owner acceptance, production identity locking,
+    multiple references, audio conditioning, Segment, Studio, or production
+    deployment from this evidence, and do not start VP2C/VP3.
 
 ## Evidence vocabulary
 

@@ -1,0 +1,192 @@
+{
+  "schema": "tegaki.h3.vp2b.experimental-r2v-playground.evidence/v1",
+  "card": "VP2B-R1",
+  "title": "Experimental R2V Playground: authorized Picture+Motion Browser acceptance and Standard closeout",
+  "evidence_date": "2026-09-10",
+  "browser_execution_date": "2026-09-11",
+  "classification": "PASS WITH KNOWN NATIVE LIMIT",
+  "base_remote_main": "cfc8161ab0399338824e175b95ea0763281d57e6",
+  "implementation": {
+    "status": "PUBLISHED ON MAIN",
+    "commit": "cfc8161ab0399338824e175b95ea0763281d57e6",
+    "scope": "H3-only relative to f482b90d124c39f603f6863ac35aefb586e95bfd"
+  },
+  "closeout_publication": {
+    "status": "LOCAL MAIN / PUSH PENDING",
+    "owner_push_required": true,
+    "owner_acceptance": "PENDING"
+  },
+  "authorization": {
+    "destination": "http://127.0.0.1:8190/",
+    "external_upload": "NONE",
+    "runtime_inputs_committed": false,
+    "authorized_inputs": [
+      {
+        "role": "character_image",
+        "path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\output\\h3\\tests\\reference_robot_v1.png",
+        "filename": "reference_robot_v1.png",
+        "bytes": 206821,
+        "sha256": "43D29D07B5D0B4A2C4650A2C840AE6CF07980714008FDDB1D1008B0E08CF030E",
+        "content_type": "image/png"
+      },
+      {
+        "role": "motion_video",
+        "path": "D:\\GitHub\\tegaki\\ComfyUIPortable\\output\\h3\\video\\h1a_native_t2v_00010_.mp4",
+        "filename": "h1a_native_t2v_00010_.mp4",
+        "bytes": 471184,
+        "sha256": "412B6F8EC11AA09BE770AC6B1EEAE31E77768AA584A22D40AA108C90EAF84254",
+        "content_type": "video/mp4",
+        "ffprobe": {
+          "width": 608,
+          "height": 352,
+          "encoded_frames": 124,
+          "fps": 24,
+          "duration_seconds": 5.166667
+        }
+      }
+    ]
+  },
+  "reference_browser": {
+    "status": "PASS",
+    "job_id": "bf6caf68e77440f3b0142efc1e6352c2",
+    "prompt_id": "9f5c05ca-7f40-4c69-8254-9dce84ab1cb0",
+    "route": "native_ref2va",
+    "route_label": "Reference · Picture + Motion",
+    "video_type": "reference",
+    "picture_id": "46c6a569ef4140f8beab783673fe84ba",
+    "motion_video_id": "f6194e4971cf4a6cb5654f43655108d7",
+    "created_at": "2026-09-11T00:07:09+09:00",
+    "completed_at": "2026-09-11T00:14:48+09:00",
+    "elapsed_seconds": 459.74,
+    "settings": {
+      "width": 608,
+      "height": 352,
+      "duration_seconds": 5,
+      "steps": 20,
+      "seed": "8375238270079288501"
+    },
+    "user_prompt": "A small red service robot walks slowly through a quiet workshop while the camera tracks gently from left to right.",
+    "materialized_prompt": "Use <Picture 1> for the subject identity and appearance.\nUse <Video 1> for motion, timing, and camera behavior.\nA small red service robot walks slowly through a quiet workshop while the camera tracks gently from left to right.",
+    "output": {
+      "path": "output/h3/video/vp2b_r2v_reference_00001_.mp4",
+      "sha256": "499A18B21BE35A53C0CCD82C80C4C0A7BAFC46E237816F6A0D7E4C77F784FEF9",
+      "ffprobe": {
+        "width": 608,
+        "height": 352,
+        "encoded_frames": 124,
+        "fps": 24,
+        "duration_seconds": 5.166667
+      }
+    },
+    "telemetry": {
+      "sample_interval_seconds": 5,
+      "peak_observed_vram_used_mib": 11418,
+      "minimum_observed_vram_free_mib": 595,
+      "oom_count": 0,
+      "accepted_job_retry_count": 0
+    },
+    "playback": {
+      "status": "PASS",
+      "decoded_current_time_seconds_observed": 0.81
+    },
+    "visual": {
+      "picture_influence": "OBSERVED",
+      "video_influence": "NOT CONVINCING",
+      "classification_note": "Known Native mixed-reference quality limitation; no aesthetic retry"
+    },
+    "history": {
+      "status": "PASS",
+      "filesystem_paths_exposed": false,
+      "use_settings": "PASS",
+      "use_settings_generated": false,
+      "continue_action": "ABSENT"
+    }
+  },
+  "state_isolation": {
+    "standard_reference_standard": "PASS",
+    "reference_standard_reference": "PASS",
+    "still_isolation": "PASS",
+    "standard_start_frame": "preserved empty",
+    "standard_end_frame": "preserved empty",
+    "standard_resolution": "608x352",
+    "standard_duration": "5",
+    "reference_picture": "preserved",
+    "reference_motion_video": "preserved",
+    "still_source_only": "preserved",
+    "still_duration": "hidden"
+  },
+  "standard_browser": {
+    "status": "PASS",
+    "job_id": "1acbcf5e168f4e8b820f30bf8dd47587",
+    "prompt_id": "b24baae7-0074-430b-ae64-d28d51108c81",
+    "route": "native_t2v",
+    "route_label": "Text only",
+    "settings": {
+      "width": 608,
+      "height": 352,
+      "duration_seconds": 5,
+      "steps": 20,
+      "start_frame": null,
+      "end_frame": null
+    },
+    "elapsed_seconds": 175.51,
+    "output": {
+      "path": "output/h3/video/h1a_native_t2v_00017_.mp4",
+      "sha256": "94B38EC69C5C90A9666CC3FCBBC388AF6CCFD8A761C80C0844E5D32D2E82BFAB",
+      "ffprobe": {
+        "width": 608,
+        "height": 352,
+        "encoded_frames": 124,
+        "fps": 24,
+        "duration_seconds": 5.166667
+      }
+    },
+    "telemetry": {
+      "sample_interval_seconds": 5,
+      "peak_observed_vram_used_mib": 11378,
+      "minimum_observed_vram_free_mib": 635,
+      "oom_count": 0,
+      "accepted_job_retry_count": 0
+    },
+    "playback": "PASS",
+    "history_contains_reference_and_standard": true,
+    "builtin_ref2va_to_fl2va_transition": "PASS"
+  },
+  "verification": {
+    "vp2b_contract_tests": "5 PASS",
+    "vp2b_ui_smoke": "28 PASS",
+    "vp1_verifier": "PASS",
+    "h2c_verifier": "52 PASS",
+    "h1c_verifier": "38 PASS",
+    "h1b1_p2_verifier": "44 PASS",
+    "h1b_ui_verifier": "36 PASS",
+    "full_python_unittest_discovery": "60 PASS",
+    "javascript_syntax": "PASS",
+    "compileall": "PASS",
+    "json_parse": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "bounded_fix": {
+    "status": "ONE H3-only verifier-compatibility fix",
+    "file": "h3/app/static/app.js",
+    "scope": "Preserved VP1/H2C static markers while retaining Standard/Reference/Still behavior; no generation contract change"
+  },
+  "non_scope": [
+    "multiple pictures",
+    "multiple motion videos",
+    "audio reference",
+    "semantic roles",
+    "masks or guides",
+    "Image Prep",
+    "LoRA",
+    "model selector",
+    "Studio",
+    "Shot",
+    "Timeline",
+    "Storyboard",
+    "VP2C/VP3",
+    "shared ComfyUI core/frontend",
+    "Manga"
+  ],
+  "owner_acceptance": "PENDING"
+}

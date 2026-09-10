@@ -136,9 +136,10 @@ function resolutionValue(option) {
 }
 
 function configuredResolutionOptions(still = false) {
+  const videoType = arguments.length > 1 ? arguments[1] : "standard";
   const configured = still
     ? state.config?.still?.resolution_options
-    : state.videoType === "reference"
+    : videoType === "reference"
       ? state.config?.reference_video?.resolution_options
       : state.config?.resolution_options;
   if (Array.isArray(configured) && configured.length) return configured;
@@ -163,7 +164,7 @@ function populateResolutionOptions() {
   const still = state.mode === "still";
   const reference = !still && state.videoType === "reference";
   const key = still ? "stillResolution" : "videoResolution";
-  const options = configuredResolutionOptions(still).filter((item) =>
+  const options = configuredResolutionOptions(still, state.videoType).filter((item) =>
     Number.isInteger(Number(item.width)) && Number.isInteger(Number(item.height)),
   );
   const values = options.map(resolutionValue);
@@ -201,15 +202,17 @@ function referenceVideoEnabled() {
 
 function updateVideoTypeView() {
   const showingReference = state.mode === "video" && state.videoType === "reference";
+  const still = state.mode === "still";
   videoTypeCard.hidden = state.mode !== "video";
   r2vCard.hidden = !showingReference;
   videoReferenceCard.hidden = state.mode !== "video" || showingReference;
+  if (still) videoReferenceCard.hidden = still;
   videoTypeStandard.classList.toggle("active", !showingReference);
   videoTypeReference.classList.toggle("active", showingReference);
   videoTypeStandard.setAttribute("aria-pressed", String(!showingReference));
   videoTypeReference.setAttribute("aria-pressed", String(showingReference));
   resolutionInput.disabled = showingReference;
-  durationInput.disabled = state.mode === "still" || showingReference;
+  durationInput.disabled = still || showingReference;
   if (showingReference) {
     resolutionInput.value = "608x352";
     durationInput.value = "5";
@@ -707,7 +710,9 @@ async function verifyStillSource(source) {
 
 function standardResolutionValues() {
   const configured = state.config?.resolution_options;
-  if (Array.isArray(configured) && configured.length) return configured.map(resolutionValue);
+  if (Array.isArray(configured) && configured.length) {
+    return configuredResolutionOptions(false).map(resolutionValue);
+  }
   return ["608x352", "736x416"];
 }
 
@@ -1146,7 +1151,7 @@ function createHistoryCard(entry) {
   const actions = document.createElement("div");
   actions.className = "history-actions";
   actions.append(useSettings);
-  if (!isStill && entry.video_type !== "reference" && entry.state === "COMPLETED" && typeof entry.video_url === "string" && entry.video_url.trim()) {
+  if (!isStill && entry.state === "COMPLETED" && typeof entry.video_url === "string" && entry.video_url.trim() && entry.video_type !== "reference") {
     const continueButton = document.createElement("button");
     continueButton.type = "button";
     continueButton.className = "quiet-button history-continue";
