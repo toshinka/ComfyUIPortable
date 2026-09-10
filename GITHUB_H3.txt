@@ -293,7 +293,9 @@ acquisition, local use, external placement, and hash verification in the
 current Web-GPT handoff. VP2A-R1 acquired and verified the model, completed
 Picture-only and Picture+Video Native generation, and completed exactly one
 standard FL2VA/T2V transition. Current R1 implementation/evidence/docs are
-`LOCAL MAIN / PUSH PENDING` with no model/MP4/runtime input committed.
+`PUBLISHED ON MAIN` at `d067a4170edeffee200a6f1a8d279a1c1b68be28`; no
+model/MP4/runtime input was committed. The current `origin/main` is the later
+Manga-only descendant `f482b90d124c39f603f6863ac35aefb586e95bfd`.
 Picture-only reference influence is `OBSERVED`; the matched Picture+Video row
 records `PICTURE REF INFLUENCE NOT CONVINCING` and `VIDEO REF INFLUENCE
 OBSERVED`. Owner acceptance remains `PENDING`.

@@ -35,9 +35,11 @@ package is published on `main` at `e4e078490cd2f96a953e6261399f268652d49c04`.
 Owner later explicitly authorized the exact artifact for the bounded R1
 acquisition and runtime resume. R1 acquired and hash-verified that model in
 the external store, completed Picture-only and Picture+Video Native rows, and
-completed exactly one standard FL2VA/T2V transition. The current classification
-is `FEASIBLE WITH LIMITS`; Browser R2V remains unimplemented and Owner
-acceptance remains pending.
+completed exactly one standard FL2VA/T2V transition. The R1 implementation,
+report, and evidence are published on `main` at
+`d067a4170edeffee200a6f1a8d279a1c1b68be28`. The current classification is
+`FEASIBLE WITH LIMITS`; Browser R2V remains unimplemented and Owner acceptance
+remains pending.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。

@@ -23,9 +23,9 @@ failed fetch into a separate public-verification claim.
 VP1 base remote: `41da0bf804d049adc40e2ae2d5abfdd59eabc703`
 R1 base remote: `e4e078490cd2f96a953e6261399f268652d49c04`
 
-Implementation commit: `NONE` (R1 adapter/workflow/runner are local and uncommitted)
+Implementation commit: `d067a4170edeffee200a6f1a8d279a1c1b68be28`
 
-Evidence/docs commit: `NONE` (R1 updates are local and push-pending)
+Evidence/docs commit: `d067a4170edeffee200a6f1a8d279a1c1b68be28`
 
 Owner acceptance: `PENDING`
 

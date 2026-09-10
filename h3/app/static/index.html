@@ -54,6 +54,75 @@
           <textarea id="prompt" name="prompt" rows="5" maxlength="4000" placeholder="Describe the video..." required></textarea>
           <div class="field-hint"><span>Prompt</span><span id="prompt-count">0 / 4000</span></div>
 
+          <section class="video-type-card" id="video-type-card" aria-labelledby="video-type-heading">
+            <div class="video-type-heading-row">
+              <label class="field-label" id="video-type-heading">Video Type</label>
+              <span class="video-type-note">Reference is experimental</span>
+            </div>
+            <div class="video-type-switch" role="group" aria-label="Video Type">
+              <button class="video-type-button active" id="video-type-standard" type="button" data-video-type="standard" aria-pressed="true">Standard</button>
+              <button class="video-type-button" id="video-type-reference" type="button" data-video-type="reference" aria-pressed="false" disabled>Reference · Experimental</button>
+            </div>
+          </section>
+
+          <section class="reference-card r2v-card" id="r2v-card" aria-labelledby="r2v-heading" hidden>
+            <div class="reference-heading-row">
+              <div>
+                <label class="field-label" id="r2v-heading">Experimental Reference Video</label>
+                <div class="reference-helper">Appearance reference only — not an identity lock.<br /><span>Motion is optional; appearance and background may influence the result. Exact replacement or pixel locking is not promised.</span></div>
+              </div>
+            </div>
+            <div class="reference-slots">
+              <div class="reference-slot" data-reference-slot="r2v_picture">
+                <div class="reference-slot-heading">
+                  <div>
+                    <strong>Character Image <span class="required-mark">Required</span></strong>
+                    <span>One PNG, JPEG, or WebP</span>
+                  </div>
+                  <input id="r2v-picture-file" type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" hidden />
+                  <button class="quiet-button reference-add" id="r2v-picture-add" type="button">Add image</button>
+                </div>
+                <div class="reference-slot-empty" id="r2v-picture-empty">No Character Image selected.</div>
+                <div class="reference-selected" id="r2v-picture-selected" hidden>
+                  <img id="r2v-picture-thumbnail" class="reference-thumbnail" alt="Selected Character Image" />
+                  <div class="reference-selected-body">
+                    <strong>Character Image</strong>
+                    <span id="r2v-picture-name" class="reference-name"></span>
+                    <div class="reference-actions">
+                      <button class="quiet-button" id="r2v-picture-replace" type="button">Replace</button>
+                      <button class="quiet-button" id="r2v-picture-remove" type="button">Remove</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="reference-status" id="r2v-picture-status" aria-live="polite"></div>
+              </div>
+              <div class="reference-slot" data-reference-slot="r2v_motion_video">
+                <div class="reference-slot-heading">
+                  <div>
+                    <strong>Motion Video <span class="optional-mark">Optional</span></strong>
+                    <span>One MP4 for motion, timing, and camera behavior</span>
+                  </div>
+                  <input id="r2v-motion-file" type="file" accept="video/mp4,.mp4" hidden />
+                  <button class="quiet-button reference-add" id="r2v-motion-add" type="button">Add video</button>
+                </div>
+                <div class="reference-slot-empty" id="r2v-motion-empty">No Motion Video selected.</div>
+                <div class="reference-selected" id="r2v-motion-selected" hidden>
+                  <div class="reference-thumbnail motion-thumbnail" aria-hidden="true">MP4</div>
+                  <div class="reference-selected-body">
+                    <strong>Motion Video</strong>
+                    <span id="r2v-motion-name" class="reference-name"></span>
+                    <div class="reference-actions">
+                      <button class="quiet-button" id="r2v-motion-replace" type="button">Replace</button>
+                      <button class="quiet-button" id="r2v-motion-remove" type="button">Remove</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="reference-status" id="r2v-motion-status" aria-live="polite"></div>
+                <div class="reference-audio-note">Audio reference is disabled; uploaded audio is ignored.</div>
+              </div>
+            </div>
+          </section>
+
           <section class="reference-card" id="video-reference-card" aria-labelledby="reference-heading">
             <div class="reference-heading-row">
               <div>

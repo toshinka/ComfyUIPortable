@@ -32,6 +32,12 @@ REF2VA_MODEL = "minimax_h3_ref2va_pruned_int8_convrot.safetensors"
 PICTURE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
 VIDEO_SUFFIXES = {".mp4", ".webm", ".mov", ".mkv"}
 
+PICTURE_PROMPT_PREFIX = "Use <Picture 1> as the subject identity and appearance reference.\n"
+PICTURE_VIDEO_PROMPT_PREFIX = (
+    "Use <Picture 1> for the subject identity and appearance.\n"
+    "Use <Video 1> for motion, timing, and camera behavior.\n"
+)
+
 
 class RequestValidationError(ValueError):
     """A request is outside the bounded Native Ref2VA feasibility contract."""
@@ -84,6 +90,26 @@ def _validate_prompt(value: Any) -> str:
     if len(prompt) > MAX_PROMPT_LENGTH:
         raise RequestValidationError(f"Prompt must be {MAX_PROMPT_LENGTH} characters or fewer.")
     return prompt
+
+
+def materialize_prompt(user_prompt: Any, *, has_video: bool) -> tuple[str, str]:
+    """Return the retained user prompt and its deterministic Native prompt.
+
+    The browser accepts plain-language text.  Ref2VA still receives the
+    explicit native reference roles, but there is no LLM rewrite or aesthetic
+    prompt expansion in this adapter.
+    """
+
+    if not isinstance(user_prompt, str) or not user_prompt.strip():
+        raise RequestValidationError("Prompt is required.")
+    normalized = user_prompt.strip()
+    prefix = PICTURE_VIDEO_PROMPT_PREFIX if has_video else PICTURE_PROMPT_PREFIX
+    materialized = f"{prefix}{normalized}"
+    if len(materialized) > MAX_PROMPT_LENGTH:
+        raise RequestValidationError(
+            f"Prompt must be {MAX_PROMPT_LENGTH - len(prefix)} characters or fewer for this reference route."
+        )
+    return normalized, materialized
 
 
 def _validate_baseline(width: Any, height: Any, duration_seconds: Any, steps: Any) -> None:

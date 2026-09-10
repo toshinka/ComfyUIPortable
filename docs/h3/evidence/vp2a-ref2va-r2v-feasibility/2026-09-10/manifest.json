@@ -10,7 +10,10 @@
     "status": "PUBLISHED ON MAIN",
     "commit": "e4e078490cd2f96a953e6261399f268652d49c04"
   },
-  "r1_publication": "LOCAL MAIN / PUSH PENDING",
+  "r1_publication": {
+    "status": "PUBLISHED ON MAIN",
+    "commit": "d067a4170edeffee200a6f1a8d279a1c1b68be28"
+  },
   "status": [
     "NATIVE REF2VA SOURCE CONTRACT AUDITED",
     "EXACT REF2VA MODEL ACQUIRED / HASH VERIFIED / EXTERNAL STORE",
@@ -118,7 +121,7 @@
     "model_manager": "not used"
   },
   "implementation": {
-    "status": "LOCAL / UNCOMMITTED",
+    "status": "PUBLISHED ON MAIN",
     "adapter": "h3/adapters/native_ref2va.py",
     "workflow": "workflows/h3/VP2A_NATIVE_REF2VA_BASE.json",
     "runner": "h3/tests/run_vp2a_ref2va.py",
@@ -245,8 +248,8 @@
       "picture_plus_video_contact_sheet.png",
       "transition_contact_sheet.png"
     ],
-    "implementation_commit": null,
-    "evidence_docs_commit": null
+    "implementation_commit": "d067a4170edeffee200a6f1a8d279a1c1b68be28",
+    "evidence_docs_commit": "d067a4170edeffee200a6f1a8d279a1c1b68be28"
   },
   "regression": {
     "status": "PASS",

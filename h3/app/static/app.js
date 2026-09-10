@@ -6,6 +6,7 @@ import { validateContinuationSource } from "./continuation-source.js";
 
 const state = {
   mode: "video",
+  videoType: "standard",
   backend: "CONNECTING",
   config: null,
   videoResolution: "608x352",
@@ -18,6 +19,10 @@ const state = {
   referenceUploading: { start_frame: false, end_frame: false },
   stillSource: null,
   stillSourceUploading: false,
+  r2vPicture: null,
+  r2vMotionVideo: null,
+  r2vPictureUploading: false,
+  r2vMotionUploading: false,
   pollTimer: null,
   backendTimer: null,
 };
@@ -29,6 +34,27 @@ const brandMode = $("brand-mode");
 const modeVideo = $("mode-video");
 const modeStill = $("mode-still");
 const controlColumn = $("control-column");
+const videoTypeCard = $("video-type-card");
+const videoTypeStandard = $("video-type-standard");
+const videoTypeReference = $("video-type-reference");
+const r2vCard = $("r2v-card");
+const r2vPictureFile = $("r2v-picture-file");
+const r2vPictureAdd = $("r2v-picture-add");
+const r2vPictureReplace = $("r2v-picture-replace");
+const r2vPictureRemove = $("r2v-picture-remove");
+const r2vPictureEmpty = $("r2v-picture-empty");
+const r2vPictureSelected = $("r2v-picture-selected");
+const r2vPictureThumbnail = $("r2v-picture-thumbnail");
+const r2vPictureName = $("r2v-picture-name");
+const r2vPictureStatus = $("r2v-picture-status");
+const r2vMotionFile = $("r2v-motion-file");
+const r2vMotionAdd = $("r2v-motion-add");
+const r2vMotionReplace = $("r2v-motion-replace");
+const r2vMotionRemove = $("r2v-motion-remove");
+const r2vMotionEmpty = $("r2v-motion-empty");
+const r2vMotionSelected = $("r2v-motion-selected");
+const r2vMotionName = $("r2v-motion-name");
+const r2vMotionStatus = $("r2v-motion-status");
 const videoReferenceCard = $("video-reference-card");
 const stillSourceCard = $("still-source-card");
 const durationField = $("duration-field");
@@ -102,6 +128,7 @@ function setBackendStatus(next, message = "") {
   backendPill.className = `backend-pill ${next.toLowerCase()}`;
   backendLabel.textContent = next === "READY" ? "Ready" : next === "DISCONNECTED" ? "Backend disconnected" : "Connecting";
   if (message && !state.activeJob) statusDetail.textContent = message;
+  updateGenerateAvailability();
 }
 
 function resolutionValue(option) {
@@ -111,24 +138,30 @@ function resolutionValue(option) {
 function configuredResolutionOptions(still = false) {
   const configured = still
     ? state.config?.still?.resolution_options
-    : state.config?.resolution_options;
+    : state.videoType === "reference"
+      ? state.config?.reference_video?.resolution_options
+      : state.config?.resolution_options;
   if (Array.isArray(configured) && configured.length) return configured;
   return [{ label: "608 x 352", width: 608, height: 352 }];
 }
 
 function configuredDurationOptions() {
-  const configured = state.config?.duration_options;
+  const configured = state.mode === "video" && state.videoType === "reference"
+    ? state.config?.reference_video?.duration_options
+    : state.config?.duration_options;
   if (Array.isArray(configured) && configured.length) return configured;
   return [{ label: "5 seconds", value: 5 }];
 }
 
 function rememberCurrentResolution() {
+  if (state.mode === "video" && state.videoType === "reference") return;
   const key = state.mode === "still" ? "stillResolution" : "videoResolution";
   if (resolutionInput.value) state[key] = resolutionInput.value;
 }
 
 function populateResolutionOptions() {
   const still = state.mode === "still";
+  const reference = !still && state.videoType === "reference";
   const key = still ? "stillResolution" : "videoResolution";
   const options = configuredResolutionOptions(still).filter((item) =>
     Number.isInteger(Number(item.width)) && Number.isInteger(Number(item.height)),
@@ -142,11 +175,12 @@ function populateResolutionOptions() {
     option.textContent = item.label || `${item.width} x ${item.height}`;
     resolutionInput.append(option);
   });
-  state[key] = values.includes(state[key]) ? state[key] : values[0];
-  resolutionInput.value = state[key];
+  if (!reference) state[key] = values.includes(state[key]) ? state[key] : values[0];
+  resolutionInput.value = reference ? values[0] : state[key];
 }
 
 function populateDurationOptions() {
+  const reference = state.mode === "video" && state.videoType === "reference";
   const options = configuredDurationOptions().filter((item) => Number.isFinite(Number(item.value)));
   const values = options.map((item) => String(item.value));
   if (!values.length) return;
@@ -157,8 +191,46 @@ function populateDurationOptions() {
     option.textContent = item.label || `${item.value} seconds`;
     durationInput.append(option);
   });
-  state.videoDuration = values.includes(state.videoDuration) ? state.videoDuration : values[0];
-  durationInput.value = state.videoDuration;
+  if (!reference) state.videoDuration = values.includes(state.videoDuration) ? state.videoDuration : values[0];
+  durationInput.value = reference ? values[0] : state.videoDuration;
+}
+
+function referenceVideoEnabled() {
+  return state.config?.reference_video?.enabled === true;
+}
+
+function updateVideoTypeView() {
+  const showingReference = state.mode === "video" && state.videoType === "reference";
+  videoTypeCard.hidden = state.mode !== "video";
+  r2vCard.hidden = !showingReference;
+  videoReferenceCard.hidden = state.mode !== "video" || showingReference;
+  videoTypeStandard.classList.toggle("active", !showingReference);
+  videoTypeReference.classList.toggle("active", showingReference);
+  videoTypeStandard.setAttribute("aria-pressed", String(!showingReference));
+  videoTypeReference.setAttribute("aria-pressed", String(showingReference));
+  resolutionInput.disabled = showingReference;
+  durationInput.disabled = state.mode === "still" || showingReference;
+  if (showingReference) {
+    resolutionInput.value = "608x352";
+    durationInput.value = "5";
+  }
+}
+
+function setVideoType(nextType) {
+  if (state.mode !== "video" || !["standard", "reference"].includes(nextType)) return;
+  if (nextType === "reference" && !referenceVideoEnabled()) {
+    setDetails("Reference · Experimental is unavailable because the Native Ref2VA capability is not ready.");
+    return;
+  }
+  if (state.videoType === "standard" && nextType === "reference") {
+    rememberCurrentResolution();
+    state.videoDuration = durationInput.value;
+  }
+  state.videoType = nextType;
+  populateResolutionOptions();
+  populateDurationOptions();
+  updateVideoTypeView();
+  updateGenerateAvailability();
 }
 
 function setMode(nextMode) {
@@ -173,11 +245,11 @@ function setMode(nextMode) {
   brandMode.textContent = still ? "Still" : "Video";
   document.title = `TEGAKI / ${still ? "Still" : "Video"}`;
   document.body.dataset.mode = nextMode;
-  videoReferenceCard.hidden = still;
   stillSourceCard.hidden = !still;
   durationField.hidden = still;
-  durationInput.disabled = still;
   populateResolutionOptions();
+  populateDurationOptions();
+  updateVideoTypeView();
   controlColumn.setAttribute("aria-label", `${still ? "Still" : "Video"} controls`);
   previewEmpty.querySelector("#preview-heading").textContent = still
     ? "Your still will appear here"
@@ -190,8 +262,17 @@ function setMode(nextMode) {
 }
 
 function updateGenerateAvailability() {
-  const uploading = Object.values(state.referenceUploading).some(Boolean) || state.stillSourceUploading;
-  generateButton.disabled = !promptInput.value.trim() || uploading || Boolean(state.activeJob && !TERMINAL.has(state.activeJob.state));
+  const uploading = Object.values(state.referenceUploading).some(Boolean)
+    || state.stillSourceUploading
+    || state.r2vPictureUploading
+    || state.r2vMotionUploading;
+  const referenceMode = state.mode === "video" && state.videoType === "reference";
+  const referenceReady = !referenceMode
+    || (referenceVideoEnabled() && state.backend === "READY" && Boolean(state.r2vPicture));
+  generateButton.disabled = !promptInput.value.trim()
+    || uploading
+    || !referenceReady
+    || Boolean(state.activeJob && !TERMINAL.has(state.activeJob.state));
 }
 
 function setDetails(message) {
@@ -276,6 +357,92 @@ async function uploadStillSource(file) {
     stillSourceAdd.disabled = false;
     stillSourceReplace.disabled = false;
     stillSourceFile.value = "";
+    updateGenerateAvailability();
+  }
+}
+
+function setR2VPictureView(picture) {
+  state.r2vPicture = picture;
+  r2vPictureSelected.hidden = !picture;
+  r2vPictureEmpty.hidden = Boolean(picture);
+  if (!picture) {
+    r2vPictureThumbnail.removeAttribute("src");
+    r2vPictureName.textContent = "";
+    r2vPictureStatus.textContent = "";
+    updateGenerateAvailability();
+    return;
+  }
+  r2vPictureThumbnail.src = `${picture.preview_url}?v=${encodeURIComponent(picture.id)}`;
+  r2vPictureName.textContent = picture.name || `${picture.width || "?"} x ${picture.height || "?"}`;
+  r2vPictureStatus.textContent = "";
+  updateGenerateAvailability();
+}
+
+function setR2VMotionView(motionVideo) {
+  state.r2vMotionVideo = motionVideo;
+  r2vMotionSelected.hidden = !motionVideo;
+  r2vMotionEmpty.hidden = Boolean(motionVideo);
+  if (!motionVideo) {
+    r2vMotionName.textContent = "";
+    r2vMotionStatus.textContent = "";
+    updateGenerateAvailability();
+    return;
+  }
+  r2vMotionName.textContent = motionVideo.name || "MP4 motion reference";
+  r2vMotionStatus.textContent = "";
+  updateGenerateAvailability();
+}
+
+async function uploadR2VPicture(file) {
+  if (!file) return;
+  const body = new FormData();
+  body.append("picture", file, file.name);
+  state.r2vPictureUploading = true;
+  r2vPictureAdd.disabled = true;
+  r2vPictureReplace.disabled = true;
+  r2vPictureStatus.textContent = "Uploading Character Image…";
+  updateGenerateAvailability();
+  try {
+    const result = await requestJson("/api/r2v/picture", { method: "POST", body });
+    if (!result.picture || typeof result.picture.id !== "string") {
+      throw new Error("The Character Image was not accepted by the upload boundary.");
+    }
+    setR2VPictureView(result.picture);
+  } catch (error) {
+    r2vPictureStatus.textContent = error.message;
+    setDetails(error.message);
+  } finally {
+    state.r2vPictureUploading = false;
+    r2vPictureAdd.disabled = false;
+    r2vPictureReplace.disabled = false;
+    r2vPictureFile.value = "";
+    updateGenerateAvailability();
+  }
+}
+
+async function uploadR2VMotionVideo(file) {
+  if (!file) return;
+  const body = new FormData();
+  body.append("motion_video", file, file.name);
+  state.r2vMotionUploading = true;
+  r2vMotionAdd.disabled = true;
+  r2vMotionReplace.disabled = true;
+  r2vMotionStatus.textContent = "Uploading Motion Video…";
+  updateGenerateAvailability();
+  try {
+    const result = await requestJson("/api/r2v/video", { method: "POST", body });
+    if (!result.motion_video || typeof result.motion_video.id !== "string") {
+      throw new Error("The Motion Video was not accepted by the upload boundary.");
+    }
+    setR2VMotionView(result.motion_video);
+  } catch (error) {
+    r2vMotionStatus.textContent = error.message;
+    setDetails(error.message);
+  } finally {
+    state.r2vMotionUploading = false;
+    r2vMotionAdd.disabled = false;
+    r2vMotionReplace.disabled = false;
+    r2vMotionFile.value = "";
     updateGenerateAvailability();
   }
 }
@@ -440,14 +607,27 @@ async function submitGeneration(event) {
       if (state.stillSource) payload.source_id = state.stillSource.id;
     } else {
       payload.duration = Number(durationInput.value);
-      payload.references = {
-        start_frame: state.references.start_frame
-          ? { id: state.references.start_frame.id, role: "start_frame" }
-          : null,
-        end_frame: state.references.end_frame
-          ? { id: state.references.end_frame.id, role: "end_frame" }
-          : null,
-      };
+      if (state.videoType === "reference") {
+        if (state.backend !== "READY") throw new Error("Reference Video is waiting for the Native backend.");
+        if (!state.r2vPicture) throw new Error("Character Image is required for Reference Video.");
+        endpoint = "/api/r2v/generate";
+        payload.video_type = "reference";
+        payload.picture_id = state.r2vPicture.id;
+        payload.motion_video_id = state.r2vMotionVideo?.id || null;
+        delete payload.duration;
+        payload.duration = 5;
+        payload.width = 608;
+        payload.height = 352;
+      } else {
+        payload.references = {
+          start_frame: state.references.start_frame
+            ? { id: state.references.start_frame.id, role: "start_frame" }
+            : null,
+          end_frame: state.references.end_frame
+            ? { id: state.references.end_frame.id, role: "end_frame" }
+            : null,
+        };
+      }
     }
     const body = await requestJson(endpoint, {
       method: "POST",
@@ -525,13 +705,81 @@ async function verifyStillSource(source) {
   }
 }
 
+function standardResolutionValues() {
+  const configured = state.config?.resolution_options;
+  if (Array.isArray(configured) && configured.length) return configured.map(resolutionValue);
+  return ["608x352", "736x416"];
+}
+
+function standardDurationValues() {
+  const configured = state.config?.duration_options;
+  if (Array.isArray(configured) && configured.length) return configured.map((option) => String(option.value));
+  return ["5", "15"];
+}
+
 function historyScalarOptions() {
   return {
-    resolutionValues: configuredResolutionOptions(false).map(resolutionValue),
-    durationValues: configuredDurationOptions().map((option) => String(option.value)),
+    resolutionValues: standardResolutionValues(),
+    durationValues: standardDurationValues(),
     stepsValue: stepsInput.value,
     maxPromptLength: promptInput.maxLength,
   };
+}
+
+function normalizeR2VAsset(value, kind) {
+  const label = kind === "picture" ? "Character Image" : "Motion Video";
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`${label} metadata is unavailable.`);
+  }
+  const id = typeof value.id === "string" ? value.id.trim() : "";
+  if (!/^[0-9a-f]{32}$/.test(id)) throw new Error(`${label} metadata is invalid.`);
+  return {
+    ...value,
+    id,
+    preview_url: `/api/r2v/${kind === "picture" ? "pictures" : "videos"}/${encodeURIComponent(id)}`,
+  };
+}
+
+async function verifyR2VAsset(asset, kind) {
+  const label = kind === "picture" ? "Character Image" : "Motion Video";
+  const expected = `/api/r2v/${kind === "picture" ? "pictures" : "videos"}/${encodeURIComponent(asset.id)}`;
+  let response;
+  try {
+    response = await fetch(expected, { cache: "no-store" });
+  } catch {
+    throw new Error(`${label} could not be verified.`);
+  }
+  if (!response.ok) throw new Error(`${label} is no longer available.`);
+  const contentType = response.headers.get("content-type") || "";
+  if (kind === "picture" && !/^image\/(png|jpeg|webp)(?:;|$)/i.test(contentType)) {
+    throw new Error("Character Image is not a supported PNG, JPEG, or WebP.");
+  }
+  if (kind === "motion" && !/^video\/mp4(?:;|$)/i.test(contentType)) {
+    throw new Error("Motion Video is not a supported MP4.");
+  }
+}
+
+async function resolveReferenceVideoHistorySettings(entry) {
+  if (!entry || entry.video_type !== "reference" || entry.media_kind === "still") {
+    throw new Error("Reference Video History settings are invalid.");
+  }
+  const scalars = resolveHistoryScalars(entry, {
+    resolutionValues: ["608x352"],
+    durationValues: ["5"],
+    stepsValue: "20",
+    maxPromptLength: promptInput.maxLength,
+  });
+  const metadata = entry.reference_video;
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {
+    throw new Error("Reference Video assets are unavailable.");
+  }
+  const picture = normalizeR2VAsset(metadata.picture, "picture");
+  const motionVideo = metadata.motion_video == null
+    ? null
+    : normalizeR2VAsset(metadata.motion_video, "motion");
+  await verifyR2VAsset(picture, "picture");
+  if (motionVideo) await verifyR2VAsset(motionVideo, "motion");
+  return { ...scalars, picture, motionVideo };
 }
 
 function applyHistorySettings(settings) {
@@ -544,6 +792,15 @@ function applyHistorySettings(settings) {
   stepsInput.value = settings.steps;
   setReferenceSlotView("start_frame", settings.references.start_frame);
   setReferenceSlotView("end_frame", settings.references.end_frame);
+  updatePromptCount();
+}
+
+function applyReferenceVideoHistorySettings(settings) {
+  promptInput.value = settings.prompt;
+  seedInput.value = settings.seed;
+  stepsInput.value = settings.steps;
+  setR2VPictureView(settings.picture);
+  setR2VMotionView(settings.motionVideo);
   updatePromptCount();
 }
 
@@ -569,12 +826,19 @@ async function useHistorySettings(entry) {
       });
       setMode("still");
       applyStillHistorySettings(settings);
+    } else if (entry.video_type === "reference") {
+      const settings = await resolveReferenceVideoHistorySettings(entry);
+      if (!referenceVideoEnabled()) throw new Error("Reference · Experimental is unavailable in the current Native session.");
+      setMode("video");
+      setVideoType("reference");
+      applyReferenceVideoHistorySettings(settings);
     } else {
       const settings = await resolveHistorySettings(entry, {
         ...historyScalarOptions(),
         verifyReference: verifyHistoryReference,
       });
       setMode("video");
+      setVideoType("standard");
       applyHistorySettings(settings);
     }
     setHistoryActionStatus("Settings loaded.");
@@ -882,7 +1146,7 @@ function createHistoryCard(entry) {
   const actions = document.createElement("div");
   actions.className = "history-actions";
   actions.append(useSettings);
-  if (!isStill && entry.state === "COMPLETED" && typeof entry.video_url === "string" && entry.video_url.trim()) {
+  if (!isStill && entry.video_type !== "reference" && entry.state === "COMPLETED" && typeof entry.video_url === "string" && entry.video_url.trim()) {
     const continueButton = document.createElement("button");
     continueButton.type = "button";
     continueButton.className = "quiet-button history-continue";
@@ -921,8 +1185,14 @@ async function loadConfig() {
   try {
     const config = await requestJson("/api/config");
     state.config = config;
+    videoTypeReference.disabled = !referenceVideoEnabled();
+    videoTypeReference.title = referenceVideoEnabled()
+      ? "Experimental Reference Video"
+      : "Reference Video is unavailable in this Native session";
     populateResolutionOptions();
     populateDurationOptions();
+    updateVideoTypeView();
+    updateGenerateAvailability();
   } catch (error) {
     setDetails(error.message);
   }
@@ -930,11 +1200,16 @@ async function loadConfig() {
 
 promptInput.addEventListener("input", updatePromptCount);
 resolutionInput.addEventListener("change", rememberCurrentResolution);
-durationInput.addEventListener("change", () => { state.videoDuration = durationInput.value; });
+durationInput.addEventListener("change", () => {
+  if (state.mode === "video" && state.videoType === "reference") return;
+  state.videoDuration = durationInput.value;
+});
 form.addEventListener("submit", submitGeneration);
 cancelButton.addEventListener("click", cancelGeneration);
 modeVideo.addEventListener("click", () => setMode("video"));
 modeStill.addEventListener("click", () => setMode("still"));
+videoTypeStandard.addEventListener("click", () => setVideoType("standard"));
+videoTypeReference.addEventListener("click", () => setVideoType("reference"));
 $("random-seed").addEventListener("click", () => { seedInput.value = ""; seedInput.focus(); });
 referenceAdd.addEventListener("click", () => referenceFile.click());
 referenceReplace.addEventListener("click", () => referenceFile.click());
@@ -948,6 +1223,14 @@ stillSourceAdd.addEventListener("click", () => stillSourceFile.click());
 stillSourceReplace.addEventListener("click", () => stillSourceFile.click());
 stillSourceFile.addEventListener("change", () => uploadStillSource(stillSourceFile.files?.[0]));
 stillSourceRemove.addEventListener("click", () => setStillSourceView(null));
+r2vPictureAdd.addEventListener("click", () => r2vPictureFile.click());
+r2vPictureReplace.addEventListener("click", () => r2vPictureFile.click());
+r2vPictureFile.addEventListener("change", () => uploadR2VPicture(r2vPictureFile.files?.[0]));
+r2vPictureRemove.addEventListener("click", () => setR2VPictureView(null));
+r2vMotionAdd.addEventListener("click", () => r2vMotionFile.click());
+r2vMotionReplace.addEventListener("click", () => r2vMotionFile.click());
+r2vMotionFile.addEventListener("change", () => uploadR2VMotionVideo(r2vMotionFile.files?.[0]));
+r2vMotionRemove.addEventListener("click", () => setR2VMotionView(null));
 
 updatePromptCount();
 setReferenceSlotView("start_frame", null);

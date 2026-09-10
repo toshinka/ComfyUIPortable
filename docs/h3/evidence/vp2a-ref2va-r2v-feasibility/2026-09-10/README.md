@@ -5,8 +5,9 @@ Date: 2026-09-10 JST
 Decision: `FEASIBLE WITH LIMITS`
 
 Previous acquisition-gate publication: `PUBLISHED ON MAIN` at
-`e4e078490cd2f96a953e6261399f268652d49c04`. R1 updates to this report and
-evidence package are `LOCAL MAIN / PUSH PENDING`. VP1 publication is recorded
+`e4e078490cd2f96a953e6261399f268652d49c04`. R1 implementation, report, and
+evidence package are `PUBLISHED ON MAIN` at
+`d067a4170edeffee200a6f1a8d279a1c1b68be28`. VP1 publication is recorded
 separately as `PUBLISHED ON MAIN` at
 `41da0bf804d049adc40e2ae2d5abfdd59eabc703`.
 Owner acceptance remains `PENDING`.
