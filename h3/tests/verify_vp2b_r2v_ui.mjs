@@ -44,7 +44,8 @@ for (const marker of [
   'payload.video_type = "reference"',
   'payload.picture_id = state.r2vPicture.id',
   'payload.motion_video_id = state.r2vMotionVideo?.id || null',
-  'payload.motion_start_seconds = startVal',
+  'const parsed = parseMotionStartInput(r2vMotionStartInput.value)',
+  'payload.motion_start_seconds = parsed.value',
   'async function resolveReferenceVideoHistorySettings(entry)',
   'await verifyR2VAsset(picture, "picture")',
   'await verifyR2VAsset(motionVideo, "motion")',
@@ -58,7 +59,7 @@ for (const marker of [
 
 const referenceSubmit = app.slice(app.indexOf('if (state.videoType === "reference")'), app.indexOf('} else {', app.indexOf('if (state.videoType === "reference")')));
 assert.ok(referenceSubmit.includes('endpoint = "/api/r2v/generate"'));
-assert.ok(referenceSubmit.includes('payload.motion_start_seconds = startVal'));
+assert.ok(referenceSubmit.includes('payload.motion_start_seconds = parsed.value'));
 assert.equal(referenceSubmit.includes('payload.references'), false);
 
 const useHandler = app.slice(app.indexOf("async function useHistorySettings"), app.indexOf("function createHistoryCard"));
@@ -78,4 +79,54 @@ for (const marker of [
   assert.ok(styles.includes(marker), `VP2B CSS marker missing: ${marker}`);
 }
 
-console.log("VP2B Experimental R2V UI contract smoke: 38 PASS");
+// Test parseMotionStartInput logic extracted from app.js
+const parseMotionStartFnMatch = app.match(/function parseMotionStartInput\(rawValue\) \{([\s\S]*?)\n\}/);
+assert.ok(parseMotionStartFnMatch, "parseMotionStartInput function definition must exist in app.js");
+const parseMotionStartInput = new Function("rawValue", parseMotionStartFnMatch[1]);
+
+// Valid inputs
+assert.deepEqual(parseMotionStartInput("0"), { valid: true, value: 0 });
+assert.deepEqual(parseMotionStartInput(0), { valid: true, value: 0 });
+assert.deepEqual(parseMotionStartInput("12.5"), { valid: true, value: 12.5 });
+assert.deepEqual(parseMotionStartInput(12.5), { valid: true, value: 12.5 });
+assert.deepEqual(parseMotionStartInput("  3.2  "), { valid: true, value: 3.2 });
+assert.deepEqual(parseMotionStartInput("0.0"), { valid: true, value: 0 });
+
+// Invalid inputs (empty, whitespace, non-numeric, negative)
+assert.deepEqual(parseMotionStartInput(""), { valid: false, value: null });
+assert.deepEqual(parseMotionStartInput("   "), { valid: false, value: null });
+assert.deepEqual(parseMotionStartInput("\t"), { valid: false, value: null });
+assert.deepEqual(parseMotionStartInput("abc"), { valid: false, value: null });
+assert.deepEqual(parseMotionStartInput("-1"), { valid: false, value: null });
+assert.deepEqual(parseMotionStartInput("-0.5"), { valid: false, value: null });
+assert.deepEqual(parseMotionStartInput(null), { valid: false, value: null });
+assert.deepEqual(parseMotionStartInput(undefined), { valid: false, value: null });
+assert.deepEqual(parseMotionStartInput(NaN), { valid: false, value: null });
+assert.deepEqual(parseMotionStartInput(Infinity), { valid: false, value: null });
+
+// Verify generate availability logic rejects null or invalid motion start
+const checkMotionStartAvailability = (referenceMode, r2vMotionVideo, r2vMotionStartSeconds) => {
+  return !referenceMode || !r2vMotionVideo || (
+    Number.isFinite(r2vMotionStartSeconds) && r2vMotionStartSeconds >= 0
+  );
+};
+assert.equal(checkMotionStartAvailability(true, { id: "vid" }, 0), true);
+assert.equal(checkMotionStartAvailability(true, { id: "vid" }, 5.5), true);
+assert.equal(checkMotionStartAvailability(true, { id: "vid" }, null), false);
+assert.equal(checkMotionStartAvailability(true, { id: "vid" }, -1), false);
+assert.equal(checkMotionStartAvailability(true, { id: "vid" }, undefined), false);
+assert.equal(checkMotionStartAvailability(false, { id: "vid" }, null), true);
+assert.equal(checkMotionStartAvailability(true, null, null), true);
+
+// Verify submit handler checks parsed validity before POST
+const submitHandlerFull = app.slice(app.indexOf("async function submitGeneration"), app.indexOf("async function cancelGeneration"));
+const submitValidationSlice = referenceSubmit.slice(referenceSubmit.indexOf("if (state.r2vMotionVideo)"));
+assert.ok(submitValidationSlice.includes("parseMotionStartInput(r2vMotionStartInput.value)"));
+assert.ok(submitValidationSlice.includes('throw new Error("Start time must be 0 seconds or greater.")'));
+assert.ok(submitHandlerFull.indexOf('throw new Error("Start time must be 0 seconds or greater.")') < submitHandlerFull.indexOf("await requestJson(endpoint"));
+
+// Verify input listener updates state to null on invalid
+const inputListenerSlice = app.slice(app.indexOf('r2vMotionStartInput.addEventListener("input"'));
+assert.ok(inputListenerSlice.includes("state.r2vMotionStartSeconds = parsed.valid ? parsed.value : null;"));
+
+console.log("VP2B Experimental R2V UI contract smoke: 44 PASS");

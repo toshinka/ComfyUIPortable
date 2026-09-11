@@ -19,9 +19,9 @@ Card H3-G1B2 implements the vertical UI -> request -> server validation -> adapt
 ### UI Field
 - Added numeric input in index.html under the Motion Video selected body:
   - Visible label: Start (sec)
-  - Attributes: 	ype=number min=0 step=0.1 value=0
-  - Element ID: 2v-motion-start
-- Added session state variable: state.r2vMotionStartSeconds = 0.
+  - Attributes: `type="number"` `min="0"` `step="0.1"` `value="0"`
+  - Element ID: `r2v-motion-start`
+- Added session state variable: `state.r2vMotionStartSeconds = 0`.
 - Active only when Motion Video is selected; resets to 0 on new video upload, replacement, removal, and generated video handoff.
 - Generate button is disabled when Motion Video exists and the start time is invalid (negative, non-finite).
 
@@ -49,7 +49,7 @@ Card H3-G1B2 implements the vertical UI -> request -> server validation -> adapt
 - Completed Reference entries record motion_start_seconds.
 - Use settings restores motion_start_seconds into the Motion Video start field.
 - Backward compatibility: historical entries missing motion_start_seconds restore default 0.
-- Snapshot / restore in snapshotR2VHandoffState and estoreR2VHandoffState preserves 2vMotionStartSeconds.
+- Snapshot / restore in `snapshotR2VHandoffState` and `restoreR2VHandoffState` preserves `r2vMotionStartSeconds`.
 
 ---
 

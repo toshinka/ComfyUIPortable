@@ -199,6 +199,21 @@ function setBackendStatus(next, message = "") {
   updateGenerateAvailability();
 }
 
+function parseMotionStartInput(rawValue) {
+  if (typeof rawValue !== "string" && typeof rawValue !== "number") {
+    return { valid: false, value: null };
+  }
+  const text = String(rawValue).trim();
+  if (!text) {
+    return { valid: false, value: null };
+  }
+  const parsed = Number(text);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return { valid: false, value: null };
+  }
+  return { valid: true, value: parsed };
+}
+
 function setStatusDetail(message) {
   statusDetail.textContent = message;
   state.backendStatusDetail = "";
@@ -638,8 +653,8 @@ function setR2VMotionView(motionVideo, startSeconds = 0) {
     updateGenerateAvailability();
     return;
   }
-  const parsedStart = Number(startSeconds);
-  const validStart = Number.isFinite(parsedStart) && parsedStart >= 0 ? parsedStart : 0;
+  const parsed = parseMotionStartInput(startSeconds);
+  const validStart = parsed.valid ? parsed.value : 0;
   state.r2vMotionStartSeconds = validStart;
   r2vMotionStartInput.value = String(validStart);
   r2vMotionName.textContent = motionVideo.name || "MP4 motion reference";
@@ -952,12 +967,12 @@ async function submitGeneration(event) {
         payload.picture_id = state.r2vPicture.id;
         payload.motion_video_id = state.r2vMotionVideo?.id || null;
         if (state.r2vMotionVideo) {
-          const startVal = Number(r2vMotionStartInput.value);
-          if (!Number.isFinite(startVal) || startVal < 0) {
+          const parsed = parseMotionStartInput(r2vMotionStartInput.value);
+          if (!parsed.valid) {
             throw new Error("Start time must be 0 seconds or greater.");
           }
-          state.r2vMotionStartSeconds = startVal;
-          payload.motion_start_seconds = startVal;
+          state.r2vMotionStartSeconds = parsed.value;
+          payload.motion_start_seconds = parsed.value;
         }
         delete payload.duration;
         payload.duration = 5;
@@ -1867,8 +1882,8 @@ r2vMotionReplace.addEventListener("click", () => r2vMotionFile.click());
 r2vMotionFile.addEventListener("change", () => uploadR2VMotionVideo(r2vMotionFile.files?.[0]));
 r2vMotionRemove.addEventListener("click", () => setR2VMotionView(null));
 r2vMotionStartInput.addEventListener("input", () => {
-  const val = Number(r2vMotionStartInput.value);
-  state.r2vMotionStartSeconds = Number.isFinite(val) && val >= 0 ? val : -1;
+  const parsed = parseMotionStartInput(r2vMotionStartInput.value);
+  state.r2vMotionStartSeconds = parsed.valid ? parsed.value : null;
   updateGenerateAvailability();
 });
 installR2VDropzone(r2vPictureDropzone, "Character Image", uploadR2VPicture);
