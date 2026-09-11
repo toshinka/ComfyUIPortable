@@ -1,4 +1,5 @@
 const ACTIVE_STATUS_COPY = Object.freeze({
+  SUBMITTING: "Submitting the generation request to Native H3.",
   QUEUED: "Waiting in the Native queue.",
   RUNNING: "Native backend is generating.",
   COMPLETED: "Preview ready.",

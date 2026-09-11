@@ -4,7 +4,7 @@ Revision: `XT2-R1`
 Updated: `2026-09-11 JST`
 Initial remote: `9a56815e984317363f4177277bb8035337c137f0`
 Source H3 closeout: `70f3561d44a052ce30148fa6474ba633a0d8a37f`
-Status: `CROSS-TRACK DESIGN PLAN / IMPLEMENTATION NOT AUTHORIZED`
+Status: `CROSS-TRACK DESIGN PLAN / H3-R1 VERIFIED / R2-M1 OPEN / SHARED-SHELL IMPLEMENTATION NOT AUTHORIZED`
 
 ## 1. Purpose
 
@@ -43,7 +43,7 @@ The plan preserves the current product boundaries:
 | Common supervisor | `PREFERRED` | Investigate one common launcher or supervisor that starts and monitors isolated domain services. |
 | Exact backend lifecycle | `OPEN / REQUIRES FEASIBILITY` | Process count, startup order, health, restart, shutdown, queues, logs, ports, paths, and failure ownership are not selected. |
 | Shared `8188` backend | `OPEN / REQUIRES FEASIBILITY` | **NOT SELECTED**. Compatibility is not assumed and must be proven before consideration. |
-| H3 Stage UX | `ACCEPTED` | H3 Preview/monitor visibility and Generate/status clarity are the first integration UX seam. |
+| H3 Stage UX | `ACCEPTED` | H3 Preview/monitor visibility and Generate/status clarity are the first integration UX seam. H3-R1 is now implemented and verified in the H3 workspace. |
 | Manga hosting | `OPEN / REQUIRES FEASIBILITY` | Determine how the Manga workspace and custom-node/runtime path are hosted beside H3. |
 | Cross-track asset handoff | `DEFERRED` | No automatic H3-to-Manga or Manga-to-H3 asset promotion in the first slice. |
 | Shared-shell implementation | `DEFERRED` | **NOT AUTHORIZED** until R1, R2, and M1 evidence and a later implementation Card. |
@@ -159,9 +159,10 @@ The Stage direction covers:
 - elapsed time is shown only where available;
 - inaccurate percentage completion is not invented.
 
-Wide and narrow layout behavior, independent Inspector scrolling, sticky Stage
-behavior, or Create-to-Result transitions remain bounded design/feasibility work
-under R1. Existing H3 simple panels remain valid independently.
+H3-R1 has completed the bounded wide/narrow layout, independent Inspector
+scrolling, sticky Stage, Generate visibility, truthful submission, and
+Create-to-Result validation in the H3 workspace. Existing H3 simple panels
+remain valid independently. Finalizing is `NOT ADOPTED`.
 
 ## 8. Manga hosting question
 
@@ -227,7 +228,7 @@ absorb H3 or Manga domain semantics.
 
 ### R1 — H3 Stage / Generate Visibility
 
-Classification: `ACCEPTED DESIGN TARGET / REQUIRES BOUNDED UX VALIDATION`.
+Classification: `COMPLETED / VERIFIED BROWSER UI`.
 
 Exit evidence:
 
@@ -238,11 +239,12 @@ Exit evidence:
 - H3 generation semantics remain in the H3 workspace;
 - no Manga file or route changes are required.
 
-R1 does not implement the common shell.
+R1 does not implement the common shell. See the H3-R1 report and evidence
+package for the bounded implementation and Browser record.
 
 ### R2 — Runtime Lifecycle Feasibility
 
-Classification: `OPEN / REQUIRES FEASIBILITY`.
+Classification: `NEXT GATE / OPEN / REQUIRES FEASIBILITY`.
 
 Exit evidence:
 
@@ -271,7 +273,7 @@ Exit evidence:
 - no cross-track asset handoff is silently introduced.
 
 M1 does not select a final hosting model by itself; it supplies evidence for the
-later architecture decision.
+later architecture decision. Manga Hosting Feasibility remains `NOT STARTED`.
 
 ## 13. Thin Shell First Vertical Slice
 
@@ -312,8 +314,10 @@ First-integration H3 / Manga IA: ACCEPTED as conceptual vocabulary
 Common supervisor: PREFERRED
 Exact backend lifecycle: OPEN / REQUIRES FEASIBILITY
 Shared 8188: NOT SELECTED
-H3 Stage UX: ACCEPTED design target
-Manga hosting: OPEN / REQUIRES FEASIBILITY
+H3 Stage UX: ACCEPTED / R1 COMPLETED / VERIFIED BROWSER UI
+Finalizing: NOT ADOPTED
+Runtime Lifecycle Feasibility: NEXT GATE / OPEN / REQUIRES FEASIBILITY
+Manga Hosting Feasibility: NOT STARTED / OPEN / REQUIRES FEASIBILITY
 Cross-track asset handoff: DEFERRED
 Implementation order: 1 R1 UX -> 2 R2 runtime -> 3 M1 Manga hosting -> 4 thin shell slice
 Shared-shell implementation: NOT AUTHORIZED

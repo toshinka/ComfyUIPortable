@@ -32,6 +32,7 @@ approved, or Owner acceptance is complete.
 | Edit in Prep / Prep to Character | `VERIFIED BROWSER UI` |
 | Real Prep generations | `2` |
 | Chrome `file://` permission | `NOT ENABLED` |
+| H3 Stage / Generate Visibility | `IMPLEMENTED / VERIFIED BROWSER UI / PUBLICATION PENDING` |
 | Owner acceptance | `PENDING` |
 
 IP2 evidence must retain both observations: Source-only preserved the source
@@ -182,16 +183,24 @@ Open design question observed by the Owner:
 - Wide: Preview looks appropriate near the top, but Inspector/settings scrolling can move it out of sight.
 - Narrow: input/settings and Preview become far apart, so the user may need to scroll back after Generate.
 
-Potential future direction is a persistent Stage/Monitor on wide layouts, or
-state-oriented Create and Result/Preview views on narrow layouts. XT1 does not
-implement sticky behavior, a new Stage, responsive view routing, or layout changes.
+H3-R1 implements this bounded direction within the H3 workspace only:
+
+- Wide: the existing Preview card acts as a sticky Stage while the control
+  column scrolls, within the natural workspace boundary.
+- Narrow: Create is the primary view before submission, and Result can be
+  selected explicitly or after an accepted submission.
+
+No H3 parent tab, shared shell, or cross-track state is introduced.
 
 ### Generate and status
 
-Generate should remain easy to locate and visibly communicate `Queued`,
-`Generating`, `Completed`, and `Failed`, with elapsed time only where truthful.
-No percentage should be invented without accurate backend support. XT1 does not
-implement a progress bar or alter status semantics.
+Generate remains easy to locate and the H3 skin communicates only truthful
+states: `Submitting`, `Queued`, `Generating`, `Completed`, `Failed`,
+`Cancelled`, and `Disconnected`, with elapsed time only where truthful.
+No percentage or `Finalizing` state is invented. `Submitting` is a
+Browser-owned transient; accepted queue and terminal states continue to come
+from the existing Native H3 Job contract. H3-R1 does not change that backend
+protocol.
 
 ## 8. Future Studio vocabulary and research context
 
@@ -222,9 +231,9 @@ read for terminology alignment and was not modified by XT1.
 
 ## 10. Explicit non-scope
 
-XT1 does not:
+This boundary does not:
 
-- modify H3 server, app, adapters, workflows, ports, launch behavior, or model config;
+- modify H3 server, adapters, workflows, ports, launch behavior, or model config;
 - modify `GITHUB_MANGA.txt` or any `docs/manga/` file;
 - modify Manga workflows, custom nodes, scripts, or outputs;
 - merge H3 and Manga schemas, routes, workflows, queues, History, or Preview;
@@ -238,18 +247,21 @@ XT1 does not:
 - [H3 document hub](README.md)
 - [IP2 Browser Prep/Edit report](reports/IP2_BROWSER_PREP_EDIT_LENS_REPORT.md)
 - [IP2 Browser evidence](evidence/ip2-browser-prep-edit/2026-09-11/README.md)
+- [H3-R1 Stage / Generate report](reports/H3_R1_STAGE_GENERATE_VISIBILITY_REPORT.md)
+- [H3-R1 Browser evidence](evidence/h3-r1-stage-generate-visibility/2026-09-11/README.md)
 - [Manga Product Integration Boundary](../manga/MANGA_PRODUCT_INTEGRATION_BOUNDARY.md) — read-only terminology reference
 
-XT1 validation is docs-only:
+H3-R1 validation is recorded separately:
 
 ```text
-GITHUB_H3 current stage: IP2
-IP2 publication and read-order entries: present
+GITHUB_H3 current stage: IP2 (unchanged)
+H3-R1 static UI/verifier scope: present
 H3 boundary link: present
 Manga boundary: unchanged
-Runtime files: unchanged
+H3 server/backend/workflows: unchanged
 Manga files: unchanged
-No Browser or generation: YES
+Browser acceptance: PASS WITH LIMIT
+One real Still generation: COMPLETED
 git diff --check: PASS
 ```
 
@@ -260,14 +272,15 @@ H3 integration-design readiness: H3_READY_FOR_INTEGRATION_DESIGN
 Manga: MANGA_READY_FOR_INTEGRATION_DESIGN
 Current cross-track implementation conflict: NONE
 Primary integration-design question: BACKEND / RUNTIME PROFILE HOSTING
-Preview/Stage responsive UX: OPEN DESIGN QUESTION
-Generate/status UX: OPEN DESIGN QUESTION
+H3 Stage / Generate Visibility: IMPLEMENTED / VERIFIED BROWSER UI / PUBLICATION PENDING
+Preview/Stage responsive UX: IMPLEMENTED / VERIFIED BROWSER UI / PUBLICATION PENDING
+Generate/status UX: IMPLEMENTED / VERIFIED BROWSER UI / PUBLICATION PENDING
 Shared-shell design: READY FOR REVIEW
 Shared-shell implementation: NOT AUTHORIZED
 Runtime changes: NONE
 Manga changes: NONE
 Owner acceptance: PENDING
-Recommended next: ASTRA CROSS-TRACK INTEGRATION DESIGN REVIEW
+Recommended next: R2 RUNTIME LIFECYCLE FEASIBILITY
 ```
 
 Before that review, Web-GPT or SOL should freshly verify current Astra usage

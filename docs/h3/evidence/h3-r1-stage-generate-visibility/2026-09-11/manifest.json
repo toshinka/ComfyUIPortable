@@ -1,0 +1,123 @@
+{
+  "schema": "tegaki.h3.h3-r1.stage-generate-visibility.evidence/v1",
+  "card": "H3-R1",
+  "title": "Stage / Generate Visibility Responsive Stage + Truthful Submission / Generation Status",
+  "evidence_date": "2026-09-11",
+  "status": [
+    "IMPLEMENTED",
+    "VERIFIED SOURCE AND LOGIC",
+    "VERIFIED BROWSER UI",
+    "PASS WITH LIMIT",
+    "ONE REAL STILL GENERATION",
+    "OWNER ACCEPTANCE PENDING"
+  ],
+  "publication": "PENDING BEFORE COMMIT",
+  "owner_acceptance": "PENDING",
+  "base_origin_main": "67b9396481d24be7b4bea51643d589c7a7b7ee28",
+  "implementation": {
+    "files": [
+      "ComfyUIPortable/h3/app/static/index.html",
+      "ComfyUIPortable/h3/app/static/styles.css",
+      "ComfyUIPortable/h3/app/static/app.js",
+      "ComfyUIPortable/h3/app/static/job-status-copy.js",
+      "ComfyUIPortable/h3/tests/verify_h3_r1_stage_generate_visibility.mjs"
+    ],
+    "backend_server_changes": false,
+    "workflow_changes": false,
+    "launcher_changes": false,
+    "model_changes": false,
+    "manga_changes": false,
+    "shared_shell_changes": false,
+    "shared_supervisor_changes": false
+  },
+  "browser": {
+    "skin_url": "http://127.0.0.1:8190/",
+    "native_url": "http://127.0.0.1:8188/",
+    "capture_method": "Codex Browser CUA/Playwright",
+    "wide_viewport": [1440, 900],
+    "narrow_viewport": [390, 844],
+    "wide": {
+      "stage_visible": true,
+      "generate_findable": true,
+      "natural_workspace_boundary": true,
+      "topbar_history_overlap": false,
+      "nested_workspace_scroll": false
+    },
+    "narrow": {
+      "initial_view": "Create",
+      "result_view_explicit": true,
+      "preview_hidden_on_create": true,
+      "control_hidden_on_result": true,
+      "manual_create_intent_retained_after_completion": true,
+      "completed_result_visible_on_explicit_result": true,
+      "focus_stolen_on_completion": false
+    },
+    "resize": {
+      "sequence": [[390, 844], [1440, 900], [390, 844]],
+      "domain_inputs_retained": true,
+      "generation_count_changed": false,
+      "history_count_changed": false
+    },
+    "status": {
+      "submitting": "SOURCE/LOGIC VERIFIED; TRANSIENT TOO FAST FOR POST-CLICK PERSISTENT READBACK",
+      "queued": "NOT OBSERVED",
+      "generating": "VERIFIED BROWSER UI",
+      "completed": "VERIFIED BROWSER UI",
+      "finalizing": "NOT ADOPTED",
+      "percentage_progress": "NOT PRESENT"
+    }
+  },
+  "generation": {
+    "count": 1,
+    "max_authorized": 1,
+    "route": "native_still",
+    "media_kind": "still",
+    "prompt_only": true,
+    "job_id": "997c4fee1efc4fb4a916b0d68d3d6bdf",
+    "native_prompt_id": "1e264b2f-ebcc-4160-bcf6-17bd2a109052",
+    "prompt": "A small red paper boat floating on calm water, simple composition.",
+    "width": 608,
+    "height": 352,
+    "steps": 20,
+    "seed": "20260914",
+    "state_observed_running": "Generating",
+    "state_observed_terminal": "Completed",
+    "elapsed_seconds": 86.46,
+    "output": {
+      "path": "output/h3/still/h2a_native_still_00005_.png",
+      "bytes": 217538,
+      "sha256": "04E60C8D49A445FD559ED23C76BA9F7052ACBF24123DEC5C875AC4D70DE9A49D"
+    },
+    "history_count_before": 2,
+    "history_count_after": 3
+  },
+  "verification": {
+    "h3_r1_ui": "48 PASS",
+    "ip2_prep_edit_ui": "45 PASS",
+    "vp2c_reference_handoff_ui": "36 PASS",
+    "vp2b_r2v_ui": "28 PASS",
+    "h2c_still_ui": "52 PASS",
+    "h1c_continuation": "38 PASS",
+    "h1b1_ux_p2": "44 PASS",
+    "javascript_syntax": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "visual_review": {
+    "rendered_screenshots_reviewed": true,
+    "screenshots_persisted": false,
+    "wide_stage_persistence": "VERIFIED WITHIN NATURAL WORKSPACE BOUNDARY",
+    "wide_generate_findability": "VERIFIED",
+    "narrow_create_first": "VERIFIED",
+    "accepted_submit_to_result": "VERIFIED",
+    "manual_result_to_create_after_completion": "VERIFIED",
+    "running_feedback": "VERIFIED",
+    "fake_percentage": "ABSENT",
+    "layout_overlap": "NO TOPBAR/HISTORY OVERLAP OBSERVED"
+  },
+  "next_gate": {
+    "runtime_lifecycle_feasibility": "NEXT GATE / OPEN",
+    "manga_hosting_feasibility": "NOT STARTED / OPEN",
+    "cross_track_asset_handoff": "DEFERRED",
+    "shared_shell_implementation": "NOT AUTHORIZED"
+  }
+}

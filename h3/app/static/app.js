@@ -15,6 +15,8 @@ const state = {
   videoDuration: "5",
   activeJob: null,
   previewJob: null,
+  submitting: false,
+  narrowView: "create",
   references: { start_frame: null, end_frame: null },
   reference: null,
   referenceUploading: { start_frame: false, end_frame: false },
@@ -125,7 +127,11 @@ const durationInput = $("duration");
 const seedInput = $("seed");
 const stepsInput = $("steps");
 const generateButton = $("generate-button");
+const generateLabel = $("generate-label");
 const cancelButton = $("cancel-button");
+const submitStatus = $("submit-status");
+const narrowCreateButton = $("narrow-create-button");
+const narrowResultButton = $("narrow-result-button");
 const backendPill = $("backend-pill");
 const backendLabel = $("backend-label");
 const generationStatus = $("generation-status");
@@ -163,7 +169,7 @@ function setBackendStatus(next, message = "") {
   state.backend = next;
   backendPill.className = `backend-pill ${next.toLowerCase()}`;
   backendLabel.textContent = next === "READY" ? "Ready" : next === "DISCONNECTED" ? "Backend disconnected" : "Connecting";
-  if (message && !state.activeJob) statusDetail.textContent = message;
+  if (message && !state.activeJob && !state.submitting) statusDetail.textContent = message;
   updateGenerateAvailability();
 }
 
@@ -341,6 +347,38 @@ function setMode(nextMode) {
   updateGenerateAvailability();
 }
 
+function isNarrowViewport() {
+  return typeof window.matchMedia === "function"
+    && window.matchMedia("(max-width: 820px)").matches;
+}
+
+function setNarrowView(nextView) {
+  if (!["create", "result"].includes(nextView)) return;
+  state.narrowView = nextView;
+  document.body.dataset.narrowView = nextView;
+  narrowCreateButton.classList.toggle("active", nextView === "create");
+  narrowResultButton.classList.toggle("active", nextView === "result");
+  narrowCreateButton.setAttribute("aria-pressed", String(nextView === "create"));
+  narrowResultButton.setAttribute("aria-pressed", String(nextView === "result"));
+}
+
+function statusLabelForJob(job) {
+  if (job?.state === "RUNNING") return "Generating";
+  return job?.label || job?.state || "Unknown";
+}
+
+function renderSubmittingState() {
+  generateLabel.textContent = state.submitting ? "Submitting…" : "Generate";
+  submitStatus.hidden = !state.submitting;
+  submitStatus.textContent = state.submitting ? "Submitting request…" : "";
+  if (state.submitting) {
+    generationStatus.textContent = "Submitting";
+    statusDetail.textContent = activeStatusDetail({ state: "SUBMITTING" });
+    cancelButton.hidden = true;
+  }
+  updateGenerateAvailability();
+}
+
 function updateGenerateAvailability() {
   const uploading = Object.values(state.referenceUploading).some(Boolean)
     || state.stillSourceUploading
@@ -359,6 +397,7 @@ function updateGenerateAvailability() {
     || uploading
     || !referenceReady
     || !prepReady
+    || state.submitting
     || Boolean(state.activeJob && !TERMINAL.has(state.activeJob.state));
 }
 
@@ -743,7 +782,7 @@ function routeLabelFor(job) {
 }
 
 function renderActiveJobStatus(job) {
-  generationStatus.textContent = job.label || job.state;
+  generationStatus.textContent = statusLabelForJob(job);
   statusDetail.textContent = activeStatusDetail(job);
   cancelButton.hidden = !job.cancel_available;
   if (job.state === "FAILED" || job.state === "DISCONNECTED") {
@@ -756,7 +795,7 @@ function renderActiveJobStatus(job) {
 
 function showPreviewJob(job) {
   state.previewJob = job;
-  previewState.textContent = job.label || job.state;
+  previewState.textContent = statusLabelForJob(job);
   previewElapsed.textContent = `${Number(job.elapsed_seconds || 0).toFixed(1)}s`;
   previewOverlay.hidden = TERMINAL.has(job.state) && job.state !== "COMPLETED";
   const isStill = job.media_kind === "still";
@@ -816,10 +855,13 @@ async function pollJob() {
 
 async function submitGeneration(event) {
   event.preventDefault();
-  if (!promptInput.value.trim()) return;
+  if (!promptInput.value.trim()
+    || state.submitting
+    || Boolean(state.activeJob && !TERMINAL.has(state.activeJob.state))) return;
   const seedText = seedInput.value.trim();
   const seed = seedText === "" ? "random" : seedText;
   setDetails("");
+  let accepted = false;
   try {
     let endpoint;
     let payload;
@@ -871,14 +913,26 @@ async function submitGeneration(event) {
         };
       }
     }
+    state.submitting = true;
+    renderSubmittingState();
     const body = await requestJson(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
+    accepted = true;
+    state.submitting = false;
+    renderSubmittingState();
     setActiveJob(body.job, { selectPreview: true });
+    if (isNarrowViewport()) setNarrowView("result");
     await pollJob();
   } catch (error) {
+    state.submitting = false;
+    renderSubmittingState();
+    if (accepted) {
+      setDetails(error.message);
+      return;
+    }
     state.activeJob = null;
     generationStatus.textContent = "Failed";
     statusDetail.textContent = "Generation was not submitted.";
@@ -1558,7 +1612,11 @@ function createHistoryCard(entry) {
     image.className = "history-thumb history-image";
     image.src = entry.image_url;
     image.alt = "Generated Still result";
-    image.addEventListener("click", () => { showPreviewJob(entry); window.scrollTo({ top: 0, behavior: "smooth" }); });
+    image.addEventListener("click", () => {
+      showPreviewJob(entry);
+      if (isNarrowViewport()) setNarrowView("result");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
     card.append(image);
   } else if (!isStill && entry.video_url) {
     const video = document.createElement("video");
@@ -1569,7 +1627,11 @@ function createHistoryCard(entry) {
     video.preload = "metadata";
     video.addEventListener("mouseenter", () => video.play().catch(() => {}));
     video.addEventListener("mouseleave", () => { video.pause(); video.currentTime = 0; });
-    video.addEventListener("click", () => { showPreviewJob(entry); window.scrollTo({ top: 0, behavior: "smooth" }); });
+    video.addEventListener("click", () => {
+      showPreviewJob(entry);
+      if (isNarrowViewport()) setNarrowView("result");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
     card.append(video);
   } else {
     const failed = document.createElement("div");
@@ -1596,7 +1658,11 @@ function createHistoryCard(entry) {
           : "Text only"
   );
   open.textContent = `${entry.label || entry.state} · ${routeLabel}`;
-  open.addEventListener("click", () => { showPreviewJob(entry); window.scrollTo({ top: 0, behavior: "smooth" }); });
+  open.addEventListener("click", () => {
+    showPreviewJob(entry);
+    if (isNarrowViewport()) setNarrowView("result");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
   const prompt = document.createElement("div");
   prompt.className = "history-prompt";
   prompt.textContent = entry.request?.prompt || "";
@@ -1698,6 +1764,8 @@ durationInput.addEventListener("change", () => {
 });
 form.addEventListener("submit", submitGeneration);
 cancelButton.addEventListener("click", cancelGeneration);
+narrowCreateButton.addEventListener("click", () => setNarrowView("create"));
+narrowResultButton.addEventListener("click", () => setNarrowView("result"));
 modeVideo.addEventListener("click", () => setMode("video"));
 modeStill.addEventListener("click", () => setMode("still"));
 modePrep.addEventListener("click", () => setMode("prep"));
@@ -1743,6 +1811,7 @@ setReferenceSlotView("end_frame", null);
 setStillSourceView(null);
 setPrepAssetView("source", null);
 setPrepAssetView("donor", null);
+setNarrowView("create");
 setMode("video");
 loadConfig();
 loadHistory();

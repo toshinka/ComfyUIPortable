@@ -28,6 +28,11 @@
       </div>
     </header>
 
+    <div class="narrow-view-switch" id="narrow-view-switch" role="group" aria-label="H3 workspace view">
+      <button class="narrow-view-button active" id="narrow-create-button" type="button" aria-pressed="true">Create</button>
+      <button class="narrow-view-button" id="narrow-result-button" type="button" aria-pressed="false">Result</button>
+    </div>
+
     <main class="workspace">
       <section class="preview-column" aria-labelledby="preview-heading">
         <div class="section-kicker">Preview</div>
@@ -51,6 +56,14 @@
       <aside class="control-column" id="control-column" aria-label="Video controls">
         <form id="generate-form" novalidate>
           <div class="section-kicker">Create</div>
+          <div class="generate-action-dock" id="generate-action-dock">
+            <button class="primary-button" id="generate-button" type="submit" disabled>
+              <span id="generate-label">Generate</span>
+              <span class="button-arrow" aria-hidden="true">→</span>
+            </button>
+            <button class="cancel-button" id="cancel-button" type="button" hidden>Cancel current job</button>
+            <div class="submit-status" id="submit-status" aria-live="polite" hidden></div>
+          </div>
           <label class="field-label" for="prompt">Prompt</label>
           <textarea id="prompt" name="prompt" rows="5" maxlength="4000" placeholder="Describe the video..." required></textarea>
           <div class="field-hint"><span>Prompt</span><span id="prompt-count">0 / 4000</span></div>
@@ -290,12 +303,6 @@
               </select>
             </div>
           </div>
-
-          <button class="primary-button" id="generate-button" type="submit" disabled>
-            <span>Generate</span>
-            <span class="button-arrow" aria-hidden="true">→</span>
-          </button>
-          <button class="cancel-button" id="cancel-button" type="button" hidden>Cancel current job</button>
 
           <details class="advanced-panel">
             <summary>Advanced</summary>

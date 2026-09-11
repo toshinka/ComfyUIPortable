@@ -80,6 +80,11 @@ history; this H3-only closeout adds the report and evidence package. The
 current main also contains concurrent Manga development history. Owner
 acceptance remains pending.
 
+H3-R1 Stage / Generate Visibility is implemented as an H3-only responsive UI
+slice. Its wide sticky Stage, narrow Create/Result view, truthful submission
+guard, one authorized Still Browser generation, report, and evidence package
+are recorded here; publication and Owner acceptance remain separate states.
+
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
 
@@ -150,6 +155,9 @@ acceptance remains pending.
 | `docs/h3/reports/IP2_BROWSER_PREP_EDIT_LENS_REPORT.md` | IP2 experimental Browser Prep/Edit Source/Donor acceptance, handoff, limits, and closeout | CURRENT IP2 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/IP2_BROWSER_PREP_EDIT_LENS_REPORT.md` |
 | `docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/README.md` | IP2 authorized local Browser acceptance, visual review, and handoff evidence | CURRENT IP2 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/README.md` |
 | `docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/manifest.json` | Machine-readable IP2 Browser/runtime/output manifest | CURRENT IP2 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/manifest.json` |
+| `docs/h3/reports/H3_R1_STAGE_GENERATE_VISIBILITY_REPORT.md` | H3-R1 responsive Stage/Generate visibility, truthful status, Browser acceptance, and closeout | CURRENT H3-R1 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_R1_STAGE_GENERATE_VISIBILITY_REPORT.md` |
+| `docs/h3/evidence/h3-r1-stage-generate-visibility/2026-09-11/README.md` | H3-R1 rendered Browser, one Still generation, responsive, and scope evidence | CURRENT H3-R1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h3-r1-stage-generate-visibility/2026-09-11/README.md` |
+| `docs/h3/evidence/h3-r1-stage-generate-visibility/2026-09-11/manifest.json` | Machine-readable H3-R1 UI/runtime/output manifest | CURRENT H3-R1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h3-r1-stage-generate-visibility/2026-09-11/manifest.json` |
 | `docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` | H2-INFRA external model migration, isolation, shortcuts, cold restart, and closeout | CURRENT H2-INFRA REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` |
 | `docs/h3/evidence/model-library/2026-09-10/README.md` | H2-INFRA inventory, migration, deletion, shortcut, and runtime evidence index | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/README.md` |
 | `docs/h3/evidence/model-library/2026-09-10/inventory.json` | Machine-readable before/after H3 model inventory | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/inventory.json` |
