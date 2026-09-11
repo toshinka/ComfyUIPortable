@@ -48,6 +48,13 @@ const modeVideo = $("mode-video");
 const modeStill = $("mode-still");
 const modePrep = $("mode-prep");
 const controlColumn = $("control-column");
+const stageActionBar = $("stage-action-bar");
+const stageActionSlot = $("stage-action-slot");
+const generateActionSlot = $("generate-action-slot");
+const generateActionDock = $("generate-action-dock");
+const stageStatusSlot = $("stage-status-slot");
+const statusStrip = document.querySelector(".status-strip");
+const generationStatusBlock = $("generation-status-block");
 const videoTypeCard = $("video-type-card");
 const videoTypeStandard = $("video-type-standard");
 const videoTypeReference = $("video-type-reference");
@@ -360,6 +367,18 @@ function setNarrowView(nextView) {
   narrowResultButton.classList.toggle("active", nextView === "result");
   narrowCreateButton.setAttribute("aria-pressed", String(nextView === "create"));
   narrowResultButton.setAttribute("aria-pressed", String(nextView === "result"));
+}
+
+function syncResponsiveMounts() {
+  const wide = !isNarrowViewport();
+  const actionSlot = wide ? stageActionSlot : generateActionSlot;
+  const statusSlot = wide ? stageStatusSlot : statusStrip;
+  if (generateActionDock.parentElement !== actionSlot) actionSlot.append(generateActionDock);
+  if (generationStatusBlock.parentElement !== statusSlot) {
+    if (wide) statusSlot.append(generationStatusBlock);
+    else statusSlot.prepend(generationStatusBlock);
+  }
+  stageActionBar.setAttribute("aria-hidden", String(!wide));
 }
 
 function statusLabelForJob(job) {
@@ -1804,6 +1823,9 @@ installR2VDropzone(r2vPictureDropzone, "Character Image", uploadR2VPicture);
 installR2VDropzone(r2vMotionDropzone, "Motion Video", uploadR2VMotionVideo);
 installSingleFileDropzone(prepSourceDropzone, "Prep Source Image", (file) => uploadPrepAsset("source", file), prepSourceStatus);
 installSingleFileDropzone(prepDonorDropzone, "Prep Donor Image", (file) => uploadPrepAsset("donor", file), prepDonorStatus);
+
+window.addEventListener("resize", syncResponsiveMounts);
+syncResponsiveMounts();
 
 updatePromptCount();
 setReferenceSlotView("start_frame", null);

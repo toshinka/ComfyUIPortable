@@ -223,9 +223,9 @@ Wide only:
 - let the right Inspector begin with Prompt and creation controls;
 - retain short truthful active status near Stage.
 
-Narrow is `UNCHANGED` from R1. This direction is `NOT IMPLEMENTED` by
-H3-UXD1. The expected next Card is `H3-R1A — Wide Stage Action Bar Owner
-Adjustment` and it must preserve the Narrow Create/Result contract.
+Narrow is `UNCHANGED` from R1. The Wide Stage-top Action Bar is
+`IMPLEMENTED / VERIFIED` by H3-R1A, and the Narrow Create/Result contract is
+preserved.
 
 ## 18. Runtime and cross-track non-scope
 This H3 design SSOT does not decide or implement runtime supervisor, backend

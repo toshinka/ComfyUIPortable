@@ -20,6 +20,11 @@ for (const marker of [
   'id="narrow-view-switch"',
   'id="narrow-create-button"',
   'id="narrow-result-button"',
+  'id="stage-action-bar"',
+  'id="stage-status-slot"',
+  'id="stage-action-slot"',
+  'id="generate-action-slot"',
+  'id="generation-status-block"',
   'aria-pressed="true"',
   'aria-pressed="false"',
   'id="generate-action-dock"',
@@ -30,6 +35,8 @@ for (const marker of [
   assert.ok(html.includes(marker), `R1 HTML marker missing: ${marker}`);
 }
 assert.equal(count(html, 'id="generate-button"'), 1, "R1 must keep one Generate action.");
+assert.ok(html.includes('form="generate-form"'), "Wide Generate must remain associated with the native form.");
+assert.ok(html.indexOf('id="stage-action-bar"') < html.indexOf('class="section-kicker">Preview'));
 assert.ok(html.indexOf('id="generate-action-dock"') < html.indexOf('class="advanced-panel"'));
 
 for (const marker of [
@@ -37,6 +44,10 @@ for (const marker of [
   'narrowView: "create"',
   "function isNarrowViewport()",
   "function setNarrowView(nextView)",
+  "function syncResponsiveMounts()",
+  "const actionSlot = wide ? stageActionSlot : generateActionSlot;",
+  "const statusSlot = wide ? stageStatusSlot : statusStrip;",
+  "window.addEventListener(\"resize\", syncResponsiveMounts);",
   "function statusLabelForJob(job)",
   'if (job?.state === "RUNNING") return "Generating";',
   "function renderSubmittingState()",
@@ -100,6 +111,9 @@ assert.ok(history.includes("showPreviewJob(entry)"), "Explicit History selection
 assert.ok(history.includes('setNarrowView("result")'), "History selection must expose Result on narrow view.");
 
 for (const marker of [
+  ".stage-action-bar {",
+  ".stage-action-slot .generate-action-dock {",
+  ".stage-action-slot .primary-button {",
   ".preview-column {\n    position: sticky;",
   ".generate-action-dock {\n  position: sticky;",
   ".narrow-view-switch {\n    width:",
@@ -109,7 +123,8 @@ for (const marker of [
 ]) {
   assert.ok(styles.includes(marker), `R1 CSS marker missing: ${marker}`);
 }
+assert.ok(styles.includes(".stage-action-bar { display: none; }"), "Narrow must hide the wide Stage action bar.");
 assert.equal(styles.includes("position: fixed"), false, "R1 Stage must not become a page-wide fixed overlay.");
 assert.equal(styles.includes("overflow: auto"), false, "R1 must not add a nested scrolling workspace.");
 
-console.log("H3-R1 Stage / Generate visibility source+logic smoke: 48 PASS");
+console.log("H3-R1A Stage / Generate visibility source+logic smoke: 61 PASS");

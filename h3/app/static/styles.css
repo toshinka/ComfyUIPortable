@@ -134,6 +134,27 @@ button { cursor: pointer; }
 
 .preview-column { min-width: 0; }
 
+.stage-action-bar {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-cream);
+  box-shadow: 0 6px 16px rgba(91, 39, 28, 0.08);
+}
+
+.stage-status-slot { min-width: 0; flex: 1 1 auto; }
+.stage-status-slot .status-block { min-height: 0; padding: 0; background: transparent; }
+.stage-status-slot .status-label { margin-bottom: 2px; }
+.stage-status-slot .status-detail { overflow-wrap: anywhere; }
+.stage-action-slot { min-width: 0; flex: 0 0 auto; }
+.generate-action-slot { min-width: 0; }
+
 @media (min-width: 821px) {
   .preview-column {
     position: sticky;
@@ -467,6 +488,26 @@ textarea::placeholder, input::placeholder { color: #a58a82; }
 }
 .generate-action-dock .primary-button { margin-top: 0; }
 .generate-action-dock .cancel-button { margin-top: 8px; }
+.stage-action-slot .generate-action-dock {
+  position: static;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.stage-action-slot .primary-button {
+  width: auto;
+  min-width: 156px;
+  min-height: 40px;
+}
+.stage-action-slot .cancel-button { width: auto; min-height: 40px; margin-top: 0; }
+.stage-action-slot .submit-status { flex-basis: 100%; margin-top: 0; text-align: right; }
 .submit-status {
   margin-top: 8px;
   color: var(--light-maroon);
@@ -576,6 +617,7 @@ textarea::placeholder, input::placeholder { color: #a58a82; }
   .narrow-view-button.active { color: var(--paper); background: var(--maroon); }
   .narrow-view-button:focus-visible { outline: 2px solid var(--maroon); outline-offset: 2px; }
   .workspace { width: min(100% - 28px, 600px); grid-template-columns: 1fr; margin-top: 14px; }
+  .stage-action-bar { display: none; }
   .preview-column { position: static; }
   body[data-narrow-view="create"] .preview-column { display: none; }
   body[data-narrow-view="result"] .control-column { display: none; }

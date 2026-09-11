@@ -35,6 +35,10 @@
 
     <main class="workspace">
       <section class="preview-column" aria-labelledby="preview-heading">
+        <div class="stage-action-bar" id="stage-action-bar" aria-label="Stage actions" aria-live="polite">
+          <div class="stage-status-slot" id="stage-status-slot"></div>
+          <div class="stage-action-slot" id="stage-action-slot"></div>
+        </div>
         <div class="section-kicker">Preview</div>
         <div class="preview-card" id="preview-card">
           <div class="preview-empty" id="preview-empty">
@@ -56,13 +60,15 @@
       <aside class="control-column" id="control-column" aria-label="Video controls">
         <form id="generate-form" novalidate>
           <div class="section-kicker">Create</div>
-          <div class="generate-action-dock" id="generate-action-dock">
-            <button class="primary-button" id="generate-button" type="submit" disabled>
-              <span id="generate-label">Generate</span>
-              <span class="button-arrow" aria-hidden="true">→</span>
-            </button>
-            <button class="cancel-button" id="cancel-button" type="button" hidden>Cancel current job</button>
-            <div class="submit-status" id="submit-status" aria-live="polite" hidden></div>
+          <div class="generate-action-slot" id="generate-action-slot">
+            <div class="generate-action-dock" id="generate-action-dock">
+              <button class="primary-button" id="generate-button" type="submit" form="generate-form" disabled>
+                <span id="generate-label">Generate</span>
+                <span class="button-arrow" aria-hidden="true">→</span>
+              </button>
+              <button class="cancel-button" id="cancel-button" type="button" hidden>Cancel current job</button>
+              <div class="submit-status" id="submit-status" aria-live="polite" hidden></div>
+            </div>
           </div>
           <label class="field-label" for="prompt">Prompt</label>
           <textarea id="prompt" name="prompt" rows="5" maxlength="4000" placeholder="Describe the video..." required></textarea>
@@ -327,7 +333,7 @@
     </main>
 
     <section class="status-strip" aria-live="polite">
-      <div class="status-block">
+      <div class="status-block" id="generation-status-block">
         <span class="status-label">Status</span>
         <strong id="generation-status">Ready</strong>
         <span class="status-detail" id="status-detail">Prompt is ready.</span>
