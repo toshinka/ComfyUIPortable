@@ -511,7 +511,50 @@ function roundGuideNumber(value) {
 }
 
 /**
- * Generate next unique guide_id avoiding collision.
+ * Validate whether a guide asset_reference adheres strictly to the canonical relative namespace:
+ * tegaki_manga_guides/<safe-basename>
+ * 
+ * Rejects URLs, absolute paths, backslashes, path traversal, subdirectories, empty names, and control characters.
+ *
+ * @param {any} ref
+ * @returns {{ valid: boolean, reason?: string }}
+ */
+export function validateCanonicalGuideAssetReference(ref) {
+    if (typeof ref !== "string" || !ref) {
+        return { valid: false, reason: "Reference must be a non-empty string" };
+    }
+    const prefix = "tegaki_manga_guides/";
+    if (!ref.startsWith(prefix)) {
+        return { valid: false, reason: `Reference must start with canonical namespace '${prefix}'` };
+    }
+    const basename = ref.slice(prefix.length);
+    if (!basename) {
+        return { valid: false, reason: "Basename cannot be empty" };
+    }
+    if (
+        basename.includes("/") ||
+        basename.includes("\\") ||
+        basename.includes("..") ||
+        /[\x00-\x1f\x7f]/.test(basename) ||
+        basename.length > 255
+    ) {
+        return { valid: false, reason: "Basename must be a safe, single-level filename without traversal or control characters" };
+    }
+    return { valid: true };
+}
+
+/**
+ * Convenience boolean predicate for canonical guide asset reference.
+ *
+ * @param {any} ref
+ * @returns {boolean}
+ */
+export function isCanonicalGuideAssetReference(ref) {
+    return validateCanonicalGuideAssetReference(ref).valid;
+}
+
+/**
+ * Generate next unique guide id within one page.
  *
  * @param {Array<Object>} guides
  * @returns {string} e.g. "guide_1", "guide_2"

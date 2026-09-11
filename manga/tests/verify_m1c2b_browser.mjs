@@ -26,6 +26,13 @@ import { createRequire } from "node:module";
 import fs from "node:fs";
 import { execSync } from "node:child_process";
 
+// Hard 10-minute wall-clock timeout guard (Card Section 17)
+const testTimeout = setTimeout(() => {
+    console.error("FATAL: Browser verification test timed out after 10 minutes");
+    process.exit(1);
+}, 10 * 60 * 1000);
+testTimeout.unref();
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const require = createRequire(import.meta.url);
@@ -194,6 +201,8 @@ const browser = await chromium.launch({
 });
 
 const page = await browser.newPage();
+page.on("console", msg => console.log(`[PAGE ${msg.type()}]:`, msg.text()));
+page.on("pageerror", err => console.log(`[PAGE ERROR]:`, err.message));
 
 try {
     // ----------------------------------------------------
@@ -207,12 +216,10 @@ try {
     // ----------------------------------------------------
     // Step 2: Ingest Guide via file input (#btn-add-guide)
     // ----------------------------------------------------
-    const [fileChooser] = await Promise.all([
-        page.waitForEvent("filechooser"),
-        page.click("#btn-add-guide")
-    ]);
-    await fileChooser.setFiles(pngPath);
-    await page.waitForTimeout(300);
+    // Set pending action via button click, then set file on hidden input
+    await page.click("#btn-add-guide");
+    await page.setInputFiles("#file-guide-asset", pngPath);
+    await page.waitForTimeout(500);
 
     // Verify error banner is empty
     const errText = await page.textContent("#guide-error-banner");
@@ -226,7 +233,7 @@ try {
     console.log("✓ Step 2 PASS: Added Guide from local PNG");
 
     // ----------------------------------------------------
-    // Step 3: Verify Guide selection & inspector thumbnail
+    // Step 3: Verify Guide selection, status, & inspector thumbnail
     // ----------------------------------------------------
     const guideIdLabel = await page.textContent("#guide-edit-id-label");
     assert.ok(guideIdLabel.includes("guide_1"), "Selected guide is guide_1");
@@ -234,11 +241,21 @@ try {
     const assetRefText = await page.textContent("#guide-asset-readout");
     assert.ok(assetRefText.includes("tegaki_manga_guides/test_rough_sketch.png"), "Asset reference set properly");
 
+    const uploadStatus = await page.textContent("#guide-upload-status");
+    assert.equal(uploadStatus.trim(), "Ready", "Guide upload status transitioned to Ready");
+
     const thumbDisplay = await page.$eval("#guide-preview-thumbnail", el => el.style.display);
     assert.notEqual(thumbDisplay, "none", "Thumbnail preview image visible");
     const thumbSrc = await page.$eval("#guide-preview-thumbnail", el => el.src);
     assert.ok(thumbSrc.includes("/api/guide-assets/view?ref=tegaki_manga_guides%2Ftest_rough_sketch.png"), "Thumbnail src points to workspace endpoint");
-    console.log("✓ Step 3 PASS: Guide inspector thumbnail rendered");
+
+    // Wait until preview image actually completes and has naturalWidth > 0 (Card Section 16)
+    await page.waitForFunction(() => {
+        const el = document.querySelector("#guide-preview-thumbnail");
+        return el && el.complete && el.naturalWidth > 0;
+    }, { timeout: 5000 });
+
+    console.log("✓ Step 3 PASS: Guide inspector thumbnail rendered with naturalWidth > 0");
 
     // ----------------------------------------------------
     // Step 4: Verify contain-fit placement in store
@@ -261,12 +278,9 @@ try {
     // ----------------------------------------------------
     // Step 5: Replace Guide Asset with WEBP
     // ----------------------------------------------------
-    const [replaceChooser] = await Promise.all([
-        page.waitForEvent("filechooser"),
-        page.click("#btn-replace-guide-asset")
-    ]);
-    await replaceChooser.setFiles(webpPath);
-    await page.waitForTimeout(300);
+    await page.click("#btn-replace-guide-asset");
+    await page.setInputFiles("#file-guide-asset", webpPath);
+    await page.waitForTimeout(500);
 
     const replacedAssetRef = await page.textContent("#guide-asset-readout");
     assert.ok(replacedAssetRef.includes("tegaki_manga_guides/test_replacement.webp"), "Asset reference updated to WEBP");

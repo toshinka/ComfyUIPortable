@@ -186,8 +186,9 @@ const server = http.createServer(async (req, res) => {
         if (contentLengthHeader) {
             const cl = parseInt(contentLengthHeader, 10);
             if (Number.isFinite(cl) && cl > MAX_BYTES) {
-                res.writeHead(413, { "Content-Type": "application/json" });
+                res.writeHead(413, { "Connection": "close", "Content-Type": "application/json" });
                 res.end(JSON.stringify({ ok: false, error: "Payload Too Large: exceeds 20 MiB limit" }));
+                req.destroy();
                 return;
             }
         }
@@ -197,24 +198,35 @@ const server = http.createServer(async (req, res) => {
         let receivedBytes = 0;
         let tooLarge = false;
 
-        try {
-            for await (const chunk of req) {
+        const readSuccess = await new Promise((resolve) => {
+            req.on("data", (chunk) => {
+                if (tooLarge) return;
                 receivedBytes += chunk.length;
                 if (receivedBytes > MAX_BYTES) {
                     tooLarge = true;
-                    break;
+                    res.writeHead(413, { "Connection": "close", "Content-Type": "application/json" });
+                    res.end(JSON.stringify({ ok: false, error: "Payload Too Large: exceeds 20 MiB limit" }));
+                    req.resume();
+                    resolve(false);
+                    return;
                 }
                 chunks.push(chunk);
-            }
-        } catch (err) {
-            res.writeHead(500, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ ok: false, error: "Upload read error: " + err.message }));
-            return;
-        }
+            });
 
-        if (tooLarge) {
-            res.writeHead(413, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ ok: false, error: "Payload Too Large: exceeds 20 MiB limit" }));
+            req.on("end", () => {
+                if (!tooLarge) resolve(true);
+            });
+
+            req.on("error", (err) => {
+                if (!tooLarge) {
+                    res.writeHead(500, { "Content-Type": "application/json" });
+                    res.end(JSON.stringify({ ok: false, error: "Upload read error: " + err.message }));
+                    resolve(false);
+                }
+            });
+        });
+
+        if (!readSuccess) {
             return;
         }
 
@@ -243,6 +255,14 @@ const server = http.createServer(async (req, res) => {
         if (!detectedType) {
             res.writeHead(400, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ ok: false, error: "Invalid image format: signature does not match PNG, JPEG, or WEBP" }));
+            return;
+        }
+
+        // Content-Type agreement validation (Card M1C2B1 Section 6)
+        const reqContentType = (req.headers["content-type"] || "").split(";")[0].trim().toLowerCase();
+        if (reqContentType !== detectedType) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: `Request Content-Type '${reqContentType}' does not agree with detected format '${detectedType}'` }));
             return;
         }
 
@@ -283,13 +303,15 @@ const server = http.createServer(async (req, res) => {
             const returnedName = backendJson.name;
             const returnedSubfolder = backendJson.subfolder;
 
-            // Validate backend response fields (Card Section 11)
+            // Validate backend response fields (Card M1C2B1 Section 12, 13)
             if (
                 !returnedName ||
                 typeof returnedName !== "string" ||
                 returnedName.includes("/") ||
                 returnedName.includes("\\") ||
                 returnedName.includes("..") ||
+                /[\x00-\x1f\x7f]/.test(returnedName) ||
+                returnedName.length > 255 ||
                 returnedSubfolder !== "tegaki_manga_guides"
             ) {
                 res.writeHead(502, { "Content-Type": "application/json" });
@@ -310,11 +332,18 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 3. Dedicated Guide Asset Preview Endpoint (Card M1C2B Section 12, 13)
+    // 3. Dedicated Guide Asset Preview Endpoint (Card M1C2B Section 12, 13 & M1C2B1 Section 14, 15)
     if (pathname === "/api/guide-assets/view") {
         if (req.method !== "GET") {
             res.writeHead(405, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ ok: false, error: "Method Not Allowed" }));
+            return;
+        }
+
+        // Preview Origin Policy (Card M1C2B1 Section 15): If foreign Origin is present, reject with 403
+        if (requestOrigin && !allowedLocalOrigins.has(requestOrigin)) {
+            res.writeHead(403, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: `Forbidden origin '${requestOrigin}'` }));
             return;
         }
 

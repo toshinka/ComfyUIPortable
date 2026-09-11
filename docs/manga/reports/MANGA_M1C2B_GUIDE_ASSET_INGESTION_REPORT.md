@@ -77,3 +77,24 @@ MANGA-M1C2B completes the bounded standalone Rough Guide authoring slice:
    - `test_guide_ops.mjs`: PASS
    - `test_guide_asset_ops.mjs`: PASS
    - `verify_m1c2b_browser.mjs`: PASS
+
+---
+
+## 4. MANGA-M1C2B1 Hardening & Missing Evidence Closure
+
+Following SOL review findings, `MANGA-M1C2B1` hardened the standalone Guide asset boundary:
+1. **Canonical Guide Asset Reference Validation**:
+   - Pure domain validators `validateCanonicalGuideAssetReference(ref)` and `isCanonicalGuideAssetReference(ref)` enforce the `tegaki_manga_guides/<safe-basename>` namespace.
+   - Authoring Store `addGuideFromAsset` and `replaceGuideAsset` strictly validate refs; any non-canonical ref throws an error and leaves the Authoring Document byte-for-byte unchanged.
+2. **Upload Content-Type Agreement**:
+   - `POST /api/guide-assets/upload` rejects requests where the `Content-Type` header disagrees with the detected magic byte image signature (e.g., PNG payload sent with `image/jpeg`).
+3. **Negative Evidence & Local Rejection Matrix**:
+   - Explicit backend call counters verify that bad uploads (invalid magic bytes, traversal paths, foreign origins, mismatched Content-Type, declared oversize Content-Length > 20 MiB, streaming chunks exceeding 20 MiB, empty body, unsupported extensions) are rejected locally with zero forwarding to the backend (`uploadCallCount === 0`).
+4. **Backend Malicious Response Fail-Closed Protection**:
+   - Responses from the backend upload endpoint are validated for safe basenames and matching `tegaki_manga_guides` subfolder; unexpected subfolders, traversal filenames, backslashes, and control characters return HTTP 502 fail-closed.
+5. **Preview Origin Verification**:
+   - `GET /api/guide-assets/view` enforces loopback/same-origin checks, rejecting foreign origins with HTTP 403 (`viewCallCount === 0`).
+6. **UI Status & Real Image Completion**:
+   - UI reflects non-durable upload status (`Uploading...`, `Ready`, `Upload failed`).
+   - Browser verification test includes a hard 10-minute timeout guard and explicitly waits until `#guide-preview-thumbnail` has `naturalWidth > 0`.
+

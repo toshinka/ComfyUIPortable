@@ -47,7 +47,8 @@ import {
     associateGuideFigure,
     unassignGuideInstance,
     getNextGuideId,
-    calculateContainPlacement
+    calculateContainPlacement,
+    validateCanonicalGuideAssetReference
 } from "../domain/authoring_ops.js";
 
 const DEFAULT_CAST_PALETTE = [
@@ -672,8 +673,9 @@ export class AuthoringStore {
     }
 
     addGuideFromAsset({ asset_reference, image_width, image_height }, pageIndex = 0) {
-        if (!asset_reference || typeof asset_reference !== "string") {
-            throw new Error("Canonical asset_reference is required");
+        const refVal = validateCanonicalGuideAssetReference(asset_reference);
+        if (!refVal.valid) {
+            throw new Error(`Invalid guide asset_reference: ${refVal.reason}`);
         }
         const iw = Number(image_width);
         const ih = Number(image_height);
@@ -713,8 +715,9 @@ export class AuthoringStore {
     }
 
     replaceGuideAsset(guideId, { asset_reference, image_width, image_height }, pageIndex = 0) {
-        if (!asset_reference || typeof asset_reference !== "string") {
-            throw new Error("Canonical asset_reference is required");
+        const refVal = validateCanonicalGuideAssetReference(asset_reference);
+        if (!refVal.valid) {
+            throw new Error(`Invalid guide asset_reference: ${refVal.reason}`);
         }
         const iw = Number(image_width);
         const ih = Number(image_height);

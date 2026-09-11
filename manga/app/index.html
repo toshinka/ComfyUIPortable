@@ -244,6 +244,7 @@
                     <button id="btn-add-guide" class="btn btn-sm btn-primary">+ Add Guide</button>
                 </div>
                 <input type="file" id="file-guide-asset" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" style="display: none;" />
+                <div id="guide-upload-status" style="font-size: 11px; font-weight: 600; margin-bottom: 4px; display: none;"></div>
                 <div id="guide-error-banner" class="alert-error" style="display: none;"></div>
                 <div id="list-guides"></div>
 
@@ -350,6 +351,25 @@
         const sceneErrorMsg = document.getElementById("scene-error-msg");
         const instanceErrorMsg = document.getElementById("instance-error-msg");
         const guideErrorMsg = document.getElementById("guide-error-banner");
+        const guideUploadStatus = document.getElementById("guide-upload-status");
+
+        function setGuideUploadStatus(status) {
+            if (!guideUploadStatus) return;
+            if (!status) {
+                guideUploadStatus.style.display = "none";
+                guideUploadStatus.textContent = "";
+                return;
+            }
+            guideUploadStatus.style.display = "block";
+            guideUploadStatus.textContent = status;
+            if (status === "Uploading...") {
+                guideUploadStatus.style.color = "#38bdf8";
+            } else if (status === "Ready") {
+                guideUploadStatus.style.color = "#4ade80";
+            } else if (status === "Upload failed") {
+                guideUploadStatus.style.color = "#f87171";
+            }
+        }
 
         function clearErrors() {
             castErrorMsg.className = "alert-error";
@@ -365,6 +385,7 @@
         }
 
         function showGuideError(msg) {
+            setGuideUploadStatus("Upload failed");
             if (guideErrorMsg) {
                 guideErrorMsg.textContent = msg;
                 guideErrorMsg.style.display = "block";
@@ -974,6 +995,8 @@
             const action = pendingAssetAction;
             pendingAssetAction = null;
 
+            setGuideUploadStatus("Uploading...");
+
             try {
                 // 1. Read natural image dimensions
                 const objectUrl = URL.createObjectURL(file);
@@ -991,12 +1014,21 @@
                     img.src = objectUrl;
                 });
 
+                // Determine matching Content-Type from extension if missing
+                let mimeType = file.type;
+                const lowerName = file.name.toLowerCase();
+                if (!mimeType || mimeType === "application/octet-stream") {
+                    if (lowerName.endsWith(".png")) mimeType = "image/png";
+                    else if (lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg")) mimeType = "image/jpeg";
+                    else if (lowerName.endsWith(".webp")) mimeType = "image/webp";
+                }
+
                 // 2. Upload asset bytes to Workspace endpoint
                 const uploadUrl = `/api/guide-assets/upload?filename=${encodeURIComponent(file.name)}`;
                 const res = await fetch(uploadUrl, {
                     method: "POST",
                     body: file,
-                    headers: { "Content-Type": file.type || "application/octet-stream" }
+                    headers: { "Content-Type": mimeType || "application/octet-stream" }
                 });
                 const data = await res.json();
                 if (!res.ok || !data.ok) {
@@ -1019,6 +1051,7 @@
                         image_height: height
                     });
                 }
+                setGuideUploadStatus("Ready");
             } catch (err) {
                 showGuideError(err.message);
             }
