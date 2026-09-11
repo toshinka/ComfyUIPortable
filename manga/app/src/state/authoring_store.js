@@ -31,7 +31,13 @@ import {
     moveSceneWithChildren,
     resizeSceneWithChildren,
     clampCharacterDrag,
-    clampCharacterResize
+    clampCharacterResize,
+    getNextFrameId,
+    calculateNewFrameGeometry,
+    copyFramesFromScenes,
+    clampFrameDrag,
+    resizeFrame,
+    checkFrameOverlap
 } from "../domain/authoring_ops.js";
 
 const DEFAULT_CAST_PALETTE = [
@@ -427,6 +433,110 @@ export class AuthoringStore {
         });
 
         this.setDocument(draft);
+    }
+
+    // ==========================================
+    // VISUAL FRAME MUTATIONS (Card Section 13)
+    // ==========================================
+
+    addFrame(customProps = {}, pageIndex = 0) {
+        const draft = cloneDocument(this.document);
+        const page = draft.pages[pageIndex];
+        if (!page) throw new Error("Page not found");
+        if (!Array.isArray(page.visual_frames)) page.visual_frames = [];
+
+        const frameId = customProps.frame_id || getNextFrameId(page.visual_frames);
+        const area = customProps.area || calculateNewFrameGeometry(page.visual_frames);
+        const newFrame = {
+            frame_id: frameId,
+            order: page.visual_frames.length + 1,
+            area,
+            border_thickness: customProps.border_thickness ?? 4,
+            border_color: customProps.border_color || "#000000",
+            metadata: customProps.metadata || {}
+        };
+
+        page.visual_frames.push(newFrame);
+        this.setDocument(draft);
+        return newFrame;
+    }
+
+    deleteFrame(frameId, pageIndex = 0) {
+        const draft = cloneDocument(this.document);
+        const page = draft.pages[pageIndex];
+        if (!page) throw new Error("Page not found");
+
+        page.visual_frames = (page.visual_frames || [])
+            .filter(f => f.frame_id !== frameId)
+            .map((f, idx) => ({ ...f, order: idx + 1 }));
+
+        this.setDocument(draft);
+    }
+
+    copyScenesToFrames(pageIndex = 0) {
+        const draft = cloneDocument(this.document);
+        const page = draft.pages[pageIndex];
+        if (!page) throw new Error("Page not found");
+
+        page.visual_frames = copyFramesFromScenes(page.scenes || []);
+        this.setDocument(draft);
+        return page.visual_frames;
+    }
+
+    moveFrame(frameId, dx, dy, pageIndex = 0) {
+        const draft = cloneDocument(this.document);
+        const page = draft.pages[pageIndex];
+        if (!page) throw new Error("Page not found");
+        const frame = (page.visual_frames || []).find(f => f.frame_id === frameId);
+        if (!frame) throw new Error(`Frame '${frameId}' not found`);
+
+        const clamped = clampFrameDrag(frame.area, dx, dy);
+        frame.area = { ...frame.area, x: clamped.x, y: clamped.y };
+
+        this.setDocument(draft);
+        return frame;
+    }
+
+    resizeFrame(frameId, handle, dx, dy, minSize = 0.05, pageIndex = 0) {
+        const draft = cloneDocument(this.document);
+        const page = draft.pages[pageIndex];
+        if (!page) throw new Error("Page not found");
+        const frame = (page.visual_frames || []).find(f => f.frame_id === frameId);
+        if (!frame) throw new Error(`Frame '${frameId}' not found`);
+
+        frame.area = resizeFrame(frame.area, handle, dx, dy, minSize);
+
+        this.setDocument(draft);
+        return frame;
+    }
+
+    updateFrame(frameId, updates = {}, pageIndex = 0) {
+        const draft = cloneDocument(this.document);
+        const page = draft.pages[pageIndex];
+        if (!page) throw new Error("Page not found");
+        const frame = (page.visual_frames || []).find(f => f.frame_id === frameId);
+        if (!frame) throw new Error(`Frame '${frameId}' not found`);
+
+        if (updates.border_thickness !== undefined) {
+            frame.border_thickness = Math.max(1, Math.min(20, parseInt(updates.border_thickness, 10) || 4));
+        }
+        if (updates.border_color !== undefined) {
+            frame.border_color = updates.border_color;
+        }
+        if (updates.area !== undefined) {
+            frame.area = updates.area;
+        }
+        if (updates.metadata !== undefined) {
+            frame.metadata = updates.metadata;
+        }
+
+        this.setDocument(draft);
+        return frame;
+    }
+
+    getFrameOverlap(pageIndex = 0) {
+        const page = this.getPage(pageIndex);
+        return checkFrameOverlap(page?.visual_frames || []);
     }
 
     subscribe(listener) {

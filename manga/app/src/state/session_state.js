@@ -50,18 +50,18 @@ export class SessionState {
         this.notify();
     }
 
-    selectFrame(frameId) {
-        this.selectedFrameId = (this.selectedFrameId === frameId) ? null : frameId;
+    selectFrame(frameId, toggle = false) {
+        this.selectedFrameId = (toggle && this.selectedFrameId === frameId) ? null : frameId;
         this.notify();
     }
 
-    selectGuide(guideId) {
-        this.selectedGuideId = (this.selectedGuideId === guideId) ? null : guideId;
+    selectGuide(guideId, toggle = false) {
+        this.selectedGuideId = (toggle && this.selectedGuideId === guideId) ? null : guideId;
         this.notify();
     }
 
-    selectFigure(figureId) {
-        this.selectedFigureId = (this.selectedFigureId === figureId) ? null : figureId;
+    selectFigure(figureId, toggle = false) {
+        this.selectedFigureId = (toggle && this.selectedFigureId === figureId) ? null : figureId;
         this.notify();
     }
 

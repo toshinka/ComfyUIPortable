@@ -81,6 +81,25 @@ export function renderMangaCanvas(canvas, document, sessionState, pageIndex = 0)
         ctx.fillRect(rx, ry, tw + 8, 16);
         ctx.fillStyle = "#ffffff";
         ctx.fillText(label, rx + 4, ry + 12);
+
+        // 4-corner handles for selected frame
+        if (isSelected) {
+            const handleSize = 8;
+            const half = handleSize / 2;
+            const corners = [
+                { x: rx, y: ry, handle: "nw" },
+                { x: rx + rw, y: ry, handle: "ne" },
+                { x: rx + rw, y: ry + rh, handle: "se" },
+                { x: rx, y: ry + rh, handle: "sw" }
+            ];
+            ctx.fillStyle = "#2563eb";
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 1.5;
+            corners.forEach(c => {
+                ctx.fillRect(c.x - half, c.y - half, handleSize, handleSize);
+                ctx.strokeRect(c.x - half, c.y - half, handleSize, handleSize);
+            });
+        }
     });
 
     // 3. Draw Guides & Figure Regions
@@ -230,6 +249,46 @@ export function hitTestCanvas(cw, ch, page, normX, normY, sessionState) {
     const pxX = normX * cw;
     const pxY = normY * ch;
 
+    // ACTIVE LAYER HIT TEST (Card Section 9)
+    // When activeTab === "frames", Frames and Frame handles take exclusive priority
+    if (sessionState?.activeTab === "frames") {
+        if (sessionState?.selectedFrameId) {
+            const fr = (page.visual_frames || []).find(f => f.frame_id === sessionState.selectedFrameId);
+            if (fr) {
+                const a = fr.area || fr.shape || { x: 0, y: 0, w: 1, h: 1 };
+                const rx = a.x * cw;
+                const ry = a.y * ch;
+                const rw = a.w * cw;
+                const rh = a.h * ch;
+                const hitDist = 12;
+
+                if (Math.abs(pxX - rx) <= hitDist && Math.abs(pxY - ry) <= hitDist) {
+                    return { type: "handle_frame", handle: "nw", item: fr };
+                }
+                if (Math.abs(pxX - (rx + rw)) <= hitDist && Math.abs(pxY - ry) <= hitDist) {
+                    return { type: "handle_frame", handle: "ne", item: fr };
+                }
+                if (Math.abs(pxX - (rx + rw)) <= hitDist && Math.abs(pxY - (ry + rh)) <= hitDist) {
+                    return { type: "handle_frame", handle: "se", item: fr };
+                }
+                if (Math.abs(pxX - rx) <= hitDist && Math.abs(pxY - (ry + rh)) <= hitDist) {
+                    return { type: "handle_frame", handle: "sw", item: fr };
+                }
+            }
+        }
+
+        const frames = page.visual_frames || [];
+        for (let i = frames.length - 1; i >= 0; i--) {
+            const fr = frames[i];
+            const a = fr.area || fr.shape;
+            if (a && normX >= a.x && normX <= a.x + a.w && normY >= a.y && normY <= a.y + a.h) {
+                return { type: "frame", item: fr };
+            }
+        }
+
+        return null;
+    }
+
     // 1. Check selected instance handle
     if (sessionState?.selectedInstanceId) {
         const inst = (page.character_instances || []).find(i => i.instance_id === sessionState.selectedInstanceId);
@@ -274,7 +333,7 @@ export function hitTestCanvas(cw, ch, page, normX, normY, sessionState) {
         }
     }
 
-    // 5. Check visual frames (read-only)
+    // 5. Check visual frames (selection only in non-frames layer)
     const frames = page.visual_frames || [];
     for (let i = frames.length - 1; i >= 0; i--) {
         const fr = frames[i];

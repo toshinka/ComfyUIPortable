@@ -195,12 +195,46 @@
                 </div>
             </div>
 
-            <!-- Visual Frames (Read-only) -->
+            <!-- Visual Frames Section (M1C1 Authorable) -->
             <div class="panel-section">
                 <div class="section-title">
-                    <span>Visual Frames (<span id="count-frames">0</span>) [Read-Only]</span>
+                    <span>Visual Frames (<span id="count-frames">0</span>)</span>
+                    <div style="display: flex; gap: 4px;">
+                        <button id="btn-add-frame" class="btn btn-sm btn-primary">+ Add Frame</button>
+                        <button id="btn-copy-scenes-to-frames" class="btn btn-sm" title="Copy current scene rectangles to independent frames">Copy Scenes to Frames</button>
+                    </div>
                 </div>
+                <!-- Overlap Diagnostic Banner (Card Section 12) -->
+                <div id="frame-overlap-warning" class="alert-error" style="background: #451a03; border-color: #d97706; color: #fcd34d;"></div>
                 <div id="list-frames"></div>
+
+                <!-- Frame Editor Form -->
+                <div id="frame-editor-container" class="editor-form" style="display: none;">
+                    <div style="font-weight: 700; font-size: 11px; color: #38bdf8; margin-bottom: 2px;">
+                        Edit Frame: <span id="frame-edit-id-label"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Border Thickness</label>
+                        <input type="number" id="input-frame-border" class="form-input" min="1" max="20" style="width: 80px;" value="4">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Position & Size</label>
+                        <div id="frame-geom-readout" style="font-family: monospace; font-size: 11px; color: #94a3b8; margin-bottom: 4px;">X: 0.05, Y: 0.05, W: 0.90, H: 0.42</div>
+                        <div class="form-actions">
+                            <button id="btn-frame-move-left" class="btn btn-sm" title="Move Left">←</button>
+                            <button id="btn-frame-move-right" class="btn btn-sm" title="Move Right">→</button>
+                            <button id="btn-frame-move-up" class="btn btn-sm" title="Move Up">↑</button>
+                            <button id="btn-frame-move-down" class="btn btn-sm" title="Move Down">↓</button>
+                            <button id="btn-frame-grow-w" class="btn btn-sm" title="Increase Width">+W</button>
+                            <button id="btn-frame-shrink-w" class="btn btn-sm" title="Decrease Width">-W</button>
+                            <button id="btn-frame-grow-h" class="btn btn-sm" title="Increase Height">+H</button>
+                            <button id="btn-frame-shrink-h" class="btn btn-sm" title="Decrease Height">-H</button>
+                        </div>
+                    </div>
+                    <div class="form-actions" style="margin-top: 6px; border-top: 1px solid #334155; padding-top: 6px;">
+                        <button id="btn-delete-frame" class="btn btn-sm btn-danger">Delete Frame</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Guides (Read-only) -->
@@ -391,21 +425,49 @@
                 instEditor.style.display = "none";
             }
 
-            // 4. Frames list (read only)
+            // 4. Frames list & editor (M1C1)
             const frames = page.visual_frames || [];
             document.getElementById("count-frames").textContent = frames.length;
             const frameContainer = document.getElementById("list-frames");
             frameContainer.innerHTML = "";
+
+            // Overlap Diagnostic (Card Section 12)
+            const overlap = store.getFrameOverlap();
+            const overlapWarn = document.getElementById("frame-overlap-warning");
+            if (overlap.hasOverlap) {
+                overlapWarn.textContent = `⚠️ Warning: Overlapping frames (${overlap.pairs.map(p => p.join(" ↔ ")).join(", ")})`;
+                overlapWarn.className = "alert-error visible";
+            } else {
+                overlapWarn.className = "alert-error";
+                overlapWarn.textContent = "";
+            }
+
             frames.forEach(fr => {
                 const div = document.createElement("div");
                 div.className = "list-item" + (session.selectedFrameId === fr.frame_id ? " selected" : "");
-                div.innerHTML = `<b>${fr.frame_id}</b> · Order ${fr.order}`;
+                div.innerHTML = `<b>${fr.frame_id}</b> · Order ${fr.order} · Border: ${fr.border_thickness || 4}px`;
                 div.onclick = () => {
                     session.selectFrame(fr.frame_id);
                     session.setActiveTab("frames");
                 };
                 frameContainer.appendChild(div);
             });
+
+            const frameEditor = document.getElementById("frame-editor-container");
+            const selFrame = frames.find(f => f.frame_id === session.selectedFrameId);
+            if (selFrame) {
+                frameEditor.style.display = "flex";
+                document.getElementById("frame-edit-id-label").textContent = `${selFrame.frame_id} (Order: ${selFrame.order})`;
+                const borderInput = document.getElementById("input-frame-border");
+                if (document.activeElement !== borderInput) {
+                    borderInput.value = selFrame.border_thickness || 4;
+                }
+                const a = selFrame.area || {};
+                document.getElementById("frame-geom-readout").textContent =
+                    `X: ${Number(a.x).toFixed(2)}, Y: ${Number(a.y).toFixed(2)}, W: ${Number(a.w).toFixed(2)}, H: ${Number(a.h).toFixed(2)}`;
+            } else {
+                frameEditor.style.display = "none";
+            }
 
             // 5. Guides list (read only)
             const guides = page.guides || [];
@@ -636,10 +698,79 @@
         };
 
         // -----------------------------------------------------------------
+        // Visual Frame Actions & Editing (M1C1)
+        // -----------------------------------------------------------------
+        document.getElementById("btn-add-frame").onclick = () => {
+            const newF = store.addFrame();
+            session.selectFrame(newF.frame_id);
+            session.setActiveTab("frames");
+        };
+
+        document.getElementById("btn-copy-scenes-to-frames").onclick = () => {
+            const existingCount = (store.getPage().visual_frames || []).length;
+            if (existingCount > 0) {
+                if (typeof window !== "undefined" && window.confirm && !window.confirm("Replace current visual frames with copies of scenes?")) {
+                    return;
+                }
+            }
+            const copied = store.copyScenesToFrames();
+            if (copied.length > 0) {
+                session.selectFrame(copied[0].frame_id);
+                session.setActiveTab("frames");
+            }
+        };
+
+        document.getElementById("input-frame-border").oninput = (e) => {
+            if (session.selectedFrameId) {
+                const val = Math.max(1, Math.min(20, parseInt(e.target.value, 10) || 4));
+                store.updateFrame(session.selectedFrameId, { border_thickness: val });
+            }
+        };
+
+        document.getElementById("btn-frame-move-left").onclick = () => {
+            if (session.selectedFrameId) store.moveFrame(session.selectedFrameId, -0.02, 0);
+        };
+        document.getElementById("btn-frame-move-right").onclick = () => {
+            if (session.selectedFrameId) store.moveFrame(session.selectedFrameId, 0.02, 0);
+        };
+        document.getElementById("btn-frame-move-up").onclick = () => {
+            if (session.selectedFrameId) store.moveFrame(session.selectedFrameId, 0, -0.02);
+        };
+        document.getElementById("btn-frame-move-down").onclick = () => {
+            if (session.selectedFrameId) store.moveFrame(session.selectedFrameId, 0, 0.02);
+        };
+
+        document.getElementById("btn-frame-grow-w").onclick = () => {
+            if (session.selectedFrameId) store.resizeFrame(session.selectedFrameId, "se", 0.04, 0);
+        };
+        document.getElementById("btn-frame-shrink-w").onclick = () => {
+            if (session.selectedFrameId) store.resizeFrame(session.selectedFrameId, "se", -0.04, 0);
+        };
+        document.getElementById("btn-frame-grow-h").onclick = () => {
+            if (session.selectedFrameId) store.resizeFrame(session.selectedFrameId, "se", 0, 0.04);
+        };
+        document.getElementById("btn-frame-shrink-h").onclick = () => {
+            if (session.selectedFrameId) store.resizeFrame(session.selectedFrameId, "se", 0, -0.04);
+        };
+
+        document.getElementById("btn-delete-frame").onclick = () => {
+            if (!session.selectedFrameId) return;
+            const delId = session.selectedFrameId;
+            store.deleteFrame(delId);
+            const remaining = store.getPage().visual_frames || [];
+            if (remaining.length > 0) {
+                session.selectFrame(remaining[0].frame_id);
+            } else {
+                session.selectFrame(null);
+            }
+        };
+
+        // -----------------------------------------------------------------
         // Canvas Drag & Resize Direct Manipulation
         // -----------------------------------------------------------------
-        let dragMode = null; // 'move_scene' | 'resize_scene' | 'move_char' | 'resize_char'
+        let dragMode = null; // 'move_scene' | 'resize_scene' | 'move_char' | 'resize_char' | 'move_frame' | 'resize_frame'
         let dragTargetId = null;
+        let dragHandle = null;
         let startNorm = { x: 0, y: 0 };
         let startArea = null;
 
@@ -655,7 +786,20 @@
 
             startNorm = { x: normX, y: normY };
 
-            if (hit.type === "handle_instance") {
+            if (hit.type === "handle_frame") {
+                dragMode = "resize_frame";
+                dragHandle = hit.handle;
+                dragTargetId = hit.item.frame_id;
+                startArea = { ...hit.item.area };
+            } else if (hit.type === "frame") {
+                session.selectFrame(hit.item.frame_id);
+                session.setActiveTab("frames");
+                if (session.activeTab === "frames") {
+                    dragMode = "move_frame";
+                    dragTargetId = hit.item.frame_id;
+                    startArea = { ...hit.item.area };
+                }
+            } else if (hit.type === "handle_instance") {
                 dragMode = "resize_char";
                 dragTargetId = hit.item.instance_id;
                 startArea = { ...hit.item.area };
@@ -676,9 +820,6 @@
                 session.selectScene(hit.item.scene_id);
                 session.setActiveTab("scenes");
                 startArea = { ...hit.item.area };
-            } else if (hit.type === "frame") {
-                session.selectFrame(hit.item.frame_id);
-                session.setActiveTab("frames");
             }
         });
 
@@ -713,11 +854,19 @@
                         Math.max(0.04, startArea.h + dy)
                     );
                 }
+            } else if (dragMode === "move_frame") {
+                store.moveFrame(dragTargetId, dx, dy);
+                startNorm = { x: normX, y: normY };
+            } else if (dragMode === "resize_frame") {
+                if (startArea) {
+                    store.resizeFrame(dragTargetId, dragHandle, dx, dy);
+                }
             }
         });
 
         window.addEventListener("mouseup", () => {
             dragMode = null;
+            dragHandle = null;
             dragTargetId = null;
             startArea = null;
         });
