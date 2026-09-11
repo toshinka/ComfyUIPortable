@@ -101,7 +101,8 @@ This backlog tracks user experience refinements, generation pipeline enhancement
 | `ACT-01` | Stage action compression & single-slot Cancel swap | NOW | Feasible & Safe | `H3-G1A` |
 | `PRG-01` | Truthful sampler progress display (`Sampling X%`) | NEAR | IMPLEMENTED / VERIFIED SOURCE-LOGIC + FAKE-WS | `H3-G2A` |
 | `MED-01` | Aspect-safe Start Frame center cover-crop | NEAR | IMPLEMENTED / VERIFIED SOURCE-LOGIC | `H3-G1C1` |
-| `MED-02` | Still Source & contain/pad framing policies | NEAR | Deferred / Not Implemented | Next Card |
+| `MED-02` | Still Source center cover-crop | NEAR | IMPLEMENTED / VERIFIED SOURCE-LOGIC | `H3-G1C2` |
+| `MED-03` | Contain/pad framing policy | NEAR | Deferred / Not Implemented | Future Card |
 | `VID-01` | Reference video first 5s auto-trim | NEAR | IMPLEMENTED / VERIFIED SOURCE-LOGIC | `H3-G1B1` |
 | `VID-02` | Reference video start offset (IN time $T$) | NEAR | IMPLEMENTED / VERIFIED SOURCE-LOGIC | `H3-G1B2` |
 | `STU-01` | Compact Stage Shot strip (Candidate A) | LATER | Architectural direction accepted | Future Studio |
