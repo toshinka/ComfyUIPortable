@@ -139,6 +139,8 @@ class NativeProgressListener:
         asyncio.set_event_loop(loop)
         try:
             loop.run_until_complete(self._listen_loop())
+        except asyncio.CancelledError:
+            pass
         finally:
             try:
                 self._cancel_all_tasks()

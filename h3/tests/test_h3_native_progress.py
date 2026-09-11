@@ -196,23 +196,38 @@ class MultiJobStaleEventTests(unittest.TestCase):
 
 
 class FakeWebSocketIntegrationTests(unittest.TestCase):
-    def test_loopback_ws_flow(self):
+    def test_loopback_ws_reconnect_flow(self):
         async def run_integration():
-            messages_to_send = [
-                {"type": "status", "data": {}},
-                {"type": "progress", "data": {"prompt_id": "p-int", "node": "125", "value": 7, "max": 20}},
-                {"type": "progress", "data": {"prompt_id": "p-int", "node": "122", "value": 1, "max": 1}},
-                {"type": "progress", "data": {"prompt_id": "p-int", "node": "125", "value": 20, "max": 20}},
-            ]
+            connection_count = 0
 
             async def ws_handler(request):
+                nonlocal connection_count
+                connection_count += 1
+                current_conn = connection_count
                 ws = web.WebSocketResponse()
                 await ws.prepare(request)
-                for m in messages_to_send:
-                    await ws.send_json(m)
-                    await asyncio.sleep(0.02)
-                await asyncio.sleep(0.1)
-                await ws.close()
+
+                if current_conn == 1:
+                    # Connection 1:
+                    # Send status, non-sampler progress (node 122), and valid sampler progress (7/20 -> 35%)
+                    await ws.send_json({"type": "status", "data": {}})
+                    await ws.send_json({"type": "progress", "data": {"prompt_id": "p-int", "node": "122", "value": 1, "max": 1}})
+                    await ws.send_json({"type": "progress", "data": {"prompt_id": "p-int", "node": "125", "value": 7, "max": 20}})
+                    # Hold briefly so client processes, then close to induce disconnect
+                    await asyncio.sleep(0.1)
+                    await ws.close()
+                elif current_conn >= 2:
+                    # Connection 2:
+                    # First send stale events: wrong prompt id, then wrong node id
+                    await ws.send_json({"type": "progress", "data": {"prompt_id": "wrong-prompt", "node": "125", "value": 15, "max": 20}})
+                    await ws.send_json({"type": "progress", "data": {"prompt_id": "p-int", "node": "999", "value": 15, "max": 20}})
+                    await asyncio.sleep(0.05)
+                    # Then send valid second progress: 12 / 20 -> 60%
+                    await ws.send_json({"type": "progress", "data": {"prompt_id": "p-int", "node": "125", "value": 12, "max": 20}})
+                    # Keep connection open until stopped by test
+                    while not ws.closed:
+                        await asyncio.sleep(0.1)
+
                 return ws
 
             app = web.Application()
@@ -242,19 +257,21 @@ class FakeWebSocketIntegrationTests(unittest.TestCase):
                 client_id="test-client-int",
                 on_progress=session._handle_native_progress,
                 on_disconnect=session._handle_progress_disconnect,
-                reconnect_interval=0.2,
+                reconnect_interval=0.1,
             )
             listener.start()
 
+            # 1. Connection #1: Wait for 35%
             for _ in range(50):
-                if job.progress and job.progress["percent"] == 100:
+                if job.progress and job.progress.get("percent") == 35:
                     break
                 await asyncio.sleep(0.05)
 
             self.assertIsNotNone(job.progress)
-            self.assertEqual(job.progress["percent"], 100)
+            self.assertEqual(job.progress["percent"], 35)
             self.assertEqual(job.state, "RUNNING")
 
+            # 2. After Connection #1 drops: progress cleared, state remains RUNNING
             for _ in range(50):
                 if job.progress is None:
                     break
@@ -263,7 +280,23 @@ class FakeWebSocketIntegrationTests(unittest.TestCase):
             self.assertIsNone(job.progress)
             self.assertEqual(job.state, "RUNNING")
 
+            # 3. Connection #2: Reconnect occurs and sends stale events followed by 60%
+            for _ in range(50):
+                if job.progress and job.progress.get("percent") == 60:
+                    break
+                await asyncio.sleep(0.05)
+
+            self.assertGreaterEqual(connection_count, 2, "Fake server must observe at least 2 connections")
+            self.assertIsNotNone(job.progress)
+            self.assertEqual(job.progress["percent"], 60)
+            self.assertEqual(job.state, "RUNNING")
+
+            # 4. Clean shutdown: listener thread must terminate cleanly
             listener.stop()
+            self.assertFalse(listener._thread.is_alive(), "Listener thread must not be alive after stop()")
+            self.assertIsNone(job.progress, "Stop must disconnect and clear active progress")
+            self.assertEqual(job.state, "RUNNING", "Stop must not alter Job state")
+
             await runner.cleanup()
 
         asyncio.run(run_integration())
@@ -271,4 +304,3 @@ class FakeWebSocketIntegrationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

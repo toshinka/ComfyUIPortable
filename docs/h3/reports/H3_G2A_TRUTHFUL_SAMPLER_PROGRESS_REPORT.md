@@ -64,12 +64,13 @@ Before implementation, the installed ComfyUI core source was inspected:
 
 ## 4. Verification Results
 
-1. **Python Unit & Fake WebSocket Integration Tests**: 122/122 PASS (0 failures, 0 errors in 8.2s).
+1. **Python Unit & Fake WebSocket Integration Tests**: 123/123 PASS (0 failures, 0 errors).
    - Dynamic sampler node ID discovery: PASS.
    - Comprehensive validation matrix (A through O): PASS.
    - Multi-job & stale prompt isolation: PASS.
    - Loopback fake WebSocket server integration: PASS (verifies connect, progress, non-sampler node filter, drop/clear, and shutdown).
-2. **Node UI Verifiers**: All 13 suites PASS (including new `verify_h3_g2a_progress.mjs` with 25 PASS).
+   - Reconnect: VERIFIED BY SECOND LOOPBACK CONNECTION + SECOND VALID PROGRESS EVENT (`test_loopback_ws_reconnect_flow` proves drop, clear, 2nd connection, stale rejection, 60% update, and clean thread termination).
+2. **Node UI Verifiers**: All 13 suites PASS (including `verify_h3_g2a_progress.mjs` with 25 PASS).
 3. **Live Native WS Handshake**: NOT TESTED / UNAVAILABLE (Native ComfyUI backend port 8188 is offline, as expected without starting backend).
 4. **Scope & Code Hygiene**:
    - Zero workflow JSON changes.

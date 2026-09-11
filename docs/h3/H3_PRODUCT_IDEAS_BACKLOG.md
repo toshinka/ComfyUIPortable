@@ -36,6 +36,7 @@ This backlog tracks user experience refinements, generation pipeline enhancement
 
 ---
 
+### NEAR (Next Prioritized Implementations)
 - **Truthful Sampler Progress Percentage**:
   - Truthful sampler progress percentage: `IMPLEMENTED / VERIFIED SOURCE-LOGIC + FAKE-WS` (Card H3-G2A).
     - Subscribes to Native ComfyUI WebSocket `/ws?clientId=<session_id>` via `aiohttp` and extracts `progress` events strictly correlated to the accepted prompt ID and verified sampler node IDs (`SamplerCustomAdvanced`).
