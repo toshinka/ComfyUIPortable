@@ -52,9 +52,10 @@ This backlog tracks user experience refinements, generation pipeline enhancement
   - First-5s Native trim: `IMPLEMENTED / VERIFIED SOURCE-LOGIC` (Card H3-G1B1).
   - Materializes ComfyUI's core `VideoSlice` (`Trim Video`) node (`start_time: 0.0`, `duration: 5.0`, `strict_duration: false`) before frame extraction to avoid memory bloat and excessive frame extraction.
 - **Reference Video Start Offset (IN Time)**:
-  - Add a single `start_time` (IN point) control in the Reference Video slot (`NEAR / NOT IMPLEMENTED`).
-  - Materialize `VideoSlice(start_time=T, duration=5.0)` to consume seconds $T \to T+5$.
-  - Avoid requiring an explicit OUT point while output duration is fixed.
+  - Reference Video start offset / IN point: `IMPLEMENTED / VERIFIED SOURCE-LOGIC` (Card H3-G1B2).
+  - Materializes user-specified `start_time` (IN point $T$) in ComfyUI core `VideoSlice` node (`start_time=T`, `duration=5.0`, `strict_duration=false`) consuming seconds $T \to T+5$.
+  - Fixed 5.0s generation duration preserved; tail videos with $<5$s remaining are allowed via `strict_duration=false` without stretching frames.
+  - Full video trimming editor, timeline, and generation-quality verification remain separate future backlog items.
 
 ---
 
@@ -96,7 +97,7 @@ This backlog tracks user experience refinements, generation pipeline enhancement
 | `MED-01` | Aspect-safe Start Frame center cover-crop | NEAR | IMPLEMENTED / VERIFIED SOURCE-LOGIC | `H3-G1C1` |
 | `MED-02` | Still Source & contain/pad framing policies | NEAR | Deferred / Not Implemented | Next Card |
 | `VID-01` | Reference video first 5s auto-trim | NEAR | IMPLEMENTED / VERIFIED SOURCE-LOGIC | `H3-G1B1` |
-| `VID-02` | Reference video start offset (IN time $T$) | NEAR | NOT IMPLEMENTED | Next Card |
+| `VID-02` | Reference video start offset (IN time $T$) | NEAR | IMPLEMENTED / VERIFIED SOURCE-LOGIC | `H3-G1B2` |
 | `STU-01` | Compact Stage Shot strip (Candidate A) | LATER | Architectural direction accepted | Future Studio |
 | `STU-02` | Inspector Create/Edit split | LATER | Deferred until edit controls exist | Future Studio |
 | `EXT-01` | Cross-track Manga/H3 handoff | DEFERRED | External dependency | Cross-Track |

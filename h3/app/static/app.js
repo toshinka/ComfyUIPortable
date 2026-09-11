@@ -30,6 +30,7 @@ const state = {
   prepDonorUploading: false,
   r2vPicture: null,
   r2vMotionVideo: null,
+  r2vMotionStartSeconds: 0,
   r2vPictureUploading: false,
   r2vMotionUploading: false,
   handoffInFlight: false,
@@ -78,6 +79,7 @@ const r2vMotionRemove = $("r2v-motion-remove");
 const r2vMotionEmpty = $("r2v-motion-empty");
 const r2vMotionSelected = $("r2v-motion-selected");
 const r2vMotionName = $("r2v-motion-name");
+const r2vMotionStartInput = $("r2v-motion-start");
 const r2vMotionStatus = $("r2v-motion-status");
 const r2vMotionDropzone = document.querySelector('[data-r2v-dropzone="motion"]');
 const videoReferenceCard = $("video-reference-card");
@@ -429,8 +431,11 @@ function updateGenerateAvailability() {
     || state.r2vMotionUploading
     || state.handoffInFlight;
   const referenceMode = state.mode === "video" && state.videoType === "reference";
+  const motionStartValid = !referenceMode || !state.r2vMotionVideo || (
+    Number.isFinite(state.r2vMotionStartSeconds) && state.r2vMotionStartSeconds >= 0
+  );
   const referenceReady = !referenceMode
-    || (referenceVideoEnabled() && state.backend === "READY" && Boolean(state.r2vPicture));
+    || (referenceVideoEnabled() && state.backend === "READY" && Boolean(state.r2vPicture) && motionStartValid);
   const prepMode = state.mode === "prep";
   const prepReady = !prepMode
     || (state.backend === "READY" && Boolean(state.prepSource));
@@ -621,16 +626,22 @@ function setR2VPictureView(picture) {
   updateGenerateAvailability();
 }
 
-function setR2VMotionView(motionVideo) {
+function setR2VMotionView(motionVideo, startSeconds = 0) {
   state.r2vMotionVideo = motionVideo;
   r2vMotionSelected.hidden = !motionVideo;
   r2vMotionEmpty.hidden = Boolean(motionVideo);
   if (!motionVideo) {
+    state.r2vMotionStartSeconds = 0;
+    r2vMotionStartInput.value = "0";
     r2vMotionName.textContent = "";
     r2vMotionStatus.textContent = "";
     updateGenerateAvailability();
     return;
   }
+  const parsedStart = Number(startSeconds);
+  const validStart = Number.isFinite(parsedStart) && parsedStart >= 0 ? parsedStart : 0;
+  state.r2vMotionStartSeconds = validStart;
+  r2vMotionStartInput.value = String(validStart);
   r2vMotionName.textContent = motionVideo.name || "MP4 motion reference";
   r2vMotionStatus.textContent = "";
   updateGenerateAvailability();
@@ -940,6 +951,14 @@ async function submitGeneration(event) {
         payload.video_type = "reference";
         payload.picture_id = state.r2vPicture.id;
         payload.motion_video_id = state.r2vMotionVideo?.id || null;
+        if (state.r2vMotionVideo) {
+          const startVal = Number(r2vMotionStartInput.value);
+          if (!Number.isFinite(startVal) || startVal < 0) {
+            throw new Error("Start time must be 0 seconds or greater.");
+          }
+          state.r2vMotionStartSeconds = startVal;
+          payload.motion_start_seconds = startVal;
+        }
         delete payload.duration;
         payload.duration = 5;
         payload.width = 608;
@@ -1150,7 +1169,10 @@ async function resolveReferenceVideoHistorySettings(entry) {
     : normalizeR2VAsset(metadata.motion_video, "motion");
   await verifyR2VAsset(picture, "picture");
   if (motionVideo) await verifyR2VAsset(motionVideo, "motion");
-  return { ...scalars, picture, motionVideo };
+  const rawStart = entry?.request?.motion_start_seconds;
+  const parsedStart = Number(rawStart);
+  const motionStartSeconds = Number.isFinite(parsedStart) && parsedStart >= 0 ? parsedStart : 0;
+  return { ...scalars, picture, motionVideo, motionStartSeconds };
 }
 
 function applyHistorySettings(settings) {
@@ -1172,7 +1194,7 @@ function applyReferenceVideoHistorySettings(settings) {
   seedInput.value = settings.seed;
   stepsInput.value = settings.steps;
   setR2VPictureView(settings.picture);
-  setR2VMotionView(settings.motionVideo);
+  setR2VMotionView(settings.motionVideo, settings.motionStartSeconds ?? 0);
   captureModeSettings();
   updatePromptCount();
 }
@@ -1266,6 +1288,7 @@ function snapshotR2VHandoffState() {
     prepDonor: state.prepDonor,
     r2vPicture: state.r2vPicture,
     r2vMotionVideo: state.r2vMotionVideo,
+    r2vMotionStartSeconds: state.r2vMotionStartSeconds,
     modeSettings: Object.fromEntries(
       Object.entries(state.modeSettings).map(([mode, settings]) => [mode, { ...settings }]),
     ),
@@ -1294,7 +1317,7 @@ function restoreR2VHandoffState(snapshot) {
   setPrepAssetView("source", snapshot.prepSource);
   setPrepAssetView("donor", snapshot.prepDonor);
   setR2VPictureView(snapshot.r2vPicture);
-  setR2VMotionView(snapshot.r2vMotionVideo);
+  setR2VMotionView(snapshot.r2vMotionVideo, snapshot.r2vMotionStartSeconds ?? 0);
   populateResolutionOptions();
   populateDurationOptions();
   resolutionInput.value = snapshot.resolution;
@@ -1843,6 +1866,11 @@ r2vMotionAdd.addEventListener("click", () => r2vMotionFile.click());
 r2vMotionReplace.addEventListener("click", () => r2vMotionFile.click());
 r2vMotionFile.addEventListener("change", () => uploadR2VMotionVideo(r2vMotionFile.files?.[0]));
 r2vMotionRemove.addEventListener("click", () => setR2VMotionView(null));
+r2vMotionStartInput.addEventListener("input", () => {
+  const val = Number(r2vMotionStartInput.value);
+  state.r2vMotionStartSeconds = Number.isFinite(val) && val >= 0 ? val : -1;
+  updateGenerateAvailability();
+});
 installR2VDropzone(r2vPictureDropzone, "Character Image", uploadR2VPicture);
 installR2VDropzone(r2vMotionDropzone, "Motion Video", uploadR2VMotionVideo);
 installSingleFileDropzone(prepSourceDropzone, "Prep Source Image", (file) => uploadPrepAsset("source", file), prepSourceStatus);

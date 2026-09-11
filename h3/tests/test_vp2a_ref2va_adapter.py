@@ -82,6 +82,34 @@ class H3Ref2VAAdapterTests(unittest.TestCase):
         self.assertNotIn("ref_video_audio_1", graph["131"]["inputs"])
         self.assertNotIn("ref_audio_1", graph["131"]["inputs"])
 
+    def test_picture_plus_video_graph_materializes_user_start_time(self) -> None:
+        # Default start: 0.0
+        default_req = H3Ref2VARequest(
+            prompt="Use <Picture 1> for identity and <Video 1> for motion.",
+            picture_path=PICTURE,
+            video_path=MOTION,
+        )
+        self.assertEqual(default_req.motion_start_seconds, 0.0)
+        default_graph = compile_workflow(default_req)
+        self.assertEqual(default_graph["136"]["inputs"]["start_time"], 0.0)
+        self.assertEqual(default_graph["136"]["inputs"]["duration"], 5.0)
+        self.assertFalse(default_graph["136"]["inputs"]["strict_duration"])
+
+        # motion start 1.25: VideoSlice.start_time == 1.25
+        req = H3Ref2VARequest(
+            prompt="Use <Picture 1> for identity and <Video 1> for motion.",
+            picture_path=PICTURE,
+            video_path=MOTION,
+            motion_start_seconds=1.25,
+        )
+        self.assertEqual(req.motion_start_seconds, 1.25)
+        graph = compile_workflow(req)
+        self.assertEqual(graph["136"]["inputs"]["start_time"], 1.25)
+        self.assertEqual(graph["136"]["inputs"]["duration"], 5.0)
+        self.assertFalse(graph["136"]["inputs"]["strict_duration"])
+        self.assertNotIn("ref_video_audio_1", graph["131"]["inputs"])
+        self.assertNotIn("ref_audio_1", graph["131"]["inputs"])
+
     def test_request_rejects_out_of_scope_values(self) -> None:
         invalid = [
             {"picture_path": "https://example.invalid/reference.png"},
@@ -96,6 +124,12 @@ class H3Ref2VAAdapterTests(unittest.TestCase):
             {"width": 736},
             {"duration_seconds": 15.0},
             {"steps": 21},
+            {"motion_start_seconds": -0.1},
+            {"motion_start_seconds": float("nan")},
+            {"motion_start_seconds": float("inf")},
+            {"motion_start_seconds": float("-inf")},
+            {"motion_start_seconds": "invalid"},
+            {"motion_start_seconds": True},
         ]
         for override in invalid:
             with self.subTest(override=override):

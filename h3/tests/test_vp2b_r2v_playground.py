@@ -178,6 +178,130 @@ class VP2BR2VPlaygroundTests(unittest.TestCase):
             f"{PICTURE_VIDEO_PROMPT_PREFIX}A red robot follows the motion reference.",
         )
         self.assertFalse(any(key.startswith("ref_audio") for key in session.backend.graph["131"]["inputs"]))
+        # Default start when omitted: 0.0
+        self.assertEqual(session.backend.graph["136"]["inputs"]["start_time"], 0.0)
+        self.assertEqual(public["request"]["motion_start_seconds"], 0.0)
+
+    def test_motion_start_validation_and_asset_duration_boundaries(self):
+        session = self.new_session()
+        picture, motion = self.upload_assets(session)
+        # motion duration in fixture is 5.167
+
+        # A. motion start 0 accepted
+        job0 = session.submit_reference_video(
+            {
+                "video_type": "reference",
+                "prompt": "start at 0",
+                "picture_id": picture.picture_id,
+                "motion_video_id": motion.video_id,
+                "motion_start_seconds": 0,
+            }
+        )
+        self.assertEqual(session.backend.graph["136"]["inputs"]["start_time"], 0.0)
+        self.assertEqual(job0.public()["request"]["motion_start_seconds"], 0.0)
+        job0.state = "COMPLETED"
+
+        # B. valid fractional start accepted
+        job_frac = session.submit_reference_video(
+            {
+                "video_type": "reference",
+                "prompt": "start at fractional",
+                "picture_id": picture.picture_id,
+                "motion_video_id": motion.video_id,
+                "motion_start_seconds": 2.5,
+            }
+        )
+        self.assertEqual(session.backend.graph["136"]["inputs"]["start_time"], 2.5)
+        self.assertEqual(job_frac.public()["request"]["motion_start_seconds"], 2.5)
+        job_frac.state = "COMPLETED"
+
+        # C. start below asset duration accepted (short remainder allowed)
+        job_tail = session.submit_reference_video(
+            {
+                "video_type": "reference",
+                "prompt": "short remainder near tail",
+                "picture_id": picture.picture_id,
+                "motion_video_id": motion.video_id,
+                "motion_start_seconds": 4.8,
+            }
+        )
+        self.assertEqual(session.backend.graph["136"]["inputs"]["start_time"], 4.8)
+        self.assertEqual(job_tail.public()["request"]["motion_start_seconds"], 4.8)
+        job_tail.state = "COMPLETED"
+
+        # D. start == asset duration rejected
+        with self.assertRaisesRegex(ValueError, "Start time must be before the end of the Motion Video"):
+            session.submit_reference_video(
+                {
+                    "video_type": "reference",
+                    "prompt": "start at duration",
+                    "picture_id": picture.picture_id,
+                    "motion_video_id": motion.video_id,
+                    "motion_start_seconds": 5.167,
+                }
+            )
+
+        # E. start > asset duration rejected
+        with self.assertRaisesRegex(ValueError, "Start time must be before the end of the Motion Video"):
+            session.submit_reference_video(
+                {
+                    "video_type": "reference",
+                    "prompt": "start past duration",
+                    "picture_id": picture.picture_id,
+                    "motion_video_id": motion.video_id,
+                    "motion_start_seconds": 6.0,
+                }
+            )
+
+        # F. negative rejected
+        with self.assertRaisesRegex(ValueError, "Start time must be 0 seconds or greater"):
+            session.submit_reference_video(
+                {
+                    "video_type": "reference",
+                    "prompt": "negative start",
+                    "picture_id": picture.picture_id,
+                    "motion_video_id": motion.video_id,
+                    "motion_start_seconds": -1.0,
+                }
+            )
+
+        # G. Picture-only old payload with field absent accepted
+        pic_job = session.submit_reference_video(
+            {
+                "video_type": "reference",
+                "prompt": "picture only no start",
+                "picture_id": picture.picture_id,
+                "motion_video_id": None,
+            }
+        )
+        self.assertNotIn("motion_start_seconds", pic_job.public()["request"])
+        pic_job.state = "COMPLETED"
+
+        # H. Picture-only + nonzero start rejected
+        with self.assertRaisesRegex(ValueError, "motion_start_seconds cannot be specified without Motion Video"):
+            session.submit_reference_video(
+                {
+                    "video_type": "reference",
+                    "prompt": "picture only with start",
+                    "picture_id": picture.picture_id,
+                    "motion_video_id": None,
+                    "motion_start_seconds": 2.0,
+                }
+            )
+
+        # I. rejection occurs before backend /prompt submission
+        backend_submit_count_before = len(session.jobs)
+        with self.assertRaises(ValueError):
+            session.submit_reference_video(
+                {
+                    "video_type": "reference",
+                    "prompt": "invalid before prompt",
+                    "picture_id": picture.picture_id,
+                    "motion_video_id": motion.video_id,
+                    "motion_start_seconds": 100.0,
+                }
+            )
+        self.assertEqual(len(session.jobs), backend_submit_count_before)
 
     def test_fixed_settings_missing_assets_conflicts_and_path_arrays_fail_closed(self):
         session = self.new_session()
@@ -278,6 +402,38 @@ class VP2BR2VPlaygroundTests(unittest.TestCase):
             )
             self.assertEqual(job.public()["reference_video"]["motion_video"], None)
             self.assertNotIn("path", json.dumps(job.public()))
+
+            # Public history entry with motion video and motion_start_seconds
+            with patch(
+                "h3.app.server._probe_video_file",
+                return_value={
+                    "width": 608,
+                    "height": 352,
+                    "duration_seconds": 5.167,
+                    "frame_rate": 24.0,
+                    "frame_count": 124,
+                },
+            ):
+                motion_asset = session.upload_r2v_motion_video("motion2.mp4", b"mp4 data")
+            job.state = "COMPLETED"
+            motion_hist_job = session.submit_reference_video(
+                {
+                    "video_type": "reference",
+                    "prompt": "motion history entry",
+                    "picture_id": picture["id"],
+                    "motion_video_id": motion_asset.video_id,
+                    "motion_start_seconds": 3.75,
+                    "width": 608,
+                    "height": 352,
+                    "duration": 5,
+                    "seed": 5,
+                    "steps": 20,
+                }
+            )
+            motion_hist_public = motion_hist_job.public()
+            self.assertEqual(motion_hist_public["reference_video"]["motion_video"]["id"], motion_asset.video_id)
+            self.assertEqual(motion_hist_public["request"]["motion_start_seconds"], 3.75)
+            self.assertNotIn("path", json.dumps(motion_hist_public))
         finally:
             server.shutdown()
             server.server_close()

@@ -19,6 +19,9 @@ for (const marker of [
   'id="r2v-card"',
   'id="r2v-picture-file"',
   'id="r2v-motion-file"',
+  'id="r2v-motion-start"',
+  'type="number" min="0" step="0.1"',
+  "Start (sec)",
   "Appearance reference only — not an identity lock.",
   "Audio reference is disabled; uploaded audio is ignored.",
 ]) {
@@ -31,6 +34,8 @@ for (const marker of [
   'videoTypeCard.hidden = state.mode !== "video"',
   'r2vCard.hidden = !showingReference',
   'videoReferenceCard.hidden = state.mode !== "video" || showingReference',
+  'r2vMotionStartSeconds: 0',
+  'const r2vMotionStartInput = $("r2v-motion-start")',
   'async function uploadR2VPicture(file)',
   'requestJson("/api/r2v/picture"',
   'async function uploadR2VMotionVideo(file)',
@@ -39,9 +44,12 @@ for (const marker of [
   'payload.video_type = "reference"',
   'payload.picture_id = state.r2vPicture.id',
   'payload.motion_video_id = state.r2vMotionVideo?.id || null',
+  'payload.motion_start_seconds = startVal',
   'async function resolveReferenceVideoHistorySettings(entry)',
   'await verifyR2VAsset(picture, "picture")',
   'await verifyR2VAsset(motionVideo, "motion")',
+  'setR2VMotionView(settings.motionVideo, settings.motionStartSeconds ?? 0)',
+  'r2vMotionStartSeconds: state.r2vMotionStartSeconds',
   'setVideoType("reference")',
   'entry.video_type !== "reference"',
 ]) {
@@ -50,6 +58,7 @@ for (const marker of [
 
 const referenceSubmit = app.slice(app.indexOf('if (state.videoType === "reference")'), app.indexOf('} else {', app.indexOf('if (state.videoType === "reference")')));
 assert.ok(referenceSubmit.includes('endpoint = "/api/r2v/generate"'));
+assert.ok(referenceSubmit.includes('payload.motion_start_seconds = startVal'));
 assert.equal(referenceSubmit.includes('payload.references'), false);
 
 const useHandler = app.slice(app.indexOf("async function useHistorySettings"), app.indexOf("function createHistoryCard"));
@@ -63,9 +72,10 @@ for (const marker of [
   ".video-type-card",
   ".video-type-button.active",
   ".r2v-card",
+  ".r2v-motion-start-row",
   ".reference-audio-note",
 ]) {
   assert.ok(styles.includes(marker), `VP2B CSS marker missing: ${marker}`);
 }
 
-console.log("VP2B Experimental R2V UI contract smoke: 28 PASS");
+console.log("VP2B Experimental R2V UI contract smoke: 38 PASS");

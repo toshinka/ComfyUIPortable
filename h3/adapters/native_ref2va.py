@@ -12,6 +12,7 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import dataclass
 import json
+import math
 from pathlib import PurePosixPath
 from pathlib import Path
 from typing import Any, Mapping
@@ -58,6 +59,7 @@ class H3Ref2VARequest:
     seed: int = 20260910
     steps: int = BASELINE_STEPS
     output_prefix: str = "video/vp2a_r1_ref2va_picture"
+    motion_start_seconds: float = 0.0
 
     def __post_init__(self) -> None:
         normalized_prompt = _validate_prompt(self.prompt)
@@ -69,6 +71,13 @@ class H3Ref2VARequest:
         if isinstance(self.seed, bool) or not isinstance(self.seed, int) or not 0 <= self.seed <= MAX_SEED:
             raise RequestValidationError("Seed must be an integer between 0 and 2^63-1.")
         _validate_output_prefix(self.output_prefix)
+        if (
+            isinstance(self.motion_start_seconds, bool)
+            or not isinstance(self.motion_start_seconds, (int, float))
+            or not math.isfinite(self.motion_start_seconds)
+            or self.motion_start_seconds < 0.0
+        ):
+            raise RequestValidationError("motion_start_seconds must be a finite number 0 or greater.")
 
     @property
     def has_video_reference(self) -> bool:
@@ -167,6 +176,7 @@ def validate_request(payload: Mapping[str, Any]) -> H3Ref2VARequest:
         seed=payload.get("seed", 20260910),
         steps=payload.get("steps", BASELINE_STEPS),
         output_prefix=payload.get("output_prefix", "video/vp2a_r1_ref2va_picture"),
+        motion_start_seconds=payload.get("motion_start_seconds", 0.0),
     )
 
 
@@ -289,7 +299,7 @@ def compile_workflow(request: H3Ref2VARequest | Mapping[str, Any]) -> dict[str, 
         node_for("motion_slice")["inputs"].update(
             {
                 "video": [motion_loader_id, 0],
-                "start_time": 0.0,
+                "start_time": float(normalized.motion_start_seconds),
                 "duration": float(normalized.duration_seconds),
                 "strict_duration": False,
             }

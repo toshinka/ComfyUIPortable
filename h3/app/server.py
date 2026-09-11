@@ -15,6 +15,7 @@ from email.parser import BytesParser
 from email.policy import default as email_default
 from io import BytesIO
 import json
+import math
 import mimetypes
 import os
 from pathlib import Path
@@ -395,9 +396,10 @@ class ReferenceVideoRequest:
     duration: float
     seed: int
     steps: int
+    motion_start_seconds: float | None = None
 
     def public(self) -> dict[str, Any]:
-        return {
+        data: dict[str, Any] = {
             "prompt": self.prompt,
             "materialized_prompt": self.materialized_prompt,
             "width": self.width,
@@ -409,6 +411,9 @@ class ReferenceVideoRequest:
             "picture_id": self.picture_id,
             "motion_video_id": self.motion_video_id,
         }
+        if self.motion_video_id is not None and self.motion_start_seconds is not None:
+            data["motion_start_seconds"] = self.motion_start_seconds
+        return data
 
 
 class BackendClient:
@@ -1273,6 +1278,7 @@ class H1ASession:
             "prompt",
             "picture_id",
             "motion_video_id",
+            "motion_start_seconds",
             "width",
             "height",
             "duration",
@@ -1292,15 +1298,36 @@ class H1ASession:
             raise ReferenceVideoAssetMissingError("Character Image asset is missing.")
 
         motion_video_id = payload.get("motion_video_id")
+        raw_motion_start = payload.get("motion_start_seconds")
         if motion_video_id in (None, ""):
             motion_video_id = None
             motion_video = None
+            if raw_motion_start is not None:
+                # If picture-only and nonzero, fail closed
+                if isinstance(raw_motion_start, bool) or not isinstance(raw_motion_start, (int, float)) or raw_motion_start != 0:
+                    raise RequestValidationError("motion_start_seconds cannot be specified without Motion Video.")
+            parsed_motion_start = None
         else:
             if not isinstance(motion_video_id, str) or not SERVER_ASSET_ID_PATTERN.fullmatch(motion_video_id):
                 raise RequestValidationError("Motion Video id is invalid.")
             motion_video = self.get_r2v_motion_video(motion_video_id)
             if motion_video is None or not motion_video.path.is_file():
                 raise ReferenceVideoAssetMissingError("Motion Video asset is missing.")
+            if raw_motion_start is None:
+                parsed_motion_start = 0.0
+            elif (
+                isinstance(raw_motion_start, bool)
+                or not isinstance(raw_motion_start, (int, float))
+                or not math.isfinite(raw_motion_start)
+                or raw_motion_start < 0.0
+            ):
+                raise RequestValidationError("Start time must be 0 seconds or greater.")
+            else:
+                parsed_motion_start = float(raw_motion_start)
+
+            video_duration = motion_video.metadata.get("duration_seconds")
+            if video_duration is not None and parsed_motion_start >= video_duration:
+                raise RequestValidationError("Start time must be before the end of the Motion Video.")
 
         try:
             user_prompt, materialized = materialize_prompt(
@@ -1332,6 +1359,7 @@ class H1ASession:
             "seed": seed_value,
             "steps": payload.get("steps", REF2VA_STEPS),
             "output_prefix": "video/vp2b_r2v_reference",
+            "motion_start_seconds": parsed_motion_start if parsed_motion_start is not None else 0.0,
         }
         try:
             native_request = H3Ref2VARequest(**native_payload)
@@ -1353,6 +1381,7 @@ class H1ASession:
             duration=native_request.duration_seconds,
             seed=native_request.seed,
             steps=native_request.steps,
+            motion_start_seconds=parsed_motion_start,
         )
         job_id = uuid_token()
         job = Job(

@@ -367,6 +367,23 @@ textarea::placeholder, input::placeholder { color: #a58a82; }
   font-size: 0.66rem;
   font-weight: 800;
 }
+.r2v-motion-start-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.r2v-motion-start-label {
+  margin: 0;
+  white-space: nowrap;
+  font-size: 0.74rem;
+}
+.r2v-motion-start-row input {
+  max-width: 100px;
+  min-height: 28px;
+  padding: 3px 7px;
+  font-size: 0.78rem;
+}
 .reference-audio-note { margin-top: 7px; color: var(--muted); font-size: 0.68rem; }
 
 .prep-card { border-color: var(--light-medium); }
