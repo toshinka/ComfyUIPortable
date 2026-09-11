@@ -1,0 +1,205 @@
+/**
+ * canvas_renderer.js — Standalone 2D Canvas Renderer for Manga Document
+ * =====================================================================
+ * TEGAKI Manga Authoring Workspace (M1A)
+ * 
+ * Decoupled from node graph host and ComfyUI DOM widgets.
+ * Renders authoring document layers with exact spatial mapping:
+ * - Page border & background
+ * - Visual frames (with border thickness)
+ * - Rough manga guides & figure regions
+ * - Semantic scenes (color-coded boxes)
+ * - Character instances (with cast colors)
+ * - Highlights currently selected item in session state.
+ */
+
+const SCENE_PALETTE = [
+    { hex: "#e53935", rgb: [229, 57, 53] },
+    { hex: "#1e88e5", rgb: [30, 136, 229] },
+    { hex: "#43a047", rgb: [67, 160, 71] },
+    { hex: "#fb8c00", rgb: [251, 140, 0] },
+    { hex: "#8e24aa", rgb: [142, 36, 170] },
+    { hex: "#00acc1", rgb: [0, 172, 193] }
+];
+
+const CAST_PALETTE = [
+    { hex: "#06b6d4", rgb: [6, 182, 212] },
+    { hex: "#eab308", rgb: [234, 179, 8] },
+    { hex: "#ec4899", rgb: [236, 72, 153] },
+    { hex: "#a855f7", rgb: [168, 85, 247] },
+    { hex: "#22c55e", rgb: [34, 197, 94] },
+    { hex: "#f97316", rgb: [249, 115, 22] }
+];
+
+export function renderMangaCanvas(canvas, document, sessionState, pageIndex = 0) {
+    if (!canvas || !document || !document.pages || !document.pages[pageIndex]) return;
+    const page = document.pages[pageIndex];
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const cw = canvas.width;
+    const ch = canvas.height;
+
+    // 1. Clear & draw page background
+    ctx.clearRect(0, 0, cw, ch);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, cw, ch);
+
+    // Page border
+    ctx.strokeStyle = "#cbd5e1";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0, 0, cw, ch);
+
+    const activeTab = sessionState ? sessionState.activeTab : "scenes";
+
+    // 2. Draw Visual Frames (Border Layer)
+    const frames = page.visual_frames || [];
+    frames.forEach((fr, idx) => {
+        const area = fr.area || fr.shape || { x: 0, y: 0, w: 1, h: 1 };
+        const isSelected = (sessionState && sessionState.selectedFrameId === fr.frame_id);
+        const rx = area.x * cw;
+        const ry = area.y * ch;
+        const rw = area.w * cw;
+        const rh = area.h * ch;
+
+        // Fill translucent if frames layer is active
+        if (activeTab === "frames") {
+            ctx.fillStyle = isSelected ? "rgba(59, 130, 246, 0.12)" : "rgba(0, 0, 0, 0.03)";
+            ctx.fillRect(rx, ry, rw, rh);
+        }
+
+        const thickness = Math.max(1, Math.min(10, Math.round((fr.border_thickness || 4) * (cw / (page.width_px || 832)))));
+        ctx.strokeStyle = isSelected ? "#2563eb" : (fr.border_color || "#18181b");
+        ctx.lineWidth = isSelected ? Math.max(thickness, 3) : thickness;
+        ctx.strokeRect(rx, ry, rw, rh);
+
+        // Frame badge
+        const label = fr.frame_id || `Frame ${idx + 1}`;
+        ctx.font = "bold 10px system-ui, sans-serif";
+        const tw = ctx.measureText(label).width;
+        ctx.fillStyle = isSelected ? "#2563eb" : "#475569";
+        ctx.fillRect(rx, ry, tw + 8, 16);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(label, rx + 4, ry + 12);
+    });
+
+    // 3. Draw Guides & Figure Regions
+    const guides = page.guides || [];
+    guides.forEach((guide, gIdx) => {
+        const placement = guide.placement || { x: 0, y: 0, w: 1, h: 1 };
+        const enabled = guide.enabled !== false;
+        const isSelectedGuide = (sessionState && sessionState.selectedGuideId === guide.guide_id);
+
+        const gx = placement.x * cw;
+        const gy = placement.y * ch;
+        const gw = placement.w * cw;
+        const gh = placement.h * ch;
+
+        ctx.save();
+        ctx.fillStyle = enabled ? "rgba(186, 230, 253, 0.2)" : "rgba(250, 204, 21, 0.15)";
+        ctx.fillRect(gx, gy, gw, gh);
+
+        ctx.strokeStyle = enabled ? "#0284c7" : "#ca8a04";
+        ctx.lineWidth = isSelectedGuide ? 2 : 1;
+        if (!enabled) ctx.setLineDash([5, 4]);
+        ctx.strokeRect(gx, gy, gw, gh);
+        ctx.setLineDash([]);
+
+        const gLabel = `${guide.guide_id || `Guide ${gIdx + 1}`} [${enabled ? "enabled" : "disabled"}]`;
+        ctx.font = "bold 9px system-ui, sans-serif";
+        const gtw = ctx.measureText(gLabel).width;
+        ctx.fillStyle = enabled ? "#0284c7" : "#ca8a04";
+        ctx.fillRect(gx, gy, gtw + 6, 14);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(gLabel, gx + 3, gy + 10);
+        ctx.restore();
+
+        // Figure regions
+        (guide.figure_regions || []).forEach((fig, fIdx) => {
+            const fa = fig.area || { x: 0.1, y: 0.1, w: 0.3, h: 0.4 };
+            const fx = fa.x * cw;
+            const fy = fa.y * ch;
+            const fw = fa.w * cw;
+            const fh = fa.h * ch;
+            const isSelectedFig = (sessionState && sessionState.selectedFigureId === fig.figure_id);
+
+            ctx.save();
+            ctx.fillStyle = isSelectedFig ? "rgba(14, 116, 144, 0.35)" : "rgba(14, 116, 144, 0.15)";
+            ctx.fillRect(fx, fy, fw, fh);
+            ctx.strokeStyle = isSelectedFig ? "#0891b2" : "#0e7490";
+            ctx.lineWidth = isSelectedFig ? 2.5 : 1.5;
+            ctx.strokeRect(fx, fy, fw, fh);
+
+            ctx.font = "bold 9px system-ui, sans-serif";
+            const figLabel = fig.figure_id || `Figure ${fIdx + 1}`;
+            ctx.fillStyle = "#0e7490";
+            ctx.fillText(figLabel, fx + 3, fy + 11);
+            ctx.restore();
+        });
+    });
+
+    // 4. Draw Scenes
+    const scenes = page.scenes || [];
+    scenes.forEach((sc, idx) => {
+        const area = sc.area || { x: 0, y: 0, w: 1, h: 1 };
+        const col = SCENE_PALETTE[idx % SCENE_PALETTE.length];
+        const isSelected = (sessionState && sessionState.selectedSceneId === sc.scene_id && activeTab === "scenes");
+
+        const rx = area.x * cw;
+        const ry = area.y * ch;
+        const rw = area.w * cw;
+        const rh = area.h * ch;
+
+        const fillAlpha = isSelected ? 0.25 : (activeTab === "frames" ? 0.05 : 0.12);
+        const strokeWidth = isSelected ? 3 : 1.5;
+
+        ctx.fillStyle = `rgba(${col.rgb.join(",")}, ${fillAlpha})`;
+        ctx.fillRect(rx, ry, rw, rh);
+
+        ctx.strokeStyle = col.hex;
+        ctx.lineWidth = strokeWidth;
+        ctx.strokeRect(rx, ry, rw, rh);
+
+        // Badge
+        const label = `Scene ${idx + 1}: ${sc.name || sc.scene_id}`;
+        ctx.font = "bold 11px system-ui, sans-serif";
+        const tw = ctx.measureText(label).width;
+        ctx.fillStyle = col.hex;
+        ctx.fillRect(rx, ry, tw + 8, 18);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(label, rx + 4, ry + 13);
+    });
+
+    // 5. Draw Character Instances
+    const instances = page.character_instances || [];
+    const castList = page.cast || [];
+    instances.forEach((inst, idx) => {
+        const area = inst.area || { x: 0, y: 0, w: 0.2, h: 0.2 };
+        const castEntry = castList.find(c => c.cast_id === inst.cast_id);
+        const colHex = castEntry?.color || CAST_PALETTE[idx % CAST_PALETTE.length].hex;
+        const isSelected = (sessionState && sessionState.selectedInstanceId === inst.instance_id);
+
+        const rx = area.x * cw;
+        const ry = area.y * ch;
+        const rw = area.w * cw;
+        const rh = area.h * ch;
+
+        ctx.save();
+        ctx.fillStyle = isSelected ? "rgba(6, 182, 212, 0.35)" : "rgba(6, 182, 212, 0.18)";
+        ctx.fillRect(rx, ry, rw, rh);
+
+        ctx.strokeStyle = colHex;
+        ctx.lineWidth = isSelected ? 3 : 2;
+        ctx.strokeRect(rx, ry, rw, rh);
+
+        const name = castEntry?.display_name || inst.cast_id;
+        const instLabel = `${name} (${inst.instance_id})`;
+        ctx.font = "bold 10px system-ui, sans-serif";
+        const itw = ctx.measureText(instLabel).width;
+        ctx.fillStyle = colHex;
+        ctx.fillRect(rx, ry + rh - 16, itw + 8, 16);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(instLabel, rx + 4, ry + rh - 4);
+        ctx.restore();
+    });
+}

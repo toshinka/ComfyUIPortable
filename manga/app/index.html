@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEGAKI Manga · Standalone Workspace</title>
+    <link rel="stylesheet" href="css/manga_workspace.css">
+</head>
+<body>
+    <!-- Top Header -->
+    <header id="workspace-header">
+        <div class="header-brand">
+            <span class="brand-title">TEGAKI Manga</span>
+            <span class="brand-badge">M1A Standalone</span>
+            <span id="doc-schema-label" style="font-size: 11px; color: #94a3b8;">TEGAKI_AUTHORING_DOCUMENT 1.0.0</span>
+        </div>
+        <div class="header-actions">
+            <button id="btn-reset-default" class="btn" title="Reset to default document">Reset Default</button>
+            <button id="btn-load-fixture" class="btn" title="Load rich authoring fixture with all layers">Load Rich Fixture</button>
+            <button id="btn-load-json" class="btn" title="Import document JSON">Import JSON</button>
+            <button id="btn-export-json" class="btn btn-primary" title="Export / View document JSON">Export JSON</button>
+        </div>
+    </header>
+
+    <!-- Backend Integration Bar -->
+    <div id="backend-bar">
+        <div id="backend-status-badge" class="status-indicator status-unavailable">
+            <span class="status-dot"></span>
+            <span id="backend-status-text">DISCONNECTED</span>
+        </div>
+        <label style="color: #94a3b8; font-size: 11px;">Backend:</label>
+        <input type="text" id="backend-url-input" class="backend-input" value="http://127.0.0.1:8189">
+        <button id="btn-check-backend" class="btn">Check Backend</button>
+        <button id="btn-prepare-draft" class="btn" style="background: #0284c7; color: white; border-color: #38bdf8;">✨ Prepare Standard Draft</button>
+        <div id="prepare-feedback">Ready</div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div id="workspace-main">
+        <!-- Canvas Viewport -->
+        <div id="canvas-container">
+            <div id="layer-tabs">
+                <button id="tab-scenes" class="tab-btn active" data-tab="scenes">Scenes Layer</button>
+                <button id="tab-frames" class="tab-btn" data-tab="frames">Visual Frames Layer</button>
+                <button id="tab-guides" class="tab-btn" data-tab="guides">Rough Guides Layer</button>
+                <button id="tab-cast" class="tab-btn" data-tab="cast">CAST & Characters Layer</button>
+            </div>
+            <div id="canvas-viewport">
+                <canvas id="manga-canvas" width="416" height="608"></canvas>
+            </div>
+        </div>
+
+        <!-- Right Inspector / Readout -->
+        <div id="inspector-panel">
+            <div class="panel-section">
+                <div class="section-title">Document Summary</div>
+                <div class="info-grid">
+                    <div class="info-label">Resolution:</div>
+                    <div class="info-value" id="summary-resolution">832 x 1216</div>
+                    <div class="info-label">Seed:</div>
+                    <div class="info-value" id="summary-seed">42</div>
+                    <div class="info-label">Style:</div>
+                    <div class="info-value" id="summary-style">Manga Monochrome</div>
+                    <div class="info-label">Page Count:</div>
+                    <div class="info-value" id="summary-pages">1</div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="section-title">Session State (Ephemeral)</div>
+                <div class="info-grid">
+                    <div class="info-label">Active Layer:</div>
+                    <div class="info-value" id="session-active-layer">scenes</div>
+                    <div class="info-label">Selected Item:</div>
+                    <div class="info-value" id="session-selected-item">scene_top</div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="section-title">
+                    <span>Scenes (<span id="count-scenes">2</span>)</span>
+                </div>
+                <div id="list-scenes"></div>
+            </div>
+
+            <div class="panel-section">
+                <div class="section-title">
+                    <span>Visual Frames (<span id="count-frames">0</span>)</span>
+                </div>
+                <div id="list-frames"></div>
+            </div>
+
+            <div class="panel-section">
+                <div class="section-title">
+                    <span>CAST (<span id="count-cast">0</span>) & Characters (<span id="count-instances">0</span>)</span>
+                </div>
+                <div id="list-cast"></div>
+                <div id="list-instances"></div>
+            </div>
+
+            <div class="panel-section">
+                <div class="section-title">
+                    <span>Guides (<span id="count-guides">0</span>)</span>
+                </div>
+                <div id="list-guides"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export / Import Modal -->
+    <div id="export-modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="modal-title" style="font-size: 14px; font-weight: 700;">Export Document JSON</h3>
+                <button id="btn-close-modal" class="btn">Close</button>
+            </div>
+            <textarea id="modal-json-text" class="modal-textarea"></textarea>
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button id="btn-modal-action" class="btn btn-primary">Copy to Clipboard</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { AuthoringStore } from "./src/state/authoring_store.js";
+        import { SessionState } from "./src/state/session_state.js";
+        import { renderMangaCanvas } from "./src/view/canvas_renderer.js";
+        import { MangaBackendClient, BACKEND_STATUS } from "./src/adapters/manga_backend_client.js";
+
+        const store = new AuthoringStore();
+        const session = new SessionState();
+        const client = new MangaBackendClient("http://127.0.0.1:8189");
+
+        const canvas = document.getElementById("manga-canvas");
+        const backendStatusBadge = document.getElementById("backend-status-badge");
+        const backendStatusText = document.getElementById("backend-status-text");
+        const backendUrlInput = document.getElementById("backend-url-input");
+        const btnCheckBackend = document.getElementById("btn-check-backend");
+        const btnPrepareDraft = document.getElementById("btn-prepare-draft");
+        const prepareFeedback = document.getElementById("prepare-feedback");
+
+        // Modal elements
+        const modal = document.getElementById("export-modal");
+        const modalTitle = document.getElementById("modal-title");
+        const modalJsonText = document.getElementById("modal-json-text");
+        const btnCloseModal = document.getElementById("btn-close-modal");
+        const btnModalAction = document.getElementById("btn-modal-action");
+
+        function updateCanvas() {
+            renderMangaCanvas(canvas, store.getDocument(), session);
+        }
+
+        function updateInspector() {
+            const doc = store.getDocument();
+            const page = doc.pages[0];
+            if (!page) return;
+
+            document.getElementById("summary-resolution").textContent = `${page.width_px} x ${page.height_px}`;
+            document.getElementById("summary-seed").textContent = page.generation?.seed ?? "N/A";
+            document.getElementById("summary-style").textContent = page.metadata?.style_template || "Custom";
+            document.getElementById("summary-pages").textContent = doc.pages.length;
+
+            document.getElementById("session-active-layer").textContent = session.activeTab;
+            document.getElementById("session-selected-item").textContent = 
+                session.selectedSceneId || session.selectedFrameId || session.selectedInstanceId || session.selectedGuideId || "None";
+
+            // Scenes list
+            const scenes = page.scenes || [];
+            document.getElementById("count-scenes").textContent = scenes.length;
+            const sceneContainer = document.getElementById("list-scenes");
+            sceneContainer.innerHTML = "";
+            scenes.forEach(sc => {
+                const div = document.createElement("div");
+                div.className = "list-item" + (session.selectedSceneId === sc.scene_id ? " selected" : "");
+                div.innerHTML = `<b>${sc.name || sc.scene_id}</b>: <span style="color: #94a3b8;">${sc.prompt || "(no prompt)"}</span>`;
+                div.onclick = () => {
+                    session.selectScene(sc.scene_id);
+                    session.setActiveTab("scenes");
+                };
+                sceneContainer.appendChild(div);
+            });
+
+            // Frames list
+            const frames = page.visual_frames || [];
+            document.getElementById("count-frames").textContent = frames.length;
+            const frameContainer = document.getElementById("list-frames");
+            frameContainer.innerHTML = "";
+            frames.forEach(fr => {
+                const div = document.createElement("div");
+                div.className = "list-item" + (session.selectedFrameId === fr.frame_id ? " selected" : "");
+                div.innerHTML = `<b>${fr.frame_id}</b> · Order ${fr.order}`;
+                div.onclick = () => {
+                    session.selectFrame(fr.frame_id);
+                    session.setActiveTab("frames");
+                };
+                frameContainer.appendChild(div);
+            });
+
+            // Cast & Instances
+            const castList = page.cast || [];
+            document.getElementById("count-cast").textContent = castList.length;
+            const castContainer = document.getElementById("list-cast");
+            castContainer.innerHTML = "";
+            castList.forEach(c => {
+                const div = document.createElement("div");
+                div.className = "list-item" + (session.selectedCastId === c.cast_id ? " selected" : "");
+                div.innerHTML = `<span style="color: ${c.color || '#38bdf8'}; font-weight: bold;">●</span> <b>${c.display_name}</b> (${c.cast_id})`;
+                div.onclick = () => {
+                    session.selectCast(c.cast_id);
+                    session.setActiveTab("cast");
+                };
+                castContainer.appendChild(div);
+            });
+
+            const instances = page.character_instances || [];
+            document.getElementById("count-instances").textContent = instances.length;
+            const instContainer = document.getElementById("list-instances");
+            instContainer.innerHTML = "";
+            instances.forEach(inst => {
+                const div = document.createElement("div");
+                div.className = "list-item" + (session.selectedInstanceId === inst.instance_id ? " selected" : "");
+                div.innerHTML = `Instance <b>${inst.instance_id}</b> (Cast: ${inst.cast_id}, Scene: ${inst.scene_id})`;
+                div.onclick = () => {
+                    session.selectInstance(inst.instance_id);
+                    session.setActiveTab("cast");
+                };
+                instContainer.appendChild(div);
+            });
+
+            // Guides
+            const guides = page.guides || [];
+            document.getElementById("count-guides").textContent = guides.length;
+            const guideContainer = document.getElementById("list-guides");
+            guideContainer.innerHTML = "";
+            guides.forEach(g => {
+                const div = document.createElement("div");
+                div.className = "list-item" + (session.selectedGuideId === g.guide_id ? " selected" : "");
+                div.innerHTML = `<b>${g.guide_id}</b> [${g.enabled ? "enabled" : "disabled"}] · Figures: ${g.figure_regions?.length || 0}`;
+                div.onclick = () => {
+                    session.selectGuide(g.guide_id);
+                    session.setActiveTab("guides");
+                };
+                guideContainer.appendChild(div);
+            });
+        }
+
+        function updateAll() {
+            updateCanvas();
+            updateInspector();
+        }
+
+        store.subscribe(updateAll);
+        session.subscribe(updateAll);
+
+        // Layer Tabs
+        document.querySelectorAll(".tab-btn").forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                session.setActiveTab(btn.dataset.tab);
+            };
+        });
+
+        // Header Actions
+        document.getElementById("btn-reset-default").onclick = () => {
+            store.resetDefault();
+            session.selectScene("scene_top");
+        };
+
+        document.getElementById("btn-load-fixture").onclick = () => {
+            store.loadRichFixture();
+            session.selectScene("scene_action_top");
+        };
+
+        document.getElementById("btn-export-json").onclick = () => {
+            modalTitle.textContent = "Export Document JSON";
+            modalJsonText.value = store.exportJson(true);
+            btnModalAction.textContent = "Copy to Clipboard";
+            btnModalAction.onclick = () => {
+                navigator.clipboard.writeText(modalJsonText.value);
+                btnModalAction.textContent = "Copied!";
+                setTimeout(() => { btnModalAction.textContent = "Copy to Clipboard"; }, 1500);
+            };
+            modal.style.display = "flex";
+        };
+
+        document.getElementById("btn-load-json").onclick = () => {
+            modalTitle.textContent = "Import Document JSON";
+            modalJsonText.value = "";
+            btnModalAction.textContent = "Load Document";
+            btnModalAction.onclick = () => {
+                const res = store.importJson(modalJsonText.value);
+                if (res.ok) {
+                    modal.style.display = "none";
+                } else {
+                    alert("Import Error: " + res.error);
+                }
+            };
+            modal.style.display = "flex";
+        };
+
+        btnCloseModal.onclick = () => {
+            modal.style.display = "none";
+        };
+
+        // Backend Connection & Probes
+        async function checkBackend() {
+            client.setBackendUrl(backendUrlInput.value);
+            backendStatusBadge.className = "status-indicator status-unavailable";
+            backendStatusText.textContent = "CHECKING...";
+
+            const res = await client.probeStatus();
+            if (res.status === BACKEND_STATUS.MANGA_READY) {
+                backendStatusBadge.className = "status-indicator status-ready";
+                backendStatusText.textContent = "MANGA READY";
+                prepareFeedback.textContent = "Backend connected and ready";
+                prepareFeedback.style.color = "#86efac";
+            } else if (res.status === BACKEND_STATUS.GENERIC_COMFYUI) {
+                backendStatusBadge.className = "status-indicator status-generic";
+                backendStatusText.textContent = "GENERIC COMFYUI";
+                prepareFeedback.textContent = "ComfyUI reachable, but Manga nodes missing";
+                prepareFeedback.style.color = "#fcd34d";
+            } else {
+                backendStatusBadge.className = "status-indicator status-unavailable";
+                backendStatusText.textContent = "UNAVAILABLE";
+                prepareFeedback.textContent = "Cannot connect to backend";
+                prepareFeedback.style.color = "#fca5a5";
+            }
+            return res;
+        }
+
+        btnCheckBackend.onclick = checkBackend;
+
+        // Prepare Draft (Zero Queueing Invariant!)
+        btnPrepareDraft.onclick = async () => {
+            prepareFeedback.textContent = "⏳ Preparing...";
+            prepareFeedback.style.color = "#94a3b8";
+
+            try {
+                const doc = store.getDocument();
+                const res = await client.prepareDraft(doc, 0, doc.pages[0].generation?.seed || 42);
+                if (res.ok) {
+                    prepareFeedback.textContent = `✅ Prepared route: ${res.route} | Queue: ${res.queueAfter.running} running, ${res.queueAfter.pending} pending (Queue IDLE)`;
+                    prepareFeedback.style.color = "#86efac";
+                } else {
+                    prepareFeedback.textContent = `❌ Prepare error: ${res.error || "Failed"}`;
+                    prepareFeedback.style.color = "#fca5a5";
+                }
+            } catch (err) {
+                prepareFeedback.textContent = `❌ Error: ${err.message}`;
+                prepareFeedback.style.color = "#fca5a5";
+            }
+        };
+
+        // Initialize view
+        updateAll();
+
+        // Expose to window for automated testing
+        window.__tegakiManga = {
+            store,
+            session,
+            client,
+            checkBackend,
+            updateAll
+        };
+    </script>
+</body>
+</html>
