@@ -4,7 +4,7 @@ Revision: `XT2-R1`
 Updated: `2026-09-11 JST`
 Initial remote: `9a56815e984317363f4177277bb8035337c137f0`
 Source H3 closeout: `70f3561d44a052ce30148fa6474ba633a0d8a37f`
-Status: `CROSS-TRACK DESIGN PLAN / H3-R1 VERIFIED / R2-M1 OPEN / SHARED-SHELL IMPLEMENTATION NOT AUTHORIZED`
+Status: `CROSS-TRACK DESIGN PLAN / ASTRA REVIEW COMPLETE / H3-R1 VERIFIED / R2-M1 OPEN / SHARED-SHELL IMPLEMENTATION NOT AUTHORIZED`
 
 ## 1. Purpose
 
@@ -20,7 +20,7 @@ The plan preserves the current product boundaries:
 | H3 | `H3_READY_FOR_INTEGRATION_DESIGN` |
 | Manga | `MANGA_READY_FOR_INTEGRATION_DESIGN` |
 | Current cross-track implementation conflict | `NONE CURRENTLY VERIFIED` |
-| Shared-shell design | `READY TO REVIEW` |
+| Shared-shell design | `DIRECTION SELECTED / FEASIBILITY GATES REMAIN` |
 | Shared-shell implementation | `NOT AUTHORIZED` |
 
 ## 2. Classification vocabulary
@@ -163,6 +163,9 @@ H3-R1 has completed the bounded wide/narrow layout, independent Inspector
 scrolling, sticky Stage, Generate visibility, truthful submission, and
 Create-to-Result validation in the H3 workspace. Existing H3 simple panels
 remain valid independently. Finalizing is `NOT ADOPTED`.
+
+H3 internal Stage, Inspector, Shot, and Timeline evolution is H3-owned and is
+not a common-shell responsibility.
 
 ## 8. Manga hosting question
 
@@ -325,7 +328,9 @@ H3: H3_READY_FOR_INTEGRATION_DESIGN
 Manga: MANGA_READY_FOR_INTEGRATION_DESIGN
 ```
 
-This plan is ready for the later cross-track design review. It is not approval
-to implement the shared shell. Owner acceptance remains `PENDING`.
+Astra cross-track architecture review is complete for the current design
+boundary. H3-R1 is complete, R2 Runtime Lifecycle Feasibility is the next
+cross-track gate, M1 Manga Hosting remains `NOT STARTED`, and shared-shell
+implementation remains `NOT AUTHORIZED`. Owner acceptance remains `PENDING`.
 
 STOP.

@@ -4,14 +4,14 @@ Updated: `2026-09-11 JST`
 Source: `H3-XT1 / Integration Design Readiness Freeze`
 IP2 closeout: `70f3561d44a052ce30148fa6474ba633a0d8a37f`
 Classification: `H3_READY_FOR_INTEGRATION_DESIGN`
-Shared-shell design: `READY TO REVIEW`
+Shared-shell design: `DIRECTION SELECTED / FEASIBILITY GATES REMAIN`
 Shared-shell implementation: `NOT AUTHORIZED`
 Owner acceptance: `PENDING`
 Cross-track plan: [TEGAKI_CROSS_TRACK_INTEGRATION_PLAN.md](../integration/TEGAKI_CROSS_TRACK_INTEGRATION_PLAN.md)
 
 ## 1. Purpose and readiness
 
-This is the current H3 product and integration boundary for a later
+This is the current H3 product and integration boundary after the Astra
 cross-track architecture review. It is a boundary snapshot, not a roadmap or
 an implementation instruction.
 
@@ -222,7 +222,7 @@ these concepts.
 | H3 | `H3_READY_FOR_INTEGRATION_DESIGN` |
 | Cross-track implementation conflict | `NONE CURRENTLY VERIFIED` |
 | Primary open architecture constraint | `RUNTIME PROFILE / BACKEND HOSTING` |
-| Shared-shell design | `READY TO REVIEW` |
+| Shared-shell design | `DIRECTION SELECTED / FEASIBILITY GATES REMAIN` |
 | Shared-shell implementation | `NOT AUTHORIZED` |
 | Owner acceptance | `PENDING` |
 
@@ -249,6 +249,7 @@ This boundary does not:
 - [IP2 Browser evidence](evidence/ip2-browser-prep-edit/2026-09-11/README.md)
 - [H3-R1 Stage / Generate report](reports/H3_R1_STAGE_GENERATE_VISIBILITY_REPORT.md)
 - [H3-R1 Browser evidence](evidence/h3-r1-stage-generate-visibility/2026-09-11/README.md)
+- [H3 Stage / Studio UI Direction](H3_STAGE_STUDIO_UI_DIRECTION.md)
 - [Manga Product Integration Boundary](../manga/MANGA_PRODUCT_INTEGRATION_BOUNDARY.md) — read-only terminology reference
 
 H3-R1 validation is recorded separately:
@@ -276,7 +277,7 @@ Primary integration-design question: BACKEND / RUNTIME PROFILE HOSTING
 H3 Stage / Generate Visibility: IMPLEMENTED / VERIFIED BROWSER UI / PUBLISHED ON MAIN
 Preview/Stage responsive UX: IMPLEMENTED / VERIFIED BROWSER UI / PUBLISHED ON MAIN
 Generate/status UX: IMPLEMENTED / VERIFIED BROWSER UI / PUBLISHED ON MAIN
-Shared-shell design: READY FOR REVIEW
+Shared-shell design: DIRECTION SELECTED / FEASIBILITY GATES REMAIN
 Shared-shell implementation: NOT AUTHORIZED
 Runtime changes: NONE
 Manga changes: NONE
@@ -284,8 +285,8 @@ Owner acceptance: PENDING
 Recommended next: R2 RUNTIME LIFECYCLE FEASIBILITY
 ```
 
-Before that review, Web-GPT or SOL should freshly verify current Astra usage
-and reasoning-effort guidance. Do not begin shared-shell implementation from
-this snapshot alone.
+Astra cross-track architecture review is complete for the current boundary.
+R2 Runtime Lifecycle Feasibility remains the next cross-track gate; this does
+not authorize shared-shell implementation. Owner acceptance remains `PENDING`.
 
 STOP.
