@@ -503,11 +503,68 @@ export function checkFrameOverlap(frames = []) {
 }
 
 // ===================================================================
-// GUIDE & FIGURE OPERATIONS (M1C2A)
+// GUIDE & FIGURE OPERATIONS (M1C2A & M1C2B)
 // ===================================================================
 
 function roundGuideNumber(value) {
     return parseFloat(Number(value).toFixed(4));
+}
+
+/**
+ * Generate next unique guide_id avoiding collision.
+ *
+ * @param {Array<Object>} guides
+ * @returns {string} e.g. "guide_1", "guide_2"
+ */
+export function getNextGuideId(guides = []) {
+    let nextNum = 1;
+    const existingNums = (guides || []).map(guide => {
+        const match = guide?.guide_id && String(guide.guide_id).match(/guide_(\d+)/);
+        return match ? parseInt(match[1], 10) : 0;
+    });
+    if (existingNums.length > 0) nextNum = Math.max(...existingNums, 0) + 1;
+    let candidate = `guide_${nextNum}`;
+    while ((guides || []).some(guide => guide?.guide_id === candidate)) {
+        nextNum += 1;
+        candidate = `guide_${nextNum}`;
+    }
+    return candidate;
+}
+
+/**
+ * Calculate a page-normalized contain-fit placement for a Guide asset.
+ * The image is centered and never cropped. Figure coordinates remain local to the Guide asset.
+ *
+ * @param {number} imageWidth
+ * @param {number} imageHeight
+ * @param {number} pageWidth
+ * @param {number} pageHeight
+ * @returns {{ shape_type: string, x: number, y: number, w: number, h: number }}
+ */
+export function calculateContainPlacement(imageWidth, imageHeight, pageWidth, pageHeight) {
+    const iw = Number(imageWidth);
+    const ih = Number(imageHeight);
+    const pw = Number(pageWidth);
+    const ph = Number(pageHeight);
+    if (![iw, ih, pw, ph].every(value => Number.isFinite(value) && value > 0)) {
+        return { shape_type: "rect", x: 0, y: 0, w: 1, h: 1 };
+    }
+
+    const imageAspect = iw / ih;
+    const pageAspect = pw / ph;
+    let w = 1;
+    let h = pageAspect / imageAspect;
+    if (imageAspect < pageAspect) {
+        w = imageAspect / pageAspect;
+        h = 1;
+    }
+    return {
+        shape_type: "rect",
+        x: roundGuideNumber((1 - w) / 2),
+        y: roundGuideNumber((1 - h) / 2),
+        w: roundGuideNumber(w),
+        h: roundGuideNumber(h)
+    };
 }
 
 /**

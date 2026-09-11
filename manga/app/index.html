@@ -237,11 +237,13 @@
                 </div>
             </div>
 
-            <!-- Guides Section (M1C2A Authorable) -->
+            <!-- Guides Section (M1C2B Authorable) -->
             <div class="panel-section">
                 <div class="section-title">
                     <span>Guides (<span id="count-guides">0</span>)</span>
+                    <button id="btn-add-guide" class="btn btn-sm btn-primary">+ Add Guide</button>
                 </div>
+                <input type="file" id="file-guide-asset" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" style="display: none;" />
                 <div id="guide-error-banner" class="alert-error" style="display: none;"></div>
                 <div id="list-guides"></div>
 
@@ -253,8 +255,12 @@
                     <div class="form-group">
                         <label class="form-label">Asset Reference</label>
                         <div id="guide-asset-readout" style="font-family: monospace; font-size: 11px; color: #94a3b8; word-break: break-all;">-</div>
+                        <div style="margin-top: 4px;">
+                            <img id="guide-preview-thumbnail" style="max-width: 100%; max-height: 120px; border-radius: 4px; border: 1px solid #334155; display: none; object-fit: contain; background: #000;" />
+                        </div>
                     </div>
                     <div class="form-actions" style="margin-bottom: 8px;">
+                        <button id="btn-replace-guide-asset" class="btn btn-sm">Replace Asset</button>
                         <button id="btn-toggle-guide-enabled" class="btn btn-sm">Toggle Enabled</button>
                         <button id="btn-delete-guide" class="btn btn-sm btn-danger">Remove Guide</button>
                     </div>
@@ -375,8 +381,42 @@
             sceneErrorMsg.className = "alert-error visible";
         }
 
+        // Guide Image Asset Cache (M1C2B)
+        const guideImageCache = new Map();
+
+        function getOrLoadGuideImage(assetRef) {
+            if (!assetRef) return null;
+            if (guideImageCache.has(assetRef)) {
+                return guideImageCache.get(assetRef);
+            }
+            const img = new Image();
+            img.onload = () => {
+                updateCanvas();
+            };
+            img.onerror = () => {
+                console.warn("Failed to load guide image asset:", assetRef);
+            };
+            img.src = `/api/guide-assets/view?ref=${encodeURIComponent(assetRef)}`;
+            guideImageCache.set(assetRef, img);
+            return img;
+        }
+
         function updateCanvas() {
-            renderMangaCanvas(canvas, store.getDocument(), session);
+            const doc = store.getDocument();
+            const page = doc.pages[0];
+            if (page && page.guides) {
+                for (const g of page.guides) {
+                    if (g.asset_reference && !guideImageCache.has(g.asset_reference)) {
+                        getOrLoadGuideImage(g.asset_reference);
+                    }
+                }
+            }
+            // Convert Map to plain object for canvas renderer
+            const cacheObj = {};
+            for (const [k, v] of guideImageCache.entries()) {
+                cacheObj[k] = v;
+            }
+            renderMangaCanvas(canvas, doc, session, 0, cacheObj);
         }
 
         function updateInspector() {
@@ -559,6 +599,14 @@
                     `${selGuide.guide_id} (${selGuide.enabled !== false ? "ENABLED" : "DISABLED"})`;
                 document.getElementById("guide-asset-readout").textContent =
                     selGuide.asset_reference || "(none)";
+                const thumbImg = document.getElementById("guide-preview-thumbnail");
+                if (selGuide.asset_reference) {
+                    thumbImg.src = `/api/guide-assets/view?ref=${encodeURIComponent(selGuide.asset_reference)}`;
+                    thumbImg.style.display = "block";
+                } else {
+                    thumbImg.src = "";
+                    thumbImg.style.display = "none";
+                }
                 document.getElementById("btn-toggle-guide-enabled").textContent =
                     selGuide.enabled !== false ? "Disable Guide" : "Enable Guide";
 
@@ -900,8 +948,82 @@
         };
 
         // -----------------------------------------------------------------
-        // Guide and Figure Actions & Editing (M1C2A)
+        // Guide and Figure Actions & Editing (M1C2A & M1C2B)
         // -----------------------------------------------------------------
+        let pendingAssetAction = null; // { mode: 'add' } or { mode: 'replace', guideId: '...' }
+        const guideFileInput = document.getElementById("file-guide-asset");
+
+        document.getElementById("btn-add-guide").onclick = () => {
+            clearErrors();
+            pendingAssetAction = { mode: "add" };
+            guideFileInput.value = "";
+            guideFileInput.click();
+        };
+
+        document.getElementById("btn-replace-guide-asset").onclick = () => {
+            clearErrors();
+            if (!session.selectedGuideId) return;
+            pendingAssetAction = { mode: "replace", guideId: session.selectedGuideId };
+            guideFileInput.value = "";
+            guideFileInput.click();
+        };
+
+        guideFileInput.onchange = async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            const action = pendingAssetAction;
+            pendingAssetAction = null;
+
+            try {
+                // 1. Read natural image dimensions
+                const objectUrl = URL.createObjectURL(file);
+                const { width, height } = await new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const dims = { width: img.naturalWidth, height: img.naturalHeight };
+                        URL.revokeObjectURL(objectUrl);
+                        resolve(dims);
+                    };
+                    img.onerror = () => {
+                        URL.revokeObjectURL(objectUrl);
+                        reject(new Error("Failed to load image to inspect natural dimensions."));
+                    };
+                    img.src = objectUrl;
+                });
+
+                // 2. Upload asset bytes to Workspace endpoint
+                const uploadUrl = `/api/guide-assets/upload?filename=${encodeURIComponent(file.name)}`;
+                const res = await fetch(uploadUrl, {
+                    method: "POST",
+                    body: file,
+                    headers: { "Content-Type": file.type || "application/octet-stream" }
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    throw new Error(data.error || "Failed to upload guide asset.");
+                }
+
+                // 3. Apply pure mutation via Authoring Store
+                if (action.mode === "add") {
+                    const newGuide = store.addGuideFromAsset({
+                        asset_reference: data.asset_reference,
+                        image_width: width,
+                        image_height: height
+                    });
+                    session.selectGuide(newGuide.guide_id);
+                    session.setActiveTab("guides");
+                } else if (action.mode === "replace") {
+                    store.replaceGuideAsset(action.guideId, {
+                        asset_reference: data.asset_reference,
+                        image_width: width,
+                        image_height: height
+                    });
+                }
+            } catch (err) {
+                showGuideError(err.message);
+            }
+        };
+
         document.getElementById("btn-toggle-guide-enabled").onclick = () => {
             clearErrors();
             if (session.selectedGuideId) {

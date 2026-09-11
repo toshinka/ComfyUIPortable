@@ -58,9 +58,12 @@ export const ALLOWED_PROXY_PATHS = new Set([
 const server = http.createServer(async (req, res) => {
     // Restricted same-origin CORS: do not expose wildcard '*' (Card Section 5)
     const requestOrigin = req.headers.origin;
+    const boundPort = server.address()?.port || PORT;
     const allowedLocalOrigins = new Set([
         `http://${HOST}:${PORT}`,
-        `http://localhost:${PORT}`
+        `http://localhost:${PORT}`,
+        `http://${HOST}:${boundPort}`,
+        `http://localhost:${boundPort}`
     ]);
     if (requestOrigin && allowedLocalOrigins.has(requestOrigin)) {
         res.setHeader("Access-Control-Allow-Origin", requestOrigin);
@@ -140,6 +143,233 @@ const server = http.createServer(async (req, res) => {
         } catch (err) {
             res.writeHead(502, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ ok: false, error: "Proxy backend failure: " + err.message }));
+        }
+        return;
+    }
+
+    // 2. Dedicated Guide Asset Ingestion Endpoint (Card M1C2B Section 3, 5, 7, 8, 9, 10, 11, 14)
+    if (pathname === "/api/guide-assets/upload") {
+        // Enforce POST method
+        if (req.method !== "POST") {
+            res.writeHead(405, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "Method Not Allowed" }));
+            return;
+        }
+
+        // Strict Origin Policy (Card Section 14)
+        if (requestOrigin && !allowedLocalOrigins.has(requestOrigin)) {
+            res.writeHead(403, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: `Forbidden origin '${requestOrigin}'` }));
+            return;
+        }
+
+        // Filename Validation (Card Section 9)
+        const rawFilename = url.searchParams.get("filename") || "";
+        const filename = path.basename(rawFilename);
+        if (
+            !filename ||
+            filename !== rawFilename ||
+            filename.includes("/") ||
+            filename.includes("\\") ||
+            filename.includes("..") ||
+            /[\x00-\x1f\x7f]/.test(filename) ||
+            filename.length > 255
+        ) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "Invalid filename: must be a safe basename" }));
+            return;
+        }
+
+        // Content-Length check (Card Section 8): max 20 MiB
+        const MAX_BYTES = 20 * 1024 * 1024;
+        const contentLengthHeader = req.headers["content-length"];
+        if (contentLengthHeader) {
+            const cl = parseInt(contentLengthHeader, 10);
+            if (Number.isFinite(cl) && cl > MAX_BYTES) {
+                res.writeHead(413, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ ok: false, error: "Payload Too Large: exceeds 20 MiB limit" }));
+                return;
+            }
+        }
+
+        // Buffer body with byte limit
+        const chunks = [];
+        let receivedBytes = 0;
+        let tooLarge = false;
+
+        try {
+            for await (const chunk of req) {
+                receivedBytes += chunk.length;
+                if (receivedBytes > MAX_BYTES) {
+                    tooLarge = true;
+                    break;
+                }
+                chunks.push(chunk);
+            }
+        } catch (err) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "Upload read error: " + err.message }));
+            return;
+        }
+
+        if (tooLarge) {
+            res.writeHead(413, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "Payload Too Large: exceeds 20 MiB limit" }));
+            return;
+        }
+
+        const body = Buffer.concat(chunks);
+        if (body.length === 0) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "Empty upload body" }));
+            return;
+        }
+
+        // Magic byte validation (Card Section 7)
+        let detectedType = null;
+        if (body.length >= 8 &&
+            body[0] === 0x89 && body[1] === 0x50 && body[2] === 0x4E && body[3] === 0x47 &&
+            body[4] === 0x0D && body[5] === 0x0A && body[6] === 0x1A && body[7] === 0x0A) {
+            detectedType = "image/png";
+        } else if (body.length >= 3 &&
+            body[0] === 0xFF && body[1] === 0xD8 && body[2] === 0xFF) {
+            detectedType = "image/jpeg";
+        } else if (body.length >= 12 &&
+            body.toString("ascii", 0, 4) === "RIFF" &&
+            body.toString("ascii", 8, 12) === "WEBP") {
+            detectedType = "image/webp";
+        }
+
+        if (!detectedType) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "Invalid image format: signature does not match PNG, JPEG, or WEBP" }));
+            return;
+        }
+
+        // Extension match validation
+        const ext = path.extname(filename).toLowerCase();
+        const validExtensions = {
+            "image/png": [".png"],
+            "image/jpeg": [".jpg", ".jpeg"],
+            "image/webp": [".webp"]
+        };
+        if (!validExtensions[detectedType]?.includes(ext)) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: `Filename extension '${ext}' does not match detected format '${detectedType}'` }));
+            return;
+        }
+
+        // Backend multipart forwarding (Card Section 10, 11)
+        const backendUploadUrl = `${parsedBackend.origin}/upload/image`;
+        try {
+            const formData = new FormData();
+            const blob = new Blob([body], { type: detectedType });
+            formData.append("image", blob, filename);
+            formData.append("subfolder", "tegaki_manga_guides");
+
+            const backendRes = await fetch(backendUploadUrl, {
+                method: "POST",
+                body: formData
+            });
+
+            if (!backendRes.ok) {
+                const errText = await backendRes.text();
+                res.writeHead(backendRes.status, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ ok: false, error: "Backend upload failed: " + errText }));
+                return;
+            }
+
+            const backendJson = await backendRes.json();
+            const returnedName = backendJson.name;
+            const returnedSubfolder = backendJson.subfolder;
+
+            // Validate backend response fields (Card Section 11)
+            if (
+                !returnedName ||
+                typeof returnedName !== "string" ||
+                returnedName.includes("/") ||
+                returnedName.includes("\\") ||
+                returnedName.includes("..") ||
+                returnedSubfolder !== "tegaki_manga_guides"
+            ) {
+                res.writeHead(502, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ ok: false, error: "Backend response validation failed: unexpected subfolder or unsafe filename" }));
+                return;
+            }
+
+            const canonicalRef = `tegaki_manga_guides/${returnedName}`;
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({
+                ok: true,
+                asset_reference: canonicalRef
+            }));
+        } catch (err) {
+            res.writeHead(502, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "Failed to forward upload to backend: " + err.message }));
+        }
+        return;
+    }
+
+    // 3. Dedicated Guide Asset Preview Endpoint (Card M1C2B Section 12, 13)
+    if (pathname === "/api/guide-assets/view") {
+        if (req.method !== "GET") {
+            res.writeHead(405, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "Method Not Allowed" }));
+            return;
+        }
+
+        const ref = url.searchParams.get("ref") || "";
+        // Must start with canonical tegaki_manga_guides/
+        if (!ref.startsWith("tegaki_manga_guides/")) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "Invalid ref: must start with 'tegaki_manga_guides/'" }));
+            return;
+        }
+
+        const relativeName = ref.slice("tegaki_manga_guides/".length);
+        const basename = path.basename(relativeName);
+        if (
+            !basename ||
+            basename !== relativeName ||
+            basename.includes("/") ||
+            basename.includes("\\") ||
+            basename.includes("..") ||
+            /[\x00-\x1f\x7f]/.test(basename)
+        ) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "Invalid ref: path traversal detected" }));
+            return;
+        }
+
+        const backendViewUrl = new URL(`${parsedBackend.origin}/view`);
+        backendViewUrl.searchParams.set("filename", basename);
+        backendViewUrl.searchParams.set("subfolder", "tegaki_manga_guides");
+        backendViewUrl.searchParams.set("type", "input");
+
+        try {
+            const backendRes = await fetch(backendViewUrl.toString(), { method: "GET" });
+            if (!backendRes.ok) {
+                res.writeHead(backendRes.status, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ ok: false, error: `Backend view returned status ${backendRes.status}` }));
+                return;
+            }
+
+            const ct = backendRes.headers.get("content-type") || "";
+            const allowedViewTypes = ["image/png", "image/jpeg", "image/webp"];
+            const isAllowedType = allowedViewTypes.some(t => ct.toLowerCase().startsWith(t));
+
+            if (!isAllowedType) {
+                res.writeHead(502, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ ok: false, error: `Backend returned unexpected content type: ${ct}` }));
+                return;
+            }
+
+            res.writeHead(200, { "Content-Type": ct });
+            const imgData = await backendRes.arrayBuffer();
+            res.end(Buffer.from(imgData));
+        } catch (err) {
+            res.writeHead(502, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "Backend view request failed: " + err.message }));
         }
         return;
     }

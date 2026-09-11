@@ -31,7 +31,7 @@ const CAST_PALETTE = [
     { hex: "#f97316", rgb: [249, 115, 22] }
 ];
 
-export function renderMangaCanvas(canvas, document, sessionState, pageIndex = 0) {
+export function renderMangaCanvas(canvas, document, sessionState, pageIndex = 0, imageCache = {}) {
     if (!canvas || !document || !document.pages || !document.pages[pageIndex]) return;
     const page = document.pages[pageIndex];
     const ctx = canvas.getContext("2d");
@@ -117,6 +117,19 @@ export function renderMangaCanvas(canvas, document, sessionState, pageIndex = 0)
         ctx.save();
         ctx.fillStyle = enabled ? "rgba(186, 230, 253, 0.2)" : "rgba(250, 204, 21, 0.15)";
         ctx.fillRect(gx, gy, gw, gh);
+
+        // Preview loaded guide image asset if cached
+        const cachedImg = imageCache && guide.asset_reference ? imageCache[guide.asset_reference] : null;
+        if (cachedImg && (cachedImg.complete || cachedImg.naturalWidth > 0)) {
+            ctx.save();
+            ctx.globalAlpha = enabled ? 0.9 : 0.35;
+            try {
+                ctx.drawImage(cachedImg, gx, gy, gw, gh);
+            } catch (e) {
+                // Ignore rendering error
+            }
+            ctx.restore();
+        }
 
         ctx.strokeStyle = enabled ? "#0284c7" : "#ca8a04";
         ctx.lineWidth = isSelectedGuide ? 2 : 1;

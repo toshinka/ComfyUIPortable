@@ -45,7 +45,9 @@ import {
     clampGuideFigureDrag,
     resizeGuideFigure,
     associateGuideFigure,
-    unassignGuideInstance
+    unassignGuideInstance,
+    getNextGuideId,
+    calculateContainPlacement
 } from "../domain/authoring_ops.js";
 
 const DEFAULT_CAST_PALETTE = [
@@ -667,6 +669,83 @@ export class AuthoringStore {
 
         this.setDocument(draft);
         return res.guide;
+    }
+
+    addGuideFromAsset({ asset_reference, image_width, image_height }, pageIndex = 0) {
+        if (!asset_reference || typeof asset_reference !== "string") {
+            throw new Error("Canonical asset_reference is required");
+        }
+        const iw = Number(image_width);
+        const ih = Number(image_height);
+        if (!Number.isFinite(iw) || iw <= 0 || !Number.isFinite(ih) || ih <= 0) {
+            throw new Error("Valid natural image dimensions (image_width, image_height) are required");
+        }
+
+        const draft = cloneDocument(this.document);
+        const page = draft.pages[pageIndex];
+        if (!page) throw new Error("Page not found");
+        if (!Array.isArray(page.guides)) page.guides = [];
+
+        const guideId = getNextGuideId(page.guides);
+        const pw = page.width_px || 832;
+        const ph = page.height_px || 1216;
+        const placement = calculateContainPlacement(iw, ih, pw, ph);
+
+        const newGuide = {
+            guide_id: guideId,
+            guide_type: "rough_manga",
+            asset_reference,
+            enabled: true,
+            placement,
+            figure_regions: [],
+            metadata: {
+                fit_mode: "contain",
+                source_dimensions: {
+                    width_px: iw,
+                    height_px: ih
+                }
+            }
+        };
+
+        page.guides.push(newGuide);
+        this.setDocument(draft);
+        return newGuide;
+    }
+
+    replaceGuideAsset(guideId, { asset_reference, image_width, image_height }, pageIndex = 0) {
+        if (!asset_reference || typeof asset_reference !== "string") {
+            throw new Error("Canonical asset_reference is required");
+        }
+        const iw = Number(image_width);
+        const ih = Number(image_height);
+        if (!Number.isFinite(iw) || iw <= 0 || !Number.isFinite(ih) || ih <= 0) {
+            throw new Error("Valid natural image dimensions (image_width, image_height) are required");
+        }
+
+        const draft = cloneDocument(this.document);
+        const page = draft.pages[pageIndex];
+        if (!page) throw new Error("Page not found");
+        const guide = (page.guides || []).find(g => g.guide_id === guideId);
+        if (!guide) throw new Error(`Guide '${guideId}' not found`);
+
+        const pw = page.width_px || 832;
+        const ph = page.height_px || 1216;
+        const placement = calculateContainPlacement(iw, ih, pw, ph);
+
+        guide.guide_type = "rough_manga";
+        guide.asset_reference = asset_reference;
+        guide.placement = placement;
+        guide.metadata = {
+            ...(guide.metadata || {}),
+            fit_mode: "contain",
+            source_dimensions: {
+                width_px: iw,
+                height_px: ih
+            }
+        };
+
+        this.setDocument(draft);
+        return guide;
     }
 
     subscribe(listener) {
