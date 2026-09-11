@@ -32,7 +32,7 @@ approved, or Owner acceptance is complete.
 | Edit in Prep / Prep to Character | `VERIFIED BROWSER UI` |
 | Real Prep generations | `2` |
 | Chrome `file://` permission | `NOT ENABLED` |
-| H3 Stage / Generate Visibility | `IMPLEMENTED / VERIFIED BROWSER UI / PUBLICATION PENDING` |
+| H3 Stage / Generate Visibility | `IMPLEMENTED / VERIFIED BROWSER UI / PUBLISHED ON MAIN` at `988ea5db210bce386904ff24db974f8af996c3ac` |
 | Owner acceptance | `PENDING` |
 
 IP2 evidence must retain both observations: Source-only preserved the source
@@ -262,6 +262,7 @@ H3 server/backend/workflows: unchanged
 Manga files: unchanged
 Browser acceptance: PASS WITH LIMIT
 One real Still generation: COMPLETED
+GitHub main and R1 raw URLs: VERIFIED at 988ea5db210bce386904ff24db974f8af996c3ac
 git diff --check: PASS
 ```
 
@@ -272,9 +273,9 @@ H3 integration-design readiness: H3_READY_FOR_INTEGRATION_DESIGN
 Manga: MANGA_READY_FOR_INTEGRATION_DESIGN
 Current cross-track implementation conflict: NONE
 Primary integration-design question: BACKEND / RUNTIME PROFILE HOSTING
-H3 Stage / Generate Visibility: IMPLEMENTED / VERIFIED BROWSER UI / PUBLICATION PENDING
-Preview/Stage responsive UX: IMPLEMENTED / VERIFIED BROWSER UI / PUBLICATION PENDING
-Generate/status UX: IMPLEMENTED / VERIFIED BROWSER UI / PUBLICATION PENDING
+H3 Stage / Generate Visibility: IMPLEMENTED / VERIFIED BROWSER UI / PUBLISHED ON MAIN
+Preview/Stage responsive UX: IMPLEMENTED / VERIFIED BROWSER UI / PUBLISHED ON MAIN
+Generate/status UX: IMPLEMENTED / VERIFIED BROWSER UI / PUBLISHED ON MAIN
 Shared-shell design: READY FOR REVIEW
 Shared-shell implementation: NOT AUTHORIZED
 Runtime changes: NONE

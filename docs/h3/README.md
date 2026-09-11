@@ -83,7 +83,8 @@ acceptance remains pending.
 H3-R1 Stage / Generate Visibility is implemented as an H3-only responsive UI
 slice. Its wide sticky Stage, narrow Create/Result view, truthful submission
 guard, one authorized Still Browser generation, report, and evidence package
-are recorded here; publication and Owner acceptance remain separate states.
+are published on `main` at `988ea5db210bce386904ff24db974f8af996c3ac`;
+Owner acceptance remains pending.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
