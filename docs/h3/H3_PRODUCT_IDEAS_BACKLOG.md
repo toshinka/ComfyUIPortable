@@ -48,10 +48,10 @@ This backlog tracks user experience refinements, generation pipeline enhancement
     2. Aspect-preserving letterbox/pillarbox (contain/pad) with clean neutral borders.
     3. Dedicated Prep/Edit handoff with interactive framing.
 - **Reference Video Trimming (First N Seconds)**:
-  - Automatically or declaratively limit input motion videos to the required generation duration (initially 5.0 seconds / 124 frames).
-  - Utilize ComfyUI's core `VideoSlice` (`Trim Video`) node before frame decoding to avoid memory bloat and excessive frame extraction.
+  - First-5s Native trim: `IMPLEMENTED / VERIFIED SOURCE-LOGIC` (Card H3-G1B1).
+  - Materializes ComfyUI's core `VideoSlice` (`Trim Video`) node (`start_time: 0.0`, `duration: 5.0`, `strict_duration: false`) before frame extraction to avoid memory bloat and excessive frame extraction.
 - **Reference Video Start Offset (IN Time)**:
-  - Add a single `start_time` (IN point) control in the Reference Video slot.
+  - Add a single `start_time` (IN point) control in the Reference Video slot (`NEAR / NOT IMPLEMENTED`).
   - Materialize `VideoSlice(start_time=T, duration=5.0)` to consume seconds $T \to T+5$.
   - Avoid requiring an explicit OUT point while output duration is fixed.
 
@@ -93,8 +93,8 @@ This backlog tracks user experience refinements, generation pipeline enhancement
 | `ACT-01` | Stage action compression & single-slot Cancel swap | NOW | Feasible & Safe | `H3-G1A` |
 | `PRG-01` | Truthful sampler progress display (`Sampling X%`) | NEAR | Feasible with limit (WS / sampler-only) | Next Card |
 | `MED-01` | Aspect-safe Start Frame & Source Image policy | NEAR | Root cause identified (`crop="disabled"`) | Next Card |
-| `VID-01` | Reference video first 5s auto-trim | NEAR | Feasible via core `VideoSlice` | Next Card |
-| `VID-02` | Reference video start offset (IN time $T$) | NEAR | Feasible via core `VideoSlice` | Next Card |
+| `VID-01` | Reference video first 5s auto-trim | NEAR | IMPLEMENTED / VERIFIED SOURCE-LOGIC | `H3-G1B1` |
+| `VID-02` | Reference video start offset (IN time $T$) | NEAR | NOT IMPLEMENTED | Next Card |
 | `STU-01` | Compact Stage Shot strip (Candidate A) | LATER | Architectural direction accepted | Future Studio |
 | `STU-02` | Inspector Create/Edit split | LATER | Deferred until edit controls exist | Future Studio |
 | `EXT-01` | Cross-track Manga/H3 handoff | DEFERRED | External dependency | Cross-Track |

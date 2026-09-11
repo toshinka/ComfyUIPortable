@@ -215,6 +215,9 @@ def validate_workflow(workflow: Mapping[str, Any]) -> None:
         "video_create",
         "ref2va_conditioning",
         "picture_loader",
+        "motion_loader",
+        "motion_slice",
+        "motion_components",
     }
     missing = sorted(required_roles.difference(semantic_nodes))
     if missing:
@@ -227,6 +230,21 @@ def validate_workflow(workflow: Mapping[str, Any]) -> None:
         raise WorkflowIncompatibleError("Workflow incompatible: ref_image_size must remain match.")
     if "ref_video_audio_1" in reference_inputs or "ref_audio_1" in reference_inputs:
         raise WorkflowIncompatibleError("Workflow incompatible: audio reference lanes must remain disconnected.")
+    motion_slice_node = prompt[str(semantic_nodes["motion_slice"]["id"])]
+    motion_slice_inputs = motion_slice_node.get("inputs", {})
+    if motion_slice_inputs.get("start_time") != 0.0:
+        raise WorkflowIncompatibleError("Workflow incompatible: motion_slice start_time must be 0.0.")
+    if float(motion_slice_inputs.get("duration", 0.0)) != BASELINE_DURATION_SECONDS:
+        raise WorkflowIncompatibleError(
+            f"Workflow incompatible: motion_slice duration must match {BASELINE_DURATION_SECONDS}."
+        )
+    if motion_slice_inputs.get("strict_duration") is not False:
+        raise WorkflowIncompatibleError("Workflow incompatible: motion_slice strict_duration must remain False.")
+    if motion_slice_inputs.get("video") != [str(semantic_nodes["motion_loader"]["id"]), 0]:
+        raise WorkflowIncompatibleError("Workflow incompatible: motion_slice must be connected to motion_loader.")
+    motion_components_node = prompt[str(semantic_nodes["motion_components"]["id"])]
+    if motion_components_node.get("inputs", {}).get("video") != [str(semantic_nodes["motion_slice"]["id"]), 0]:
+        raise WorkflowIncompatibleError("Workflow incompatible: motion_components must be connected to motion_slice.")
 
 
 def compile_workflow(request: H3Ref2VARequest | Mapping[str, Any]) -> dict[str, dict[str, Any]]:
@@ -259,14 +277,24 @@ def compile_workflow(request: H3Ref2VARequest | Mapping[str, Any]) -> dict[str, 
     node_for("save_video")["inputs"]["filename_prefix"] = normalized.output_prefix
 
     motion_loader_id = str(roles["motion_loader"]["id"])
+    motion_slice_id = str(roles["motion_slice"]["id"])
     motion_components_id = str(roles["motion_components"]["id"])
     if normalized.video_path is None:
         conditioning["inputs"].pop("ref_videos.ref_video_1", None)
         graph.pop(motion_loader_id, None)
+        graph.pop(motion_slice_id, None)
         graph.pop(motion_components_id, None)
     else:
         node_for("motion_loader")["inputs"]["file"] = normalized.video_path
-        node_for("motion_components")["inputs"]["video"] = [motion_loader_id, 0]
+        node_for("motion_slice")["inputs"].update(
+            {
+                "video": [motion_loader_id, 0],
+                "start_time": 0.0,
+                "duration": float(normalized.duration_seconds),
+                "strict_duration": False,
+            }
+        )
+        node_for("motion_components")["inputs"]["video"] = [motion_slice_id, 0]
         conditioning["inputs"]["ref_videos.ref_video_1"] = [motion_components_id, 0]
     return graph
 

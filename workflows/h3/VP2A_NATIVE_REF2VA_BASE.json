@@ -42,6 +42,7 @@
     "ref2va_conditioning": {"id": "131", "class_type": "MiniMaxH3ReferenceToVideo"},
     "picture_loader": {"id": "132", "class_type": "LoadImage"},
     "motion_loader": {"id": "134", "class_type": "LoadVideo"},
+    "motion_slice": {"id": "136", "class_type": "Video Slice"},
     "motion_components": {"id": "135", "class_type": "GetVideoComponents"}
   },
   "prompt": {
@@ -147,9 +148,18 @@
       "class_type": "LoadVideo",
       "inputs": {"file": "inputs/vp2a_r1_motion.mp4"}
     },
+    "136": {
+      "class_type": "Video Slice",
+      "inputs": {
+        "video": ["134", 0],
+        "start_time": 0.0,
+        "duration": 5.0,
+        "strict_duration": false
+      }
+    },
     "135": {
       "class_type": "GetVideoComponents",
-      "inputs": {"video": ["134", 0]}
+      "inputs": {"video": ["136", 0]}
     }
   }
 }

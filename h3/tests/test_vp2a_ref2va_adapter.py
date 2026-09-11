@@ -41,6 +41,7 @@ class H3Ref2VAAdapterTests(unittest.TestCase):
         self.assertNotIn("ref_videos.ref_video_1", graph["131"]["inputs"])
         self.assertNotIn("134", graph)
         self.assertNotIn("135", graph)
+        self.assertNotIn("136", graph)
         self.assertFalse(
             any(
                 key.startswith("ref_video_") or key.startswith("ref_audio_")
@@ -48,19 +49,36 @@ class H3Ref2VAAdapterTests(unittest.TestCase):
             )
         )
 
-    def test_picture_plus_video_graph_connects_video_frames_but_not_video_audio(self) -> None:
-        graph = compile_workflow(
-            H3Ref2VARequest(
-                prompt="Use <Picture 1> for identity and <Video 1> for motion.",
-                picture_path=PICTURE,
-                video_path=MOTION,
-                output_prefix="video/vp2a_r1_ref2va_picture_video",
-            )
+    def test_picture_plus_video_graph_connects_video_slice_trim_pipeline(self) -> None:
+        request = H3Ref2VARequest(
+            prompt="Use <Picture 1> for identity and <Video 1> for motion.",
+            picture_path=PICTURE,
+            video_path=MOTION,
+            output_prefix="video/vp2a_r1_ref2va_picture_video",
         )
+        graph = compile_workflow(request)
         self.assertEqual(graph["131"]["inputs"]["ref_images.ref_image_1"], ["132", 0])
         self.assertEqual(graph["131"]["inputs"]["ref_videos.ref_video_1"], ["135", 0])
         self.assertEqual(graph["134"]["class_type"], "LoadVideo")
+        self.assertEqual(graph["136"]["class_type"], "Video Slice")
         self.assertEqual(graph["135"]["class_type"], "GetVideoComponents")
+        # LoadVideo feeds VideoSlice
+        self.assertEqual(graph["136"]["inputs"]["video"], ["134", 0])
+        # VideoSlice feeds GetVideoComponents
+        self.assertEqual(graph["135"]["inputs"]["video"], ["136", 0])
+        # VideoSlice start is exactly 0.0
+        self.assertEqual(graph["136"]["inputs"]["start_time"], 0.0)
+        # VideoSlice duration matches the bounded baseline duration
+        self.assertEqual(graph["136"]["inputs"]["duration"], 5.0)
+        self.assertEqual(graph["136"]["inputs"]["duration"], float(request.duration_seconds))
+        # strict_duration is False to preserve available duration truthfully
+        self.assertFalse(graph["136"]["inputs"]["strict_duration"])
+        # Existing 608x352 / 124 frames / 20 steps contract unchanged
+        self.assertEqual(graph["131"]["inputs"]["width"], 608)
+        self.assertEqual(graph["131"]["inputs"]["height"], 352)
+        self.assertEqual(graph["131"]["inputs"]["length"], 124)
+        self.assertEqual(graph["124"]["inputs"]["steps"], 20)
+        # Audio reference remains disconnected
         self.assertNotIn("ref_video_audio_1", graph["131"]["inputs"])
         self.assertNotIn("ref_audio_1", graph["131"]["inputs"])
 
@@ -71,6 +89,10 @@ class H3Ref2VAAdapterTests(unittest.TestCase):
             {"picture_path": "C:/outside.png"},
             {"picture_path": "pictures/reference.png"},
             {"video_path": "inputs/reference.png"},
+            {"video_path": "inputs/../outside.mp4"},
+            {"video_path": "C:/outside.mp4"},
+            {"video_path": "video/motion.mp4"},
+            {"video_path": "inputs/motion.txt"},
             {"width": 736},
             {"duration_seconds": 15.0},
             {"steps": 21},
