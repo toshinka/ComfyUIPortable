@@ -136,11 +136,17 @@ export function renderMangaCanvas(canvas, document, sessionState, pageIndex = 0)
         // Figure regions
         (guide.figure_regions || []).forEach((fig, fIdx) => {
             const fa = fig.area || { x: 0.1, y: 0.1, w: 0.3, h: 0.4 };
-            const fx = fa.x * cw;
-            const fy = fa.y * ch;
-            const fw = fa.w * cw;
-            const fh = fa.h * ch;
-            const isSelectedFig = (sessionState && sessionState.selectedFigureId === fig.figure_id);
+            // Section 4 & 21: Transform Guide-local coordinates to page/canvas coordinates
+            const pageFigX = placement.x + fa.x * placement.w;
+            const pageFigY = placement.y + fa.y * placement.h;
+            const pageFigW = fa.w * placement.w;
+            const pageFigH = fa.h * placement.h;
+
+            const fx = pageFigX * cw;
+            const fy = pageFigY * ch;
+            const fw = pageFigW * cw;
+            const fh = pageFigH * ch;
+            const isSelectedFig = (sessionState && sessionState.selectedFigureId === fig.figure_id && activeTab === "guides");
 
             ctx.save();
             ctx.fillStyle = isSelectedFig ? "rgba(14, 116, 144, 0.35)" : "rgba(14, 116, 144, 0.15)";
@@ -153,6 +159,25 @@ export function renderMangaCanvas(canvas, document, sessionState, pageIndex = 0)
             const figLabel = fig.figure_id || `Figure ${fIdx + 1}`;
             ctx.fillStyle = "#0e7490";
             ctx.fillText(figLabel, fx + 3, fy + 11);
+
+            // Four corner handles for selected Figure (Card Section 13 & 21)
+            if (isSelectedFig) {
+                const handleSize = 8;
+                const half = handleSize / 2;
+                const corners = [
+                    { x: fx, y: fy, handle: "nw" },
+                    { x: fx + fw, y: fy, handle: "ne" },
+                    { x: fx + fw, y: fy + fh, handle: "se" },
+                    { x: fx, y: fy + fh, handle: "sw" }
+                ];
+                ctx.fillStyle = "#0891b2";
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 1.5;
+                corners.forEach(c => {
+                    ctx.fillRect(c.x - half, c.y - half, handleSize, handleSize);
+                    ctx.strokeRect(c.x - half, c.y - half, handleSize, handleSize);
+                });
+            }
             ctx.restore();
         });
     });
@@ -248,6 +273,69 @@ export function hitTestCanvas(cw, ch, page, normX, normY, sessionState) {
     if (!page) return null;
     const pxX = normX * cw;
     const pxY = normY * ch;
+
+    // ACTIVE LAYER HIT TEST (Card Section 14)
+    // When activeTab === "guides", Guides, Figure handles, and Figure rectangles take exclusive priority
+    if (sessionState?.activeTab === "guides") {
+        const guides = page.guides || [];
+        const selGuide = guides.find(g => g.guide_id === sessionState?.selectedGuideId);
+
+        // 1. Check selected figure handles
+        if (selGuide && sessionState?.selectedFigureId) {
+            const fig = (selGuide.figure_regions || []).find(f => f.figure_id === sessionState.selectedFigureId);
+            if (fig) {
+                const gp = selGuide.placement || { x: 0, y: 0, w: 1, h: 1 };
+                const fa = fig.area || { x: 0.1, y: 0.1, w: 0.3, h: 0.4 };
+                const pfx = (gp.x + fa.x * gp.w) * cw;
+                const pfy = (gp.y + fa.y * gp.h) * ch;
+                const pfw = (fa.w * gp.w) * cw;
+                const pfh = (fa.h * gp.h) * ch;
+                const hitDist = 12;
+
+                if (Math.abs(pxX - pfx) <= hitDist && Math.abs(pxY - pfy) <= hitDist) {
+                    return { type: "handle_figure", handle: "nw", item: fig, guide: selGuide };
+                }
+                if (Math.abs(pxX - (pfx + pfw)) <= hitDist && Math.abs(pxY - pfy) <= hitDist) {
+                    return { type: "handle_figure", handle: "ne", item: fig, guide: selGuide };
+                }
+                if (Math.abs(pxX - (pfx + pfw)) <= hitDist && Math.abs(pxY - (pfy + pfh)) <= hitDist) {
+                    return { type: "handle_figure", handle: "se", item: fig, guide: selGuide };
+                }
+                if (Math.abs(pxX - pfx) <= hitDist && Math.abs(pxY - (pfy + pfh)) <= hitDist) {
+                    return { type: "handle_figure", handle: "sw", item: fig, guide: selGuide };
+                }
+            }
+        }
+
+        // 2. Check figures across guides (top-most first)
+        for (let gi = guides.length - 1; gi >= 0; gi--) {
+            const g = guides[gi];
+            const gp = g.placement || { x: 0, y: 0, w: 1, h: 1 };
+            const figs = g.figure_regions || [];
+            for (let fi = figs.length - 1; fi >= 0; fi--) {
+                const fig = figs[fi];
+                const fa = fig.area || { x: 0, y: 0, w: 0, h: 0 };
+                const pfx = gp.x + fa.x * gp.w;
+                const pfy = gp.y + fa.y * gp.h;
+                const pfw = fa.w * gp.w;
+                const pfh = fa.h * gp.h;
+                if (normX >= pfx && normX <= pfx + pfw && normY >= pfy && normY <= pfy + pfh) {
+                    return { type: "figure", item: fig, guide: g };
+                }
+            }
+        }
+
+        // 3. Check guide placement rectangle
+        for (let gi = guides.length - 1; gi >= 0; gi--) {
+            const g = guides[gi];
+            const gp = g.placement || { x: 0, y: 0, w: 1, h: 1 };
+            if (normX >= gp.x && normX <= gp.x + gp.w && normY >= gp.y && normY <= gp.y + gp.h) {
+                return { type: "guide", item: g };
+            }
+        }
+
+        return null;
+    }
 
     // ACTIVE LAYER HIT TEST (Card Section 9)
     // When activeTab === "frames", Frames and Frame handles take exclusive priority

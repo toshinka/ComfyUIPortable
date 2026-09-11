@@ -37,7 +37,15 @@ import {
     copyFramesFromScenes,
     clampFrameDrag,
     resizeFrame,
-    checkFrameOverlap
+    checkFrameOverlap,
+    getNextFigureId,
+    clampGuideFigureArea,
+    calculateNewGuideFigureArea,
+    createGuideFigure,
+    clampGuideFigureDrag,
+    resizeGuideFigure,
+    associateGuideFigure,
+    unassignGuideInstance
 } from "../domain/authoring_ops.js";
 
 const DEFAULT_CAST_PALETTE = [
@@ -537,6 +545,128 @@ export class AuthoringStore {
     getFrameOverlap(pageIndex = 0) {
         const page = this.getPage(pageIndex);
         return checkFrameOverlap(page?.visual_frames || []);
+    }
+
+    // ==========================================
+    // GUIDE & FIGURE MUTATIONS (M1C2A)
+    // ==========================================
+
+    toggleGuideEnabled(guideId, pageIndex = 0) {
+        const draft = cloneDocument(this.document);
+        const page = draft.pages[pageIndex];
+        if (!page) throw new Error("Page not found");
+        const guide = (page.guides || []).find(g => g.guide_id === guideId);
+        if (!guide) throw new Error(`Guide '${guideId}' not found`);
+
+        guide.enabled = guide.enabled === false ? true : false;
+
+        this.setDocument(draft);
+        return guide;
+    }
+
+    deleteGuide(guideId, pageIndex = 0) {
+        const draft = cloneDocument(this.document);
+        const page = draft.pages[pageIndex];
+        if (!page) throw new Error("Page not found");
+        const guide = (page.guides || []).find(g => g.guide_id === guideId);
+        if (!guide) throw new Error(`Guide '${guideId}' not found`);
+
+        page.guides = (page.guides || []).filter(g => g.guide_id !== guideId);
+
+        this.setDocument(draft);
+    }
+
+    addGuideFigure(guideId, pageIndex = 0) {
+        const draft = cloneDocument(this.document);
+        const page = draft.pages[pageIndex];
+        if (!page) throw new Error("Page not found");
+        const guide = (page.guides || []).find(g => g.guide_id === guideId);
+        if (!guide) throw new Error(`Guide '${guideId}' not found`);
+
+        if (!Array.isArray(guide.figure_regions)) {
+            guide.figure_regions = [];
+        }
+
+        const newFig = createGuideFigure(guide.figure_regions);
+        guide.figure_regions.push(newFig);
+
+        this.setDocument(draft);
+        return newFig;
+    }
+
+    deleteGuideFigure(guideId, figureId, pageIndex = 0) {
+        const draft = cloneDocument(this.document);
+        const page = draft.pages[pageIndex];
+        if (!page) throw new Error("Page not found");
+        const guide = (page.guides || []).find(g => g.guide_id === guideId);
+        if (!guide) throw new Error(`Guide '${guideId}' not found`);
+
+        if (!Array.isArray(guide.figure_regions)) return;
+        guide.figure_regions = guide.figure_regions.filter(f => f.figure_id !== figureId);
+
+        this.setDocument(draft);
+    }
+
+    moveGuideFigure(guideId, figureId, localDx, localDy, pageIndex = 0) {
+        const draft = cloneDocument(this.document);
+        const page = draft.pages[pageIndex];
+        if (!page) throw new Error("Page not found");
+        const guide = (page.guides || []).find(g => g.guide_id === guideId);
+        if (!guide) throw new Error(`Guide '${guideId}' not found`);
+
+        const fig = (guide.figure_regions || []).find(f => f.figure_id === figureId);
+        if (!fig) throw new Error(`Figure '${figureId}' not found in guide '${guideId}'`);
+
+        const clamped = clampGuideFigureDrag(fig.area, localDx, localDy);
+        fig.area = clamped;
+
+        this.setDocument(draft);
+        return fig;
+    }
+
+    resizeGuideFigure(guideId, figureId, handle, localDx, localDy, minSize = 0.04, pageIndex = 0) {
+        const draft = cloneDocument(this.document);
+        const page = draft.pages[pageIndex];
+        if (!page) throw new Error("Page not found");
+        const guide = (page.guides || []).find(g => g.guide_id === guideId);
+        if (!guide) throw new Error(`Guide '${guideId}' not found`);
+
+        const fig = (guide.figure_regions || []).find(f => f.figure_id === figureId);
+        if (!fig) throw new Error(`Figure '${figureId}' not found in guide '${guideId}'`);
+
+        fig.area = resizeGuideFigure(fig.area, handle, localDx, localDy, minSize);
+
+        this.setDocument(draft);
+        return fig;
+    }
+
+    associateGuideFigure(guideId, figureId, instanceId, pageIndex = 0) {
+        const draft = cloneDocument(this.document);
+        const page = draft.pages[pageIndex];
+        if (!page) throw new Error("Page not found");
+        const guide = (page.guides || []).find(g => g.guide_id === guideId);
+        if (!guide) throw new Error(`Guide '${guideId}' not found`);
+
+        if (instanceId) {
+            const instExists = (page.character_instances || []).some(i => i.instance_id === instanceId);
+            if (!instExists) {
+                throw new Error(`Character Instance '${instanceId}' not found on page`);
+            }
+        }
+
+        const res = associateGuideFigure(guide, figureId, instanceId);
+        if (!res.ok) {
+            throw new Error(res.error || "Association failed");
+        }
+
+        // Replace guide in draft with updated guide
+        const gIdx = page.guides.findIndex(g => g.guide_id === guideId);
+        if (gIdx !== -1) {
+            page.guides[gIdx] = res.guide;
+        }
+
+        this.setDocument(draft);
+        return res.guide;
     }
 
     subscribe(listener) {

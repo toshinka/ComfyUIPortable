@@ -237,12 +237,65 @@
                 </div>
             </div>
 
-            <!-- Guides (Read-only) -->
+            <!-- Guides Section (M1C2A Authorable) -->
             <div class="panel-section">
                 <div class="section-title">
-                    <span>Guides (<span id="count-guides">0</span>) [Read-Only]</span>
+                    <span>Guides (<span id="count-guides">0</span>)</span>
                 </div>
+                <div id="guide-error-banner" class="alert-error" style="display: none;"></div>
                 <div id="list-guides"></div>
+
+                <!-- Guide Editor Form -->
+                <div id="guide-editor-container" class="editor-form" style="display: none;">
+                    <div style="font-weight: 700; font-size: 11px; color: #38bdf8; margin-bottom: 4px;">
+                        Guide: <span id="guide-edit-id-label"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Asset Reference</label>
+                        <div id="guide-asset-readout" style="font-family: monospace; font-size: 11px; color: #94a3b8; word-break: break-all;">-</div>
+                    </div>
+                    <div class="form-actions" style="margin-bottom: 8px;">
+                        <button id="btn-toggle-guide-enabled" class="btn btn-sm">Toggle Enabled</button>
+                        <button id="btn-delete-guide" class="btn btn-sm btn-danger">Remove Guide</button>
+                    </div>
+
+                    <!-- Figure Regions Sub-Section -->
+                    <div style="border-top: 1px solid #334155; padding-top: 8px; margin-top: 6px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="font-weight: 600; font-size: 11px; color: #cbd5e1;">Figures (<span id="count-figures">0</span>)</span>
+                            <button id="btn-add-figure" class="btn btn-sm btn-primary">+ Add Figure</button>
+                        </div>
+                        <div id="list-figures"></div>
+
+                        <!-- Figure Editor Form -->
+                        <div id="figure-editor-container" class="editor-form" style="display: none; margin-top: 6px; background: #0f172a; border-color: #0891b2;">
+                            <div style="font-weight: 700; font-size: 11px; color: #0891b2; margin-bottom: 4px;">
+                                Figure: <span id="figure-edit-id-label"></span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Associated Character Instance</label>
+                                <select id="select-figure-instance" class="form-select" style="width: 100%;"></select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Guide-Local Coordinates</label>
+                                <div id="figure-geom-readout" style="font-family: monospace; font-size: 11px; color: #94a3b8; margin-bottom: 4px;">X: 0.00, Y: 0.00, W: 0.00, H: 0.00</div>
+                                <div class="form-actions">
+                                    <button id="btn-fig-move-left" class="btn btn-sm" title="Move Left">←</button>
+                                    <button id="btn-fig-move-right" class="btn btn-sm" title="Move Right">→</button>
+                                    <button id="btn-fig-move-up" class="btn btn-sm" title="Move Up">↑</button>
+                                    <button id="btn-fig-move-down" class="btn btn-sm" title="Move Down">↓</button>
+                                    <button id="btn-fig-grow-w" class="btn btn-sm" title="Increase Width">+W</button>
+                                    <button id="btn-fig-shrink-w" class="btn btn-sm" title="Decrease Width">-W</button>
+                                    <button id="btn-fig-grow-h" class="btn btn-sm" title="Increase Height">+H</button>
+                                    <button id="btn-fig-shrink-h" class="btn btn-sm" title="Decrease Height">-H</button>
+                                </div>
+                            </div>
+                            <div class="form-actions" style="margin-top: 6px; border-top: 1px solid #1e293b; padding-top: 6px;">
+                                <button id="btn-delete-figure" class="btn btn-sm btn-danger">Remove Figure</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -290,6 +343,7 @@
         const castErrorMsg = document.getElementById("cast-error-msg");
         const sceneErrorMsg = document.getElementById("scene-error-msg");
         const instanceErrorMsg = document.getElementById("instance-error-msg");
+        const guideErrorMsg = document.getElementById("guide-error-banner");
 
         function clearErrors() {
             castErrorMsg.className = "alert-error";
@@ -298,6 +352,17 @@
             sceneErrorMsg.textContent = "";
             instanceErrorMsg.className = "alert-error";
             instanceErrorMsg.textContent = "";
+            if (guideErrorMsg) {
+                guideErrorMsg.style.display = "none";
+                guideErrorMsg.textContent = "";
+            }
+        }
+
+        function showGuideError(msg) {
+            if (guideErrorMsg) {
+                guideErrorMsg.textContent = msg;
+                guideErrorMsg.style.display = "block";
+            }
         }
 
         function showCastError(msg) {
@@ -469,7 +534,7 @@
                 frameEditor.style.display = "none";
             }
 
-            // 5. Guides list (read only)
+            // 5. Guides list & editor (M1C2A Authorable)
             const guides = page.guides || [];
             document.getElementById("count-guides").textContent = guides.length;
             const guideContainer = document.getElementById("list-guides");
@@ -477,13 +542,82 @@
             guides.forEach(g => {
                 const div = document.createElement("div");
                 div.className = "list-item" + (session.selectedGuideId === g.guide_id ? " selected" : "");
-                div.innerHTML = `<b>${g.guide_id}</b> [${g.enabled ? "enabled" : "disabled"}] · Figures: ${g.figure_regions?.length || 0}`;
+                div.innerHTML = `<b>${g.guide_id}</b> [${g.enabled !== false ? "enabled" : "disabled"}] · Figures: ${g.figure_regions?.length || 0}`;
                 div.onclick = () => {
                     session.selectGuide(g.guide_id);
                     session.setActiveTab("guides");
+                    clearErrors();
                 };
                 guideContainer.appendChild(div);
             });
+
+            const guideEditor = document.getElementById("guide-editor-container");
+            const selGuide = guides.find(g => g.guide_id === session.selectedGuideId);
+            if (selGuide && session.activeTab === "guides") {
+                guideEditor.style.display = "block";
+                document.getElementById("guide-edit-id-label").textContent =
+                    `${selGuide.guide_id} (${selGuide.enabled !== false ? "ENABLED" : "DISABLED"})`;
+                document.getElementById("guide-asset-readout").textContent =
+                    selGuide.asset_reference || "(none)";
+                document.getElementById("btn-toggle-guide-enabled").textContent =
+                    selGuide.enabled !== false ? "Disable Guide" : "Enable Guide";
+
+                // Figures sub-list
+                const figures = selGuide.figure_regions || [];
+                document.getElementById("count-figures").textContent = figures.length;
+                const figureContainer = document.getElementById("list-figures");
+                figureContainer.innerHTML = "";
+                figures.forEach(fig => {
+                    const fDiv = document.createElement("div");
+                    fDiv.className = "list-item" + (session.selectedFigureId === fig.figure_id ? " selected" : "");
+                    const instLabel = fig.instance_id ? ` → ${fig.instance_id}` : " (unassigned)";
+                    fDiv.innerHTML = `<b>${fig.figure_id}</b>${instLabel}`;
+                    fDiv.onclick = () => {
+                        session.selectFigure(fig.figure_id);
+                        clearErrors();
+                    };
+                    figureContainer.appendChild(fDiv);
+                });
+
+                // Selected Figure editor
+                const figureEditor = document.getElementById("figure-editor-container");
+                const selFig = figures.find(f => f.figure_id === session.selectedFigureId);
+                if (selFig) {
+                    figureEditor.style.display = "block";
+                    document.getElementById("figure-edit-id-label").textContent = selFig.figure_id;
+                    const fa = selFig.area || {};
+                    document.getElementById("figure-geom-readout").textContent =
+                        `X: ${Number(fa.x).toFixed(2)}, Y: ${Number(fa.y).toFixed(2)}, W: ${Number(fa.w).toFixed(2)}, H: ${Number(fa.h).toFixed(2)}`;
+
+                    // Populate Character Instance association selector
+                    const selectInst = document.getElementById("select-figure-instance");
+                    selectInst.innerHTML = "";
+
+                    const optUnassigned = document.createElement("option");
+                    optUnassigned.value = "";
+                    optUnassigned.textContent = "Unassigned";
+                    if (!selFig.instance_id) optUnassigned.selected = true;
+                    selectInst.appendChild(optUnassigned);
+
+                    const instances = page.character_instances || [];
+                    const castList = page.cast || [];
+                    instances.forEach(inst => {
+                        const castEntry = castList.find(c => c.cast_id === inst.cast_id);
+                        const cName = castEntry?.display_name || inst.cast_id;
+                        const opt = document.createElement("option");
+                        opt.value = inst.instance_id;
+                        opt.textContent = `${cName} (${inst.instance_id})`;
+                        if (selFig.instance_id === inst.instance_id) {
+                            opt.selected = true;
+                        }
+                        selectInst.appendChild(opt);
+                    });
+                } else {
+                    figureEditor.style.display = "none";
+                }
+            } else {
+                guideEditor.style.display = "none";
+            }
         }
 
         function updateAll() {
@@ -766,10 +900,130 @@
         };
 
         // -----------------------------------------------------------------
+        // Guide and Figure Actions & Editing (M1C2A)
+        // -----------------------------------------------------------------
+        document.getElementById("btn-toggle-guide-enabled").onclick = () => {
+            clearErrors();
+            if (session.selectedGuideId) {
+                try {
+                    store.toggleGuideEnabled(session.selectedGuideId);
+                } catch (err) {
+                    showGuideError(err.message);
+                }
+            }
+        };
+
+        document.getElementById("btn-delete-guide").onclick = () => {
+            clearErrors();
+            if (!session.selectedGuideId) return;
+            try {
+                const delId = session.selectedGuideId;
+                store.deleteGuide(delId);
+                const remaining = store.getPage().guides || [];
+                if (remaining.length > 0) {
+                    session.selectGuide(remaining[0].guide_id);
+                } else {
+                    session.selectGuide(null);
+                }
+                session.selectFigure(null);
+            } catch (err) {
+                showGuideError(err.message);
+            }
+        };
+
+        document.getElementById("btn-add-figure").onclick = () => {
+            clearErrors();
+            if (!session.selectedGuideId) return;
+            try {
+                const newFig = store.addGuideFigure(session.selectedGuideId);
+                session.selectFigure(newFig.figure_id);
+            } catch (err) {
+                showGuideError(err.message);
+            }
+        };
+
+        document.getElementById("btn-delete-figure").onclick = () => {
+            clearErrors();
+            if (!session.selectedGuideId || !session.selectedFigureId) return;
+            try {
+                const gId = session.selectedGuideId;
+                const fId = session.selectedFigureId;
+                store.deleteGuideFigure(gId, fId);
+                const guide = store.getPage().guides.find(g => g.guide_id === gId);
+                const remaining = guide?.figure_regions || [];
+                if (remaining.length > 0) {
+                    session.selectFigure(remaining[0].figure_id);
+                } else {
+                    session.selectFigure(null);
+                }
+            } catch (err) {
+                showGuideError(err.message);
+            }
+        };
+
+        document.getElementById("select-figure-instance").onchange = (e) => {
+            clearErrors();
+            if (!session.selectedGuideId || !session.selectedFigureId) return;
+            const instVal = e.target.value || null;
+            try {
+                store.associateGuideFigure(session.selectedGuideId, session.selectedFigureId, instVal);
+            } catch (err) {
+                showGuideError(err.message);
+                // Reset select to previous value
+                const guide = store.getPage().guides.find(g => g.guide_id === session.selectedGuideId);
+                const fig = guide?.figure_regions?.find(f => f.figure_id === session.selectedFigureId);
+                e.target.value = fig?.instance_id || "";
+            }
+        };
+
+        document.getElementById("btn-fig-move-left").onclick = () => {
+            if (session.selectedGuideId && session.selectedFigureId) {
+                store.moveGuideFigure(session.selectedGuideId, session.selectedFigureId, -0.02, 0);
+            }
+        };
+        document.getElementById("btn-fig-move-right").onclick = () => {
+            if (session.selectedGuideId && session.selectedFigureId) {
+                store.moveGuideFigure(session.selectedGuideId, session.selectedFigureId, 0.02, 0);
+            }
+        };
+        document.getElementById("btn-fig-move-up").onclick = () => {
+            if (session.selectedGuideId && session.selectedFigureId) {
+                store.moveGuideFigure(session.selectedGuideId, session.selectedFigureId, 0, -0.02);
+            }
+        };
+        document.getElementById("btn-fig-move-down").onclick = () => {
+            if (session.selectedGuideId && session.selectedFigureId) {
+                store.moveGuideFigure(session.selectedGuideId, session.selectedFigureId, 0, 0.02);
+            }
+        };
+
+        document.getElementById("btn-fig-grow-w").onclick = () => {
+            if (session.selectedGuideId && session.selectedFigureId) {
+                store.resizeGuideFigure(session.selectedGuideId, session.selectedFigureId, "se", 0.04, 0);
+            }
+        };
+        document.getElementById("btn-fig-shrink-w").onclick = () => {
+            if (session.selectedGuideId && session.selectedFigureId) {
+                store.resizeGuideFigure(session.selectedGuideId, session.selectedFigureId, "se", -0.04, 0);
+            }
+        };
+        document.getElementById("btn-fig-grow-h").onclick = () => {
+            if (session.selectedGuideId && session.selectedFigureId) {
+                store.resizeGuideFigure(session.selectedGuideId, session.selectedFigureId, "se", 0, 0.04);
+            }
+        };
+        document.getElementById("btn-fig-shrink-h").onclick = () => {
+            if (session.selectedGuideId && session.selectedFigureId) {
+                store.resizeGuideFigure(session.selectedGuideId, session.selectedFigureId, "se", 0, -0.04);
+            }
+        };
+
+        // -----------------------------------------------------------------
         // Canvas Drag & Resize Direct Manipulation
         // -----------------------------------------------------------------
-        let dragMode = null; // 'move_scene' | 'resize_scene' | 'move_char' | 'resize_char' | 'move_frame' | 'resize_frame'
+        let dragMode = null; // 'move_scene' | 'resize_scene' | 'move_char' | 'resize_char' | 'move_frame' | 'resize_frame' | 'move_figure' | 'resize_figure'
         let dragTargetId = null;
+        let dragGuideId = null;
         let dragHandle = null;
         let startNorm = { x: 0, y: 0 };
         let startArea = null;
@@ -786,7 +1040,24 @@
 
             startNorm = { x: normX, y: normY };
 
-            if (hit.type === "handle_frame") {
+            if (hit.type === "handle_figure") {
+                dragMode = "resize_figure";
+                dragHandle = hit.handle;
+                dragTargetId = hit.item.figure_id;
+                dragGuideId = hit.guide.guide_id;
+                startArea = { ...hit.item.area };
+            } else if (hit.type === "figure") {
+                session.selectGuide(hit.guide.guide_id);
+                session.selectFigure(hit.item.figure_id);
+                session.setActiveTab("guides");
+                dragMode = "move_figure";
+                dragTargetId = hit.item.figure_id;
+                dragGuideId = hit.guide.guide_id;
+                startArea = { ...hit.item.area };
+            } else if (hit.type === "guide") {
+                session.selectGuide(hit.item.guide_id);
+                session.setActiveTab("guides");
+            } else if (hit.type === "handle_frame") {
                 dragMode = "resize_frame";
                 dragHandle = hit.handle;
                 dragTargetId = hit.item.frame_id;
@@ -861,6 +1132,23 @@
                 if (startArea) {
                     store.resizeFrame(dragTargetId, dragHandle, dx, dy);
                 }
+            } else if (dragMode === "move_figure") {
+                if (dragGuideId) {
+                    const guide = store.getPage().guides.find(g => g.guide_id === dragGuideId);
+                    const gp = guide?.placement || { x: 0, y: 0, w: 1, h: 1 };
+                    const localDx = dx / Math.max(1e-6, gp.w);
+                    const localDy = dy / Math.max(1e-6, gp.h);
+                    store.moveGuideFigure(dragGuideId, dragTargetId, localDx, localDy);
+                    startNorm = { x: normX, y: normY };
+                }
+            } else if (dragMode === "resize_figure") {
+                if (dragGuideId && startArea) {
+                    const guide = store.getPage().guides.find(g => g.guide_id === dragGuideId);
+                    const gp = guide?.placement || { x: 0, y: 0, w: 1, h: 1 };
+                    const localDx = dx / Math.max(1e-6, gp.w);
+                    const localDy = dy / Math.max(1e-6, gp.h);
+                    store.resizeGuideFigure(dragGuideId, dragTargetId, dragHandle, localDx, localDy);
+                }
             }
         });
 
@@ -868,6 +1156,7 @@
             dragMode = null;
             dragHandle = null;
             dragTargetId = null;
+            dragGuideId = null;
             startArea = null;
         });
 

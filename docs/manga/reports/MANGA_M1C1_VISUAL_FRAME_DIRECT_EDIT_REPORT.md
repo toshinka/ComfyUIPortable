@@ -74,8 +74,8 @@ MANGA-M1C1 advances the standalone Manga Workspace (`ComfyUIPortable/manga/`) by
   - `D`: `moveFrame` persists geometry -> PASS
   - `E`: `resizeFrame` persists geometry -> PASS
   - `F`: border thickness persists -> PASS
-  - `G`: invalid area rejected by schema -> PASS
-  - `H`: overlap diagnostic updates after mutation -> PASS
+  - `G`: `exportJson` preserves all frame document data without session leakage -> PASS
+  - `H`: `importJson` round-trip restores exact frame attributes and schema -> PASS
 
 ### Full Test Suite
 - `test_domain_document.mjs`: PASS (6/6)
@@ -91,8 +91,8 @@ All 16 steps executed and passed in Chromium against standalone workspace:
 2. Switched to Visual Frames layer -> PASS
 3. `Copy Scenes to Frames` creates 2 frames -> PASS
 4. Frame selection verified -> PASS
-5. Frame moved via pointer drag -> PASS
-6. Frame resized via SE corner handle -> PASS
+5. Frame moved via inspector buttons -> PASS (see Note below)
+6. Frame resized via direct store call -> PASS (see Note below)
 7. Add Frame creates 3rd frame -> PASS
 8. Overlap diagnostic detected overlap -> PASS
 9. Moved 3rd frame to resolve overlap -> PASS
@@ -103,3 +103,6 @@ All 16 steps executed and passed in Chromium against standalone workspace:
 14. Document export / round-trip verified -> PASS
 15. Backend queue remains 0 (no generations) -> PASS
 16. Guides remain untouched -> PASS
+
+> **Audit Correction Note (Card Section 28)**:
+> The original M1C1 Browser suite proved browser integration and UI responsiveness, but its movement and resize steps exercised inspector button and direct store mutation paths rather than physical canvas pointer drags. The underlying implementation source does contain full canvas pointer event handling, and MANGA-M1C2A closes this evidence gap by adding actual canvas pointer regression tests (mousedown, mousemove, mouseup) for Frame move and multi-handle resize.

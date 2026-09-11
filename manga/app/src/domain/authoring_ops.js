@@ -501,3 +501,210 @@ export function checkFrameOverlap(frames = []) {
         pairs
     };
 }
+
+// ===================================================================
+// GUIDE & FIGURE OPERATIONS (M1C2A)
+// ===================================================================
+
+function roundGuideNumber(value) {
+    return parseFloat(Number(value).toFixed(4));
+}
+
+/**
+ * Generate next unique figure id within one Guide.
+ *
+ * @param {Array<Object>} figureRegions
+ * @returns {string} e.g. "figure_1", "figure_2"
+ */
+export function getNextFigureId(figureRegions = []) {
+    let nextNum = 1;
+    const existingNums = (figureRegions || []).map(figure => {
+        const match = figure?.figure_id && String(figure.figure_id).match(/figure_(\d+)/);
+        return match ? parseInt(match[1], 10) : 0;
+    });
+    if (existingNums.length > 0) nextNum = Math.max(...existingNums, 0) + 1;
+    let candidate = `figure_${nextNum}`;
+    while ((figureRegions || []).some(figure => figure?.figure_id === candidate)) {
+        nextNum += 1;
+        candidate = `figure_${nextNum}`;
+    }
+    return candidate;
+}
+
+/**
+ * Clamp one Guide-local figure rectangle to normalized [0, 1] bounds.
+ *
+ * @param {Object} area
+ * @param {number} minSize
+ * @returns {Object}
+ */
+export function clampGuideFigureArea(area, minSize = 0.04) {
+    const source = area || { x: 0, y: 0, w: minSize, h: minSize };
+    const safeMin = Math.max(0.001, Math.min(1, Number(minSize) || 0.04));
+    const w = Math.max(safeMin, Math.min(1, Number(source.w) || safeMin));
+    const h = Math.max(safeMin, Math.min(1, Number(source.h) || safeMin));
+    const x = Math.max(0, Math.min(1 - w, Number(source.x) || 0));
+    const y = Math.max(0, Math.min(1 - h, Number(source.y) || 0));
+    return {
+        shape_type: source.shape_type || "rect",
+        x: roundGuideNumber(x),
+        y: roundGuideNumber(y),
+        w: roundGuideNumber(w),
+        h: roundGuideNumber(h)
+    };
+}
+
+/**
+ * Provide a deterministic first/second figure placement for manual authoring in Guide-local coordinates.
+ *
+ * @param {Array<Object>} existingFigures
+ * @returns {Object}
+ */
+export function calculateNewGuideFigureArea(existingFigures = []) {
+    const count = (existingFigures || []).length;
+    const x = count === 0 ? 0.08 : (count === 1 ? 0.56 : 0.08 + ((count % 3) * 0.28));
+    const y = count < 2 ? 0.12 : 0.54;
+    return clampGuideFigureArea({ shape_type: "rect", x, y, w: 0.34, h: 0.68 });
+}
+
+/**
+ * Create a manually authored, initially unassigned Guide figure in Guide-local coordinates.
+ *
+ * @param {Array<Object>} figureRegions
+ * @returns {Object}
+ */
+export function createGuideFigure(figureRegions = []) {
+    return {
+        figure_id: getNextFigureId(figureRegions),
+        area: calculateNewGuideFigureArea(figureRegions),
+        instance_id: null,
+        metadata: {}
+    };
+}
+
+/**
+ * Move a Guide-local figure rectangle without changing its size.
+ *
+ * @param {Object} startArea
+ * @param {number} dx Guide-local delta x
+ * @param {number} dy Guide-local delta y
+ * @returns {Object}
+ */
+export function clampGuideFigureDrag(startArea, dx, dy) {
+    const start = clampGuideFigureArea(startArea);
+    return {
+        shape_type: "rect",
+        x: roundGuideNumber(Math.max(0, Math.min(1 - start.w, start.x + Number(dx || 0)))),
+        y: roundGuideNumber(Math.max(0, Math.min(1 - start.h, start.y + Number(dy || 0)))),
+        w: start.w,
+        h: start.h
+    };
+}
+
+/**
+ * Resize a Guide-local figure rectangle with the four-corner model.
+ *
+ * @param {Object} startArea
+ * @param {string} handle "nw" | "ne" | "se" | "sw"
+ * @param {number} dx Guide-local delta x
+ * @param {number} dy Guide-local delta y
+ * @param {number} minSize
+ * @returns {Object}
+ */
+export function resizeGuideFigure(startArea, handle, dx, dy, minSize = 0.04) {
+    const start = clampGuideFigureArea(startArea, minSize);
+    const maxRight = start.x + start.w;
+    const maxBottom = start.y + start.h;
+    const safeMin = Math.max(0.001, Math.min(1, Number(minSize) || 0.04));
+    let x = start.x;
+    let y = start.y;
+    let w = start.w;
+    let h = start.h;
+    const ddx = Number(dx || 0);
+    const ddy = Number(dy || 0);
+
+    if (handle === "se") {
+        w = Math.max(safeMin, Math.min(1 - start.x, start.w + ddx));
+        h = Math.max(safeMin, Math.min(1 - start.y, start.h + ddy));
+    } else if (handle === "nw") {
+        x = Math.max(0, Math.min(maxRight - safeMin, start.x + ddx));
+        y = Math.max(0, Math.min(maxBottom - safeMin, start.y + ddy));
+        w = maxRight - x;
+        h = maxBottom - y;
+    } else if (handle === "ne") {
+        y = Math.max(0, Math.min(maxBottom - safeMin, start.y + ddy));
+        w = Math.max(safeMin, Math.min(1 - start.x, start.w + ddx));
+        h = maxBottom - y;
+    } else if (handle === "sw") {
+        x = Math.max(0, Math.min(maxRight - safeMin, start.x + ddx));
+        w = maxRight - x;
+        h = Math.max(safeMin, Math.min(1 - start.y, start.h + ddy));
+    }
+
+    return clampGuideFigureArea({ shape_type: "rect", x, y, w, h }, safeMin);
+}
+
+/**
+ * Associate one figure with at most one Character Instance, without mutation.
+ *
+ * @param {Object} guide
+ * @param {string} figureId
+ * @param {string|null} instanceId
+ * @returns {{ ok: boolean, guide?: Object, error?: string, reason?: string }}
+ */
+export function associateGuideFigure(guide, figureId, instanceId) {
+    if (!guide || !Array.isArray(guide.figure_regions)) {
+        return { ok: false, reason: "NO_GUIDE", error: "Guide figure list is missing." };
+    }
+    if (!instanceId) {
+        return {
+            ok: true,
+            guide: {
+                ...guide,
+                figure_regions: guide.figure_regions.map(figure =>
+                    figure.figure_id === figureId ? { ...figure, instance_id: null } : { ...figure }
+                )
+            }
+        };
+    }
+    const duplicate = guide.figure_regions.find(figure =>
+        figure.figure_id !== figureId && figure.instance_id === instanceId
+    );
+    if (duplicate) {
+        return {
+            ok: false,
+            reason: "DUPLICATE_INSTANCE_ASSOCIATION",
+            error: `Character Instance '${instanceId}' is already associated with ${duplicate.figure_id}.`
+        };
+    }
+    const found = guide.figure_regions.some(figure => figure.figure_id === figureId);
+    if (!found) {
+        return { ok: false, reason: "FIGURE_NOT_FOUND", error: `Figure '${figureId}' was not found.` };
+    }
+    return {
+        ok: true,
+        guide: {
+            ...guide,
+            figure_regions: guide.figure_regions.map(figure =>
+                figure.figure_id === figureId ? { ...figure, instance_id: instanceId } : { ...figure }
+            )
+        }
+    };
+}
+
+/**
+ * Unassign an Instance while preserving the Guide figure itself.
+ *
+ * @param {Object} guide
+ * @param {string} instanceId
+ * @returns {Object}
+ */
+export function unassignGuideInstance(guide, instanceId) {
+    if (!guide || !Array.isArray(guide.figure_regions)) return guide;
+    return {
+        ...guide,
+        figure_regions: guide.figure_regions.map(figure =>
+            figure.instance_id === instanceId ? { ...figure, instance_id: null } : { ...figure }
+        )
+    };
+}
