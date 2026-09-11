@@ -4,22 +4,20 @@
 M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`
 M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`
 Manga正本入口: [GITHUB_MANGA.txt](../../GITHUB_MANGA.txt)
-Latest SOL-verified public commit: `45487bc741a9f6bb1f8025f50a27868fcc1108ae`
-Latest published PI2 commit: `f43acfc5ae26c0ce8cb66b2bb1cfbbecad43d740`
-M3B-PI2: PUBLISHED / TECHNICAL PASS
-M3B-PI2 Browser closure: PI2_BROWSER_CLOSED (via M3B-PI2-BC1)
-M3B-PI2 milestone acceptance: PENDING_SOL_REVIEW
-M3B-PI2-BC1: COMPLETED (PI2_BROWSER_CLOSED)
+Latest SOL-verified Manga public commit: `13f76668a264725ea8c6c3a1f6bb012e2d0c326c`
+M3B-PI1: PUBLISHED / SOL REVIEWED / PI1_BACKEND_INTEGRATED
+M3B-PI2: PUBLISHED / SOL REVIEWED / PI2_AUTO_ROUTING_INTEGRATED
+M3B-PI2-BC1: PUBLISHED / SOL REVIEWED / PI2_BROWSER_CLOSED
+M3B: PRODUCTION CLOSED
+Manga integration readiness: READY FOR INTEGRATION DESIGN
+Shared-shell implementation: NOT AUTHORIZED
 Active Card: NONE
 Final Owner product review: DEFERRED
-Latest published Card: [M3B-PI2 — Minimum-Hand Automatic Guide Routing & Product Generate Integration](cards/completed/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING.md)
-Latest published report: [M3B-PI2 Minimum-Hand Automatic Guide Routing & Product Generate Integration Report](reports/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING_REPORT.md)
-Latest published manifest: [M3B-PI2 Manifest](verification/m3b_pi2/M3B_PI2_MANIFEST.json)
-M3B-PI1 publication: PUBLISHED; SOL public-URL review: PASS; classification: PI1_BACKEND_INTEGRATED
-Latest completed Card: [M3B-PI2-BC1 — Real Browser Product Flow Closure](cards/completed/M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE.md)
-Latest completed report: [M3B-PI2-BC1 Real Browser Product Flow Closure Report](reports/M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE_REPORT.md)
-Latest local manifest: [M3B-PI2-BC1 Manifest](verification/m3b_pi2_bc1/M3B_PI2_BC1_MANIFEST.json)
-Regression: PASS / Runtime: PASS / Browser: PASS (PI2_BROWSER_CLOSED via Playwright Chrome real browser suite) / Visual evidence: PASS / M3B-LR1: COMPLETED / M3B-LR1 generation influence: NOT IMPLEMENTED / M3B-LR2: PUBLISHED / SOL REVIEWED / BLOCKED / M3B-LR2 stop: CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED / M3B-LR2R1: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED FOR RESEARCH GRAPH / quality: WEAK / Guide placement: DEGRADED / image quality: DEGRADED / M3B-LR3: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED / result: OPTION_A_INCONCLUSIVE / Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE / Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE / M3B-LR4: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / LOCALITY_SUPPORTED / M3B-LR5: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / CAST_MASKED_CONFLICT / M3B-LR5 key failure: HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED / M3B-LR6: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / SOFT_MASK_CONFLICT (key finding: SOFTENING FIGURE EFFECT-MASK EDGE DID NOT REMOVE VISUAL BOUNDARY) / M3B-LR7: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / EFFECT_MASK_INTERACTION_CONFIRMED / M3B-LR8: PUBLISHED / SOL REVIEWED / CORE_GLOBAL_QUALIFIED / M3B research qualification: CLOSED FOR CURRENT CLEAN-GLOBAL CANDIDATE / Production backend integration: COMPLETE / M3B-PI1: PUBLISHED / SOL REVIEWED / PI1_BACKEND_INTEGRATED / Automatic product routing: COMPLETE / M3B-PI2: PUBLISHED / TECHNICAL PASS / Browser closure: PI2_BROWSER_CLOSED / M3B-PI2 milestone acceptance: PENDING_SOL_REVIEW / Final Owner product review: DEFERRED / Active Card: NONE.
+Latest completed Card: [M3B-PC1 — Production Closure & Cross-Track Integration Boundary Freeze](cards/completed/M3B_PC1_PRODUCTION_CLOSURE_AND_INTEGRATION_BOUNDARY_FREEZE.md)
+Preceding completed Card: [M3B-PI2-BC1 — Real Browser Product Flow Closure](cards/completed/M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE.md)
+Latest completed report: [M3B Production Closure & Integration Readiness Report](reports/M3B_PRODUCTION_CLOSURE_AND_INTEGRATION_READINESS_REPORT.md)
+Stable integration boundary: [Manga Product Integration Boundary](MANGA_PRODUCT_INTEGRATION_BOUNDARY.md)
+Regression: PASS / Runtime: PASS / Browser: PASS (PI2_BROWSER_CLOSED via Playwright Chrome real browser suite) / Visual evidence: PASS / M3B-LR1: COMPLETED / M3B-LR1 generation influence: NOT IMPLEMENTED / M3B-LR2: PUBLISHED / SOL REVIEWED / BLOCKED / M3B-LR2 stop: CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED / M3B-LR2R1: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED FOR RESEARCH GRAPH / quality: WEAK / Guide placement: DEGRADED / image quality: DEGRADED / M3B-LR3: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED / result: OPTION_A_INCONCLUSIVE / Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE / Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE / M3B-LR4: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / LOCALITY_SUPPORTED / M3B-LR5: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / CAST_MASKED_CONFLICT / M3B-LR5 key failure: HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED / M3B-LR6: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / SOFT_MASK_CONFLICT (key finding: SOFTENING FIGURE EFFECT-MASK EDGE DID NOT REMOVE VISUAL BOUNDARY) / M3B-LR7: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / EFFECT_MASK_INTERACTION_CONFIRMED / M3B-LR8: PUBLISHED / SOL REVIEWED / CORE_GLOBAL_QUALIFIED / M3B research qualification: CLOSED FOR CURRENT CLEAN-GLOBAL CANDIDATE / Production backend integration: COMPLETE / M3B-PI1: PUBLISHED / SOL REVIEWED / PI1_BACKEND_INTEGRATED / Automatic product routing: COMPLETE / M3B-PI2: PUBLISHED / SOL REVIEWED / PI2_AUTO_ROUTING_INTEGRATED / Browser closure: PI2_BROWSER_CLOSED / M3B-PI2-BC1: PUBLISHED / SOL REVIEWED / PI2_BROWSER_CLOSED / M3B-PC1: COMPLETED / M3B: PRODUCTION CLOSED / Manga integration readiness: READY FOR INTEGRATION DESIGN / Shared-shell implementation: NOT AUTHORIZED / Final Owner product review: DEFERRED / Active Card: NONE.
 
 `GITHUB_ComfyUI.txt` はManga/H3を振り分けるCompatibility Routerへ変更した。
 今回のnamespace整理は文書/navigationのみで、Manga runtime・workflow・schema・outputを変更していない。

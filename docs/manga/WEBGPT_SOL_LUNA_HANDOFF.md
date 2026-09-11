@@ -20,20 +20,19 @@ Repository: `https://github.com/toshinka/tegaki`
 - M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`
 - M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`
 - Manga namespace/card migration publication: `ef7daa502f501211cd6b06f378e9024dbff6f284`
-- Latest SOL-verified public commit: `45487bc741a9f6bb1f8025f50a27868fcc1108ae`
-- Latest published PI2 commit: `f43acfc5ae26c0ce8cb66b2bb1cfbbecad43d740`
-- M3B-PI2: PUBLISHED / TECHNICAL PASS
-- M3B-PI2 Browser closure: PI2_BROWSER_CLOSED (via M3B-PI2-BC1)
-- M3B-PI2 milestone acceptance: PENDING_SOL_REVIEW
-- M3B-PI2-BC1: COMPLETED (PI2_BROWSER_CLOSED)
+- Latest SOL-verified Manga public commit: `13f76668a264725ea8c6c3a1f6bb012e2d0c326c`
+- M3B-PI1: PUBLISHED / SOL REVIEWED / PI1_BACKEND_INTEGRATED
+- M3B-PI2: PUBLISHED / SOL REVIEWED / PI2_AUTO_ROUTING_INTEGRATED
+- M3B-PI2-BC1: PUBLISHED / SOL REVIEWED / PI2_BROWSER_CLOSED
+- M3B: PRODUCTION CLOSED
+- Manga integration readiness: READY FOR INTEGRATION DESIGN
+- Shared-shell implementation: NOT AUTHORIZED
 - Final Owner product review: DEFERRED
-- Latest published Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING.md
-- Latest published report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING_REPORT.md
-- Latest published manifest: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_pi2/M3B_PI2_MANIFEST.json
 - Active Card: NONE
-- Latest completed Card: docs/manga/cards/completed/M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE.md
-- Latest completed report: docs/manga/reports/M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE_REPORT.md
-- Latest completed manifest: docs/manga/verification/m3b_pi2_bc1/M3B_PI2_BC1_MANIFEST.json
+- Latest completed Card: docs/manga/cards/completed/M3B_PC1_PRODUCTION_CLOSURE_AND_INTEGRATION_BOUNDARY_FREEZE.md
+- Preceding completed Card: docs/manga/cards/completed/M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE.md
+- Latest completed report: docs/manga/reports/M3B_PRODUCTION_CLOSURE_AND_INTEGRATION_READINESS_REPORT.md
+- Stable integration boundary: docs/manga/MANGA_PRODUCT_INTEGRATION_BOUNDARY.md
 
 repository HEADにはTegaki本体やH3の別作業も進むため、最新HEADをManga実装SHAと読み替えないこと。
 
@@ -56,13 +55,14 @@ Primary flowはScene-firstである。CAST、人物粗領域、ラフ人物/白�
 - M3A1-OA1 gate: CLOSED; M3B eligibility OPEN。
 - Web GPT SOL public-URL review: PASS。
 - M3B-PI1 Optional CLEAN Guide Production Backend Integration — PUBLISHED / SOL REVIEWED (PI1_BACKEND_INTEGRATED); 4/4 live production runs PASS, ComfyUI core ControlNetApplyAdvanced with TegakiMangaGenerationGuideBridge, 0 ACN nodes, 0 effect masks, bit-exact CLEAN parity PASS, canonical no-guide workflow untouched.
-- M3B-PI2 Minimum-Hand Automatic Guide Routing & Product Generate Integration — PUBLISHED / TECHNICAL PASS; automatic queue-time routing via POST /tegaki/manga/generation/prepare and api.queuePrompt; single product-facing Generate Draft button with live status badge; zero workflow swapping; fail closed on missing ControlNet; 86 Python and 4 JS test suites PASS.
-- M3B-PI2-BC1 Real Browser Product Flow Closure — COMPLETED (PI2_BROWSER_CLOSED); full real Playwright Chrome live browser matrix B0–B5, live route badge transitions, one-action disable/enable, persistence/reload, and double-submit prevention verified.
+- M3B-PI2 Minimum-Hand Automatic Guide Routing & Product Generate Integration — PUBLISHED / SOL REVIEWED / PI2_AUTO_ROUTING_INTEGRATED; automatic queue-time routing via POST /tegaki/manga/generation/prepare and api.queuePrompt; single product-facing Generate Draft button with live status badge; zero workflow swapping; fail closed on missing ControlNet; 86 Python and 4 JS test suites PASS.
+- M3B-PI2-BC1 Real Browser Product Flow Closure — PUBLISHED / SOL REVIEWED / PI2_BROWSER_CLOSED; full real Playwright Chrome live browser matrix B0–B5, live route badge transitions, one-action disable/enable, persistence/reload, and double-submit prevention verified.
+- M3B-PC1 Production Closure & Cross-Track Integration Boundary Freeze — COMPLETED; full M3B production milestone closed (M3B_PRODUCTION_CLOSED); Manga track declared MANGA_READY_FOR_INTEGRATION_DESIGN; shared-shell implementation NOT AUTHORIZED pending cross-track alignment.
 - M3B-LR8 Core CAST_GLOBAL Robustness Qualification Research — PUBLISHED / SOL REVIEWED / CORE_GLOBAL_QUALIFIED.
 - M3B-LR2 stop reason: `CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED`。
 - M3B-LR2R1 result: pinned model REUSED from the verified reForge shared store; ComfyUI loader, A/B batch, canonical no-Guide, and required regressions PASS。
-- Active Card: NONE (M3B-PI2-BC1 complete; pending SOL / Owner review; Final Owner product review is DEFERRED)。
-- M3B-LR1 generation influence: NOT IMPLEMENTED。M3B-LR2 generation influence: BLOCKED。M3B-LR2R1: PUBLISHED / SOL REVIEWED / QUALITY WEAK。M3B-LR3: PUBLISHED / SOL REVIEWED / OPTION_A_INCONCLUSIVE。Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE。Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE。M3B-LR4: PUBLISHED / SOL REVIEWED / LOCALITY_SUPPORTED。M3B-LR5: PUBLISHED / SOL REVIEWED / CAST_MASKED_CONFLICT。M3B-LR6: PUBLISHED / SOL REVIEWED / SOFT_MASK_CONFLICT。M3B-LR7: PUBLISHED / SOL REVIEWED / EFFECT_MASK_INTERACTION_CONFIRMED。M3B-LR8: PUBLISHED / SOL REVIEWED / CORE_GLOBAL_QUALIFIED。M3B-PI1: PUBLISHED / SOL REVIEWED / PI1_BACKEND_INTEGRATED。M3B-PI2: PUBLISHED / TECHNICAL PASS / Browser closure: PI2_BROWSER_CLOSED。M3B-PI2-BC1: COMPLETED。
+- Active Card: NONE (M3B-PC1 complete; pending SOL / Owner review; Final Owner product review is DEFERRED)。
+- M3B-LR1 generation influence: NOT IMPLEMENTED。M3B-LR2 generation influence: BLOCKED。M3B-LR2R1: PUBLISHED / SOL REVIEWED / QUALITY WEAK。M3B-LR3: PUBLISHED / SOL REVIEWED / OPTION_A_INCONCLUSIVE。Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE。Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE。M3B-LR4: PUBLISHED / SOL REVIEWED / LOCALITY_SUPPORTED。M3B-LR5: PUBLISHED / SOL REVIEWED / CAST_MASKED_CONFLICT。M3B-LR6: PUBLISHED / SOL REVIEWED / SOFT_MASK_CONFLICT。M3B-LR7: PUBLISHED / SOL REVIEWED / EFFECT_MASK_INTERACTION_CONFIRMED。M3B-LR8: PUBLISHED / SOL REVIEWED / CORE_GLOBAL_QUALIFIED。M3B-PI1: PUBLISHED / SOL REVIEWED / PI1_BACKEND_INTEGRATED。M3B-PI2: PUBLISHED / SOL REVIEWED / PI2_AUTO_ROUTING_INTEGRATED。M3B-PI2-BC1: PUBLISHED / SOL REVIEWED / PI2_BROWSER_CLOSED。M3B-PC1: COMPLETED。M3B: PRODUCTION CLOSED。Manga integration readiness: READY FOR INTEGRATION DESIGN。Shared-shell implementation: NOT AUTHORIZED。
 - ControlNet production integration: M3B-PI1 and M3B-PI2 INTEGRATED (Core ControlNetApplyAdvanced + Automatic Queue-time Router + Live Status Badge + One-action Disable)。
 - production output namespace移行: 未実施。`output/Tegaki`を維持する。
 

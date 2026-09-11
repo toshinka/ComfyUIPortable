@@ -63,29 +63,32 @@ Intermediate milestone acceptance: ACCEPTED_BY_DELEGATED_SOL
 
 Latest operational handoff
 --------------------------
-Latest SOL-verified public commit:
-45487bc741a9f6bb1f8025f50a27868fcc1108ae
+Latest SOL-verified Manga public commit:
+13f76668a264725ea8c6c3a1f6bb012e2d0c326c
 
-Latest published PI2 commit:
-f43acfc5ae26c0ce8cb66b2bb1cfbbecad43d740
+M3B-PI1:
+PUBLISHED / SOL REVIEWED / PI1_BACKEND_INTEGRATED
 
 M3B-PI2:
-PUBLISHED / TECHNICAL PASS
-
-M3B-PI2 Browser closure:
-PI2_BROWSER_CLOSED (via M3B-PI2-BC1)
-
-M3B-PI2 milestone acceptance:
-PENDING_SOL_REVIEW
+PUBLISHED / SOL REVIEWED / PI2_AUTO_ROUTING_INTEGRATED
 
 M3B-PI2-BC1:
-COMPLETED
+PUBLISHED / SOL REVIEWED / PI2_BROWSER_CLOSED
 
-Active Card:
-NONE
+M3B:
+PRODUCTION CLOSED
+
+Manga integration readiness:
+READY FOR INTEGRATION DESIGN
+
+Shared-shell implementation:
+NOT AUTHORIZED
 
 Final Owner product review:
 DEFERRED
+
+Active Card:
+NONE
 
 M3A.1 Core Implementation SHA:
 a7f0baaa89a2e315b0492573c9da19e50727928b
@@ -93,23 +96,17 @@ a7f0baaa89a2e315b0492573c9da19e50727928b
 M3A.1 Current Closure Review Target:
 ad91c9277715e998663e8c12b6c37cca16e53955
 
-Latest published Card:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING.md
-
-Latest published report:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING_REPORT.md
-
-Latest published manifest:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_pi2/M3B_PI2_MANIFEST.json
-
 Latest completed Card:
+docs/manga/cards/completed/M3B_PC1_PRODUCTION_CLOSURE_AND_INTEGRATION_BOUNDARY_FREEZE.md
+
+Preceding completed Card:
 docs/manga/cards/completed/M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE.md
 
 Latest completed local report:
-docs/manga/reports/M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE_REPORT.md
+docs/manga/reports/M3B_PRODUCTION_CLOSURE_AND_INTEGRATION_READINESS_REPORT.md
 
-Latest local manifest:
-docs/manga/verification/m3b_pi2_bc1/M3B_PI2_BC1_MANIFEST.json
+Stable integration boundary:
+docs/manga/MANGA_PRODUCT_INTEGRATION_BOUNDARY.md
 
 Browser technical verification:
 PASS
