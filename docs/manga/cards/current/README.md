@@ -2,7 +2,15 @@
 
 更新: 2026-09-11 JST。
 
-Active Card: **NONE**。
+Active Card: **M3B-PI2-BC1** ([`M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE.md`](M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE.md))。
+
+Latest SOL-verified public commit: `45487bc741a9f6bb1f8025f50a27868fcc1108ae`。
+Latest published PI2 commit: `f43acfc5ae26c0ce8cb66b2bb1cfbbecad43d740`。
+M3B-PI2: **PUBLISHED / TECHNICAL PASS**。
+M3B-PI2 Browser closure: **PENDING**。
+M3B-PI2 milestone acceptance: **PENDING**。
+M3B-PI2-BC1: **ACTIVE**。
+Final Owner product review: **DEFERRED**。
 
 Latest completed Card:
 [M3B-PI2 — Minimum-Hand Automatic Guide Routing & Product Generate Integration](../completed/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING.md)

@@ -21,11 +21,16 @@ Repository: `https://github.com/toshinka/tegaki`
 - M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`
 - Manga namespace/card migration publication: `ef7daa502f501211cd6b06f378e9024dbff6f284`
 - Latest SOL-verified public commit: `45487bc741a9f6bb1f8025f50a27868fcc1108ae`
-- M3B-PI1 publication: PUBLISHED; SOL public-URL review: PASS; classification: PI1_BACKEND_INTEGRATED.
-- Latest published Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_PI1_OPTIONAL_CLEAN_GUIDE_PRODUCTION_BACKEND_INTEGRATION.md
-- Latest published report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_PI1_OPTIONAL_CLEAN_GUIDE_PRODUCTION_BACKEND_INTEGRATION_REPORT.md
-- Latest published manifest: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_pi1/M3B_PI1_MANIFEST.json
-- Active Card: NONE
+- Latest published PI2 commit: `f43acfc5ae26c0ce8cb66b2bb1cfbbecad43d740`
+- M3B-PI2: PUBLISHED / TECHNICAL PASS
+- M3B-PI2 Browser closure: PENDING
+- M3B-PI2 milestone acceptance: PENDING
+- M3B-PI2-BC1: ACTIVE
+- Final Owner product review: DEFERRED
+- Latest published Card: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING.md
+- Latest published report: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING_REPORT.md
+- Latest published manifest: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_pi2/M3B_PI2_MANIFEST.json
+- Active Card: M3B-PI2-BC1 (current/M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE.md)
 - Latest completed Card: docs/manga/cards/completed/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING.md
 - Latest completed report: docs/manga/reports/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING_REPORT.md
 - Latest completed manifest: docs/manga/verification/m3b_pi2/M3B_PI2_MANIFEST.json

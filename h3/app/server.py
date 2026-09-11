@@ -83,6 +83,7 @@ from h3.adapters.native_image_prep import (  # noqa: E402
     MAX_SEED as IMAGE_PREP_MAX_SEED,
     ROUTE_IMAGE_PREP,
     compile_workflow as compile_image_prep,
+    materialize_prompt as materialize_image_prep_prompt,
     validate_request as validate_image_prep_request,
     workflow_metadata as image_prep_workflow_metadata,
 )
@@ -632,8 +633,13 @@ class Job:
         request = self.request.public()
         if self.media_kind == "still":
             if self.route == ROUTE_IMAGE_PREP:
+                _, materialized_prompt = materialize_image_prep_prompt(
+                    self.request.prompt,
+                    has_donor=self.prep_donor is not None,
+                )
                 request = {
                     "prompt": self.request.prompt,
+                    "materialized_prompt": materialized_prompt,
                     "width": self.request.width,
                     "height": self.request.height,
                     "seed": str(self.request.seed),
@@ -1911,7 +1917,10 @@ class H1AHandler(BaseHTTPRequestHandler):
                         "route": ROUTE_IMAGE_PREP,
                         "schema": PREP_SCHEMA,
                         "browser_ui": "IMPLEMENTED",
-                        "workflow": image_prep_workflow_metadata(),
+                        "workflow": {
+                            **image_prep_workflow_metadata(),
+                            "browser_ui": "IMPLEMENTED",
+                        },
                         "resolution_options": [
                             {"label": "608 x 352", "width": 608, "height": 352}
                         ],

@@ -106,6 +106,9 @@ class IP2PrepServerTests(unittest.TestCase):
         self.assertEqual(public["request"]["source_id"], source.asset_id)
         self.assertEqual(public["request"]["donor_id"], donor.asset_id)
         self.assertEqual(public["request"]["seed"], "17")
+        self.assertEqual(public["request"]["prompt"], "change the jacket color")
+        self.assertIn("Picture 1", public["request"]["materialized_prompt"])
+        self.assertIn("Picture 2", public["request"]["materialized_prompt"])
         self.assertNotIn("source_path", json.dumps(public))
         self.assertNotIn("donor_path", json.dumps(public))
         self.assertNotIn("filename", public["prep_source"])
@@ -157,6 +160,7 @@ class IP2PrepServerTests(unittest.TestCase):
             self.assertEqual(config["prep"]["resolution_options"], [{"label": "608 x 352", "width": 608, "height": 352}])
             self.assertEqual(config["prep"]["source"]["required"], True)
             self.assertFalse(config["prep"]["donor"]["required"])
+            self.assertEqual(config["prep"]["workflow"]["browser_ui"], "IMPLEMENTED")
 
             content_type, body = multipart_body("source", "source.png", image_bytes())
             with urlopen(
@@ -238,4 +242,3 @@ class IP2PrepServerTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
