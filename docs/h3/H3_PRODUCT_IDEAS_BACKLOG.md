@@ -82,7 +82,7 @@ This backlog tracks user experience refinements, generation pipeline enhancement
   - Lip-sync, audio mixing, soundtrack assignment, and voice timeline tracks remain disconnected and deferred.
 - **Full Video Editing & Multi-Track NLE (Candidate B)**:
   - Complex multi-track transitions, cutting room, and timeline editing are deferred. The standalone TEGAKI editor may own rich creative manipulation.
-  - Runtime Process Supervisor:
+- **Runtime Process Supervisor**:
   - Unified process control, automated backend profile switching, and shared-port supervision.
 
 ---
