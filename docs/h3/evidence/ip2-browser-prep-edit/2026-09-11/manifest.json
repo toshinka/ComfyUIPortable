@@ -1,0 +1,184 @@
+{
+  "schema": "tegaki.h3.ip2.browser-prep-edit.evidence/v1",
+  "card": "IP2-R1B",
+  "title": "Experimental Browser Prep/Edit Lens",
+  "evidence_date": "2026-09-11",
+  "classification": "PASS WITH KNOWN NATIVE LIMIT",
+  "publication": {
+    "initial_live_main": "f8dd087a1946da80cf070eda4bb137fc1408d085",
+    "implementation": "PUBLISHED ON MAIN",
+    "final_closeout": "this H3-only closeout commit",
+    "final_remote_main": "this H3-only closeout commit after push",
+    "owner_acceptance": "PENDING",
+    "manga_changes": "NONE"
+  },
+  "browser": {
+    "url": "http://127.0.0.1:8190/",
+    "capture_method": "Codex In-app Browser using supported direct file chooser",
+    "source_interaction": "DIRECT FILE INPUT",
+    "donor_interaction": "DIRECT FILE INPUT",
+    "file_scheme_permission_enabled": false,
+    "external_upload": false,
+    "navigation": "same-origin only; no file:// navigation"
+  },
+  "authorized_inputs": {
+    "source": {
+      "path": "D:/GitHub/tegaki/ComfyUIPortable/output/h3/tests/reference_robot_v1.png",
+      "asset_id": "606ce4d71e694636b96b9159757e7028",
+      "sha256": "43D29D07B5D0B4A2C4650A2C840AE6CF07980714008FDDB1D1008B0E08CF030E",
+      "bytes": 206821,
+      "dimensions": "608 x 352",
+      "format": "PNG",
+      "accepted_selections": 1
+    },
+    "donor": {
+      "original_path": "D:/GitHub/tegaki/ComfyUIPortable/output/h3/still/h2a_native_still_00004_.png",
+      "selected_path": "D:/GitHub/tegaki/ComfyUIPortable/output/h3/tests/ip2_donor_4338866a.png",
+      "asset_id": "1bf9d186d4fc410daf762d7282879db4",
+      "sha256": "4338866A7E230F79B08E696571F9321F8E910DA17C0296E9C58C96D89451B6F0",
+      "original_sha256": "4338866A7E230F79B08E696571F9321F8E910DA17C0296E9C58C96D89451B6F0",
+      "bytes": 193442,
+      "dimensions": "608 x 352",
+      "format": "PNG",
+      "accepted_selections": 1,
+      "copy_is_exact_content": true,
+      "original_modified": false
+    }
+  },
+  "runtime_setup": {
+    "skin_port": 8190,
+    "native_port": 8188,
+    "canonical_launcher": "h3/run_h3.bat -> h3/tools/run_native_isolated.py",
+    "tracked_code_change": false,
+    "pre_submit_failure": {
+      "http_status": 400,
+      "submitted": false,
+      "output_created": false,
+      "counted_generation": false,
+      "cause": "stale plain 8188 backend used the default input root and did not expose the bare audio VAE name"
+    },
+    "correction": "stale 8188 backend replaced with the existing isolated H3 launcher contract while the 8190 skin and in-memory Source selection stayed alive"
+  },
+  "generations": [
+    {
+      "case": "source_only",
+      "route": "native_image_prep",
+      "route_label": "Prep · Source",
+      "job_id": "0ff31f0035564c289fd396b77d98980e",
+      "native_prompt_id": "0c9b7097-e63a-4d40-a58d-5b097ca07fe5",
+      "source_asset_id": "606ce4d71e694636b96b9159757e7028",
+      "donor_asset_id": null,
+      "seed": 20260911,
+      "steps": 20,
+      "canvas": "608 x 352",
+      "temporal_packet": "5 frames at 24 fps; decoded frame 0",
+      "prompt": "Keep the recognizable red-and-white robot. Change the environment to a rainy outdoor scene with wet surfaces and visible rainfall.",
+      "materialized_prompt": "Use <Picture 1> as the source subject and composition reference. Preserve its recognizable identity and general framing.\nKeep the recognizable red-and-white robot. Change the environment to a rainy outdoor scene with wet surfaces and visible rainfall.",
+      "created_at": "2026-09-11T10:48:08+09:00",
+      "completed_at": "2026-09-11T10:50:24+09:00",
+      "elapsed_seconds": 136.17,
+      "output": "D:/GitHub/tegaki/ComfyUIPortable/output/h3/still/ip1_native_image_prep_00004_.png",
+      "output_sha256": "78E35745D3E5379E12DA8B0177AAEA0B556245E43FA5B58EF4E7D55A68789A64",
+      "output_bytes": 242027,
+      "output_dimensions": "608 x 352 PNG",
+      "preview": "PASS",
+      "history": "PASS",
+      "visual": {
+        "source_preservation": "STRONG",
+        "requested_change": "OBSERVED",
+        "drift": "MODERATE"
+      }
+    },
+    {
+      "case": "source_plus_donor",
+      "route": "native_image_prep",
+      "route_label": "Prep · Source + Donor",
+      "job_id": "845c3088cf3d4a2b9b4451fd195e59a5",
+      "native_prompt_id": "8dd5de78-a615-4db6-9579-964bc5c29ed9",
+      "source_asset_id": "606ce4d71e694636b96b9159757e7028",
+      "donor_asset_id": "1bf9d186d4fc410daf762d7282879db4",
+      "seed": 20260912,
+      "steps": 20,
+      "canvas": "608 x 352",
+      "temporal_packet": "5 frames at 24 fps; decoded frame 0",
+      "prompt": "Keep the recognizable source robot. Use the donor only for the bright yellow raincoat / protective-coat appearance.",
+      "materialized_prompt": "Use <Picture 1> as the source subject and composition reference. Preserve its recognizable identity and general framing.\nUse <Picture 2> only as the donor for the requested attribute. Do not replace the whole scene.\nKeep the recognizable source robot. Use the donor only for the bright yellow raincoat / protective-coat appearance.",
+      "created_at": "2026-09-11T10:58:31+09:00",
+      "completed_at": "2026-09-11T10:59:12+09:00",
+      "elapsed_seconds": 41.15,
+      "output": "D:/GitHub/tegaki/ComfyUIPortable/output/h3/still/ip1_native_image_prep_00005_.png",
+      "output_sha256": "FA299AC1077F0B0C003D18FD1A5C211DBC98CD0F065AD179496AD9B7C9DADB85",
+      "output_bytes": 291346,
+      "output_dimensions": "608 x 352 PNG",
+      "preview": "PASS",
+      "history": "PASS",
+      "visual": {
+        "source_preservation": "STRONG",
+        "donor_influence": "NOT CONVINCING",
+        "donor_over_transfer": "LOW",
+        "composition_drift": "LOW",
+        "donor_attribute_isolation": "NOT GUARANTEED"
+      }
+    }
+  ],
+  "handoff": {
+    "history_use_settings_source_only": "PASS",
+    "history_use_settings_source_plus_donor": "PASS",
+    "edit_in_prep": "PASS",
+    "edit_in_prep_auto_generation": "NONE",
+    "source_prompt_auto_copied": false,
+    "use_as_character": "PASS",
+    "use_as_character_target": "Video / Reference · Experimental / Generated Still",
+    "use_as_character_auto_generation": "NONE",
+    "public_filesystem_paths": "NONE"
+  },
+  "mode_isolation": {
+    "video_to_prep_to_video": "PASS",
+    "still_to_prep_to_still": "PASS",
+    "prep_to_other_to_prep": "PASS",
+    "extra_generation_during_isolation": false
+  },
+  "telemetry": {
+    "sample_interval": "Browser UI polling and post-run /api/status; exact native sampler not instrumented",
+    "peak_observed_vram_bytes": null,
+    "minimum_observed_free_vram_bytes": null,
+    "post_run_free_vram_bytes": 639959080,
+    "total_vram_bytes": 12878086144,
+    "additional_post_source_free_vram_bytes": 626098216,
+    "oom": 0,
+    "accepted_job_retry": 0
+  },
+  "regressions": {
+    "targeted_python": "27 PASS",
+    "ip2_ui": "45 PASS",
+    "vp2c_ui": "36 PASS",
+    "vp2b_ui": "28 PASS",
+    "h2c_ui": "52 PASS",
+    "h1c_ui": "38 PASS",
+    "h1b1_p2_ui": "44 PASS",
+    "h1b1_p1_ui": "36 PASS",
+    "vp1_ui": "PASS",
+    "full_h3_python": "75 PASS",
+    "javascript_syntax": "PASS",
+    "python_compileall": "PASS",
+    "workflow_json_parse": "7 PASS",
+    "git_diff_check": "PASS"
+  },
+  "scope": {
+    "file_scheme_permission_change": false,
+    "external_upload": false,
+    "extra_prep_generation": false,
+    "ordinary_still_generation": false,
+    "standard_video_generation": false,
+    "reference_video_generation": false,
+    "ip3": false,
+    "image_studio": false,
+    "qwen_image_edit": false,
+    "t1_diffusion": false,
+    "lora": false,
+    "semantic_multi_reference": false,
+    "manga_changes": "NONE",
+    "generated_png_committed": false
+  },
+  "owner_acceptance": "PENDING"
+}

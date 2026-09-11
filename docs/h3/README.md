@@ -4,7 +4,7 @@
 
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
 将来の実装棚とReference Implementation evidenceを一か所から辿るための
-document hub です。現在は **IP1 / Native Image Prep / Reference Edit Feasibility — FEASIBLE WITH LIMITS / NATIVE-ONLY / NO BROWSER UI / PUBLISHED ON MAIN** であり、Rev.4 は **CURRENT MASTER / DOCS-ONLY / PUBLISHED ON MAIN** です。
+document hub です。現在は **IP2 / Experimental Browser Prep/Edit Lens — PASS WITH KNOWN NATIVE LIMIT / VERIFIED BROWSER UI GENERATION / PUBLISHED ON MAIN** であり、Rev.4 は **CURRENT MASTER / DOCS-ONLY / PUBLISHED ON MAIN** です。
 H1C / Frame-Bridged Continuation は回帰基盤として保持し、
 H1B.1 / Start + End Frame and Native FL2VA vertical slice + UX P0/P1/P2
 Fixes は履歴と回帰対象として保持します。H0/H0.1/H1A/H1B の model
@@ -65,9 +65,20 @@ roadmap and is published on `main` at
 package is published on `main` at `d8b1a7ca070db1fe78b6d07ef0db01500e88c828`;
 that historical commit also carries concurrent Manga material. The H3-only
 IP1 closeout is published at `35e49859f3beb3bd0b4b1b2d2dd793897dc6b479`, and
-the current `origin/main` at reconciliation is the later Manga-only descendant
-`b5c79b85ed2fdeec1bf30254945db569666ecfa4`. IP1 is the active Native-only
-Image Prep feasibility gate; Owner acceptance remains pending.
+the current `origin/main` at the IP1 reconciliation was the later Manga-only
+descendant `b5c79b85ed2fdeec1bf30254945db569666ecfa4`. IP1 remains the
+`FEASIBLE WITH LIMITS` Native-only Image Prep gate. IP2 adds the bounded
+experimental Browser Prep/Edit lens over that existing Native route. The
+authorized local Browser run at `http://127.0.0.1:8190/` used one Source and
+one hash-matched Donor and completed exactly one Source-only Prep and one
+Source + Donor Prep. Source preservation was strong; the requested rainy
+environment change was observed; donor yellow-coat influence was not
+convincing; donor attribute isolation remains not guaranteed. Edit in Prep,
+Prep to Character handoff, History `Use settings`, and mode isolation passed
+without extra generation. IP2 implementation is present in published main
+history; this H3-only closeout adds the report and evidence package. The
+current main also contains concurrent Manga development history. Owner
+acceptance remains pending.
 
 この文書は Web GPT / Astra / LUNA が新しいChatから同じ状態を復元するための
 入口です。候補OSSの採用決定やソースコードの再配布を意味しません。
@@ -135,6 +146,9 @@ Image Prep feasibility gate; Owner acceptance remains pending.
 | `docs/h3/reports/IP1_NATIVE_IMAGE_PREP_REFERENCE_EDIT_FEASIBILITY_REPORT.md` | IP1 Native Ref2VA Image Prep feasibility, runtime, visual limits, and non-scope | CURRENT IP1 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/IP1_NATIVE_IMAGE_PREP_REFERENCE_EDIT_FEASIBILITY_REPORT.md` |
 | `docs/h3/evidence/ip1-native-image-prep/2026-09-11/README.md` | IP1 Native audit, donor, three edit cases, frame-0, telemetry, and visual evidence | CURRENT IP1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/ip1-native-image-prep/2026-09-11/README.md` |
 | `docs/h3/evidence/ip1-native-image-prep/2026-09-11/manifest.json` | Machine-readable IP1 Native/runtime/output manifest | CURRENT IP1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/ip1-native-image-prep/2026-09-11/manifest.json` |
+| `docs/h3/reports/IP2_BROWSER_PREP_EDIT_LENS_REPORT.md` | IP2 experimental Browser Prep/Edit Source/Donor acceptance, handoff, limits, and closeout | CURRENT IP2 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/IP2_BROWSER_PREP_EDIT_LENS_REPORT.md` |
+| `docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/README.md` | IP2 authorized local Browser acceptance, visual review, and handoff evidence | CURRENT IP2 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/README.md` |
+| `docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/manifest.json` | Machine-readable IP2 Browser/runtime/output manifest | CURRENT IP2 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/manifest.json` |
 | `docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` | H2-INFRA external model migration, isolation, shortcuts, cold restart, and closeout | CURRENT H2-INFRA REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` |
 | `docs/h3/evidence/model-library/2026-09-10/README.md` | H2-INFRA inventory, migration, deletion, shortcut, and runtime evidence index | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/README.md` |
 | `docs/h3/evidence/model-library/2026-09-10/inventory.json` | Machine-readable before/after H3 model inventory | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/inventory.json` |
@@ -300,11 +314,12 @@ implementation follows from that result automatically.
 
 The historical groundwork reports remain historical records. VP1 is the
 published Video baseline, and VP2A-R1 remains the Native feasibility gate with
-its known mixed-reference quality limits. The current VP2B report and evidence
-above record a bounded experimental Browser Reference path over that Native
-route. They do not imply production identity locking, multiple references,
-audio conditioning, Owner acceptance, or adoption of a broader candidate
-implementation.
+its known mixed-reference quality limits. The VP2B and VP2C packages record
+bounded experimental Browser Reference and handoff paths. The current IP2
+report and evidence record the bounded Browser Prep/Edit path over the IP1
+Native route. These packages do not imply production identity locking,
+multiple references, audio conditioning, donor-attribute isolation, Owner
+acceptance, or adoption of a broader candidate implementation.
 
 ## H3 implementation boundary
 
@@ -339,7 +354,11 @@ experimental one-picture/optional-MP4 Reference Video lens over the Native
 Ref2VA adapter; Standard remains the default, Reference audio is disconnected,
 and Reference settings are server-enforced at `608 x 352 / 5 seconds / 20
 steps`. IP1 adds only the separate Native-only source-plus-optional-donor
-Image Prep feasibility adapter; Browser Prep/Edit remains not implemented.
+Image Prep feasibility adapter. IP2 adds only the experimental Browser
+Prep/Edit lens over that adapter: one Source plus an optional Donor, fixed
+Native settings, History settings reuse, bounded Edit in Prep, and Prep to
+Character handoff. Donor attribute isolation is not guaranteed; IP2 is not a
+production Image Studio or identity-locking feature.
 
 ## Review recipe
 
@@ -397,8 +416,14 @@ Image Prep feasibility adapter; Browser Prep/Edit remains not implemented.
     package; keep source preservation, donor influence, Native packet/frame-0
     behavior, runtime qualification, Browser UI, publication, and Owner
     acceptance distinct.
-22. Stop after IP1 review; do not infer Owner acceptance, production identity
-    locking, Browser Prep/Edit UI, multi-character R2V, audio conditioning,
+22. Review the IP2 Browser Prep/Edit report and dated evidence; verify the
+    exact Source and Donor selection methods, two-generation budget, separate
+    Source/Donor ownership, Preview and History routes, materialized Picture
+    roles, `Use settings`, `Edit in Prep`, `Use as Character`, mode isolation,
+    visual classifications, telemetry limits, and no file-scheme permission.
+23. Stop after IP2 review; do not infer Owner acceptance, production identity
+    locking, arbitrary multi-reference editing, donor-attribute isolation,
+    IP3, Image Studio, Qwen Image Edit, T=1 diffusion, LoRA, audio conditioning,
     Segment, Studio, or production deployment from this evidence.
 
 ## Evidence vocabulary
