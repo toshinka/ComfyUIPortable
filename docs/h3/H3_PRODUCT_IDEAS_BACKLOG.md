@@ -36,11 +36,12 @@ This backlog tracks user experience refinements, generation pipeline enhancement
 
 ---
 
-### NEAR (Next Prioritized Implementations)
 - **Truthful Sampler Progress Percentage**:
-  - Surface real step counts from ComfyUI's internal `ProgressBar` / WebSocket `progress` events (e.g., `Sampling 7 / 20` or `Sampling 35%`).
-  - Label specifically as sampler progress—never misrepresent as total-generation percentage.
-  - Expose via `Job` metadata in H3 Skin polling without breaking HTTP polling resilience.
+  - Truthful sampler progress percentage: `IMPLEMENTED / VERIFIED SOURCE-LOGIC + FAKE-WS` (Card H3-G2A).
+    - Subscribes to Native ComfyUI WebSocket `/ws?clientId=<session_id>` via `aiohttp` and extracts `progress` events strictly correlated to the accepted prompt ID and verified sampler node IDs (`SamplerCustomAdvanced`).
+    - SAMPLER ONLY: explicitly represents sampler step progress (e.g. `Sampling 35%`), never total workflow completion.
+    - Exposes progress through supplemental `Job.public()["progress"]` polling without altering authoritative HTTP polling or job state machine.
+    - Real generation verification still pending.
 - **Aspect-Safe Image Reference Preparation**:
   - Standard Start Frame aspect-safe center cover-crop: `IMPLEMENTED / VERIFIED SOURCE-LOGIC` (Card H3-G1C1).
     - Materializes ComfyUI's core `ImageScale` (`upscale_method="lanczos"`, `crop="center"`, `width=W`, `height=H`) between `LoadImage` and `MiniMaxH3ImageToVideo.first_frame`.
@@ -93,7 +94,7 @@ This backlog tracks user experience refinements, generation pipeline enhancement
 | Item ID | Description | Category | Feasibility Status | Target Card |
 |---|---|---|---|---|
 | `ACT-01` | Stage action compression & single-slot Cancel swap | NOW | Feasible & Safe | `H3-G1A` |
-| `PRG-01` | Truthful sampler progress display (`Sampling X%`) | NEAR | Feasible with limit (WS / sampler-only) | Next Card |
+| `PRG-01` | Truthful sampler progress display (`Sampling X%`) | NEAR | IMPLEMENTED / VERIFIED SOURCE-LOGIC + FAKE-WS | `H3-G2A` |
 | `MED-01` | Aspect-safe Start Frame center cover-crop | NEAR | IMPLEMENTED / VERIFIED SOURCE-LOGIC | `H3-G1C1` |
 | `MED-02` | Still Source & contain/pad framing policies | NEAR | Deferred / Not Implemented | Next Card |
 | `VID-01` | Reference video first 5s auto-trim | NEAR | IMPLEMENTED / VERIFIED SOURCE-LOGIC | `H3-G1B1` |

@@ -863,7 +863,12 @@ function renderActiveJobStatus(job) {
 
 function showPreviewJob(job) {
   state.previewJob = job;
-  previewState.textContent = statusLabelForJob(job);
+  const progressPercent = (job?.state === "RUNNING" && job?.progress?.kind === "sampling" && Number.isFinite(job?.progress?.percent))
+    ? job.progress.percent
+    : null;
+  previewState.textContent = progressPercent !== null
+    ? `Generating · Sampling ${progressPercent}%`
+    : statusLabelForJob(job);
   previewElapsed.textContent = `${Number(job.elapsed_seconds || 0).toFixed(1)}s`;
   previewOverlay.hidden = TERMINAL.has(job.state) && job.state !== "COMPLETED";
   const isStill = job.media_kind === "still";

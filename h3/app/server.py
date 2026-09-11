@@ -100,6 +100,11 @@ from h3.adapters.native_ref2va import (  # noqa: E402
     materialize_prompt,
     workflow_metadata as ref2va_workflow_metadata,
 )
+from h3.app.native_progress import (  # noqa: E402
+    NativeProgressListener,
+    discover_sampler_node_ids,
+    map_progress_event,
+)
 from h3.app.native_profile import (  # noqa: E402
     CANONICAL_H3,
     PROFILE_MISMATCH,
@@ -747,6 +752,8 @@ class Job:
     completed_epoch: float | None = None
     output: dict[str, Any] | None = None
     media_path: Path | None = None
+    sampler_node_ids: set[str] = field(default_factory=set)
+    progress: dict[str, Any] | None = None
 
     def elapsed_seconds(self) -> float:
         end = self.completed_epoch or time.time()
@@ -824,7 +831,7 @@ class Job:
             "completed_at": self.completed_at,
             "elapsed_seconds": self.elapsed_seconds(),
             "error": self.error or self.backend_error,
-            "progress": None,
+            "progress": self.progress if self.state == "RUNNING" else None,
             "output": self.output,
             "video_url": video_url,
             "image_url": image_url,
@@ -847,6 +854,44 @@ class H1ASession:
         self.r2v_pictures: dict[str, R2VPictureAsset] = {}
         self.r2v_motion_videos: dict[str, R2VMotionVideoAsset] = {}
         self.lock = threading.RLock()
+        self.progress_listener: NativeProgressListener | None = None
+
+    def start_progress_listener(self) -> None:
+        """Explicitly start the Native WebSocket progress listener."""
+        with self.lock:
+            if self.progress_listener is not None:
+                return
+            self.progress_listener = NativeProgressListener(
+                base_url=self.backend.base_url,
+                client_id=self.client_id,
+                on_progress=self._handle_native_progress,
+                on_disconnect=self._handle_progress_disconnect,
+            )
+            self.progress_listener.start()
+
+    def stop_progress_listener(self) -> None:
+        """Explicitly stop the Native WebSocket progress listener."""
+        listener = None
+        with self.lock:
+            listener = self.progress_listener
+            self.progress_listener = None
+        if listener is not None:
+            listener.stop()
+
+    def _handle_native_progress(self, prompt_id: str, node_id: str, data: Mapping[str, Any]) -> None:
+        with self.lock:
+            for job in self.jobs.values():
+                if job.prompt_id == prompt_id:
+                    update = map_progress_event(data, job.prompt_id, job.sampler_node_ids)
+                    if update is not None:
+                        job.progress = update
+                    return
+
+    def _handle_progress_disconnect(self) -> None:
+        with self.lock:
+            for job in self.jobs.values():
+                if job.state not in TERMINAL_STATES:
+                    job.progress = None
 
     def status(self) -> dict[str, Any]:
         """Return backend status plus a read-only H3 lifecycle snapshot."""
@@ -1384,6 +1429,7 @@ class H1ASession:
             motion_start_seconds=parsed_motion_start,
         )
         job_id = uuid_token()
+        sampler_node_ids = discover_sampler_node_ids(graph)
         job = Job(
             job_id,
             request,
@@ -1399,6 +1445,7 @@ class H1ASession:
                 REFERENCE_ROLE_START_FRAME: None,
                 REFERENCE_ROLE_END_FRAME: None,
             },
+            sampler_node_ids=sampler_node_ids,
         )
         with self.lock:
             self.jobs[job_id] = job
@@ -1447,6 +1494,7 @@ class H1ASession:
                 reference_paths[role] = f"inputs/{asset.filename}"
             graph = compile_fl2va_workflow(request, reference_paths)
         job_id = uuid_token()
+        sampler_node_ids = discover_sampler_node_ids(graph)
         references_public = {
             role: assets[role].public() if role in assets else None
             for role in REFERENCE_ROLES
@@ -1461,6 +1509,7 @@ class H1ASession:
             if REFERENCE_ROLE_START_FRAME in assets
             else None,
             references=references_public,
+            sampler_node_ids=sampler_node_ids,
         )
         with self.lock:
             self.jobs[job_id] = job
@@ -1506,6 +1555,7 @@ class H1ASession:
             route = ROUTE_SOURCE_ANCHORED_STILL
 
         job_id = uuid_token()
+        sampler_node_ids = discover_sampler_node_ids(graph)
         job = Job(
             job_id,
             request,
@@ -1518,6 +1568,7 @@ class H1ASession:
                 REFERENCE_ROLE_END_FRAME: None,
             },
             still_source=source.public() if source else None,
+            sampler_node_ids=sampler_node_ids,
         )
         with self.lock:
             self.jobs[job_id] = job
@@ -1577,6 +1628,7 @@ class H1ASession:
                 raise RequestValidationError("Another H3 generation is active.")
 
         job_id = uuid_token()
+        sampler_node_ids = discover_sampler_node_ids(graph)
         job = Job(
             job_id,
             request,
@@ -1590,6 +1642,7 @@ class H1ASession:
             },
             prep_source=source.public(),
             prep_donor=donor.public() if donor else None,
+            sampler_node_ids=sampler_node_ids,
         )
         with self.lock:
             self.jobs[job_id] = job
@@ -2496,6 +2549,7 @@ def main() -> None:
     output_root = (PORTABLE_ROOT / args.output_dir).resolve()
     output_root.mkdir(parents=True, exist_ok=True)
     session = H1ASession(args.comfy_url, output_root)
+    session.start_progress_listener()
     server = H1AServer((args.host, args.port), session)
     print(
         f"TEGAKI H3 UI listening on http://{args.host}:{args.port}/ "
@@ -2507,6 +2561,7 @@ def main() -> None:
     except KeyboardInterrupt:
         pass
     finally:
+        session.stop_progress_listener()
         server.server_close()
 
 
