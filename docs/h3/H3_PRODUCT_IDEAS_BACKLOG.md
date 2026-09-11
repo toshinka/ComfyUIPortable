@@ -42,11 +42,12 @@ This backlog tracks user experience refinements, generation pipeline enhancement
   - Label specifically as sampler progress—never misrepresent as total-generation percentage.
   - Expose via `Job` metadata in H3 Skin polling without breaking HTTP polling resilience.
 - **Aspect-Safe Image Reference Preparation**:
-  - Address anamorphic stretching of portrait / non-16:9 images in Standard Start Frame and Still Source Image.
-  - Evaluate and implement bounded aspect policies:
-    1. Aspect-preserving cover-crop (crop-to-fill) matching `last_frame` behavior.
-    2. Aspect-preserving letterbox/pillarbox (contain/pad) with clean neutral borders.
-    3. Dedicated Prep/Edit handoff with interactive framing.
+  - Standard Start Frame aspect-safe center cover-crop: `IMPLEMENTED / VERIFIED SOURCE-LOGIC` (Card H3-G1C1).
+    - Materializes ComfyUI's core `ImageScale` (`upscale_method="lanczos"`, `crop="center"`, `width=W`, `height=H`) between `LoadImage` and `MiniMaxH3ImageToVideo.first_frame`.
+    - Eliminates anamorphic squashing/stretching for Standard Video Start Frame; center crops outer edges if aspect differs from output resolution.
+  - Still Source Image aspect-safe framing: `NEAR / NOT IMPLEMENTED` (Deferred).
+  - Contain/pad (letterbox/pillarbox) mode selector: `NEAR / NOT IMPLEMENTED` (Deferred).
+  - Dedicated Prep/Edit interactive framing surface: `LATER / NOT IMPLEMENTED` (Deferred).
 - **Reference Video Trimming (First N Seconds)**:
   - First-5s Native trim: `IMPLEMENTED / VERIFIED SOURCE-LOGIC` (Card H3-G1B1).
   - Materializes ComfyUI's core `VideoSlice` (`Trim Video`) node (`start_time: 0.0`, `duration: 5.0`, `strict_duration: false`) before frame extraction to avoid memory bloat and excessive frame extraction.
@@ -81,7 +82,7 @@ This backlog tracks user experience refinements, generation pipeline enhancement
   - Lip-sync, audio mixing, soundtrack assignment, and voice timeline tracks remain disconnected and deferred.
 - **Full Video Editing & Multi-Track NLE (Candidate B)**:
   - Complex multi-track transitions, cutting room, and timeline editing are deferred. The standalone TEGAKI editor may own rich creative manipulation.
-- **Runtime Process Supervisor**:
+  - Runtime Process Supervisor:
   - Unified process control, automated backend profile switching, and shared-port supervision.
 
 ---
@@ -92,7 +93,8 @@ This backlog tracks user experience refinements, generation pipeline enhancement
 |---|---|---|---|---|
 | `ACT-01` | Stage action compression & single-slot Cancel swap | NOW | Feasible & Safe | `H3-G1A` |
 | `PRG-01` | Truthful sampler progress display (`Sampling X%`) | NEAR | Feasible with limit (WS / sampler-only) | Next Card |
-| `MED-01` | Aspect-safe Start Frame & Source Image policy | NEAR | Root cause identified (`crop="disabled"`) | Next Card |
+| `MED-01` | Aspect-safe Start Frame center cover-crop | NEAR | IMPLEMENTED / VERIFIED SOURCE-LOGIC | `H3-G1C1` |
+| `MED-02` | Still Source & contain/pad framing policies | NEAR | Deferred / Not Implemented | Next Card |
 | `VID-01` | Reference video first 5s auto-trim | NEAR | IMPLEMENTED / VERIFIED SOURCE-LOGIC | `H3-G1B1` |
 | `VID-02` | Reference video start offset (IN time $T$) | NEAR | NOT IMPLEMENTED | Next Card |
 | `STU-01` | Compact Stage Shot strip (Candidate A) | LATER | Architectural direction accepted | Future Studio |

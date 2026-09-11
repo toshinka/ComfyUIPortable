@@ -206,6 +206,7 @@ def validate_fl2va_workflow(workflow: Mapping[str, Any]) -> None:
         "video_create",
         "start_image_loader",
         "end_image_loader",
+        "start_image_framing",
     }
     missing = sorted(required_roles.difference(semantic_nodes))
     if missing:
@@ -229,16 +230,30 @@ def validate_fl2va_workflow(workflow: Mapping[str, Any]) -> None:
 
     conditioning_id = str(semantic_nodes["image_to_video"]["id"])
     start_id = str(semantic_nodes["start_image_loader"]["id"])
+    framing_id = str(semantic_nodes["start_image_framing"]["id"])
     end_id = str(semantic_nodes["end_image_loader"]["id"])
+    framing_node = prompt[framing_id]
+    framing_inputs = framing_node.get("inputs")
+    if not isinstance(framing_inputs, Mapping):
+        raise WorkflowIncompatibleError("Workflow incompatible: start_image_framing inputs are missing.")
+    if framing_inputs.get("image") != [start_id, 0]:
+        raise WorkflowIncompatibleError(
+            "Workflow incompatible: start_image_framing must target the Start Frame loader."
+        )
+    if framing_inputs.get("crop") != "center":
+        raise WorkflowIncompatibleError(
+            "Workflow incompatible: start_image_framing must use crop=center."
+        )
+
     conditioning_inputs = prompt[conditioning_id].get("inputs")
     if not isinstance(conditioning_inputs, Mapping):
         raise WorkflowIncompatibleError("Workflow incompatible: conditioning inputs are missing.")
     if "first_frame" in conditioning_inputs and conditioning_inputs["first_frame"] not in (
         None,
-        [start_id, 0],
+        [framing_id, 0],
     ):
         raise WorkflowIncompatibleError(
-            "Workflow incompatible: first_frame must target the Start Frame loader."
+            "Workflow incompatible: first_frame must target start_image_framing."
         )
     if "last_frame" in conditioning_inputs and conditioning_inputs["last_frame"] not in (
         None,
@@ -288,13 +303,25 @@ def compile_fl2va_workflow(
     inputs = conditioning["inputs"]
     inputs.pop("first_frame", None)
     inputs.pop("last_frame", None)
+    start_loader_id = str(roles["start_image_loader"]["id"])
+    start_framing_id = str(roles["start_image_framing"]["id"])
     if slots.start_frame is not None:
-        inputs["first_frame"] = [str(roles["start_image_loader"]["id"]), 0]
+        inputs["first_frame"] = [start_framing_id, 0]
         node_for("start_image_loader")["inputs"]["image"] = safe_paths[
             REFERENCE_ROLE_START_FRAME
         ]
+        node_for("start_image_framing")["inputs"].update(
+            {
+                "image": [start_loader_id, 0],
+                "upscale_method": "lanczos",
+                "width": normalized.width,
+                "height": normalized.height,
+                "crop": "center",
+            }
+        )
     else:
-        graph.pop(str(roles["start_image_loader"]["id"]), None)
+        graph.pop(start_loader_id, None)
+        graph.pop(start_framing_id, None)
     if slots.end_frame is not None:
         inputs["last_frame"] = [str(roles["end_image_loader"]["id"]), 0]
         node_for("end_image_loader")["inputs"]["image"] = safe_paths[

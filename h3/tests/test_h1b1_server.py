@@ -66,7 +66,9 @@ class H1B1ServerTests(unittest.TestCase):
         self.assertEqual(job.public()["route_label"], "Start Frame")
         self.assertTrue(job.public()["has_start_frame"])
         self.assertFalse(job.public()["has_end_frame"])
-        self.assertEqual(session.backend.graph["131"]["inputs"]["first_frame"], ["132", 0])
+        self.assertEqual(session.backend.graph["131"]["inputs"]["first_frame"], ["134", 0])
+        self.assertEqual(session.backend.graph["134"]["inputs"]["image"], ["132", 0])
+        self.assertEqual(session.backend.graph["134"]["inputs"]["crop"], "center")
         self.assertNotIn("last_frame", session.backend.graph["131"]["inputs"])
         self.assertNotIn("133", session.backend.graph)
 
@@ -88,6 +90,7 @@ class H1B1ServerTests(unittest.TestCase):
         self.assertNotIn("first_frame", session.backend.graph["131"]["inputs"])
         self.assertEqual(session.backend.graph["131"]["inputs"]["last_frame"], ["133", 0])
         self.assertNotIn("132", session.backend.graph)
+        self.assertNotIn("134", session.backend.graph)
 
     def test_canonical_start_end_compiles_both_and_same_asset_is_allowed(self):
         session = self.new_session()
@@ -104,7 +107,9 @@ class H1B1ServerTests(unittest.TestCase):
         )
         self.assertEqual(job.public()["route_label"], "Start + End")
         graph = session.backend.graph
-        self.assertEqual(graph["131"]["inputs"]["first_frame"], ["132", 0])
+        self.assertEqual(graph["131"]["inputs"]["first_frame"], ["134", 0])
+        self.assertEqual(graph["134"]["inputs"]["image"], ["132", 0])
+        self.assertEqual(graph["134"]["inputs"]["crop"], "center")
         self.assertEqual(graph["131"]["inputs"]["last_frame"], ["133", 0])
         self.assertEqual(graph["132"]["inputs"]["image"], f"inputs/{start.filename}")
         self.assertEqual(graph["133"]["inputs"]["image"], f"inputs/{end.filename}")

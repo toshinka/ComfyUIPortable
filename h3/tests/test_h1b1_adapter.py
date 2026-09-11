@@ -117,7 +117,12 @@ class H1B1AdapterTests(unittest.TestCase):
             request,
             {"start_frame": f"inputs/{'a' * 32}.png"},
         )
-        self.assertEqual(graph["131"]["inputs"]["first_frame"], ["132", 0])
+        self.assertEqual(graph["131"]["inputs"]["first_frame"], ["134", 0])
+        self.assertEqual(graph["134"]["inputs"]["image"], ["132", 0])
+        self.assertEqual(graph["134"]["inputs"]["upscale_method"], "lanczos")
+        self.assertEqual(graph["134"]["inputs"]["width"], 608)
+        self.assertEqual(graph["134"]["inputs"]["height"], 352)
+        self.assertEqual(graph["134"]["inputs"]["crop"], "center")
         self.assertNotIn("last_frame", graph["131"]["inputs"])
         self.assertNotIn("133", graph)
         self.assertEqual(graph["132"]["inputs"]["image"], f"inputs/{'a' * 32}.png")
@@ -139,6 +144,7 @@ class H1B1AdapterTests(unittest.TestCase):
         self.assertNotIn("first_frame", graph["131"]["inputs"])
         self.assertEqual(graph["131"]["inputs"]["last_frame"], ["133", 0])
         self.assertNotIn("132", graph)
+        self.assertNotIn("134", graph)
         self.assertEqual(graph["133"]["inputs"]["image"], f"inputs/{'b' * 32}.png")
 
     def test_fl2va_workflow_binds_both_edges_and_baseline(self):
@@ -163,10 +169,16 @@ class H1B1AdapterTests(unittest.TestCase):
                 "end_frame": f"inputs/{'b' * 32}.jpg",
             },
         )
-        self.assertEqual(graph["131"]["inputs"]["first_frame"], ["132", 0])
+        self.assertEqual(graph["131"]["inputs"]["first_frame"], ["134", 0])
+        self.assertEqual(graph["134"]["inputs"]["image"], ["132", 0])
+        self.assertEqual(graph["134"]["inputs"]["upscale_method"], "lanczos")
+        self.assertEqual(graph["134"]["inputs"]["width"], 608)
+        self.assertEqual(graph["134"]["inputs"]["height"], 352)
+        self.assertEqual(graph["134"]["inputs"]["crop"], "center")
         self.assertEqual(graph["131"]["inputs"]["last_frame"], ["133", 0])
         self.assertIn("132", graph)
         self.assertIn("133", graph)
+        self.assertIn("134", graph)
         self.assertEqual(graph["129"]["inputs"]["noise_seed"], 17)
         self.assertEqual(graph["124"]["inputs"]["steps"], 20)
         self.assertEqual(graph["92"]["inputs"]["filename_prefix"], "video/h1b1_native_fl2va")
@@ -190,6 +202,7 @@ class H1B1AdapterTests(unittest.TestCase):
                 "image_to_video": {"id": "131", "class_type": "MiniMaxH3ImageToVideo"},
                 "start_image_loader": {"id": "132", "class_type": "LoadImage"},
                 "end_image_loader": {"id": "133", "class_type": "LoadImage"},
+                "start_image_framing": {"id": "134", "class_type": "ImageScale"},
             },
             "prompt": {
                 "131": {
@@ -198,6 +211,7 @@ class H1B1AdapterTests(unittest.TestCase):
                 },
                 "132": {"class_type": "LoadImage", "inputs": {}},
                 "133": {"class_type": "LoadImage", "inputs": {}},
+                "134": {"class_type": "ImageScale", "inputs": {"image": ["132", 0], "crop": "center"}},
             },
         }
         with self.assertRaises(WorkflowIncompatibleError):

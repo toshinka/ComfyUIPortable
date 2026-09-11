@@ -40,7 +40,8 @@
     "video_create": {"id": "130", "class_type": "CreateVideo"},
     "image_to_video": {"id": "131", "class_type": "MiniMaxH3ImageToVideo"},
     "start_image_loader": {"id": "132", "class_type": "LoadImage"},
-    "end_image_loader": {"id": "133", "class_type": "LoadImage"}
+    "end_image_loader": {"id": "133", "class_type": "LoadImage"},
+    "start_image_framing": {"id": "134", "class_type": "ImageScale"}
   },
   "prompt": {
     "92": {
@@ -141,6 +142,16 @@
     "133": {
       "class_type": "LoadImage",
       "inputs": {"image": "inputs/end_frame.png"}
+    },
+    "134": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "image": ["132", 0],
+        "upscale_method": "lanczos",
+        "width": 608,
+        "height": 352,
+        "crop": "center"
+      }
     }
   }
 }
