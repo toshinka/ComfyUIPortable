@@ -6,7 +6,7 @@ Updated: 2026-09-11 JST
 
 Current Stage
 -------------
-IP1 / Native Image Prep / Reference Edit Feasibility — FEASIBLE WITH LIMITS / NATIVE-ONLY / NO BROWSER UI / PUBLISHED ON MAIN
+IP2 / Experimental Browser Prep/Edit Lens — PASS WITH KNOWN NATIVE LIMIT / VERIFIED BROWSER UI GENERATION / PUBLISHED ON MAIN
 R4 / H3 Roadmap Rev.4 — CURRENT MASTER / DOCS-ONLY / PUBLISHED ON MAIN
 VP2C / Reference Handoff and scoped D&D — ACCEPTANCE VERIFIED WITH LIMITS / PUBLISHED ON MAIN
 VP2B / Experimental R2V Playground — CLOSEOUT PUBLISHED ON MAIN
@@ -109,14 +109,26 @@ VP2C Still / Reference / History handoff: PASS; no auto-generation
 VP2C implementation publication: PUBLISHED ON MAIN at 56ad30afa128ef4120f962b6c114fc0e7526aae8
 VP2C closeout publication: PUBLISHED ON MAIN at 1a869125fa95ef4c7b1e94b0ccedab39fc52b4be
 R4 publication: PUBLISHED ON MAIN at 3880534af0e26b970a8fd0a1ba564af6bc88c15e
-Current origin/main at IP1 reconciliation: b5c79b85ed2fdeec1bf30254945db569666ecfa4 (later Manga-only descendant)
+At the IP1 reconciliation, origin/main was b5c79b85ed2fdeec1bf30254945db569666ecfa4 (later Manga-only descendant)
 IP1 Native source audit: PASS
 IP1 classification: FEASIBLE WITH LIMITS
-IP1 Browser Prep/Edit: NOT IMPLEMENTED
+IP1 Browser Prep/Edit: historical boundary was NOT IMPLEMENTED
 IP1 recommendation: IP2 Browser Prep/Edit lens
 IP1 implementation publication: PUBLISHED ON MAIN at d8b1a7ca070db1fe78b6d07ef0db01500e88c828 (published history; this historical commit also contains concurrent Manga material)
 IP1 H3 closeout publication: PUBLISHED ON MAIN at 35e49859f3beb3bd0b4b1b2d2dd793897dc6b479 (H3-only relative to d8b1a7ca)
 IP1 publication wording: reconciled in a later H3 docs-only descendant
+IP2 implementation: PRESENT IN PUBLISHED MAIN HISTORY
+IP2 classification: PASS WITH KNOWN NATIVE LIMIT
+IP2 Browser Prep/Edit: VERIFIED BROWSER UI GENERATION
+IP2 Source-only Prep: VERIFIED BROWSER UI GENERATION
+IP2 Source + Donor Prep: EXPERIMENTAL / VERIFIED BROWSER UI GENERATION
+IP2 donor attribute isolation: NOT GUARANTEED
+IP2 Edit in Prep: VERIFIED BROWSER UI
+IP2 Prep → Character: VERIFIED BROWSER UI
+IP2 real Prep generation count: 2
+IP2 Chrome file:// permission: NOT ENABLED
+IP2 closeout publication: PUBLISHED ON MAIN at 70f3561d44a052ce30148fa6474ba633a0d8a37f
+H3 integration-design readiness: H3_READY_FOR_INTEGRATION_DESIGN
 H3 external model library: CONFIGURED / VERIFIED
 Portable duplicate heavy weights: REMOVED
 Portable fallback namespace: RETAINED / EMPTY OF FIRST-WAVE HEAVY WEIGHTS
@@ -180,6 +192,10 @@ Read Order
 48. ComfyUIPortable/docs/h3/reports/IP1_NATIVE_IMAGE_PREP_REFERENCE_EDIT_FEASIBILITY_REPORT.md
 49. ComfyUIPortable/docs/h3/evidence/ip1-native-image-prep/2026-09-11/README.md
 50. ComfyUIPortable/docs/h3/evidence/ip1-native-image-prep/2026-09-11/manifest.json
+51. ComfyUIPortable/docs/h3/reports/IP2_BROWSER_PREP_EDIT_LENS_REPORT.md
+52. ComfyUIPortable/docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/README.md
+53. ComfyUIPortable/docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/manifest.json
+54. ComfyUIPortable/docs/h3/H3_PRODUCT_INTEGRATION_BOUNDARY.md
 
 Master Roadmap
 --------------
@@ -259,7 +275,7 @@ uploaded runtime inputs, and model weights remain ignored.
 
 Current Review Gate
 -------------------
-R4 H3 Roadmap Rev.4 — docs-only publication and canonical pointer gate
+H3-XT1 Integration Design Readiness Freeze — docs-only canonical and product-boundary gate
 
 VP2C adds no new generation model or route. It implements same-session completed
 Still→Character and Video→Motion History promotion through opaque job IDs, safe
@@ -277,9 +293,12 @@ Rev.4 records the verified Video/Still/R2V foundation, formalizes Image Prep as
 a Native-first track, and keeps multi-character semantics, spatial hard binding,
 LoRA runtime compatibility, Shot, Storyboard, Timeline, Previz, and Manga
 integration outside the current implementation contract. IP1 — Native Image
-Prep / Reference Edit Feasibility — is now the active implementation gate. Rev.4
-is published on `main` at `3880534a`; `origin/main` is the later Manga-only
-descendant `df0ad3b`. IP1 remains Native-only and does not imply Browser UI work.
+Prep / Reference Edit Feasibility — remains the `FEASIBLE WITH LIMITS` Native
+gate. IP2 — Experimental Browser Prep/Edit Lens — is now the current bounded
+Browser gate and is `PASS WITH KNOWN NATIVE LIMIT`; its donor attribute
+isolation is not guaranteed. Rev.4 remains published as the current roadmap;
+IP2 closeout is published on `main` at `70f3561d`. This does not imply shared
+runtime unification or Owner acceptance.
 
 H1B.1 remains implemented as the regression foundation and has Start-only,
 Start+End, End-only, and text-only browser completion results plus Native media
@@ -394,6 +413,11 @@ Character File D&D passed; Motion File D&D remains `PASS WITH LIMITS` because
 safe CUA did not reproduce target-slot acceptance, while the exact Motion
 picker route passed and supplied the Reference run. VP2C closeout is published
 on `main` at `1a869125fa95ef4c7b1e94b0ccedab39fc52b4be`. Rev.4 canonical
-updates are published on `main` at `3880534a`; the current `origin/main` is the
-later Manga-only descendant `df0ad3b`. IP1 is `FEASIBLE WITH LIMITS`, Browser
-Prep/Edit is `NOT IMPLEMENTED`, and Owner acceptance remains `PENDING`.
+updates are published on `main` at `3880534a`. IP2 is `PASS WITH KNOWN NATIVE
+LIMIT`, its Browser Prep/Edit path is verified within the recorded bounds, and
+the H3-only IP2 closeout is published on `main` at
+`70f3561d44a052ce30148fa6474ba633a0d8a37f`. The H3 product boundary is
+`H3_READY_FOR_INTEGRATION_DESIGN`; the unresolved integration question is
+backend/runtime-profile hosting. Shared-shell design is ready for review, but
+shared-shell implementation is not authorized. Owner acceptance remains
+`PENDING`.

@@ -89,6 +89,7 @@ acceptance remains pending.
 |---|---|---|---|
 | `GITHUB_H3.txt` | H3 External AI Entry | CURRENT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/GITHUB_H3.txt` |
 | `docs/h3/README.md` | H3 document hub | CURRENT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/README.md` |
+| `docs/h3/H3_PRODUCT_INTEGRATION_BOUNDARY.md` | H3 product entry, runtime, ownership, integration readiness, and open architecture questions | CURRENT XT1 / H3_READY_FOR_INTEGRATION_DESIGN | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/H3_PRODUCT_INTEGRATION_BOUNDARY.md` |
 | `MiniMax H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md` | Current H3 master roadmap | CURRENT / DOCS-ONLY | `https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md` |
 | `MiniMax H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md` | Historical H3 master roadmap | HISTORICAL / SUPERSEDED | `https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md` |
 | `docs/h3/research/H3_CURRENT_LANDSCAPE.md` | Current candidate landscape summary | CURRENT RESEARCH | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/research/H3_CURRENT_LANDSCAPE.md` |
