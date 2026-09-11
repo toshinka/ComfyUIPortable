@@ -23,8 +23,61 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const require = createRequire(import.meta.url);
 
-const playwrightPath = "C:/Users/MAX/AppData/Roaming/npm/node_modules/@executeautomation/playwright-mcp-server/node_modules/playwright";
-const { chromium } = require(playwrightPath);
+import fs from "node:fs";
+import { execSync } from "node:child_process";
+
+function resolvePlaywright() {
+    // 1. Explicit environment variable (Card Section 7)
+    if (process.env.TEGAKI_PLAYWRIGHT_MODULE) {
+        try {
+            const mod = require(process.env.TEGAKI_PLAYWRIGHT_MODULE);
+            if (mod?.chromium) return mod.chromium;
+        } catch (e) {}
+    }
+
+    // 2. Normal installed module resolution
+    try {
+        const mod = require("playwright");
+        if (mod?.chromium) return mod.chromium;
+    } catch (e) {}
+
+    // 3. Machine-independent discovery from npm global root
+    try {
+        const npmRoot = execSync("npm root -g", { encoding: "utf8" }).trim();
+        if (npmRoot) {
+            const candidates = [
+                path.join(npmRoot, "playwright"),
+                path.join(npmRoot, "@executeautomation", "playwright-mcp-server", "node_modules", "playwright")
+            ];
+            for (const cand of candidates) {
+                if (fs.existsSync(cand)) {
+                    try {
+                        const mod = require(cand);
+                        if (mod?.chromium) return mod.chromium;
+                    } catch (e) {}
+                }
+            }
+        }
+    } catch (e) {}
+
+    // 4. Platform APPDATA fallback
+    const appData = process.env.APPDATA;
+    if (appData) {
+        const winCand = path.join(appData, "npm", "node_modules", "@executeautomation", "playwright-mcp-server", "node_modules", "playwright");
+        if (fs.existsSync(winCand)) {
+            try {
+                const mod = require(winCand);
+                if (mod?.chromium) return mod.chromium;
+            } catch (e) {}
+        }
+    }
+
+    throw new Error(
+        "Playwright could not be resolved. Please set TEGAKI_PLAYWRIGHT_MODULE or ensure Playwright is installed."
+    );
+}
+
+const chromium = resolvePlaywright();
 
 const WORKSPACE_URL = process.env.MANGA_WORKSPACE_URL || "http://127.0.0.1:8191";
 const BACKEND_URL = process.env.MANGA_BACKEND_URL || "http://127.0.0.1:8189";

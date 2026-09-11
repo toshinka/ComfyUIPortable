@@ -340,8 +340,13 @@
                 const doc = store.getDocument();
                 const res = await client.prepareDraft(doc, 0, doc.pages[0].generation?.seed || 42);
                 if (res.ok) {
-                    prepareFeedback.textContent = `✅ Prepared route: ${res.route} | Queue: ${res.queueAfter.running} running, ${res.queueAfter.pending} pending (Queue IDLE)`;
-                    prepareFeedback.style.color = "#86efac";
+                    if (res.isQueueIdleAfter) {
+                        prepareFeedback.textContent = `✅ Prepared route: ${res.route} | Queue: 0 running, 0 pending (Queue IDLE)`;
+                        prepareFeedback.style.color = "#86efac";
+                    } else {
+                        prepareFeedback.textContent = `⚠️ Prepared route: ${res.route} | Post-prepare queue unconfirmed`;
+                        prepareFeedback.style.color = "#fcd34d";
+                    }
                 } else {
                     prepareFeedback.textContent = `❌ Prepare error: ${res.error || "Failed"}`;
                     prepareFeedback.style.color = "#fca5a5";
