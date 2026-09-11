@@ -2,7 +2,7 @@
 
 Status: `H3 INTERNAL DESIGN SSOT / DOCS ONLY`
 Updated: `2026-09-11 JST`
-Publication: `PENDING BEFORE COMMIT`
+Publication: `PUBLISHED ON MAIN`
 Owner acceptance: `PENDING`
 Studio implementation: `NOT AUTHORIZED`
 
