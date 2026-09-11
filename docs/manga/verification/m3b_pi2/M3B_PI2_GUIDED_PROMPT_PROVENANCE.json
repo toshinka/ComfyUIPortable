@@ -1,0 +1,178 @@
+{
+  "card": "M3B-PI2",
+  "route": "GUIDED_CLEAN_GLOBAL",
+  "prompt": {
+    "1": {
+      "class_type": "TegakiMinimumHandSceneEditor",
+      "inputs": {
+        "document_json": "{\"schema_id\": \"TEGAKI_AUTHORING_DOCUMENT\", \"schema_version\": \"1.0.0\", \"document_id\": \"m3b_lr2r1_ab_fixture\", \"pages\": [{\"page_id\": \"page_1\", \"order\": 1, \"width_px\": 832, \"height_px\": 1216, \"style_prompt\": \"manga page, monochrome, expressive linework, high contrast, screentone shading, two students\", \"style_negative_prompt\": \"bad anatomy, blurry, photo, color, 3d render, watermark, text\", \"scenes\": [{\"scene_id\": \"scene_main\", \"name\": \"A/B fixture\", \"prompt\": \"monochrome manga classroom, two students, one standing on the left and one seated on the right, desks and window, clear left-right composition\", \"negative_prompt\": \"\", \"input_mode\": \"simple\", \"area\": {\"shape_type\": \"rect\", \"x\": 0.06, \"y\": 0.06, \"w\": 0.88, \"h\": 0.88}, \"order\": 1, \"metadata\": {}}], \"visual_frames\": [], \"cast\": [], \"character_instances\": [], \"guides\": [{\"guide_id\": \"guide_1\", \"guide_type\": \"rough_manga\", \"asset_reference\": \"tegaki_manga_guides/rough_guide_live.png\", \"placement\": {\"x\": 0, \"y\": 0.2434, \"w\": 1, \"h\": 0.5132}, \"enabled\": true, \"figure_regions\": [{\"figure_id\": \"figure_1\", \"instance_id\": null, \"area\": {\"shape_type\": \"rect\", \"x\": 0.05, \"y\": 0.12, \"w\": 0.38, \"h\": 0.72}}, {\"figure_id\": \"figure_2\", \"instance_id\": null, \"area\": {\"shape_type\": \"rect\", \"x\": 0.57, \"y\": 0.22, \"w\": 0.28, \"h\": 0.58}}], \"metadata\": {\"fixture\": \"M3B-LR2R1\", \"association\": \"manual\"}}], \"metadata\": {\"fixture\": \"M3B-LR2R1\"}, \"generation\": {\"seed\": 42}}], \"metadata\": {}}",
+        "seed": 42,
+        "style_template": "Manga Monochrome",
+        "resolution": "Portrait 832x1216"
+      }
+    },
+    "3": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "\u2643CN_Skeb\\waiIllustriousSDXL_v170.safetensors"
+      }
+    },
+    "4": {
+      "class_type": "TegakiMangaConditioningBuilder",
+      "inputs": {
+        "clip": [
+          "3",
+          1
+        ],
+        "page_compile_plan": [
+          "1",
+          0
+        ],
+        "panel_strength": 1.0,
+        "character_strength": 1.0,
+        "set_cond_area": "default",
+        "local_region_strength": 1.0,
+        "mask_feather": 0
+      }
+    },
+    "5": {
+      "class_type": "EmptyLatentImage",
+      "inputs": {
+        "width": [
+          "1",
+          3
+        ],
+        "height": [
+          "1",
+          4
+        ],
+        "batch_size": 1
+      }
+    },
+    "12": {
+      "class_type": "TegakiMangaGenerationGuideBridge",
+      "inputs": {
+        "document_json": [
+          "1",
+          6
+        ],
+        "page_index": 0
+      }
+    },
+    "13": {
+      "class_type": "ControlNetLoader",
+      "inputs": {
+        "control_net_name": "CN-anytest_v4\\CN-anytest4_illustrious2_A.safetensors"
+      }
+    },
+    "14": {
+      "class_type": "ControlNetApplyAdvanced",
+      "inputs": {
+        "positive": [
+          "4",
+          0
+        ],
+        "negative": [
+          "4",
+          1
+        ],
+        "control_net": [
+          "13",
+          0
+        ],
+        "image": [
+          "12",
+          0
+        ],
+        "vae": [
+          "3",
+          2
+        ],
+        "strength": 0.75,
+        "start_percent": 0.0,
+        "end_percent": 1.0
+      }
+    },
+    "6": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "3",
+          0
+        ],
+        "positive": [
+          "14",
+          0
+        ],
+        "negative": [
+          "14",
+          1
+        ],
+        "latent_image": [
+          "5",
+          0
+        ],
+        "seed": 42,
+        "steps": 20,
+        "cfg": 7.0,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1.0
+      }
+    },
+    "7": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "6",
+          0
+        ],
+        "vae": [
+          "3",
+          2
+        ]
+      }
+    },
+    "9": {
+      "class_type": "TegakiMangaFrameOverlay",
+      "inputs": {
+        "image": [
+          "7",
+          0
+        ],
+        "authoring_document_json": [
+          "1",
+          6
+        ],
+        "line_thickness": 4,
+        "page_index": 0
+      }
+    },
+    "8": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "9",
+          0
+        ],
+        "filename_prefix": "M3B_PI2_B2_SIMPLE_GUIDED"
+      }
+    }
+  },
+  "node_classes": [
+    "CheckpointLoaderSimple",
+    "ControlNetApplyAdvanced",
+    "ControlNetLoader",
+    "EmptyLatentImage",
+    "KSampler",
+    "SaveImage",
+    "TegakiMangaConditioningBuilder",
+    "TegakiMangaFrameOverlay",
+    "TegakiMangaGenerationGuideBridge",
+    "TegakiMinimumHandSceneEditor",
+    "VAEDecode"
+  ],
+  "controlnet_apply_node": "ControlNetApplyAdvanced",
+  "advanced_controlnet": false,
+  "effect_mask": false
+}

@@ -1,0 +1,191 @@
+{
+  "card": "M3B-PI2",
+  "timestamp_jst": "2026-09-11 09:33:28 JST",
+  "routes": [
+    "STANDARD_NO_GUIDE",
+    "GUIDED_CLEAN_GLOBAL"
+  ],
+  "decision_rule": {
+    "guided": "page has >= 1 enabled rough_manga guide with >= 1 valid figure_regions entry",
+    "standard": "all other cases (no guides, disabled guides, 0 figures, removed guide)"
+  },
+  "records": [
+    {
+      "test_id": "B0",
+      "name": "B0_STANDARD_NO_GUIDE",
+      "description": "Standard generation with zero guides present",
+      "document_state": {
+        "guide_count": 0,
+        "eligible_guide_count": 0,
+        "figure_count": 0,
+        "input_mode": "simple",
+        "seed": 42
+      },
+      "route_decision": "STANDARD_NO_GUIDE",
+      "reason": "No guides present on page",
+      "prompt_node_classes": [
+        "CheckpointLoaderSimple",
+        "EmptyLatentImage",
+        "KSampler",
+        "SaveImage",
+        "TegakiMangaConditioningBuilder",
+        "TegakiMangaFrameOverlay",
+        "TegakiMinimumHandSceneEditor",
+        "VAEDecode"
+      ],
+      "prompt_id": "84a711f4-b6dd-4b0f-aa58-4793cfab2ab5",
+      "queue_result": "PASS",
+      "output_filename": "B0_STANDARD_NO_GUIDE.png",
+      "output_sha256": "0761e6fc3116ccd2398fb1d2b8ef35f5aa1c62a6c8ddd948a55238837ce1a629"
+    },
+    {
+      "test_id": "B1",
+      "name": "B1_GUIDE_ZERO_FIGURES",
+      "description": "Guide uploaded and enabled, but zero figure regions defined",
+      "document_state": {
+        "guide_count": 1,
+        "eligible_guide_count": 0,
+        "figure_count": 0,
+        "input_mode": "simple",
+        "seed": 42
+      },
+      "route_decision": "STANDARD_NO_GUIDE",
+      "reason": "Guide has zero figure regions",
+      "prompt_node_classes": [
+        "CheckpointLoaderSimple",
+        "EmptyLatentImage",
+        "KSampler",
+        "SaveImage",
+        "TegakiMangaConditioningBuilder",
+        "TegakiMangaFrameOverlay",
+        "TegakiMinimumHandSceneEditor",
+        "VAEDecode"
+      ],
+      "prompt_id": null,
+      "queue_result": "PASS",
+      "output_filename": null,
+      "output_sha256": null
+    },
+    {
+      "test_id": "B2",
+      "name": "B2_SIMPLE_GUIDED",
+      "description": "Guide enabled with figures in Simple mode -> Guide-assisted",
+      "document_state": {
+        "guide_count": 1,
+        "eligible_guide_count": 1,
+        "figure_count": 2,
+        "input_mode": "simple",
+        "seed": 42
+      },
+      "route_decision": "GUIDED_CLEAN_GLOBAL",
+      "reason": "Eligible rough_manga guide found with 2 figure region(s)",
+      "prompt_node_classes": [
+        "CheckpointLoaderSimple",
+        "ControlNetApplyAdvanced",
+        "ControlNetLoader",
+        "EmptyLatentImage",
+        "KSampler",
+        "SaveImage",
+        "TegakiMangaConditioningBuilder",
+        "TegakiMangaFrameOverlay",
+        "TegakiMangaGenerationGuideBridge",
+        "TegakiMinimumHandSceneEditor",
+        "VAEDecode"
+      ],
+      "prompt_id": "a7abbfcb-8b5d-491d-be09-846589e60a75",
+      "queue_result": "PASS",
+      "output_filename": "B2_SIMPLE_GUIDED.png",
+      "output_sha256": "d02c78aa8ad9549dec66779d6fd3bc38481a67351306737e88011bd0f02bb5bb"
+    },
+    {
+      "test_id": "B3",
+      "name": "B3_DISABLED_STANDARD",
+      "description": "One-action Disable Guide -> immediate route back to Standard",
+      "document_state": {
+        "guide_count": 1,
+        "eligible_guide_count": 0,
+        "figure_count": 0,
+        "input_mode": "simple",
+        "seed": 42
+      },
+      "route_decision": "STANDARD_NO_GUIDE",
+      "reason": "Guide is disabled",
+      "prompt_node_classes": [
+        "CheckpointLoaderSimple",
+        "EmptyLatentImage",
+        "KSampler",
+        "SaveImage",
+        "TegakiMangaConditioningBuilder",
+        "TegakiMangaFrameOverlay",
+        "TegakiMinimumHandSceneEditor",
+        "VAEDecode"
+      ],
+      "prompt_id": "90d806ab-a184-440f-9e76-f93b1f7b863b",
+      "queue_result": "PASS",
+      "output_filename": "B3_DISABLED_STANDARD.png",
+      "output_sha256": "bcdddb82958e8b1137cff9642ba9e2cb91306c84e547374fc48c18010261225e"
+    },
+    {
+      "test_id": "B4",
+      "name": "B4_REENABLE_GUIDED",
+      "description": "Re-enable Guide -> immediate route back to Guide-assisted",
+      "document_state": {
+        "guide_count": 1,
+        "eligible_guide_count": 1,
+        "figure_count": 2,
+        "input_mode": "simple",
+        "seed": 42
+      },
+      "route_decision": "GUIDED_CLEAN_GLOBAL",
+      "reason": "Eligible rough_manga guide found with 2 figure region(s)",
+      "prompt_node_classes": [
+        "CheckpointLoaderSimple",
+        "ControlNetApplyAdvanced",
+        "ControlNetLoader",
+        "EmptyLatentImage",
+        "KSampler",
+        "SaveImage",
+        "TegakiMangaConditioningBuilder",
+        "TegakiMangaFrameOverlay",
+        "TegakiMangaGenerationGuideBridge",
+        "TegakiMinimumHandSceneEditor",
+        "VAEDecode"
+      ],
+      "prompt_id": null,
+      "queue_result": "PASS",
+      "output_filename": null,
+      "output_sha256": null
+    },
+    {
+      "test_id": "B5",
+      "name": "B5_CAST_GUIDED",
+      "description": "Active CAST characters with eligible Guide -> Guide-assisted",
+      "document_state": {
+        "guide_count": 1,
+        "eligible_guide_count": 1,
+        "figure_count": 2,
+        "input_mode": "cast",
+        "seed": 42
+      },
+      "route_decision": "GUIDED_CLEAN_GLOBAL",
+      "reason": "Eligible rough_manga guide found with 2 figure region(s)",
+      "prompt_node_classes": [
+        "CheckpointLoaderSimple",
+        "ControlNetApplyAdvanced",
+        "ControlNetLoader",
+        "EmptyLatentImage",
+        "KSampler",
+        "SaveImage",
+        "TegakiMangaConditioningBuilder",
+        "TegakiMangaFrameOverlay",
+        "TegakiMangaGenerationGuideBridge",
+        "TegakiMinimumHandSceneEditor",
+        "VAEDecode"
+      ],
+      "prompt_id": "fc1cca99-5924-45bd-b7f9-827e6b1d8ed5",
+      "queue_result": "PASS",
+      "output_filename": "B5_CAST_GUIDED.png",
+      "output_sha256": "792db5aeed7ef060ec382e26a237a14d8136c2ac9915df8a16adcda23637ec54"
+    }
+  ]
+}

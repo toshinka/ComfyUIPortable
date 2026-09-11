@@ -36,6 +36,12 @@ import {
     associateGuideFigure,
     unassignGuideInstance
 } from "./minimum_hand_authoring_ops.js";
+import {
+    previewGenerationRoute,
+    ROUTE_STANDARD,
+    ROUTE_GUIDED,
+    ROUTE_LABELS
+} from "./minimum_hand_generation_route.js";
 
 const SCENE_PALETTE = [
     { name: "Scene 1", hex: "#e53935", rgb: [229, 57, 53] },
@@ -305,6 +311,139 @@ app.registerExtension({
                 }
                 syncToWidgets();
             };
+
+            // Product Generation Control Bar (M3B-PI2)
+            const productGenBar = document.createElement("div");
+            productGenBar.style.cssText = `
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: #202024;
+                padding: 6px 10px;
+                border-radius: 6px;
+                border: 1px solid #2f2f35;
+                gap: 8px;
+            `;
+            productGenBar.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                    <button id="btn-generate-draft" title="Execute Minimum-Hand Draft generation with automatic route selection" style="
+                        background: #2563eb;
+                        color: #ffffff;
+                        border: 1px solid #3b82f6;
+                        border-radius: 4px;
+                        padding: 4px 12px;
+                        font-size: 11px;
+                        font-weight: 700;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        gap: 4px;
+                    ">✨ Generate Draft</button>
+                    <span id="route-badge" style="
+                        background: #3f3f46;
+                        color: #d4d4d8;
+                        padding: 2px 8px;
+                        border-radius: 4px;
+                        font-size: 11px;
+                        font-weight: 600;
+                        border: 1px solid #52525b;
+                        white-space: nowrap;
+                    ">Generation: Standard</span>
+                </div>
+                <div id="generate-feedback" style="
+                    font-size: 11px;
+                    color: #a1a1aa;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    text-align: right;
+                "></div>
+            `;
+            container.appendChild(productGenBar);
+
+            const btnGenerateDraft = productGenBar.querySelector("#btn-generate-draft");
+            const routeBadge = productGenBar.querySelector("#route-badge");
+            const generateFeedback = productGenBar.querySelector("#generate-feedback");
+
+            function updateRouteBadge() {
+                if (!routeBadge) return;
+                const routeInfo = previewGenerationRoute(doc, 0);
+                routeBadge.textContent = routeInfo.displayLabel;
+                if (routeInfo.route === ROUTE_GUIDED) {
+                    routeBadge.style.background = "#15803d";
+                    routeBadge.style.color = "#dcfce7";
+                    routeBadge.style.border = "1px solid #16a34a";
+                } else {
+                    routeBadge.style.background = "#3f3f46";
+                    routeBadge.style.color = "#d4d4d8";
+                    routeBadge.style.border = "1px solid #52525b";
+                }
+                routeBadge.title = routeInfo.reason;
+            }
+
+            let isGenerating = false;
+            btnGenerateDraft.onclick = async (e) => {
+                e.preventDefault();
+                if (isGenerating) return;
+                isGenerating = true;
+
+                btnGenerateDraft.disabled = true;
+                btnGenerateDraft.style.opacity = "0.5";
+                btnGenerateDraft.style.cursor = "not-allowed";
+                btnGenerateDraft.textContent = "⏳ Preparing...";
+                generateFeedback.textContent = "";
+                generateFeedback.style.color = "#a1a1aa";
+
+                try {
+                    syncToWidgets();
+                    const page = getPage();
+                    const seedWidget = node.widgets?.find(w => w.name === "seed");
+                    const seedVal = seedWidget ? seedWidget.value : (page.generation?.seed ?? 42);
+
+                    const resp = await api.fetchApi("/tegaki/manga/generation/prepare", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            document_json: doc,
+                            page_index: 0,
+                            seed: seedVal
+                        })
+                    });
+
+                    const data = await resp.json();
+                    if (!resp.ok || !data.ok) {
+                        const errMsg = data.error || `Preparation failed (${resp.status})`;
+                        generateFeedback.textContent = `❌ ${errMsg}`;
+                        generateFeedback.style.color = "#ef4444";
+                        generateFeedback.title = errMsg;
+                        return;
+                    }
+
+                    btnGenerateDraft.textContent = "⏳ Queueing...";
+                    const promptGraph = data.prompt;
+                    await api.queuePrompt(0, {
+                        output: promptGraph,
+                        workflow: app?.graph?.serialize ? app.graph.serialize() : undefined
+                    });
+
+                    const routeLabel = data.route === ROUTE_GUIDED ? "Guide-assisted" : "Standard";
+                    generateFeedback.textContent = `✅ Queued · ${routeLabel}`;
+                    generateFeedback.style.color = "#22c55e";
+                    generateFeedback.title = `Prompt queued with route: ${data.route}`;
+                } catch (err) {
+                    console.error("[Tegaki Generate Draft]", err);
+                    generateFeedback.textContent = `❌ ${err.message || String(err)}`;
+                    generateFeedback.style.color = "#ef4444";
+                    generateFeedback.title = err.message || String(err);
+                } finally {
+                    isGenerating = false;
+                    btnGenerateDraft.disabled = false;
+                    btnGenerateDraft.style.opacity = "1.0";
+                    btnGenerateDraft.style.cursor = "pointer";
+                    btnGenerateDraft.textContent = "✨ Generate Draft";
+                }
+            };
+            updateRouteBadge();
 
             // CAST Section Bar
             const castSection = document.createElement("div");
@@ -799,7 +938,7 @@ app.registerExtension({
                         guide.metadata = {
                             ...(guide.metadata || {}),
                             fit_mode: "contain",
-                            source_dimensions: { width_px: dimensions.width, height_px: dimensions.height }
+                            source_dimensions: ({ width_px: dimensions.width, height_px: dimensions.height })
                         };
                     } else {
                         const guide = {
@@ -811,7 +950,7 @@ app.registerExtension({
                             figure_regions: [],
                             metadata: {
                                 fit_mode: "contain",
-                                source_dimensions: { width_px: dimensions.width, height_px: dimensions.height }
+                                source_dimensions: ({ width_px: dimensions.width, height_px: dimensions.height })
                             }
                         };
                         guides.push(guide);
@@ -1809,6 +1948,7 @@ app.registerExtension({
                 renderCastSection();
                 renderInspector();
                 renderCanvas();
+                updateRouteBadge();
             }
 
             function syncToWidgets() {
@@ -1837,6 +1977,7 @@ app.registerExtension({
                 }
 
                 node.setDirtyCanvas(true, true);
+                updateRouteBadge();
             }
 
             node._tegakiRestoreFromWidgets = function () {

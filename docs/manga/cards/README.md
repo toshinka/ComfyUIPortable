@@ -1,6 +1,6 @@
 # Manga Execution Card Router
 
-更新: 2026-09-10 JST
+更新: 2026-09-11 JST
 
 このdirectoryはManga Authoringの実行Cardだけを扱う。戦略正本は
 [`ASTRA_MANGA_AUTHORING_MASTER_PLAN.md`](../plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md)、
@@ -10,13 +10,14 @@
 
 M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`.
 M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`.
-Latest SOL-verified public commit: `b5c79b85ed2fdeec1bf30254945db569666ecfa4`.
+Latest SOL-verified public commit: `45487bc741a9f6bb1f8025f50a27868fcc1108ae`.
 Latest published Card:
-[M3B-LR8 — Core CAST_GLOBAL Robustness Qualification](completed/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION.md)
-M3B-LR8 publication: PUBLISHED; SOL public-URL review: PASS; classification: CORE_GLOBAL_QUALIFIED.
-Latest completed Card:
 [M3B-PI1 — Optional CLEAN Guide Production Backend Integration](completed/M3B_PI1_OPTIONAL_CLEAN_GUIDE_PRODUCTION_BACKEND_INTEGRATION.md)
-Stage 1 inventory stop: BLOCKED (`CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED`); LR2R1 technical result: PASS / QUALITY WEAK; LR3 final SOL result: PASS / OPTION_A_INCONCLUSIVE; Derived CLEAN Guide quality improvement: VERIFIED; placement consistency: NOT VERIFIED; Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE; Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE; LR4 result: PASS / LOCALITY_SUPPORTED; LR5 result: PASS / CAST_MASKED_CONFLICT with HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED; LR6 result: PASS / SOFT_MASK_CONFLICT (key finding: SOFTENING FIGURE EFFECT-MASK EDGE DID NOT REMOVE VISUAL BOUNDARY); LR7 result: PASS / EFFECT_MASK_INTERACTION_CONFIRMED; LR8 result: PASS / CORE_GLOBAL_QUALIFIED (3 IMPROVED, 3 NEUTRAL, 0 REGRESSED; 6/6 figure count not worse; ComfyUI core ControlNetApplyAdvanced verified with 0 ACN nodes); M3B-PI1 result: PASS / PI1_BACKEND_INTEGRATED (4/4 live production runs PASS, 0 ACN nodes, 0 effect masks, 12/12 bridge unit tests PASS, bit-exact CLEAN parity PASS, canonical no-guide workflow untouched); M3A.1 milestone acceptance: ACCEPTED_BY_DELEGATED_SOL; Final Owner product review: DEFERRED; Active Card: NONE.
+M3B-PI1 publication: PUBLISHED; SOL public-URL review: PASS; classification: PI1_BACKEND_INTEGRATED.
+Active Card: **NONE**.
+Latest completed Card:
+[M3B-PI2 — Minimum-Hand Automatic Guide Routing & Product Generate Integration](completed/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING.md)
+Stage 1 inventory stop: BLOCKED (`CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED`); LR2R1 technical result: PASS / QUALITY WEAK; LR3 final SOL result: PASS / OPTION_A_INCONCLUSIVE; Derived CLEAN Guide quality improvement: VERIFIED; placement consistency: NOT VERIFIED; Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE; Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE; LR4 result: PASS / LOCALITY_SUPPORTED; LR5 result: PASS / CAST_MASKED_CONFLICT with HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED; LR6 result: PASS / SOFT_MASK_CONFLICT (key finding: SOFTENING FIGURE EFFECT-MASK EDGE DID NOT REMOVE VISUAL BOUNDARY); LR7 result: PASS / EFFECT_MASK_INTERACTION_CONFIRMED; LR8 result: PASS / CORE_GLOBAL_QUALIFIED (3 IMPROVED, 3 NEUTRAL, 0 REGRESSED; 6/6 figure count not worse; ComfyUI core ControlNetApplyAdvanced verified with 0 ACN nodes); M3B-PI1 result: PASS / PI1_BACKEND_INTEGRATED (4/4 live production runs PASS, 0 ACN nodes, 0 effect masks, 12/12 bridge unit tests PASS, bit-exact CLEAN parity PASS, canonical no-guide workflow untouched); M3B-PI2 result: PASS / PI2_AUTO_ROUTING_INTEGRATED (6/6 live matrix PASS, B0-B5 browser verified, 14/14 Python contract tests, 10/10 JS parity tests, full regressions PASS); Production backend integration: COMPLETE; Automatic product routing: COMPLETE; M3A.1 milestone acceptance: ACCEPTED_BY_DELEGATED_SOL; Final Owner product review: DEFERRED; Active Card: NONE.
 
 M3B-LR1 is closed for its bounded foundation slice. M3B-LR2 is published and
 closed as a valid bounded inventory stop. M3B-LR2R1 is locally completed in
@@ -24,7 +25,7 @@ completed/ with the pinned model, verified shared storage, A/B evidence, and
 canonical regression. M3B-LR3 is completed in completed/ with final SOL result
 `OPTION_A_INCONCLUSIVE`; M3B-LR4 is published in completed/ with
 `LOCALITY_SUPPORTED`; M3B-LR5 is published in completed/ with
-`CAST_MASKED_CONFLICT`; M3B-LR6 is published in completed/ with `SOFT_MASK_CONFLICT`; M3B-LR7 is completed locally with `EFFECT_MASK_INTERACTION_CONFIRMED`; M3B-LR8 is published and completed with `CORE_GLOBAL_QUALIFIED`; M3B-PI1 is completed locally with `PI1_BACKEND_INTEGRATED`. Active Card: NONE. Production ControlNet integration: M3B-PI1 BACKEND COMPLETED LOCALLY. Owner push and SOL review remain required. No subsequent Card is issued automatically.
+`CAST_MASKED_CONFLICT`; M3B-LR6 is published in completed/ with `SOFT_MASK_CONFLICT`; M3B-LR7 is completed locally with `EFFECT_MASK_INTERACTION_CONFIRMED`; M3B-LR8 is published and completed with `CORE_GLOBAL_QUALIFIED`; M3B-PI1 is published and completed with `PI1_BACKEND_INTEGRATED`; M3B-PI2 is completed locally with `PI2_AUTO_ROUTING_INTEGRATED`. Active Card: NONE. Production ControlNet integration: COMPLETE. Automatic product routing: COMPLETE. Final Owner product review remains deferred.
 When work resumes, SOL audits [`WEBGPT_SOL_LUNA_HANDOFF.md`](../WEBGPT_SOL_LUNA_HANDOFF.md)
 and issues exactly one new limited Card in [`current/`](current/README.md). Do not copy a
 completed Card as a new instruction.
@@ -62,6 +63,7 @@ completed Card as a new instruction.
 | M3B-LR7 | [`M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION_RESEARCH.md`](completed/M3B_LR7_CAST_GLOBAL_EFFECT_MASK_ISOLATION_RESEARCH.md) |
 | M3B-LR8 | [`M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION.md`](completed/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION.md) |
 | M3B-PI1 | [`M3B_PI1_OPTIONAL_CLEAN_GUIDE_PRODUCTION_BACKEND_INTEGRATION.md`](completed/M3B_PI1_OPTIONAL_CLEAN_GUIDE_PRODUCTION_BACKEND_INTEGRATION.md) |
+| M3B-PI2 | [`M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING.md`](completed/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING.md) |
 
 ## Naming rule
 

@@ -1,0 +1,131 @@
+{
+  "card": "M3B-PI2",
+  "route": "STANDARD_NO_GUIDE",
+  "prompt": {
+    "1": {
+      "class_type": "TegakiMinimumHandSceneEditor",
+      "inputs": {
+        "document_json": "{\"schema_id\": \"TEGAKI_AUTHORING_DOCUMENT\", \"schema_version\": \"1.0.0\", \"document_id\": \"doc_canonical_m1\", \"pages\": [{\"page_id\": \"page_1\", \"order\": 1, \"width_px\": 832, \"height_px\": 1216, \"style_prompt\": \"manga page, monochrome, expressive linework, high contrast, screentone shading\", \"style_negative_prompt\": \"bad anatomy, blurry, photo, color, 3d render, watermark, text\", \"scenes\": [{\"scene_id\": \"scene_top\", \"name\": \"Scene 1\", \"prompt\": \"school classroom, desks and chairs, a student reading quietly by the window, warm sunlight\", \"negative_prompt\": \"\", \"input_mode\": \"simple\", \"area\": {\"shape_type\": \"rect\", \"x\": 0.08, \"y\": 0.06, \"w\": 0.84, \"h\": 0.42}, \"order\": 1, \"metadata\": {}}, {\"scene_id\": \"scene_bottom\", \"name\": \"Scene 2\", \"prompt\": \"outdoor train station platform, railway tracks, a commuter waiting with bicycle, afternoon sky\", \"negative_prompt\": \"\", \"input_mode\": \"simple\", \"area\": {\"shape_type\": \"rect\", \"x\": 0.08, \"y\": 0.52, \"w\": 0.84, \"h\": 0.42}, \"order\": 2, \"metadata\": {}}], \"visual_frames\": [], \"cast\": [], \"character_instances\": [], \"guides\": [], \"metadata\": {\"style_template\": \"Manga Monochrome\"}, \"generation\": {\"seed\": 42}}], \"metadata\": {}}",
+        "seed": 42,
+        "style_template": "Manga Monochrome",
+        "resolution": "Portrait 832x1216"
+      }
+    },
+    "3": {
+      "class_type": "CheckpointLoaderSimple",
+      "inputs": {
+        "ckpt_name": "\u2643CN_Skeb\\waiIllustriousSDXL_v170.safetensors"
+      }
+    },
+    "4": {
+      "class_type": "TegakiMangaConditioningBuilder",
+      "inputs": {
+        "clip": [
+          "3",
+          1
+        ],
+        "page_compile_plan": [
+          "1",
+          0
+        ],
+        "panel_strength": 1.0,
+        "character_strength": 1.0,
+        "set_cond_area": "default",
+        "local_region_strength": 1.0,
+        "mask_feather": 0
+      }
+    },
+    "5": {
+      "class_type": "EmptyLatentImage",
+      "inputs": {
+        "width": [
+          "1",
+          3
+        ],
+        "height": [
+          "1",
+          4
+        ],
+        "batch_size": 1
+      }
+    },
+    "6": {
+      "class_type": "KSampler",
+      "inputs": {
+        "model": [
+          "3",
+          0
+        ],
+        "positive": [
+          "4",
+          0
+        ],
+        "negative": [
+          "4",
+          1
+        ],
+        "latent_image": [
+          "5",
+          0
+        ],
+        "seed": 42,
+        "steps": 20,
+        "cfg": 7.0,
+        "sampler_name": "euler",
+        "scheduler": "normal",
+        "denoise": 1.0
+      }
+    },
+    "7": {
+      "class_type": "VAEDecode",
+      "inputs": {
+        "samples": [
+          "6",
+          0
+        ],
+        "vae": [
+          "3",
+          2
+        ]
+      }
+    },
+    "9": {
+      "class_type": "TegakiMangaFrameOverlay",
+      "inputs": {
+        "image": [
+          "7",
+          0
+        ],
+        "authoring_document_json": [
+          "1",
+          6
+        ],
+        "line_thickness": 4,
+        "page_index": 0
+      }
+    },
+    "8": {
+      "class_type": "SaveImage",
+      "inputs": {
+        "images": [
+          "9",
+          0
+        ],
+        "filename_prefix": "M3B_PI2_B0_STANDARD_NO_GUIDE"
+      }
+    }
+  },
+  "node_classes": [
+    "CheckpointLoaderSimple",
+    "EmptyLatentImage",
+    "KSampler",
+    "SaveImage",
+    "TegakiMangaConditioningBuilder",
+    "TegakiMangaFrameOverlay",
+    "TegakiMinimumHandSceneEditor",
+    "VAEDecode"
+  ],
+  "controlnet_nodes_count": 0,
+  "advanced_controlnet": false,
+  "effect_mask": false
+}

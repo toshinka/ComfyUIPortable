@@ -20,6 +20,7 @@ from .frame_overlay import TegakiMangaFrameOverlay
 from .rough_guide_bridge import TegakiMangaRoughGuideBridge
 from .generation_guide_bridge import TegakiMangaGenerationGuideBridge
 from . import panel_layout_api
+from . import product_generation_api
 
 NODE_CLASS_MAPPINGS = {
     "TegakiLoraPromptLoader": TegakiLoraPromptLoader,

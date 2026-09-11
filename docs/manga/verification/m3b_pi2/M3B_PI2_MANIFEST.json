@@ -1,0 +1,39 @@
+{
+  "card": "M3B-PI2",
+  "executor": "Gemini 3.8 Flash",
+  "pi1_public_sha": "45487bc741a9f6bb1f8025f50a27868fcc1108ae",
+  "schema_changed": false,
+  "routes": [
+    "STANDARD_NO_GUIDE",
+    "GUIDED_CLEAN_GLOBAL"
+  ],
+  "guide_upload_alone_enables_guided": false,
+  "one_action_disable": true,
+  "frontend_backend_route_parity": "PASS",
+  "standard_controlnet_dependency": false,
+  "guided_controlnet_apply": "ControlNetApplyAdvanced",
+  "guided_advanced_controlnet": false,
+  "guided_effect_mask": false,
+  "queue_integration": "PASS",
+  "browser": "PASS",
+  "classification": "PI2_AUTO_ROUTING_INTEGRATED",
+  "final_owner_product_review": "DEFERRED",
+  "artifacts": {
+    "B0_STANDARD_NO_GUIDE": {
+      "file": "B0_STANDARD_NO_GUIDE.png",
+      "sha256": "0761e6fc3116ccd2398fb1d2b8ef35f5aa1c62a6c8ddd948a55238837ce1a629"
+    },
+    "B2_SIMPLE_GUIDED": {
+      "file": "B2_SIMPLE_GUIDED.png",
+      "sha256": "d02c78aa8ad9549dec66779d6fd3bc38481a67351306737e88011bd0f02bb5bb"
+    },
+    "B3_DISABLED_STANDARD": {
+      "file": "B3_DISABLED_STANDARD.png",
+      "sha256": "bcdddb82958e8b1137cff9642ba9e2cb91306c84e547374fc48c18010261225e"
+    },
+    "B5_CAST_GUIDED": {
+      "file": "B5_CAST_GUIDED.png",
+      "sha256": "792db5aeed7ef060ec382e26a237a14d8136c2ac9915df8a16adcda23637ec54"
+    }
+  }
+}

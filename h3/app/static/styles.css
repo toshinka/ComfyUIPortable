@@ -321,6 +321,37 @@ textarea::placeholder, input::placeholder { color: #a58a82; }
 }
 .reference-audio-note { margin-top: 7px; color: var(--muted); font-size: 0.68rem; }
 
+.prep-card { border-color: var(--light-medium); }
+.prep-contract {
+  margin-top: 8px;
+  padding: 7px 9px;
+  border-left: 2px solid var(--light-maroon);
+  color: var(--muted);
+  background: var(--surface-rose);
+  font-size: 0.72rem;
+}
+.prep-source-slot {
+  border-color: var(--light-maroon);
+  background: var(--surface-paper);
+}
+.prep-donor-slot {
+  border-color: var(--soft-line);
+  background: var(--surface-cream);
+}
+.prep-drop-hint { margin-top: 4px; color: var(--light-maroon); font-size: 0.68rem; }
+.prep-source-slot.drag-active,
+.prep-donor-slot.drag-active {
+  border-color: var(--maroon);
+  background: var(--surface-rose);
+  box-shadow: inset 0 0 0 1px var(--maroon);
+}
+.prep-donor-helper {
+  margin-top: 7px;
+  color: var(--warning);
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
 .reference-card {
   margin-top: 14px;
   padding: 10px 14px 10px;
@@ -452,6 +483,7 @@ textarea::placeholder, input::placeholder { color: #a58a82; }
 .history-content button { padding: 0; border: 0; color: var(--maroon); background: transparent; font-weight: 700; text-align: left; }
 .history-content button:hover { text-decoration: underline; }
 .history-kind-badge { display: inline-flex; min-height: 22px; align-items: center; margin-bottom: 7px; padding: 0 8px; border: 1px solid var(--light-medium); border-radius: 999px; color: var(--maroon); background: var(--cream); font-size: 0.68rem; font-weight: 750; letter-spacing: 0.04em; }
+.history-kind-badge.prep { border-color: var(--light-maroon); background: var(--surface-rose); }
 .history-prompt { display: -webkit-box; margin-top: 7px; overflow: hidden; color: var(--muted); font-size: 0.78rem; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .history-time { display: block; margin-top: 9px; color: #9c8077; font-size: 0.7rem; }
 .history-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }

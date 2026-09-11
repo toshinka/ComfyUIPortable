@@ -78,6 +78,14 @@ from h3.adapters.native_source_anchored_still import (  # noqa: E402
     validate_source_anchor_request,
     workflow_metadata as source_anchored_still_workflow_metadata,
 )
+from h3.adapters.native_image_prep import (  # noqa: E402
+    H3ImagePrepRequest,
+    MAX_SEED as IMAGE_PREP_MAX_SEED,
+    ROUTE_IMAGE_PREP,
+    compile_workflow as compile_image_prep,
+    validate_request as validate_image_prep_request,
+    workflow_metadata as image_prep_workflow_metadata,
+)
 from h3.adapters.native_ref2va import (  # noqa: E402
     BASELINE_DURATION_SECONDS as REF2VA_DURATION_SECONDS,
     BASELINE_HEIGHT as REF2VA_HEIGHT,
@@ -106,6 +114,7 @@ VIDEO_SUFFIXES = {".mp4", ".webm", ".mov", ".mkv"}
 REFERENCE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
 STILL_SOURCE_SUFFIXES = {".png", ".jpg", ".jpeg"}
 STILL_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg"}
+PREP_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
 REFERENCE_MAX_BYTES = 20 * 1024 * 1024
 REFERENCE_MAX_PIXELS = 16_777_216
 MULTIPART_OVERHEAD_LIMIT = 512 * 1024
@@ -115,6 +124,7 @@ R2V_VIDEO_SUFFIXES = {".mp4"}
 R2V_VIDEO_MAX_BYTES = 64 * 1024 * 1024
 R2V_ROUTE = "native_ref2va"
 R2V_VIDEO_TYPE = "reference"
+PREP_SCHEMA = "tegaki.h3.ip2.experimental-browser-prep-edit/v1"
 
 
 class BackendError(RuntimeError):
@@ -160,6 +170,39 @@ class StillSourceDecodeError(StillSourceRequestError):
 
 class StillSourceMissingError(StillSourceRequestError):
     error_kind = "still_source_missing"
+
+
+class PrepRequestError(ReferenceRequestError):
+    """An experimental Prep/Edit image failed its local input boundary."""
+
+    error_kind = "prep_upload_failed"
+
+
+class PrepTooLargeError(PrepRequestError):
+    error_kind = "prep_upload_failed"
+    status = HTTPStatus.REQUEST_ENTITY_TOO_LARGE
+
+
+class PrepDecodeError(PrepRequestError):
+    error_kind = "prep_decode_failed"
+
+
+class PrepAssetMissingError(PrepRequestError):
+    error_kind = "prep_asset_missing"
+
+
+class PrepHandoffRequestError(PrepRequestError):
+    """A completed Still could not be promoted into the Prep Source slot."""
+
+    error_kind = "prep_handoff_failed"
+
+
+class PrepHandoffJobNotFoundError(PrepHandoffRequestError):
+    status = HTTPStatus.NOT_FOUND
+
+
+class PrepHandoffConflictError(PrepHandoffRequestError):
+    status = HTTPStatus.CONFLICT
 
 
 class ReferenceVideoRequestError(ReferenceRequestError):
@@ -232,6 +275,34 @@ class StillSourceAsset:
             "width": self.width,
             "height": self.height,
             "preview_url": f"/api/still/sources/{quote(self.source_id, safe='')}",
+        }
+
+
+@dataclass(frozen=True)
+class PrepImageAsset:
+    asset_id: str
+    path: Path
+    name: str
+    filename: str
+    content_type: str
+    width: int
+    height: int
+    source_kind: str = "uploaded"
+    source_job_id: str | None = None
+
+    def public(self) -> dict[str, Any]:
+        # The Browser receives the server-issued id and a preview route only;
+        # the staged filesystem name never crosses the semantic API boundary.
+        return {
+            "id": self.asset_id,
+            "name": self.name,
+            "display_name": self.name,
+            "content_type": self.content_type,
+            "width": self.width,
+            "height": self.height,
+            "source_kind": self.source_kind,
+            "source_job_id": self.source_job_id,
+            "preview_url": f"/api/prep/assets/{quote(self.asset_id, safe='')}",
         }
 
 
@@ -507,7 +578,7 @@ def _error_text(history_entry: Mapping[str, Any]) -> str:
 @dataclass
 class Job:
     job_id: str
-    request: H3Request | H3StillRequest | H3SourceAnchorRequest | ReferenceVideoRequest
+    request: H3Request | H3StillRequest | H3SourceAnchorRequest | H3ImagePrepRequest | ReferenceVideoRequest
     created_at: str
     created_epoch: float
     route: str = ROUTE_T2V
@@ -516,6 +587,8 @@ class Job:
     reference: dict[str, Any] | None = None
     references: dict[str, dict[str, Any] | None] | None = None
     still_source: dict[str, Any] | None = None
+    prep_source: dict[str, Any] | None = None
+    prep_donor: dict[str, Any] | None = None
     reference_video: dict[str, Any] | None = None
     prompt_id: str | None = None
     state: str = "QUEUED"
@@ -544,7 +617,9 @@ class Job:
         }
         has_start_frame = references.get(REFERENCE_ROLE_START_FRAME) is not None
         has_end_frame = references.get(REFERENCE_ROLE_END_FRAME) is not None
-        if self.media_kind == "still":
+        if self.route == ROUTE_IMAGE_PREP:
+            route_label = "Prep · Source + Donor" if self.prep_donor else "Prep · Source"
+        elif self.media_kind == "still":
             route_label = "Source Image" if self.still_source else "Text only"
         elif self.video_type == R2V_VIDEO_TYPE:
             route_label = (
@@ -556,10 +631,21 @@ class Job:
             route_label = reference_route_label(self.request.references)
         request = self.request.public()
         if self.media_kind == "still":
-            request = {
-                **request,
-                "source_id": self.still_source.get("id") if self.still_source else None,
-            }
+            if self.route == ROUTE_IMAGE_PREP:
+                request = {
+                    "prompt": self.request.prompt,
+                    "width": self.request.width,
+                    "height": self.request.height,
+                    "seed": str(self.request.seed),
+                    "steps": self.request.steps,
+                    "source_id": self.prep_source.get("id") if self.prep_source else None,
+                    "donor_id": self.prep_donor.get("id") if self.prep_donor else None,
+                }
+            else:
+                request = {
+                    **request,
+                    "source_id": self.still_source.get("id") if self.still_source else None,
+                }
         return {
             "job_id": self.job_id,
             "prompt_id": self.prompt_id,
@@ -578,6 +664,8 @@ class Job:
             "has_start_frame": has_start_frame,
             "has_end_frame": has_end_frame,
             "source": self.still_source,
+            "prep_source": self.prep_source,
+            "prep_donor": self.prep_donor,
             "request": request,
             "created_at": self.created_at,
             "completed_at": self.completed_at,
@@ -602,6 +690,7 @@ class H1ASession:
         self.jobs: OrderedDict[str, Job] = OrderedDict()
         self.references: dict[str, ReferenceAsset] = {}
         self.still_sources: dict[str, StillSourceAsset] = {}
+        self.prep_assets: dict[str, PrepImageAsset] = {}
         self.r2v_pictures: dict[str, R2VPictureAsset] = {}
         self.r2v_motion_videos: dict[str, R2VMotionVideoAsset] = {}
         self.lock = threading.RLock()
@@ -685,6 +774,59 @@ class H1ASession:
     def get_still_source(self, source_id: str) -> StillSourceAsset | None:
         with self.lock:
             return self.still_sources.get(source_id)
+
+    def _store_prep_asset(
+        self,
+        filename: str,
+        body: bytes,
+        *,
+        name: str | None = None,
+        source_kind: str = "uploaded",
+        source_job_id: str | None = None,
+    ) -> PrepImageAsset:
+        suffix, _actual_format, width, height, content_type = _validate_image_upload(
+            filename,
+            body,
+            suffixes=PREP_IMAGE_SUFFIXES,
+            label="Prep/Edit image",
+            request_error=PrepRequestError,
+            too_large_error=PrepTooLargeError,
+            decode_error=PrepDecodeError,
+        )
+        asset_id = uuid_token()
+        safe_filename = f"{asset_id}{suffix}"
+        path = (self.input_root / safe_filename).resolve()
+        try:
+            path.relative_to(self.input_root)
+            with path.open("xb") as handle:
+                handle.write(body)
+        except OSError as exc:
+            try:
+                path.unlink(missing_ok=True)
+            except OSError:
+                pass
+            raise PrepRequestError("Prep/Edit image could not be stored.") from exc
+        asset = PrepImageAsset(
+            asset_id=asset_id,
+            path=path,
+            name=name or Path(filename).name,
+            filename=safe_filename,
+            content_type=content_type,
+            width=width,
+            height=height,
+            source_kind=source_kind,
+            source_job_id=source_job_id,
+        )
+        with self.lock:
+            self.prep_assets[asset_id] = asset
+        return asset
+
+    def upload_prep_asset(self, filename: str, body: bytes) -> PrepImageAsset:
+        return self._store_prep_asset(filename, body)
+
+    def get_prep_asset(self, asset_id: str) -> PrepImageAsset | None:
+        with self.lock:
+            return self.prep_assets.get(asset_id)
 
     def reference_video_capability(self) -> dict[str, Any]:
         """Return the small UI capability record for Experimental Reference."""
@@ -889,6 +1031,30 @@ class H1ASession:
                 )
             except ReferenceVideoRequestError as exc:
                 raise R2VHandoffConflictError(str(exc)) from exc
+
+    def promote_still_to_prep(self, job_id: str) -> PrepImageAsset:
+        job, path = self._handoff_job_output(
+            job_id,
+            media_kind="still",
+            suffixes=PREP_IMAGE_SUFFIXES,
+            label="Still",
+        )
+        with self.lock:
+            self._assert_no_active_generation_for_handoff()
+            try:
+                body = path.read_bytes()
+            except OSError as exc:
+                raise PrepHandoffConflictError("The completed Still output is unavailable.") from exc
+            try:
+                return self._store_prep_asset(
+                    path.name,
+                    body,
+                    name="Generated Still",
+                    source_kind="generated_still",
+                    source_job_id=job.job_id,
+                )
+            except PrepRequestError as exc:
+                raise PrepHandoffConflictError(str(exc)) from exc
 
     def promote_video_to_motion(self, job_id: str) -> R2VMotionVideoAsset:
         job, path = self._handoff_job_output(
@@ -1152,6 +1318,78 @@ class H1ASession:
                 REFERENCE_ROLE_END_FRAME: None,
             },
             still_source=source.public() if source else None,
+        )
+        with self.lock:
+            self.jobs[job_id] = job
+        try:
+            response = self.backend.submit(graph, self.client_id)
+        except Exception:
+            with self.lock:
+                self.jobs.pop(job_id, None)
+            raise
+        with self.lock:
+            job.prompt_id = response["prompt_id"]
+            job.state = "QUEUED"
+        return job
+
+    def submit_prep(self, payload: Mapping[str, Any]) -> Job:
+        """Submit the semantic IP2 Source-first Prep/Edit route."""
+
+        if not isinstance(payload, Mapping):
+            raise RequestValidationError("Prep/Edit request must be a JSON object.")
+        allowed = {"prompt", "source_id", "donor_id", "seed"}
+        unknown = sorted(set(payload).difference(allowed))
+        if unknown:
+            raise RequestValidationError(
+                "Prep/Edit accepts prompt, source_id, donor_id, and seed only."
+            )
+
+        source_id = payload.get("source_id")
+        if not isinstance(source_id, str) or not SERVER_ASSET_ID_PATTERN.fullmatch(source_id):
+            raise RequestValidationError("Prep Source Image id is invalid.")
+        source = self.get_prep_asset(source_id)
+        if source is None or not source.path.is_file():
+            raise PrepAssetMissingError("Prep Source Image asset is missing.")
+
+        donor_id = payload.get("donor_id")
+        donor: PrepImageAsset | None = None
+        if donor_id not in (None, ""):
+            if not isinstance(donor_id, str) or not SERVER_ASSET_ID_PATTERN.fullmatch(donor_id):
+                raise RequestValidationError("Prep Donor Image id is invalid.")
+            donor = self.get_prep_asset(donor_id)
+            if donor is None or not donor.path.is_file():
+                raise PrepAssetMissingError("Prep Donor Image asset is missing.")
+
+        internal_payload = {
+            "prompt": payload.get("prompt"),
+            "source_path": f"inputs/{source.filename}",
+            "donor_path": f"inputs/{donor.filename}" if donor else None,
+            "seed": payload.get("seed"),
+        }
+        try:
+            request = validate_image_prep_request(internal_payload)
+            graph = compile_image_prep(request)
+        except RequestValidationError:
+            raise
+
+        with self.lock:
+            if any(job.state in {"QUEUED", "RUNNING", "DISCONNECTED"} for job in self.jobs.values()):
+                raise RequestValidationError("Another H3 generation is active.")
+
+        job_id = uuid_token()
+        job = Job(
+            job_id,
+            request,
+            now_iso(),
+            time.time(),
+            route=ROUTE_IMAGE_PREP,
+            media_kind="still",
+            references={
+                REFERENCE_ROLE_START_FRAME: None,
+                REFERENCE_ROLE_END_FRAME: None,
+            },
+            prep_source=source.public(),
+            prep_donor=donor.public() if donor else None,
         )
         with self.lock:
             self.jobs[job_id] = job
@@ -1528,6 +1766,7 @@ class H1AHandler(BaseHTTPRequestHandler):
             raise request_error("Upload must contain a file part.")
         role: str | None = REFERENCE_ROLE_START_FRAME if allow_slot else None
         file_part: tuple[str, bytes] | None = None
+        file_count = 0
         for part in message.walk():
             if part.is_multipart():
                 continue
@@ -1543,12 +1782,16 @@ class H1AHandler(BaseHTTPRequestHandler):
                     except UnicodeDecodeError as exc:
                         raise request_error("Upload slot is malformed.") from exc
                 continue
-            if name in file_names and "filename" in disposition:
+            if "filename" in disposition:
+                file_count += 1
+                if file_count > 1:
+                    raise request_error("Upload must contain exactly one local file.")
                 filename = part.get_filename()
                 body = part.get_payload(decode=True)
                 if not isinstance(filename, str) or not isinstance(body, bytes):
                     raise request_error("Upload file is malformed.")
-                file_part = (filename, body)
+                if name in file_names:
+                    file_part = (filename, body)
         if file_part is not None:
             return role, file_part[0], file_part[1]
         raise request_error("Upload file is missing.")
@@ -1591,6 +1834,22 @@ class H1AHandler(BaseHTTPRequestHandler):
             size_label="Motion Video",
         )
         return filename, body
+
+    def _read_multipart_prep_asset(self, field_name: str) -> tuple[str, bytes]:
+        _role, filename, body = self._read_multipart_upload(
+            file_names={field_name},
+            allow_slot=False,
+            request_error=PrepRequestError,
+            too_large_error=PrepTooLargeError,
+            size_label="Prep/Edit image",
+        )
+        return filename, body
+
+    def _read_prep_handoff_job_id(self) -> str:
+        payload = self._read_json()
+        if set(payload) != {"job_id"} or not isinstance(payload.get("job_id"), str):
+            raise PrepHandoffRequestError("Prep handoff accepts a server-issued job_id only.")
+        return payload["job_id"]
 
     def do_GET(self) -> None:  # noqa: N802
         path = urlparse(self.path).path
@@ -1648,6 +1907,28 @@ class H1AHandler(BaseHTTPRequestHandler):
                             "max_bytes": REFERENCE_MAX_BYTES,
                         },
                     },
+                    "prep": {
+                        "route": ROUTE_IMAGE_PREP,
+                        "schema": PREP_SCHEMA,
+                        "browser_ui": "IMPLEMENTED",
+                        "workflow": image_prep_workflow_metadata(),
+                        "resolution_options": [
+                            {"label": "608 x 352", "width": 608, "height": 352}
+                        ],
+                        "default_steps": 20,
+                        "source": {
+                            "extensions": [".png", ".jpg", ".jpeg", ".webp"],
+                            "max_bytes": REFERENCE_MAX_BYTES,
+                            "required": True,
+                        },
+                        "donor": {
+                            "extensions": [".png", ".jpg", ".jpeg", ".webp"],
+                            "max_bytes": REFERENCE_MAX_BYTES,
+                            "required": False,
+                        },
+                        "internal_packet_frames": 5,
+                        "internal_fps": 24,
+                    },
                     "reference": {
                         "roles": list(REFERENCE_ROLES),
                         "schema": "h3.references/v1",
@@ -1684,6 +1965,11 @@ class H1AHandler(BaseHTTPRequestHandler):
             segments = [segment for segment in path.split("/") if segment]
             if len(segments) == 4:
                 self._serve_still_source(segments[3])
+                return
+        if path.startswith("/api/prep/assets/"):
+            segments = [segment for segment in path.split("/") if segment]
+            if len(segments) == 4:
+                self._serve_prep_asset(segments[3])
                 return
         if path.startswith("/api/r2v/pictures/"):
             segments = [segment for segment in path.split("/") if segment]
@@ -1743,6 +2029,26 @@ class H1AHandler(BaseHTTPRequestHandler):
             body = asset.path.read_bytes()
         except OSError:
             self._send_json(HTTPStatus.NOT_FOUND, {"error": "Still source not found"})
+            return
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", asset.content_type)
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _serve_prep_asset(self, asset_id: str) -> None:
+        if not SERVER_ASSET_ID_PATTERN.fullmatch(asset_id):
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Prep/Edit asset not found"})
+            return
+        asset = self.server.session.get_prep_asset(asset_id)
+        if asset is None or not asset.path.is_file():
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Prep/Edit asset not found"})
+            return
+        try:
+            body = asset.path.read_bytes()
+        except OSError:
+            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Prep/Edit asset not found"})
             return
         self.send_response(HTTPStatus.OK)
         self.send_header("Content-Type", asset.content_type)
@@ -1903,6 +2209,26 @@ class H1AHandler(BaseHTTPRequestHandler):
             if path == "/api/still/generate":
                 payload = self._read_json()
                 job = self.server.session.submit_still(payload)
+                self._send_json(HTTPStatus.ACCEPTED, {"job": job.public()})
+                return
+            if path == "/api/prep/source":
+                filename, body = self._read_multipart_prep_asset("source")
+                asset = self.server.session.upload_prep_asset(filename, body)
+                self._send_json(HTTPStatus.CREATED, {"source": asset.public()})
+                return
+            if path == "/api/prep/donor":
+                filename, body = self._read_multipart_prep_asset("donor")
+                asset = self.server.session.upload_prep_asset(filename, body)
+                self._send_json(HTTPStatus.CREATED, {"donor": asset.public()})
+                return
+            if path == "/api/prep/from-still":
+                job_id = self._read_prep_handoff_job_id()
+                asset = self.server.session.promote_still_to_prep(job_id)
+                self._send_json(HTTPStatus.CREATED, {"source": asset.public()})
+                return
+            if path == "/api/prep/generate":
+                payload = self._read_json()
+                job = self.server.session.submit_prep(payload)
                 self._send_json(HTTPStatus.ACCEPTED, {"job": job.public()})
                 return
             if path == "/api/references":

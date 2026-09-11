@@ -2,6 +2,7 @@ import { activeStatusDetail, previewStatusDetail } from "./job-status-copy.js";
 import { resolveHistorySettings } from "./history-settings.js";
 import { resolveHistoryScalars } from "./history-settings.js";
 import { resolveStillHistorySettings } from "./still-history-settings.js";
+import { resolvePrepHistorySettings } from "./prep-history-settings.js";
 import { validateContinuationSource } from "./continuation-source.js";
 
 const state = {
@@ -19,6 +20,10 @@ const state = {
   referenceUploading: { start_frame: false, end_frame: false },
   stillSource: null,
   stillSourceUploading: false,
+  prepSource: null,
+  prepDonor: null,
+  prepSourceUploading: false,
+  prepDonorUploading: false,
   r2vPicture: null,
   r2vMotionVideo: null,
   r2vPictureUploading: false,
@@ -26,6 +31,11 @@ const state = {
   handoffInFlight: false,
   pollTimer: null,
   backendTimer: null,
+  modeSettings: {
+    video: { prompt: "", seed: "", resolution: "608x352", duration: "5" },
+    still: { prompt: "", seed: "", resolution: "608x352" },
+    prep: { prompt: "", seed: "" },
+  },
 };
 
 const $ = (id) => document.getElementById(id);
@@ -34,6 +44,7 @@ const promptInput = $("prompt");
 const brandMode = $("brand-mode");
 const modeVideo = $("mode-video");
 const modeStill = $("mode-still");
+const modePrep = $("mode-prep");
 const controlColumn = $("control-column");
 const videoTypeCard = $("video-type-card");
 const videoTypeStandard = $("video-type-standard");
@@ -70,6 +81,27 @@ const stillSourceSelected = $("still-source-selected");
 const stillSourceThumbnail = $("still-source-thumbnail");
 const stillSourceName = $("still-source-name");
 const stillSourceStatus = $("still-source-status");
+const prepCard = $("prep-card");
+const prepSourceFile = $("prep-source-file");
+const prepSourceAdd = $("prep-source-add");
+const prepSourceReplace = $("prep-source-replace");
+const prepSourceRemove = $("prep-source-remove");
+const prepSourceEmpty = $("prep-source-empty");
+const prepSourceSelected = $("prep-source-selected");
+const prepSourceThumbnail = $("prep-source-thumbnail");
+const prepSourceName = $("prep-source-name");
+const prepSourceStatus = $("prep-source-status");
+const prepSourceDropzone = document.querySelector('[data-prep-dropzone="source"]');
+const prepDonorFile = $("prep-donor-file");
+const prepDonorAdd = $("prep-donor-add");
+const prepDonorReplace = $("prep-donor-replace");
+const prepDonorRemove = $("prep-donor-remove");
+const prepDonorEmpty = $("prep-donor-empty");
+const prepDonorSelected = $("prep-donor-selected");
+const prepDonorThumbnail = $("prep-donor-thumbnail");
+const prepDonorName = $("prep-donor-name");
+const prepDonorStatus = $("prep-donor-status");
+const prepDonorDropzone = document.querySelector('[data-prep-dropzone="donor"]');
 const referenceFile = $("reference-file");
 const referenceAdd = $("reference-add");
 const referenceReplace = $("reference-replace");
@@ -88,6 +120,7 @@ const endReferenceThumbnail = $("end-reference-thumbnail");
 const endReferenceName = $("end-reference-name");
 const endReferenceStatus = $("end-reference-status");
 const resolutionInput = $("resolution");
+const resolutionField = $("resolution-field");
 const durationInput = $("duration");
 const seedInput = $("seed");
 const stepsInput = $("steps");
@@ -140,7 +173,9 @@ function resolutionValue(option) {
 
 function configuredResolutionOptions(still = false) {
   const videoType = arguments.length > 1 ? arguments[1] : "standard";
-  const configured = still
+  const configured = state.mode === "prep"
+    ? state.config?.prep?.resolution_options
+    : still
     ? state.config?.still?.resolution_options
     : videoType === "reference"
       ? state.config?.reference_video?.resolution_options
@@ -163,8 +198,34 @@ function rememberCurrentResolution() {
   if (resolutionInput.value) state[key] = resolutionInput.value;
 }
 
+function captureModeSettings() {
+  const settings = state.modeSettings[state.mode];
+  if (!settings) return;
+  settings.prompt = promptInput.value;
+  settings.seed = seedInput.value;
+  if (state.mode === "video") {
+    settings.resolution = state.videoResolution;
+    settings.duration = state.videoDuration;
+  } else if (state.mode === "still") {
+    settings.resolution = state.stillResolution;
+  }
+}
+
+function restoreModeSettings(mode) {
+  const settings = state.modeSettings[mode] || {};
+  promptInput.value = settings.prompt || "";
+  seedInput.value = settings.seed || "";
+  if (mode === "video") {
+    state.videoResolution = settings.resolution || state.videoResolution;
+    state.videoDuration = settings.duration || state.videoDuration;
+  } else if (mode === "still") {
+    state.stillResolution = settings.resolution || state.stillResolution;
+  }
+}
+
 function populateResolutionOptions() {
   const still = state.mode === "still";
+  const prep = state.mode === "prep";
   const reference = !still && state.videoType === "reference";
   const key = still ? "stillResolution" : "videoResolution";
   const options = configuredResolutionOptions(still, state.videoType).filter((item) =>
@@ -179,8 +240,9 @@ function populateResolutionOptions() {
     option.textContent = item.label || `${item.width} x ${item.height}`;
     resolutionInput.append(option);
   });
-  if (!reference) state[key] = values.includes(state[key]) ? state[key] : values[0];
-  resolutionInput.value = reference ? values[0] : state[key];
+  if (prep) state.prepResolution = values[0];
+  if (!reference && !prep) state[key] = values.includes(state[key]) ? state[key] : values[0];
+  resolutionInput.value = reference || prep ? values[0] : state[key];
 }
 
 function populateDurationOptions() {
@@ -206,19 +268,21 @@ function referenceVideoEnabled() {
 function updateVideoTypeView() {
   const showingReference = state.mode === "video" && state.videoType === "reference";
   const still = state.mode === "still";
+  const prep = state.mode === "prep";
   videoTypeCard.hidden = state.mode !== "video";
   r2vCard.hidden = !showingReference;
   videoReferenceCard.hidden = state.mode !== "video" || showingReference;
   if (still) videoReferenceCard.hidden = still;
+  if (prep) videoReferenceCard.hidden = true;
   videoTypeStandard.classList.toggle("active", !showingReference);
   videoTypeReference.classList.toggle("active", showingReference);
   videoTypeStandard.setAttribute("aria-pressed", String(!showingReference));
   videoTypeReference.setAttribute("aria-pressed", String(showingReference));
-  resolutionInput.disabled = showingReference;
-  durationInput.disabled = still || showingReference;
-  if (showingReference) {
+  resolutionInput.disabled = showingReference || prep;
+  durationInput.disabled = still || prep || showingReference;
+  if (showingReference || prep) {
     resolutionInput.value = "608x352";
-    durationInput.value = "5";
+    if (showingReference) durationInput.value = "5";
   }
 }
 
@@ -240,45 +304,61 @@ function setVideoType(nextType) {
 }
 
 function setMode(nextMode) {
-  if (nextMode !== "video" && nextMode !== "still") return;
-  rememberCurrentResolution();
+  if (!["video", "still", "prep"].includes(nextMode)) return;
+  captureModeSettings();
   state.mode = nextMode;
   const still = nextMode === "still";
-  modeVideo.classList.toggle("active", !still);
+  const prep = nextMode === "prep";
+  restoreModeSettings(nextMode);
+  modeVideo.classList.toggle("active", nextMode === "video");
   modeStill.classList.toggle("active", still);
-  modeVideo.setAttribute("aria-pressed", String(!still));
+  modePrep.classList.toggle("active", prep);
+  modeVideo.setAttribute("aria-pressed", String(nextMode === "video"));
   modeStill.setAttribute("aria-pressed", String(still));
-  brandMode.textContent = still ? "Still" : "Video";
-  document.title = `TEGAKI / ${still ? "Still" : "Video"}`;
+  modePrep.setAttribute("aria-pressed", String(prep));
+  brandMode.textContent = prep ? "Prep/Edit" : still ? "Still" : "Video";
+  document.title = `TEGAKI / ${prep ? "Prep/Edit" : still ? "Still" : "Video"}`;
   document.body.dataset.mode = nextMode;
   stillSourceCard.hidden = !still;
-  durationField.hidden = still;
+  prepCard.hidden = !prep;
+  durationField.hidden = still || prep;
   populateResolutionOptions();
   populateDurationOptions();
   updateVideoTypeView();
-  controlColumn.setAttribute("aria-label", `${still ? "Still" : "Video"} controls`);
-  previewEmpty.querySelector("#preview-heading").textContent = still
-    ? "Your still will appear here"
-    : "Your video will appear here";
-  $("preview-empty-copy").textContent = still
-    ? "Enter a prompt and generate a Native H3 still."
-    : "Enter a prompt and generate a short Native H3 video.";
-  footerMode.textContent = `H3 / Native ${still ? "Still" : "Video"}`;
+  controlColumn.setAttribute("aria-label", `${prep ? "Prep/Edit" : still ? "Still" : "Video"} controls`);
+  previewEmpty.querySelector("#preview-heading").textContent = prep
+    ? "Your prepared still will appear here"
+    : still
+      ? "Your still will appear here"
+      : "Your video will appear here";
+  $("preview-empty-copy").textContent = prep
+    ? "Add a source image and describe the preparation."
+    : still
+      ? "Enter a prompt and generate a Native H3 still."
+      : "Enter a prompt and generate a short Native H3 video.";
+  promptInput.placeholder = prep ? "Describe the requested image preparation…" : "Describe the video...";
+  footerMode.textContent = `H3 / Native ${prep ? "Prep/Edit" : still ? "Still" : "Video"}`;
   updateGenerateAvailability();
 }
 
 function updateGenerateAvailability() {
   const uploading = Object.values(state.referenceUploading).some(Boolean)
     || state.stillSourceUploading
+    || state.prepSourceUploading
+    || state.prepDonorUploading
     || state.r2vPictureUploading
     || state.r2vMotionUploading
     || state.handoffInFlight;
   const referenceMode = state.mode === "video" && state.videoType === "reference";
   const referenceReady = !referenceMode
     || (referenceVideoEnabled() && state.backend === "READY" && Boolean(state.r2vPicture));
+  const prepMode = state.mode === "prep";
+  const prepReady = !prepMode
+    || (state.backend === "READY" && Boolean(state.prepSource));
   generateButton.disabled = !promptInput.value.trim()
     || uploading
     || !referenceReady
+    || !prepReady
     || Boolean(state.activeJob && !TERMINAL.has(state.activeJob.state));
 }
 
@@ -364,6 +444,81 @@ async function uploadStillSource(file) {
     stillSourceAdd.disabled = false;
     stillSourceReplace.disabled = false;
     stillSourceFile.value = "";
+    updateGenerateAvailability();
+  }
+}
+
+const prepViews = {
+  source: {
+    file: prepSourceFile,
+    add: prepSourceAdd,
+    replace: prepSourceReplace,
+    remove: prepSourceRemove,
+    empty: prepSourceEmpty,
+    selected: prepSourceSelected,
+    thumbnail: prepSourceThumbnail,
+    name: prepSourceName,
+    status: prepSourceStatus,
+  },
+  donor: {
+    file: prepDonorFile,
+    add: prepDonorAdd,
+    replace: prepDonorReplace,
+    remove: prepDonorRemove,
+    empty: prepDonorEmpty,
+    selected: prepDonorSelected,
+    thumbnail: prepDonorThumbnail,
+    name: prepDonorName,
+    status: prepDonorStatus,
+  },
+};
+
+function setPrepAssetView(kind, asset) {
+  const view = prepViews[kind];
+  if (kind === "source") state.prepSource = asset;
+  else state.prepDonor = asset;
+  view.selected.hidden = !asset;
+  view.empty.hidden = Boolean(asset);
+  if (!asset) {
+    view.thumbnail.removeAttribute("src");
+    view.name.textContent = "";
+    view.status.textContent = "";
+    updateGenerateAvailability();
+    return;
+  }
+  view.thumbnail.src = `${asset.preview_url}?v=${encodeURIComponent(asset.id)}`;
+  view.name.textContent = asset.name || (asset.width && asset.height
+    ? `${asset.width} x ${asset.height}`
+    : "Image");
+  view.status.textContent = "";
+  updateGenerateAvailability();
+}
+
+async function uploadPrepAsset(kind, file) {
+  if (!file) return;
+  const view = prepViews[kind];
+  const body = new FormData();
+  body.append(kind, file, file.name);
+  state[`${kind === "source" ? "prepSource" : "prepDonor"}Uploading`] = true;
+  view.add.disabled = true;
+  view.replace.disabled = true;
+  view.status.textContent = `Uploading ${kind === "source" ? "source" : "donor"} image…`;
+  updateGenerateAvailability();
+  try {
+    const result = await requestJson(`/api/prep/${kind}`, { method: "POST", body });
+    const asset = result[kind];
+    if (!asset || typeof asset.id !== "string" || !/^[0-9a-f]{32}$/.test(asset.id)) {
+      throw new Error(`The Prep/Edit ${kind} image was not accepted by the upload boundary.`);
+    }
+    setPrepAssetView(kind, asset);
+  } catch (error) {
+    view.status.textContent = error.message;
+    setDetails(error.message);
+  } finally {
+    state[`${kind === "source" ? "prepSource" : "prepDonor"}Uploading`] = false;
+    view.add.disabled = false;
+    view.replace.disabled = false;
+    view.file.value = "";
     updateGenerateAvailability();
   }
 }
@@ -472,6 +627,8 @@ function singleDroppedFile(event, label) {
 
 function installR2VDropzone(dropzone, label, upload) {
   if (!dropzone) return;
+  const status = $(dropzone.dataset.h3DropStatus)
+    || (label === "Character Image" ? r2vPictureStatus : r2vMotionStatus);
   let dragDepth = 0;
   const clearActive = () => {
     dragDepth = 0;
@@ -497,8 +654,8 @@ function installR2VDropzone(dropzone, label, upload) {
     if (!dragDepth) clearActive();
   });
   dropzone.addEventListener("drop", async (event) => {
-    // This is deliberately scoped to the two R2V slots so dropping a URL on
-    // the rest of the page retains the existing browser behavior.
+    // This is deliberately scoped to the owning slot so dropping a URL on the
+    // rest of the page retains the existing browser behavior.
     if (event.dataTransfer?.types?.length || event.dataTransfer?.files?.length) {
       event.preventDefault();
     }
@@ -506,11 +663,16 @@ function installR2VDropzone(dropzone, label, upload) {
     try {
       await upload(singleDroppedFile(event, label));
     } catch (error) {
-      const status = label === "Character Image" ? r2vPictureStatus : r2vMotionStatus;
       status.textContent = error.message;
       setDetails(error.message);
     }
   });
+}
+
+function installSingleFileDropzone(dropzone, label, upload, status) {
+  if (!dropzone) return;
+  dropzone.dataset.h3DropStatus = status?.id || "";
+  installR2VDropzone(dropzone, label, upload);
 }
 
 function setReferenceSlotView(slot, reference) {
@@ -655,23 +817,37 @@ async function pollJob() {
 async function submitGeneration(event) {
   event.preventDefault();
   if (!promptInput.value.trim()) return;
-  const [width, height] = resolutionInput.value.split("x").map(Number);
   const seedText = seedInput.value.trim();
   const seed = seedText === "" ? "random" : seedText;
   setDetails("");
   try {
-    const payload = {
-      prompt: promptInput.value,
-      width,
-      height,
-      seed,
-      steps: Number(stepsInput.value),
-    };
-    let endpoint = "/api/generate";
+    let endpoint;
+    let payload;
+    if (state.mode === "prep") {
+      if (state.backend !== "READY") throw new Error("Prep/Edit is waiting for the Native backend.");
+      if (!state.prepSource) throw new Error("Source Image is required for Prep/Edit.");
+      endpoint = "/api/prep/generate";
+      payload = {
+        prompt: promptInput.value,
+        source_id: state.prepSource.id,
+        donor_id: state.prepDonor?.id || null,
+        seed,
+      };
+    } else {
+      const [width, height] = resolutionInput.value.split("x").map(Number);
+      payload = {
+        prompt: promptInput.value,
+        width,
+        height,
+        seed,
+        steps: Number(stepsInput.value),
+      };
+      endpoint = "/api/generate";
+    }
     if (state.mode === "still") {
       endpoint = "/api/still/generate";
       if (state.stillSource) payload.source_id = state.stillSource.id;
-    } else {
+    } else if (state.mode === "video") {
       payload.duration = Number(durationInput.value);
       if (state.videoType === "reference") {
         if (state.backend !== "READY") throw new Error("Reference Video is waiting for the Native backend.");
@@ -771,6 +947,36 @@ async function verifyStillSource(source) {
   }
 }
 
+function normalizePrepAsset(value, kind) {
+  const label = kind === "source" ? "Prep Source Image" : "Prep Donor Image";
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`${label} metadata is unavailable.`);
+  }
+  const id = typeof value.id === "string" ? value.id.trim() : "";
+  if (!/^[0-9a-f]{32}$/.test(id)) throw new Error(`${label} metadata is invalid.`);
+  return {
+    ...value,
+    id,
+    preview_url: `/api/prep/assets/${encodeURIComponent(id)}`,
+  };
+}
+
+async function verifyPrepAsset(asset, kind) {
+  const label = kind === "source" ? "Prep Source Image" : "Prep Donor Image";
+  const expected = `/api/prep/assets/${encodeURIComponent(asset.id)}`;
+  let response;
+  try {
+    response = await fetch(expected, { cache: "no-store" });
+  } catch {
+    throw new Error(`${label} could not be verified.`);
+  }
+  if (!response.ok) throw new Error(`${label} is no longer available.`);
+  const contentType = response.headers.get("content-type") || "";
+  if (!/^image\/(png|jpeg|webp)(?:;|$)/i.test(contentType)) {
+    throw new Error(`${label} is not a supported PNG, JPEG, or WebP.`);
+  }
+}
+
 function standardResolutionValues() {
   const configured = state.config?.resolution_options;
   if (Array.isArray(configured) && configured.length) {
@@ -860,6 +1066,7 @@ function applyHistorySettings(settings) {
   stepsInput.value = settings.steps;
   setReferenceSlotView("start_frame", settings.references.start_frame);
   setReferenceSlotView("end_frame", settings.references.end_frame);
+  captureModeSettings();
   updatePromptCount();
 }
 
@@ -869,6 +1076,7 @@ function applyReferenceVideoHistorySettings(settings) {
   stepsInput.value = settings.steps;
   setR2VPictureView(settings.picture);
   setR2VMotionView(settings.motionVideo);
+  captureModeSettings();
   updatePromptCount();
 }
 
@@ -879,13 +1087,33 @@ function applyStillHistorySettings(settings) {
   seedInput.value = settings.seed;
   stepsInput.value = settings.steps;
   setStillSourceView(settings.source);
+  captureModeSettings();
+  updatePromptCount();
+}
+
+function applyPrepHistorySettings(settings) {
+  promptInput.value = settings.prompt;
+  seedInput.value = settings.seed;
+  stepsInput.value = settings.steps;
+  setPrepAssetView("source", settings.source);
+  setPrepAssetView("donor", settings.donor);
+  captureModeSettings();
   updatePromptCount();
 }
 
 async function useHistorySettings(entry) {
   setHistoryActionStatus("Checking saved settings…");
+  const before = snapshotR2VHandoffState();
   try {
-    if (entry.media_kind === "still") {
+    if (entry.media_kind === "still" && entry.route === "native_image_prep") {
+      const settings = await resolvePrepHistorySettings(entry, {
+        stepsValue: stepsInput.value,
+        maxPromptLength: promptInput.maxLength,
+        verifyAsset: verifyPrepAsset,
+      });
+      setMode("prep");
+      applyPrepHistorySettings(settings);
+    } else if (entry.media_kind === "still") {
       const settings = await resolveStillHistorySettings(entry, {
         resolutionValues: configuredResolutionOptions(true).map(resolutionValue),
         stepsValue: stepsInput.value,
@@ -911,6 +1139,7 @@ async function useHistorySettings(entry) {
     }
     setHistoryActionStatus("Settings loaded.");
   } catch (error) {
+    restoreR2VHandoffState(before);
     setHistoryActionStatus(`Settings were not changed. ${error.message}`, true);
   }
 }
@@ -936,12 +1165,20 @@ function snapshotR2VHandoffState() {
       end_frame: state.references.end_frame,
     },
     stillSource: state.stillSource,
+    prepSource: state.prepSource,
+    prepDonor: state.prepDonor,
     r2vPicture: state.r2vPicture,
     r2vMotionVideo: state.r2vMotionVideo,
+    modeSettings: Object.fromEntries(
+      Object.entries(state.modeSettings).map(([mode, settings]) => [mode, { ...settings }]),
+    ),
   };
 }
 
 function restoreR2VHandoffState(snapshot) {
+  state.modeSettings = Object.fromEntries(
+    Object.entries(snapshot.modeSettings || {}).map(([mode, settings]) => [mode, { ...settings }]),
+  );
   state.mode = snapshot.mode;
   state.videoType = snapshot.videoType;
   setMode(snapshot.mode);
@@ -957,6 +1194,8 @@ function restoreR2VHandoffState(snapshot) {
   setReferenceSlotView("start_frame", snapshot.references.start_frame);
   setReferenceSlotView("end_frame", snapshot.references.end_frame);
   setStillSourceView(snapshot.stillSource);
+  setPrepAssetView("source", snapshot.prepSource);
+  setPrepAssetView("donor", snapshot.prepDonor);
   setR2VPictureView(snapshot.r2vPicture);
   setR2VMotionView(snapshot.r2vMotionVideo);
   populateResolutionOptions();
@@ -1020,6 +1259,52 @@ async function useHistoryHandoff(entry, kind) {
   } catch (error) {
     restoreR2VHandoffState(snapshot);
     setHistoryActionStatus(`Handoff was not applied. ${error.message}`, true);
+  } finally {
+    state.handoffInFlight = false;
+    updateGenerateAvailability();
+  }
+}
+
+async function usePrepSourceHandoff(entry) {
+  if (state.handoffInFlight) return;
+  if (generationIsActive()) {
+    setHistoryActionStatus("Handoff is unavailable while a generation is active.", true);
+    return;
+  }
+  if (
+    !entry
+    || entry.state !== "COMPLETED"
+    || entry.media_kind !== "still"
+    || typeof entry.image_url !== "string"
+    || !entry.image_url.trim()
+  ) {
+    setHistoryActionStatus("Edit in Prep is available only for a completed Still result.", true);
+    return;
+  }
+  const snapshot = snapshotR2VHandoffState();
+  state.handoffInFlight = true;
+  updateGenerateAvailability();
+  setHistoryActionStatus("Preparing Prep Source…");
+  try {
+    const result = await requestJson("/api/prep/from-still", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ job_id: entry.job_id }),
+    });
+    const asset = normalizePrepAsset(result.source, "source");
+    if (asset.source_kind !== "generated_still" || asset.source_job_id !== entry.job_id) {
+      throw new Error("Prep Source provenance could not be verified.");
+    }
+    await verifyPrepAsset(asset, "source");
+    if (generationIsActive()) {
+      throw new Error("Handoff was stopped because a generation became active.");
+    }
+    setMode("prep");
+    setPrepAssetView("source", asset);
+    setHistoryActionStatus("Generated Still is ready as the new Prep Source.");
+  } catch (error) {
+    restoreR2VHandoffState(snapshot);
+    setHistoryActionStatus(`Edit in Prep was not applied. ${error.message}`, true);
   } finally {
     state.handoffInFlight = false;
     updateGenerateAvailability();
@@ -1295,8 +1580,10 @@ function createHistoryCard(entry) {
   const content = document.createElement("div");
   content.className = "history-content";
   const kindBadge = document.createElement("span");
-  kindBadge.className = `history-kind-badge ${isStill ? "still" : "video"}`;
+  const isPrep = isStill && entry.route === "native_image_prep";
+  kindBadge.className = `history-kind-badge ${isPrep ? "prep" : isStill ? "still" : "video"}`;
   kindBadge.textContent = isStill ? "Still" : "Video";
+  if (isPrep) kindBadge.textContent = "Prep/Edit";
   const open = document.createElement("button");
   open.type = "button";
   const routeLabel = entry.route_label || (
@@ -1326,6 +1613,14 @@ function createHistoryCard(entry) {
   actions.className = "history-actions";
   actions.append(useSettings);
   if (isStill && entry.state === "COMPLETED" && typeof entry.image_url === "string" && entry.image_url.trim()) {
+    const prepButton = document.createElement("button");
+    prepButton.type = "button";
+    prepButton.className = "quiet-button history-handoff";
+    prepButton.textContent = "Edit in Prep";
+    prepButton.setAttribute("aria-label", `Use ${routeLabel} Still as the new Prep Source`);
+    prepButton.addEventListener("click", () => usePrepSourceHandoff(entry));
+    actions.append(prepButton);
+
     const characterButton = document.createElement("button");
     characterButton.type = "button";
     characterButton.className = "quiet-button history-handoff";
@@ -1405,6 +1700,7 @@ form.addEventListener("submit", submitGeneration);
 cancelButton.addEventListener("click", cancelGeneration);
 modeVideo.addEventListener("click", () => setMode("video"));
 modeStill.addEventListener("click", () => setMode("still"));
+modePrep.addEventListener("click", () => setMode("prep"));
 videoTypeStandard.addEventListener("click", () => setVideoType("standard"));
 videoTypeReference.addEventListener("click", () => setVideoType("reference"));
 $("random-seed").addEventListener("click", () => { seedInput.value = ""; seedInput.focus(); });
@@ -1420,6 +1716,14 @@ stillSourceAdd.addEventListener("click", () => stillSourceFile.click());
 stillSourceReplace.addEventListener("click", () => stillSourceFile.click());
 stillSourceFile.addEventListener("change", () => uploadStillSource(stillSourceFile.files?.[0]));
 stillSourceRemove.addEventListener("click", () => setStillSourceView(null));
+prepSourceAdd.addEventListener("click", () => prepSourceFile.click());
+prepSourceReplace.addEventListener("click", () => prepSourceFile.click());
+prepSourceFile.addEventListener("change", () => uploadPrepAsset("source", prepSourceFile.files?.[0]));
+prepSourceRemove.addEventListener("click", () => setPrepAssetView("source", null));
+prepDonorAdd.addEventListener("click", () => prepDonorFile.click());
+prepDonorReplace.addEventListener("click", () => prepDonorFile.click());
+prepDonorFile.addEventListener("change", () => uploadPrepAsset("donor", prepDonorFile.files?.[0]));
+prepDonorRemove.addEventListener("click", () => setPrepAssetView("donor", null));
 r2vPictureAdd.addEventListener("click", () => r2vPictureFile.click());
 r2vPictureReplace.addEventListener("click", () => r2vPictureFile.click());
 r2vPictureFile.addEventListener("change", () => uploadR2VPicture(r2vPictureFile.files?.[0]));
@@ -1430,11 +1734,15 @@ r2vMotionFile.addEventListener("change", () => uploadR2VMotionVideo(r2vMotionFil
 r2vMotionRemove.addEventListener("click", () => setR2VMotionView(null));
 installR2VDropzone(r2vPictureDropzone, "Character Image", uploadR2VPicture);
 installR2VDropzone(r2vMotionDropzone, "Motion Video", uploadR2VMotionVideo);
+installSingleFileDropzone(prepSourceDropzone, "Prep Source Image", (file) => uploadPrepAsset("source", file), prepSourceStatus);
+installSingleFileDropzone(prepDonorDropzone, "Prep Donor Image", (file) => uploadPrepAsset("donor", file), prepDonorStatus);
 
 updatePromptCount();
 setReferenceSlotView("start_frame", null);
 setReferenceSlotView("end_frame", null);
 setStillSourceView(null);
+setPrepAssetView("source", null);
+setPrepAssetView("donor", null);
 setMode("video");
 loadConfig();
 loadHistory();

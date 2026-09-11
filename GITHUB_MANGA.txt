@@ -41,28 +41,30 @@ integration remains NOT PERFORMED. M3B-LR7 is PUBLISHED / SOL REVIEWED with
 final result EFFECT_MASK_INTERACTION_CONFIRMED. M3B-LR8 is PUBLISHED /
 SOL REVIEWED with final classification CORE_GLOBAL_QUALIFIED.
 M3B research qualification is CLOSED FOR CURRENT CLEAN-GLOBAL CANDIDATE.
-Production ControlNet integration: M3B-PI1 BACKEND COMPLETED LOCALLY.
-M3B-PI1 is COMPLETED. Active Card: NONE.
+Production backend integration: COMPLETE.
+M3B-PI1: PUBLISHED / SOL REVIEWED (PI1_BACKEND_INTEGRATED).
+Automatic product routing: COMPLETE.
+M3B-PI2 is COMPLETED. Active Card: NONE.
 
 Latest completed operational work:
-M3B-PI1 — Optional CLEAN Guide Production Backend Integration.
-ComfyUI core ControlNetApplyAdvanced with TegakiMangaGenerationGuideBridge
-promoted to production guided workflow MINIMUM_HAND_MANGA_GUIDED_DRAFT.json
-leaving canonical MINIMUM_HAND_MANGA_DRAFT.json completely untouched.
-The 4-run production matrix, runtime provenance, visual review, regressions,
-and RAW independence proof completed with final local classification
-PI1_BACKEND_INTEGRATED. Publication: LOCAL / Owner push required.
+M3B-PI2 — Minimum-Hand Automatic Guide Routing & Product Generate Integration.
+Deterministic routing between STANDARD_NO_GUIDE and GUIDED_CLEAN_GLOBAL
+integrated via backend authority endpoint POST /tegaki/manga/generation/prepare
+and product Generate Draft button with live route badge in Minimum-Hand Scene Editor.
+The 6-test browser/live matrix (B0–B5), 14/14 Python contract tests, 10/10 JS parity
+tests, and full regressions completed with classification
+PI2_AUTO_ROUTING_INTEGRATED. Publication: LOCAL / Owner push required.
 
 Latest published operational work:
-M3B-LR8 — Core CAST_GLOBAL Robustness Qualification.
+M3B-PI1 — Optional CLEAN Guide Production Backend Integration.
 Publication: PUBLISHED
-SOL review: PASS / CORE_GLOBAL_QUALIFIED classification
+SOL review: PASS / PI1_BACKEND_INTEGRATED classification
 Intermediate milestone acceptance: ACCEPTED_BY_DELEGATED_SOL
 
 Latest operational handoff
 --------------------------
 Latest SOL-verified public commit:
-b5c79b85ed2fdeec1bf30254945db569666ecfa4
+45487bc741a9f6bb1f8025f50a27868fcc1108ae
 
 M3A.1 Core Implementation SHA:
 a7f0baaa89a2e315b0492573c9da19e50727928b
@@ -71,22 +73,22 @@ M3A.1 Current Closure Review Target:
 ad91c9277715e998663e8c12b6c37cca16e53955
 
 Latest published Card:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION.md
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/completed/M3B_PI1_OPTIONAL_CLEAN_GUIDE_PRODUCTION_BACKEND_INTEGRATION.md
 
 Latest published report:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION_REPORT.md
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/M3B_PI1_OPTIONAL_CLEAN_GUIDE_PRODUCTION_BACKEND_INTEGRATION_REPORT.md
 
 Latest published manifest:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_lr8/M3B_LR8_MANIFEST.json
+https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_pi1/M3B_PI1_MANIFEST.json
 
 Latest completed Card:
-docs/manga/cards/completed/M3B_PI1_OPTIONAL_CLEAN_GUIDE_PRODUCTION_BACKEND_INTEGRATION.md
+docs/manga/cards/completed/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING.md
 
 Latest completed local report:
-docs/manga/reports/M3B_PI1_OPTIONAL_CLEAN_GUIDE_PRODUCTION_BACKEND_INTEGRATION_REPORT.md
+docs/manga/reports/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING_REPORT.md
 
 Latest local manifest:
-docs/manga/verification/m3b_pi1/M3B_PI1_MANIFEST.json
+docs/manga/verification/m3b_pi2/M3B_PI2_MANIFEST.json
 
 Browser technical verification:
 PASS

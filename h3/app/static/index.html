@@ -19,6 +19,7 @@
         <div class="mode-switch" role="group" aria-label="Media mode">
           <button class="mode-button active" id="mode-video" type="button" data-mode="video" aria-pressed="true">Video</button>
           <button class="mode-button" id="mode-still" type="button" data-mode="still" aria-pressed="false">Still</button>
+          <button class="mode-button" id="mode-prep" type="button" data-mode="prep" aria-pressed="false">Prep/Edit</button>
         </div>
         <div class="backend-pill connecting" id="backend-pill" aria-live="polite">
           <span class="status-dot" aria-hidden="true"></span>
@@ -214,8 +215,69 @@
             </div>
           </section>
 
+          <section class="reference-card prep-card" id="prep-card" aria-labelledby="prep-heading" hidden>
+            <div class="reference-heading-row">
+              <div>
+                <label class="field-label" id="prep-heading">Prep/Edit</label>
+                <div class="reference-helper">Source-first image preparation<br /><span>The source guides a recognizable subject and general framing; results may vary.</span></div>
+              </div>
+            </div>
+            <div class="prep-contract">Fixed Native baseline: 608 x 352 · 20 steps</div>
+            <div class="reference-slots">
+              <div class="reference-slot prep-source-slot" data-prep-dropzone="source">
+                <div class="reference-slot-heading">
+                  <div>
+                    <strong>Source Image <span class="required-mark">Required</span></strong>
+                    <span>One PNG, JPEG, or WebP</span>
+                  </div>
+                  <input id="prep-source-file" type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" hidden />
+                  <button class="quiet-button reference-add" id="prep-source-add" type="button">Add image</button>
+                </div>
+                <div class="reference-slot-empty" id="prep-source-empty">No Source Image selected.</div>
+                <div class="prep-drop-hint">Drop one local image here, or use Add image.</div>
+                <div class="reference-selected" id="prep-source-selected" hidden>
+                  <img id="prep-source-thumbnail" class="reference-thumbnail" alt="Selected Prep Source Image" />
+                  <div class="reference-selected-body">
+                    <strong>Source Image</strong>
+                    <span id="prep-source-name" class="reference-name"></span>
+                    <div class="reference-actions">
+                      <button class="quiet-button" id="prep-source-replace" type="button">Replace</button>
+                      <button class="quiet-button" id="prep-source-remove" type="button">Remove</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="reference-status" id="prep-source-status" aria-live="polite"></div>
+              </div>
+              <div class="reference-slot prep-donor-slot" data-prep-dropzone="donor">
+                <div class="reference-slot-heading">
+                  <div>
+                    <strong>Donor Image <span class="optional-mark">Experimental</span></strong>
+                    <span>Optional attribute reference</span>
+                  </div>
+                  <input id="prep-donor-file" type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" hidden />
+                  <button class="quiet-button reference-add" id="prep-donor-add" type="button">Add image</button>
+                </div>
+                <div class="prep-donor-helper">Optional donor attributes can influence more of the image than the requested attribute. Donor use is experimental.</div>
+                <div class="reference-slot-empty" id="prep-donor-empty">No Donor Image selected.</div>
+                <div class="prep-drop-hint">Drop one local image here, or use Add image.</div>
+                <div class="reference-selected" id="prep-donor-selected" hidden>
+                  <img id="prep-donor-thumbnail" class="reference-thumbnail" alt="Selected Prep Donor Image" />
+                  <div class="reference-selected-body">
+                    <strong>Donor Image</strong>
+                    <span id="prep-donor-name" class="reference-name"></span>
+                    <div class="reference-actions">
+                      <button class="quiet-button" id="prep-donor-replace" type="button">Replace</button>
+                      <button class="quiet-button" id="prep-donor-remove" type="button">Remove</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="reference-status" id="prep-donor-status" aria-live="polite"></div>
+              </div>
+            </div>
+          </section>
+
           <div class="control-grid">
-            <div>
+            <div id="resolution-field">
               <label class="field-label" for="resolution">Resolution</label>
               <select id="resolution" name="resolution">
                 <option value="608x352">608 x 352</option>
