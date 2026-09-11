@@ -13,17 +13,19 @@ M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`.
 Latest SOL-verified public commit: `45487bc741a9f6bb1f8025f50a27868fcc1108ae`.
 Latest published PI2 commit: `f43acfc5ae26c0ce8cb66b2bb1cfbbecad43d740`.
 M3B-PI2: **PUBLISHED / TECHNICAL PASS**.
-M3B-PI2 Browser closure: **PENDING**.
-M3B-PI2 milestone acceptance: **PENDING**.
-M3B-PI2-BC1: **ACTIVE**.
+M3B-PI2 Browser closure: **PI2_BROWSER_CLOSED** (via M3B-PI2-BC1).
+M3B-PI2 milestone acceptance: **PENDING_SOL_REVIEW**.
+M3B-PI2-BC1: **COMPLETED**.
 Final Owner product review: **DEFERRED**.
 
 Latest published Card:
 [M3B-PI2 — Minimum-Hand Automatic Guide Routing & Product Generate Integration](completed/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING.md)
-Active Card: **M3B-PI2-BC1** ([`current/M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE.md`](current/M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE.md)).
+Active Card: **NONE**.
 Latest completed Card:
+[M3B-PI2-BC1 — Real Browser Product Flow Closure](completed/M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE.md)
+Preceding completed Card:
 [M3B-PI2 — Minimum-Hand Automatic Guide Routing & Product Generate Integration](completed/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING.md)
-Stage 1 inventory stop: BLOCKED (`CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED`); LR2R1 technical result: PASS / QUALITY WEAK; LR3 final SOL result: PASS / OPTION_A_INCONCLUSIVE; Derived CLEAN Guide quality improvement: VERIFIED; placement consistency: NOT VERIFIED; Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE; Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE; LR4 result: PASS / LOCALITY_SUPPORTED; LR5 result: PASS / CAST_MASKED_CONFLICT with HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED; LR6 result: PASS / SOFT_MASK_CONFLICT (key finding: SOFTENING FIGURE EFFECT-MASK EDGE DID NOT REMOVE VISUAL BOUNDARY); LR7 result: PASS / EFFECT_MASK_INTERACTION_CONFIRMED; LR8 result: PASS / CORE_GLOBAL_QUALIFIED (3 IMPROVED, 3 NEUTRAL, 0 REGRESSED; 6/6 figure count not worse; ComfyUI core ControlNetApplyAdvanced verified with 0 ACN nodes); M3B-PI1 result: PASS / PI1_BACKEND_INTEGRATED (4/4 live production runs PASS, 0 ACN nodes, 0 effect masks, 12/12 bridge unit tests PASS, bit-exact CLEAN parity PASS, canonical no-guide workflow untouched); M3B-PI2 result: PASS / PI2_AUTO_ROUTING_INTEGRATED (6/6 live matrix PASS, B0-B5 browser verified, 14/14 Python contract tests, 10/10 JS parity tests, full regressions PASS); Production backend integration: COMPLETE; Automatic product routing: COMPLETE; M3A.1 milestone acceptance: ACCEPTED_BY_DELEGATED_SOL; Final Owner product review: DEFERRED; Active Card: NONE.
+Stage 1 inventory stop: BLOCKED (`CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED`); LR2R1 technical result: PASS / QUALITY WEAK; LR3 final SOL result: PASS / OPTION_A_INCONCLUSIVE; Derived CLEAN Guide quality improvement: VERIFIED; placement consistency: NOT VERIFIED; Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE; Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE; LR4 result: PASS / LOCALITY_SUPPORTED; LR5 result: PASS / CAST_MASKED_CONFLICT with HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED; LR6 result: PASS / SOFT_MASK_CONFLICT (key finding: SOFTENING FIGURE EFFECT-MASK EDGE DID NOT REMOVE VISUAL BOUNDARY); LR7 result: PASS / EFFECT_MASK_INTERACTION_CONFIRMED; LR8 result: PASS / CORE_GLOBAL_QUALIFIED (3 IMPROVED, 3 NEUTRAL, 0 REGRESSED; 6/6 figure count not worse; ComfyUI core ControlNetApplyAdvanced verified with 0 ACN nodes); M3B-PI1 result: PASS / PI1_BACKEND_INTEGRATED (4/4 live production runs PASS, 0 ACN nodes, 0 effect masks, 12/12 bridge unit tests PASS, bit-exact CLEAN parity PASS, canonical no-guide workflow untouched); M3B-PI2 result: PASS / PI2_AUTO_ROUTING_INTEGRATED (6/6 live matrix PASS, B0-B5 browser verified, 14/14 Python contract tests, 10/10 JS parity tests, full regressions PASS); M3B-PI2-BC1 result: PASS / PI2_BROWSER_CLOSED (Playwright Chrome real browser closure B0-B5, live route badge verification, one-action disable/enable, persistence/reload, double-submit protection); Production backend integration: COMPLETE; Automatic product routing: COMPLETE; M3A.1 milestone acceptance: ACCEPTED_BY_DELEGATED_SOL; Final Owner product review: DEFERRED; Active Card: NONE.
 
 M3B-LR1 is closed for its bounded foundation slice. M3B-LR2 is published and
 closed as a valid bounded inventory stop. M3B-LR2R1 is locally completed in
@@ -31,7 +33,7 @@ completed/ with the pinned model, verified shared storage, A/B evidence, and
 canonical regression. M3B-LR3 is completed in completed/ with final SOL result
 `OPTION_A_INCONCLUSIVE`; M3B-LR4 is published in completed/ with
 `LOCALITY_SUPPORTED`; M3B-LR5 is published in completed/ with
-`CAST_MASKED_CONFLICT`; M3B-LR6 is published in completed/ with `SOFT_MASK_CONFLICT`; M3B-LR7 is completed locally with `EFFECT_MASK_INTERACTION_CONFIRMED`; M3B-LR8 is published and completed with `CORE_GLOBAL_QUALIFIED`; M3B-PI1 is published and completed with `PI1_BACKEND_INTEGRATED`; M3B-PI2 is completed locally with `PI2_AUTO_ROUTING_INTEGRATED`. Active Card: NONE. Production ControlNet integration: COMPLETE. Automatic product routing: COMPLETE. Final Owner product review remains deferred.
+`CAST_MASKED_CONFLICT`; M3B-LR6 is published in completed/ with `SOFT_MASK_CONFLICT`; M3B-LR7 is completed locally with `EFFECT_MASK_INTERACTION_CONFIRMED`; M3B-LR8 is published and completed with `CORE_GLOBAL_QUALIFIED`; M3B-PI1 is published and completed with `PI1_BACKEND_INTEGRATED`; M3B-PI2 is completed with `PI2_AUTO_ROUTING_INTEGRATED`; M3B-PI2-BC1 is completed with `PI2_BROWSER_CLOSED`. Active Card: NONE. Production ControlNet integration: COMPLETE. Automatic product routing: COMPLETE. Final Owner product review remains deferred.
 When work resumes, SOL audits [`WEBGPT_SOL_LUNA_HANDOFF.md`](../WEBGPT_SOL_LUNA_HANDOFF.md)
 and issues exactly one new limited Card in [`current/`](current/README.md). Do not copy a
 completed Card as a new instruction.
@@ -70,6 +72,7 @@ completed Card as a new instruction.
 | M3B-LR8 | [`M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION.md`](completed/M3B_LR8_CORE_CAST_GLOBAL_ROBUSTNESS_QUALIFICATION.md) |
 | M3B-PI1 | [`M3B_PI1_OPTIONAL_CLEAN_GUIDE_PRODUCTION_BACKEND_INTEGRATION.md`](completed/M3B_PI1_OPTIONAL_CLEAN_GUIDE_PRODUCTION_BACKEND_INTEGRATION.md) |
 | M3B-PI2 | [`M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING.md`](completed/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING.md) |
+| M3B-PI2-BC1 | [`M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE.md`](completed/M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE.md) |
 
 ## Naming rule
 

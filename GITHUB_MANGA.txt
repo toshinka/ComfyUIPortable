@@ -73,13 +73,16 @@ M3B-PI2:
 PUBLISHED / TECHNICAL PASS
 
 M3B-PI2 Browser closure:
-PENDING
+PI2_BROWSER_CLOSED (via M3B-PI2-BC1)
 
 M3B-PI2 milestone acceptance:
-PENDING
+PENDING_SOL_REVIEW
 
 M3B-PI2-BC1:
-ACTIVE
+COMPLETED
+
+Active Card:
+NONE
 
 Final Owner product review:
 DEFERRED
@@ -100,13 +103,13 @@ Latest published manifest:
 https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/verification/m3b_pi2/M3B_PI2_MANIFEST.json
 
 Latest completed Card:
-docs/manga/cards/completed/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING.md
+docs/manga/cards/completed/M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE.md
 
 Latest completed local report:
-docs/manga/reports/M3B_PI2_MINIMUM_HAND_AUTOMATIC_GUIDE_ROUTING_REPORT.md
+docs/manga/reports/M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE_REPORT.md
 
 Latest local manifest:
-docs/manga/verification/m3b_pi2/M3B_PI2_MANIFEST.json
+docs/manga/verification/m3b_pi2_bc1/M3B_PI2_BC1_MANIFEST.json
 
 Browser technical verification:
 PASS
@@ -147,10 +150,10 @@ M3B-LR5 key failure: HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED
 M3B-LR6: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / SOFT_MASK_CONFLICT
 M3B-LR7: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / EFFECT_MASK_INTERACTION_CONFIRMED
 M3B-LR8: PUBLISHED / SOL REVIEWED / CORE_GLOBAL_QUALIFIED
-Active Card: M3B-PI2-BC1
+Active Card: NONE
 
 Next:
-M3B-PI2-BC1 Real Browser Product Flow Closure is ACTIVE.
+Awaiting Web GPT SOL review of M3B-PI2-BC1 real browser closure evidence.
 
 Completed review slice:
 M3B-LR1 — Rough Guide Foundation Long-Run Batch.

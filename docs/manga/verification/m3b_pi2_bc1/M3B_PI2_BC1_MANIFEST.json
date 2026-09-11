@@ -1,0 +1,21 @@
+{
+  "card": "M3B-PI2-BC1",
+  "executor": "Gemini 3.8 Flash",
+  "pi2_public_sha": "f43acfc5ae26c0ce8cb66b2bb1cfbbecad43d740",
+  "real_browser_used": true,
+  "api_runner_used_as_browser_substitute": false,
+  "b0": "PASS",
+  "b1": "PASS",
+  "b2": "PASS",
+  "b3": "PASS",
+  "b4": "PASS",
+  "b5": "PASS",
+  "one_action_disable": "PASS",
+  "reenable": "PASS",
+  "double_submit": "PASS",
+  "persistence": "PASS",
+  "schema_changed": false,
+  "source_repair_performed": false,
+  "browser_classification": "CLOSED",
+  "final_owner_product_review": "DEFERRED"
+}
