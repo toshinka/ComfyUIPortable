@@ -4,11 +4,13 @@ import { resolveHistoryScalars } from "./history-settings.js";
 import { resolveStillHistorySettings } from "./still-history-settings.js";
 import { resolvePrepHistorySettings } from "./prep-history-settings.js";
 import { validateContinuationSource } from "./continuation-source.js";
+import { resolveBackendStatusPresentation } from "./backend-status-presentation.js";
 
 const state = {
   mode: "video",
   videoType: "standard",
   backend: "CONNECTING",
+  backendStatusDetail: "",
   config: null,
   videoResolution: "608x352",
   stillResolution: "608x352",
@@ -176,8 +178,22 @@ function setBackendStatus(next, message = "") {
   state.backend = next;
   backendPill.className = `backend-pill ${next.toLowerCase()}`;
   backendLabel.textContent = next === "READY" ? "Ready" : next === "DISCONNECTED" ? "Backend disconnected" : "Connecting";
-  if (message && !state.activeJob && !state.submitting) statusDetail.textContent = message;
+  const presentation = resolveBackendStatusPresentation({
+    previousBackendDetail: state.backendStatusDetail,
+    next,
+    message,
+    hasActiveJob: Boolean(state.activeJob),
+    submitting: state.submitting,
+    currentDetail: statusDetail.textContent,
+  });
+  statusDetail.textContent = presentation.detail;
+  state.backendStatusDetail = presentation.backendDetail;
   updateGenerateAvailability();
+}
+
+function setStatusDetail(message) {
+  statusDetail.textContent = message;
+  state.backendStatusDetail = "";
 }
 
 function resolutionValue(option) {
@@ -392,7 +408,7 @@ function renderSubmittingState() {
   submitStatus.textContent = state.submitting ? "Submitting request…" : "";
   if (state.submitting) {
     generationStatus.textContent = "Submitting";
-    statusDetail.textContent = activeStatusDetail({ state: "SUBMITTING" });
+    setStatusDetail(activeStatusDetail({ state: "SUBMITTING" }));
     cancelButton.hidden = true;
   }
   updateGenerateAvailability();
@@ -802,7 +818,7 @@ function routeLabelFor(job) {
 
 function renderActiveJobStatus(job) {
   generationStatus.textContent = statusLabelForJob(job);
-  statusDetail.textContent = activeStatusDetail(job);
+  setStatusDetail(activeStatusDetail(job));
   cancelButton.hidden = !job.cancel_available;
   if (job.state === "FAILED" || job.state === "DISCONNECTED") {
     setDetails(activeStatusDetail(job));
@@ -867,7 +883,7 @@ async function pollJob() {
       return;
     }
   } catch (error) {
-    statusDetail.textContent = error.message;
+    setStatusDetail(error.message);
   }
   state.pollTimer = window.setTimeout(pollJob, 1400);
 }
@@ -954,6 +970,7 @@ async function submitGeneration(event) {
     }
     state.activeJob = null;
     generationStatus.textContent = "Failed";
+    state.backendStatusDetail = "";
     statusDetail.textContent = "Generation was not submitted.";
     setDetails(error.message);
     updateGenerateAvailability();
@@ -1754,7 +1771,7 @@ async function loadHistory() {
     if (!state.previewJob) showPreviewJob(body.entries[0]);
   } catch (error) {
     historyCount.textContent = "—";
-    statusDetail.textContent = error.message;
+    setStatusDetail(error.message);
   }
 }
 
