@@ -1,7 +1,8 @@
-﻿# Manga Product Integration Boundary
+# Manga Product Integration Boundary
 
 Updated: 2026-09-11 JST
-Milestone: M3B-PC1
+Source: XT-ALIGN1 / Manga Integration Boundary Synchronization
+M3B: M3B_PRODUCTION_CLOSED
 Classification: MANGA_READY_FOR_INTEGRATION_DESIGN
 Shared-shell implementation: NOT AUTHORIZED
 
@@ -84,24 +85,51 @@ Shared-shell implementation: NOT AUTHORIZED
 
 ---
 
-## 8. Shared-Runtime Assumptions
+## 8. Shared Installation and Runtime Hosting
 
-- **Common ComfyUI Runtime**: Both Manga and H3 run inside the same Portable ComfyUI execution environment (`127.0.0.1:8188`).
-- **Domain Independence**: Shared execution environment does NOT imply merged domain logic. Each domain maintains its own custom nodes, endpoints, schemas, workflows, and tests.
+- **Shared Portable Installation**: Both tracks are distributed within the same `ComfyUIPortable` repository / installation.
+- **Runtime Hosting**: The currently verified domain runtime profiles are not identical.
+  - Manga requires its Manga-capable custom-node/runtime path.
+  - H3 is currently verified using an isolated Native backend profile with all custom nodes disabled (`--disable-all-custom-nodes`).
+- **Single Shared ComfyUI Backend Process**: `NOT YET VERIFIED`.
+  - A future shared TEGAKI shell must treat backend hosting as an architecture decision rather than assuming one already-compatible `8188` process.
+- **Future Runtime Hosting Categories** (Classification: `RUNTIME HOSTING: OPEN DESIGN QUESTION`):
+  - A. One compatible shared backend profile.
+  - B. Separate H3 and Manga backend processes.
+  - C. Common launcher supervising domain-specific services.
+  - D. Another architecture selected by future cross-track review.
+- **Domain Independence**: Shared installation does NOT imply merged domain logic. Each domain maintains its own custom nodes, endpoints, schemas, workflows, and tests.
 
 ---
 
-## 9. Areas Future Shell MAY Wrap
+## 9. Provisional Information Architecture (IA)
+
+Coordination vocabulary only:
+
+```text
+TEGAKI
+├─ H3
+│  ├─ Video
+│  ├─ Still
+│  └─ Prep/Edit
+└─ Manga
+```
+
+Status: `CONCEPTUAL ONLY / NOT FINAL IA / NOT AUTHORIZATION TO IMPLEMENT`.
+
+---
+
+## 10. Areas Future Shell MAY Wrap
 
 The future TEGAKI top-level shell may:
-1. Provide top-level navigation between product tracks (e.g. `H3` and `Manga`).
+1. Provide top-level navigation between product tracks (`H3` and `Manga`).
 2. Manage shared application window layout, theme, and tab headers.
 3. Host independent domain canvases within separated tabs/views.
 4. Provide high-level launcher entry points to open ComfyUI with domain configurations.
 
 ---
 
-## 10. Areas Future Shell MUST NOT Merge Implicitly
+## 11. Areas Future Shell MUST NOT Merge Implicitly
 
 The future shell MUST NOT:
 1. Merge document schemas (Manga `TEGAKI_AUTHORING_DOCUMENT` remains distinct from H3 project specs).
@@ -113,9 +141,14 @@ The future shell MUST NOT:
 
 ---
 
-## 11. Current Readiness
+## 12. Current Readiness
 
-- **M3B Status**: `M3B_PRODUCTION_CLOSED`
 - **Manga Track Status**: `MANGA_READY_FOR_INTEGRATION_DESIGN`
-- **Cross-Track Implementation**: `NOT AUTHORIZED` (Awaiting H3 IP2 browser closure and formal cross-track exchange).
+- **H3 Track Status**: `H3_READY_FOR_INTEGRATION_DESIGN`
+- **Cross-Track Architecture Design**: `READY FOR REVIEW`
+- **Shared Portable Installation**: `YES`
+- **Single Shared 8188 Backend**: `NOT YET VERIFIED`
+- **Runtime Hosting**: `OPEN DESIGN QUESTION`
+- **Shared-Shell Implementation**: `NOT AUTHORIZED`
+  - Implementation remains unauthorized because IA, runtime hosting, launcher/service ownership, History/Preview ownership, and cross-track asset handoff have not yet been selected by a formal cross-track architecture review.
 - **Final Owner Product Review**: `DEFERRED`
