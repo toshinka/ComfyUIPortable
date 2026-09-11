@@ -121,6 +121,11 @@ STATE_LABELS = {
     "DISCONNECTED": "Backend disconnected",
 }
 TERMINAL_STATES = {"COMPLETED", "FAILED", "CANCELLED"}
+LIFECYCLE_SAFE_IDLE = "SAFE_IDLE"
+LIFECYCLE_BUSY = "BUSY"
+LIFECYCLE_BACKEND_UNAVAILABLE = "BACKEND_UNAVAILABLE"
+LIFECYCLE_PROFILE_MISMATCH = "PROFILE_MISMATCH"
+LIFECYCLE_PROFILE_UNVERIFIABLE = "PROFILE_UNVERIFIABLE"
 VIDEO_SUFFIXES = {".mp4", ".webm", ".mov", ".mkv"}
 REFERENCE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
 STILL_SOURCE_SUFFIXES = {".png", ".jpg", ".jpeg"}
@@ -557,9 +562,99 @@ def parse_backend_status(
         "backend_profile_detail": profile["detail"],
         "queue_count": len(pending) + len(running),
         "running_count": len(running),
+        "queue_known": queue_valid,
+        "queue_running_count": len(running) if queue_valid else None,
+        "queue_pending_count": len(pending) if queue_valid else None,
         "vram_total": device.get("vram_total") if isinstance(device, Mapping) else None,
         "vram_free": device.get("vram_free") if isinstance(device, Mapping) else None,
     }
+
+
+def build_lifecycle_snapshot(
+    backend_status: Mapping[str, Any],
+    jobs: Iterable[Any],
+) -> dict[str, Any]:
+    """Build the read-only H3 stop guard from backend and session truth."""
+
+    profile = backend_status.get("backend_profile") if isinstance(backend_status, Mapping) else None
+    queue_known = (
+        isinstance(backend_status, Mapping)
+        and backend_status.get("queue_known") is True
+    )
+
+    def nonnegative_int(value: Any) -> int | None:
+        if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+            return None
+        return value
+
+    queue_running_count = nonnegative_int(
+        backend_status.get("queue_running_count") if isinstance(backend_status, Mapping) else None
+    )
+    queue_pending_count = nonnegative_int(
+        backend_status.get("queue_pending_count") if isinstance(backend_status, Mapping) else None
+    )
+    active_nonterminal_job_count = sum(
+        1
+        for job in jobs
+        if (
+            (job.get("state") if isinstance(job, Mapping) else getattr(job, "state", None))
+            not in TERMINAL_STATES
+        )
+    )
+
+    snapshot = {
+        "native_stop_guard": LIFECYCLE_PROFILE_UNVERIFIABLE,
+        "safe_to_stop_native": False,
+        "queue_known": queue_known,
+        "queue_running_count": queue_running_count,
+        "queue_pending_count": queue_pending_count,
+        "active_nonterminal_job_count": active_nonterminal_job_count,
+        "reason": "Canonical H3 lifecycle ownership could not be proven.",
+    }
+
+    if profile == UNAVAILABLE:
+        snapshot.update(
+            native_stop_guard=LIFECYCLE_BACKEND_UNAVAILABLE,
+            reason="Native backend is unavailable; lifecycle ownership cannot be proven.",
+        )
+        return snapshot
+    if profile == PROFILE_MISMATCH:
+        snapshot.update(
+            native_stop_guard=LIFECYCLE_PROFILE_MISMATCH,
+            reason="Reachable backend does not match the canonical H3 profile.",
+        )
+        return snapshot
+    if profile == PROFILE_UNVERIFIABLE or not queue_known:
+        snapshot.update(
+            native_stop_guard=LIFECYCLE_PROFILE_UNVERIFIABLE,
+            reason="Canonical H3 profile or queue evidence could not be verified.",
+        )
+        return snapshot
+    if profile != CANONICAL_H3:
+        snapshot.update(
+            native_stop_guard=LIFECYCLE_PROFILE_UNVERIFIABLE,
+            reason="Requested H3 backend profile is not positively identified.",
+        )
+        return snapshot
+    if queue_running_count is None or queue_pending_count is None:
+        snapshot.update(
+            native_stop_guard=LIFECYCLE_PROFILE_UNVERIFIABLE,
+            reason="Canonical H3 queue counts could not be verified.",
+        )
+        return snapshot
+    if queue_running_count or queue_pending_count or active_nonterminal_job_count:
+        snapshot.update(
+            native_stop_guard=LIFECYCLE_BUSY,
+            reason="Native queue or an H3 Skin job is active.",
+        )
+        return snapshot
+
+    snapshot.update(
+        native_stop_guard=LIFECYCLE_SAFE_IDLE,
+        safe_to_stop_native=True,
+        reason="Canonical H3 queue is idle and no active nonterminal H3 Skin job exists.",
+    )
+    return snapshot
 
 
 def map_queue_state(
@@ -747,6 +842,29 @@ class H1ASession:
         self.r2v_pictures: dict[str, R2VPictureAsset] = {}
         self.r2v_motion_videos: dict[str, R2VMotionVideoAsset] = {}
         self.lock = threading.RLock()
+
+    def status(self) -> dict[str, Any]:
+        """Return backend status plus a read-only H3 lifecycle snapshot."""
+
+        try:
+            status = self.backend.status()
+        except BackendError as exc:
+            status = {
+                "state": "DISCONNECTED",
+                "label": STATE_LABELS["DISCONNECTED"],
+                "backend_profile": UNAVAILABLE,
+                "backend_profile_detail": str(exc),
+                "queue_count": 0,
+                "running_count": 0,
+                "queue_known": False,
+                "queue_running_count": None,
+                "queue_pending_count": None,
+                "error": str(exc),
+            }
+        with self.lock:
+            jobs = tuple(self.jobs.values())
+        status["lifecycle"] = build_lifecycle_snapshot(status, jobs)
+        return status
 
     def upload_reference(
         self,
@@ -1995,21 +2113,7 @@ class H1AHandler(BaseHTTPRequestHandler):
             )
             return
         if path == "/api/status":
-            try:
-                self._send_json(HTTPStatus.OK, self.server.session.backend.status())
-            except BackendError as exc:
-                self._send_json(
-                    HTTPStatus.OK,
-                    {
-                        "state": "DISCONNECTED",
-                        "label": STATE_LABELS["DISCONNECTED"],
-                        "backend_profile": UNAVAILABLE,
-                        "backend_profile_detail": str(exc),
-                        "queue_count": 0,
-                        "running_count": 0,
-                        "error": str(exc),
-                    },
-                )
+            self._send_json(HTTPStatus.OK, self.server.session.status())
             return
         if path == "/api/history":
             self._send_json(HTTPStatus.OK, {"entries": self.server.session.history()})
