@@ -309,3 +309,86 @@ body {
     border-radius: 4px;
     resize: vertical;
 }
+
+/* Edit Forms & Inspector Controls */
+.editor-form {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 10px;
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.form-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #94a3b8;
+}
+
+.form-input, .form-textarea, .form-select {
+    background: #090d16;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    color: #f8fafc;
+    font-size: 11px;
+    padding: 4px 6px;
+    outline: none;
+    font-family: inherit;
+}
+
+.form-input:focus, .form-textarea:focus, .form-select:focus {
+    border-color: #38bdf8;
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 50px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+
+.btn-danger {
+    background: #7f1d1d;
+    color: #fca5a5;
+    border-color: #991b1b;
+}
+
+.btn-danger:hover {
+    background: #991b1b;
+    color: #ffffff;
+}
+
+.btn-sm {
+    padding: 3px 6px;
+    font-size: 10px;
+}
+
+.alert-error {
+    background: #450a0a;
+    border: 1px solid #991b1b;
+    color: #fca5a5;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    display: none;
+}
+
+.alert-error.visible {
+    display: block;
+}

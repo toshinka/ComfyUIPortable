@@ -11,7 +11,7 @@
     <header id="workspace-header">
         <div class="header-brand">
             <span class="brand-title">TEGAKI Manga</span>
-            <span class="brand-badge">M1A Standalone</span>
+            <span class="brand-badge">M1B Standalone</span>
             <span id="doc-schema-label" style="font-size: 11px; color: #94a3b8;">TEGAKI_AUTHORING_DOCUMENT 1.0.0</span>
         </div>
         <div class="header-actions">
@@ -52,13 +52,17 @@
 
         <!-- Right Inspector / Readout -->
         <div id="inspector-panel">
+            <!-- Global / Summary -->
             <div class="panel-section">
                 <div class="section-title">Document Summary</div>
                 <div class="info-grid">
                     <div class="info-label">Resolution:</div>
                     <div class="info-value" id="summary-resolution">832 x 1216</div>
                     <div class="info-label">Seed:</div>
-                    <div class="info-value" id="summary-seed">42</div>
+                    <div class="info-value">
+                        <input type="number" id="input-seed" class="form-input" style="width: 110px;" value="42">
+                        <button id="btn-apply-seed" class="btn btn-sm">Set</button>
+                    </div>
                     <div class="info-label">Style:</div>
                     <div class="info-value" id="summary-style">Manga Monochrome</div>
                     <div class="info-label">Page Count:</div>
@@ -66,6 +70,7 @@
                 </div>
             </div>
 
+            <!-- Ephemeral Session Info -->
             <div class="panel-section">
                 <div class="section-title">Session State (Ephemeral)</div>
                 <div class="info-grid">
@@ -76,31 +81,132 @@
                 </div>
             </div>
 
+            <!-- Scenes Section -->
             <div class="panel-section">
                 <div class="section-title">
                     <span>Scenes (<span id="count-scenes">2</span>)</span>
+                    <button id="btn-add-scene" class="btn btn-sm btn-primary">+ Add Scene</button>
                 </div>
+                <div id="scene-error-msg" class="alert-error"></div>
                 <div id="list-scenes"></div>
+
+                <!-- Scene Editor Form -->
+                <div id="scene-editor-container" class="editor-form" style="display: none;">
+                    <div style="font-weight: 700; font-size: 11px; color: #38bdf8; margin-bottom: 2px;">
+                        Edit Scene: <span id="scene-edit-id-label"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Name</label>
+                        <input type="text" id="input-scene-name" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Prompt</label>
+                        <textarea id="input-scene-prompt" class="form-textarea" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Negative Prompt</label>
+                        <textarea id="input-scene-negative" class="form-textarea" rows="1"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Move / Resize</label>
+                        <div class="form-actions">
+                            <button id="btn-scene-move-left" class="btn btn-sm" title="Move Left">←</button>
+                            <button id="btn-scene-move-right" class="btn btn-sm" title="Move Right">→</button>
+                            <button id="btn-scene-move-up" class="btn btn-sm" title="Move Up">↑</button>
+                            <button id="btn-scene-move-down" class="btn btn-sm" title="Move Down">↓</button>
+                            <button id="btn-scene-grow-w" class="btn btn-sm" title="Increase Width">+W</button>
+                            <button id="btn-scene-shrink-w" class="btn btn-sm" title="Decrease Width">-W</button>
+                            <button id="btn-scene-grow-h" class="btn btn-sm" title="Increase Height">+H</button>
+                            <button id="btn-scene-shrink-h" class="btn btn-sm" title="Decrease Height">-H</button>
+                        </div>
+                    </div>
+                    <div class="form-actions" style="margin-top: 6px; border-top: 1px solid #334155; padding-top: 6px;">
+                        <button id="btn-place-character-in-scene" class="btn btn-sm" style="background:#0284c7;color:white;">+ Place Character</button>
+                        <button id="btn-delete-scene" class="btn btn-sm btn-danger">Delete Scene</button>
+                    </div>
+                </div>
             </div>
 
+            <!-- CAST Section -->
             <div class="panel-section">
                 <div class="section-title">
-                    <span>Visual Frames (<span id="count-frames">0</span>)</span>
+                    <span>CAST (<span id="count-cast">0</span>)</span>
+                    <button id="btn-add-cast" class="btn btn-sm btn-primary">+ Add CAST</button>
+                </div>
+                <!-- Cast rejection banner for Step J -->
+                <div id="cast-error-msg" class="alert-error"></div>
+                <div id="list-cast"></div>
+
+                <!-- CAST Editor Form -->
+                <div id="cast-editor-container" class="editor-form" style="display: none;">
+                    <div style="font-weight: 700; font-size: 11px; color: #38bdf8; margin-bottom: 2px;">
+                        Edit CAST: <span id="cast-edit-id-label"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Display Name</label>
+                        <input type="text" id="input-cast-name" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Identity Prompt</label>
+                        <textarea id="input-cast-prompt" class="form-textarea" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Negative Prompt</label>
+                        <textarea id="input-cast-negative" class="form-textarea" rows="1"></textarea>
+                    </div>
+                    <div class="form-actions" style="margin-top: 6px; border-top: 1px solid #334155; padding-top: 6px;">
+                        <button id="btn-place-character" class="btn btn-sm" style="background:#0284c7;color:white;">Place in Scene</button>
+                        <button id="btn-delete-cast" class="btn btn-sm btn-danger">Delete CAST</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Character Instances Section -->
+            <div class="panel-section">
+                <div class="section-title">
+                    <span>Character Instances (<span id="count-instances">0</span>)</span>
+                </div>
+                <div id="instance-error-msg" class="alert-error"></div>
+                <div id="list-instances"></div>
+
+                <!-- Instance Editor Form -->
+                <div id="instance-editor-container" class="editor-form" style="display: none;">
+                    <div style="font-weight: 700; font-size: 11px; color: #38bdf8; margin-bottom: 2px;">
+                        Edit Instance: <span id="instance-edit-id-label"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Acting Prompt</label>
+                        <textarea id="input-instance-acting-prompt" class="form-textarea" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Move / Resize</label>
+                        <div class="form-actions">
+                            <button id="btn-char-move-left" class="btn btn-sm" title="Move Left">←</button>
+                            <button id="btn-char-move-right" class="btn btn-sm" title="Move Right">→</button>
+                            <button id="btn-char-move-up" class="btn btn-sm" title="Move Up">↑</button>
+                            <button id="btn-char-move-down" class="btn btn-sm" title="Move Down">↓</button>
+                            <button id="btn-char-grow" class="btn btn-sm" title="Grow">+ Size</button>
+                            <button id="btn-char-shrink" class="btn btn-sm" title="Shrink">- Size</button>
+                        </div>
+                    </div>
+                    <div class="form-actions" style="margin-top: 6px; border-top: 1px solid #334155; padding-top: 6px;">
+                        <button id="btn-remove-instance" class="btn btn-sm btn-danger">Remove Instance</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visual Frames (Read-only) -->
+            <div class="panel-section">
+                <div class="section-title">
+                    <span>Visual Frames (<span id="count-frames">0</span>) [Read-Only]</span>
                 </div>
                 <div id="list-frames"></div>
             </div>
 
+            <!-- Guides (Read-only) -->
             <div class="panel-section">
                 <div class="section-title">
-                    <span>CAST (<span id="count-cast">0</span>) & Characters (<span id="count-instances">0</span>)</span>
-                </div>
-                <div id="list-cast"></div>
-                <div id="list-instances"></div>
-            </div>
-
-            <div class="panel-section">
-                <div class="section-title">
-                    <span>Guides (<span id="count-guides">0</span>)</span>
+                    <span>Guides (<span id="count-guides">0</span>) [Read-Only]</span>
                 </div>
                 <div id="list-guides"></div>
             </div>
@@ -124,7 +230,7 @@
     <script type="module">
         import { AuthoringStore } from "./src/state/authoring_store.js";
         import { SessionState } from "./src/state/session_state.js";
-        import { renderMangaCanvas } from "./src/view/canvas_renderer.js";
+        import { renderMangaCanvas, hitTestCanvas } from "./src/view/canvas_renderer.js";
         import { MangaBackendClient, BACKEND_STATUS } from "./src/adapters/manga_backend_client.js";
 
         const store = new AuthoringStore();
@@ -146,6 +252,30 @@
         const btnCloseModal = document.getElementById("btn-close-modal");
         const btnModalAction = document.getElementById("btn-modal-action");
 
+        // Error banners
+        const castErrorMsg = document.getElementById("cast-error-msg");
+        const sceneErrorMsg = document.getElementById("scene-error-msg");
+        const instanceErrorMsg = document.getElementById("instance-error-msg");
+
+        function clearErrors() {
+            castErrorMsg.className = "alert-error";
+            castErrorMsg.textContent = "";
+            sceneErrorMsg.className = "alert-error";
+            sceneErrorMsg.textContent = "";
+            instanceErrorMsg.className = "alert-error";
+            instanceErrorMsg.textContent = "";
+        }
+
+        function showCastError(msg) {
+            castErrorMsg.textContent = msg;
+            castErrorMsg.className = "alert-error visible";
+        }
+
+        function showSceneError(msg) {
+            sceneErrorMsg.textContent = msg;
+            sceneErrorMsg.className = "alert-error visible";
+        }
+
         function updateCanvas() {
             renderMangaCanvas(canvas, store.getDocument(), session);
         }
@@ -156,15 +286,18 @@
             if (!page) return;
 
             document.getElementById("summary-resolution").textContent = `${page.width_px} x ${page.height_px}`;
-            document.getElementById("summary-seed").textContent = page.generation?.seed ?? "N/A";
+            const seedInput = document.getElementById("input-seed");
+            if (document.activeElement !== seedInput) {
+                seedInput.value = page.generation?.seed ?? 42;
+            }
             document.getElementById("summary-style").textContent = page.metadata?.style_template || "Custom";
             document.getElementById("summary-pages").textContent = doc.pages.length;
 
             document.getElementById("session-active-layer").textContent = session.activeTab;
             document.getElementById("session-selected-item").textContent = 
-                session.selectedSceneId || session.selectedFrameId || session.selectedInstanceId || session.selectedGuideId || "None";
+                session.selectedSceneId || session.selectedFrameId || session.selectedInstanceId || session.selectedGuideId || session.selectedCastId || "None";
 
-            // Scenes list
+            // 1. Scenes list & editor
             const scenes = page.scenes || [];
             document.getElementById("count-scenes").textContent = scenes.length;
             const sceneContainer = document.getElementById("list-scenes");
@@ -176,11 +309,89 @@
                 div.onclick = () => {
                     session.selectScene(sc.scene_id);
                     session.setActiveTab("scenes");
+                    clearErrors();
                 };
                 sceneContainer.appendChild(div);
             });
 
-            // Frames list
+            const sceneEditor = document.getElementById("scene-editor-container");
+            const selScene = scenes.find(s => s.scene_id === session.selectedSceneId);
+            if (selScene) {
+                sceneEditor.style.display = "flex";
+                document.getElementById("scene-edit-id-label").textContent = selScene.scene_id;
+                const nameInput = document.getElementById("input-scene-name");
+                const promptInput = document.getElementById("input-scene-prompt");
+                const negInput = document.getElementById("input-scene-negative");
+                if (document.activeElement !== nameInput) nameInput.value = selScene.name || "";
+                if (document.activeElement !== promptInput) promptInput.value = selScene.prompt || "";
+                if (document.activeElement !== negInput) negInput.value = selScene.negative_prompt || "";
+            } else {
+                sceneEditor.style.display = "none";
+            }
+
+            // 2. CAST list & editor
+            const castList = page.cast || [];
+            document.getElementById("count-cast").textContent = castList.length;
+            const castContainer = document.getElementById("list-cast");
+            castContainer.innerHTML = "";
+            castList.forEach(c => {
+                const div = document.createElement("div");
+                div.className = "list-item" + (session.selectedCastId === c.cast_id ? " selected" : "");
+                div.innerHTML = `<span style="color: ${c.color || '#38bdf8'}; font-weight: bold;">●</span> <b>${c.display_name}</b> (${c.cast_id})`;
+                div.onclick = () => {
+                    session.selectCast(c.cast_id);
+                    session.setActiveTab("cast");
+                    clearErrors();
+                };
+                castContainer.appendChild(div);
+            });
+
+            const castEditor = document.getElementById("cast-editor-container");
+            const selCast = castList.find(c => c.cast_id === session.selectedCastId);
+            if (selCast) {
+                castEditor.style.display = "flex";
+                document.getElementById("cast-edit-id-label").textContent = selCast.cast_id;
+                const nameInput = document.getElementById("input-cast-name");
+                const promptInput = document.getElementById("input-cast-prompt");
+                const negInput = document.getElementById("input-cast-negative");
+                if (document.activeElement !== nameInput) nameInput.value = selCast.display_name || "";
+                if (document.activeElement !== promptInput) promptInput.value = selCast.identity_prompt || "";
+                if (document.activeElement !== negInput) negInput.value = selCast.negative_prompt || "";
+            } else {
+                castEditor.style.display = "none";
+            }
+
+            // 3. Characters list & editor
+            const instances = page.character_instances || [];
+            document.getElementById("count-instances").textContent = instances.length;
+            const instContainer = document.getElementById("list-instances");
+            instContainer.innerHTML = "";
+            instances.forEach(inst => {
+                const div = document.createElement("div");
+                div.className = "list-item" + (session.selectedInstanceId === inst.instance_id ? " selected" : "");
+                const cEntry = castList.find(c => c.cast_id === inst.cast_id);
+                const cName = cEntry?.display_name || inst.cast_id;
+                div.innerHTML = `Instance <b>${inst.instance_id}</b> [${cName}] in <i>${inst.scene_id}</i>`;
+                div.onclick = () => {
+                    session.selectInstance(inst.instance_id);
+                    session.setActiveTab("cast");
+                    clearErrors();
+                };
+                instContainer.appendChild(div);
+            });
+
+            const instEditor = document.getElementById("instance-editor-container");
+            const selInst = instances.find(i => i.instance_id === session.selectedInstanceId);
+            if (selInst) {
+                instEditor.style.display = "flex";
+                document.getElementById("instance-edit-id-label").textContent = `${selInst.instance_id} (Cast: ${selInst.cast_id})`;
+                const actPrompt = document.getElementById("input-instance-acting-prompt");
+                if (document.activeElement !== actPrompt) actPrompt.value = selInst.acting_prompt || "";
+            } else {
+                instEditor.style.display = "none";
+            }
+
+            // 4. Frames list (read only)
             const frames = page.visual_frames || [];
             document.getElementById("count-frames").textContent = frames.length;
             const frameContainer = document.getElementById("list-frames");
@@ -196,38 +407,7 @@
                 frameContainer.appendChild(div);
             });
 
-            // Cast & Instances
-            const castList = page.cast || [];
-            document.getElementById("count-cast").textContent = castList.length;
-            const castContainer = document.getElementById("list-cast");
-            castContainer.innerHTML = "";
-            castList.forEach(c => {
-                const div = document.createElement("div");
-                div.className = "list-item" + (session.selectedCastId === c.cast_id ? " selected" : "");
-                div.innerHTML = `<span style="color: ${c.color || '#38bdf8'}; font-weight: bold;">●</span> <b>${c.display_name}</b> (${c.cast_id})`;
-                div.onclick = () => {
-                    session.selectCast(c.cast_id);
-                    session.setActiveTab("cast");
-                };
-                castContainer.appendChild(div);
-            });
-
-            const instances = page.character_instances || [];
-            document.getElementById("count-instances").textContent = instances.length;
-            const instContainer = document.getElementById("list-instances");
-            instContainer.innerHTML = "";
-            instances.forEach(inst => {
-                const div = document.createElement("div");
-                div.className = "list-item" + (session.selectedInstanceId === inst.instance_id ? " selected" : "");
-                div.innerHTML = `Instance <b>${inst.instance_id}</b> (Cast: ${inst.cast_id}, Scene: ${inst.scene_id})`;
-                div.onclick = () => {
-                    session.selectInstance(inst.instance_id);
-                    session.setActiveTab("cast");
-                };
-                instContainer.appendChild(div);
-            });
-
-            // Guides
+            // 5. Guides list (read only)
             const guides = page.guides || [];
             document.getElementById("count-guides").textContent = guides.length;
             const guideContainer = document.getElementById("list-guides");
@@ -252,6 +432,12 @@
         store.subscribe(updateAll);
         session.subscribe(updateAll);
 
+        // Global Seed
+        document.getElementById("btn-apply-seed").onclick = () => {
+            const seedVal = parseInt(document.getElementById("input-seed").value, 10) || 0;
+            store.setSeed(seedVal);
+        };
+
         // Layer Tabs
         document.querySelectorAll(".tab-btn").forEach(btn => {
             btn.onclick = () => {
@@ -261,13 +447,292 @@
             };
         });
 
-        // Header Actions
+        // -----------------------------------------------------------------
+        // Scene Mutations & Editing
+        // -----------------------------------------------------------------
+        document.getElementById("btn-add-scene").onclick = () => {
+            clearErrors();
+            const sc = store.addScene({ name: `Scene ${store.getPage().scenes.length + 1}`, prompt: "" });
+            session.selectScene(sc.scene_id);
+            session.setActiveTab("scenes");
+        };
+
+        document.getElementById("input-scene-name").oninput = (e) => {
+            if (session.selectedSceneId) {
+                store.updateScene(session.selectedSceneId, { name: e.target.value });
+            }
+        };
+
+        document.getElementById("input-scene-prompt").oninput = (e) => {
+            if (session.selectedSceneId) {
+                store.updateScene(session.selectedSceneId, { prompt: e.target.value });
+            }
+        };
+
+        document.getElementById("input-scene-negative").oninput = (e) => {
+            if (session.selectedSceneId) {
+                store.updateScene(session.selectedSceneId, { negative_prompt: e.target.value });
+            }
+        };
+
+        document.getElementById("btn-scene-move-left").onclick = () => {
+            if (session.selectedSceneId) store.moveScene(session.selectedSceneId, -0.02, 0);
+        };
+        document.getElementById("btn-scene-move-right").onclick = () => {
+            if (session.selectedSceneId) store.moveScene(session.selectedSceneId, 0.02, 0);
+        };
+        document.getElementById("btn-scene-move-up").onclick = () => {
+            if (session.selectedSceneId) store.moveScene(session.selectedSceneId, 0, -0.02);
+        };
+        document.getElementById("btn-scene-move-down").onclick = () => {
+            if (session.selectedSceneId) store.moveScene(session.selectedSceneId, 0, 0.02);
+        };
+
+        document.getElementById("btn-scene-grow-w").onclick = () => {
+            if (session.selectedSceneId) {
+                const sc = store.getPage().scenes.find(s => s.scene_id === session.selectedSceneId);
+                if (sc) store.resizeScene(session.selectedSceneId, { ...sc.area, w: sc.area.w + 0.04 });
+            }
+        };
+        document.getElementById("btn-scene-shrink-w").onclick = () => {
+            if (session.selectedSceneId) {
+                const sc = store.getPage().scenes.find(s => s.scene_id === session.selectedSceneId);
+                if (sc) store.resizeScene(session.selectedSceneId, { ...sc.area, w: sc.area.w - 0.04 });
+            }
+        };
+        document.getElementById("btn-scene-grow-h").onclick = () => {
+            if (session.selectedSceneId) {
+                const sc = store.getPage().scenes.find(s => s.scene_id === session.selectedSceneId);
+                if (sc) store.resizeScene(session.selectedSceneId, { ...sc.area, h: sc.area.h + 0.04 });
+            }
+        };
+        document.getElementById("btn-scene-shrink-h").onclick = () => {
+            if (session.selectedSceneId) {
+                const sc = store.getPage().scenes.find(s => s.scene_id === session.selectedSceneId);
+                if (sc) store.resizeScene(session.selectedSceneId, { ...sc.area, h: sc.area.h - 0.04 });
+            }
+        };
+
+        document.getElementById("btn-delete-scene").onclick = () => {
+            clearErrors();
+            if (!session.selectedSceneId) return;
+            try {
+                const delId = session.selectedSceneId;
+                store.deleteScene(delId);
+                const remaining = store.getPage().scenes;
+                if (remaining.length > 0) {
+                    session.selectScene(remaining[0].scene_id);
+                } else {
+                    session.selectScene(null);
+                }
+            } catch (err) {
+                showSceneError(err.message);
+            }
+        };
+
+        // -----------------------------------------------------------------
+        // CAST Mutations & Rejection Handling (Step J)
+        // -----------------------------------------------------------------
+        document.getElementById("btn-add-cast").onclick = () => {
+            clearErrors();
+            const c = store.addCast({ display_name: `Character ${store.getPage().cast.length + 1}` });
+            session.selectCast(c.cast_id);
+            session.setActiveTab("cast");
+        };
+
+        document.getElementById("input-cast-name").oninput = (e) => {
+            if (session.selectedCastId) {
+                store.updateCast(session.selectedCastId, { display_name: e.target.value });
+            }
+        };
+
+        document.getElementById("input-cast-prompt").oninput = (e) => {
+            if (session.selectedCastId) {
+                store.updateCast(session.selectedCastId, { identity_prompt: e.target.value });
+            }
+        };
+
+        document.getElementById("input-cast-negative").oninput = (e) => {
+            if (session.selectedCastId) {
+                store.updateCast(session.selectedCastId, { negative_prompt: e.target.value });
+            }
+        };
+
+        document.getElementById("btn-delete-cast").onclick = () => {
+            clearErrors();
+            if (!session.selectedCastId) return;
+            try {
+                store.deleteCast(session.selectedCastId);
+                session.selectCast(null);
+            } catch (err) {
+                // Card Step J: attempt referenced CAST deletion -> visibly rejected
+                showCastError(err.message);
+            }
+        };
+
+        // -----------------------------------------------------------------
+        // Character Placement & Manipulation (Steps G, H, I)
+        // -----------------------------------------------------------------
+        function doPlaceCharacter(targetSceneId = null) {
+            clearErrors();
+            const scId = targetSceneId || session.selectedSceneId || store.getPage().scenes[0]?.scene_id;
+            if (!scId) {
+                showCastError("Cannot place character: no scene available");
+                return;
+            }
+            try {
+                const inst = store.placeCharacter(scId, session.selectedCastId);
+                session.selectInstance(inst.instance_id);
+                session.selectScene(scId);
+                session.setActiveTab("cast");
+            } catch (err) {
+                showCastError(err.message);
+            }
+        }
+
+        document.getElementById("btn-place-character").onclick = () => doPlaceCharacter();
+        document.getElementById("btn-place-character-in-scene").onclick = () => doPlaceCharacter(session.selectedSceneId);
+
+        document.getElementById("input-instance-acting-prompt").oninput = (e) => {
+            if (session.selectedInstanceId) {
+                store.updateCharacter(session.selectedInstanceId, { acting_prompt: e.target.value });
+            }
+        };
+
+        document.getElementById("btn-char-move-left").onclick = () => {
+            if (session.selectedInstanceId) store.moveCharacter(session.selectedInstanceId, -0.02, 0);
+        };
+        document.getElementById("btn-char-move-right").onclick = () => {
+            if (session.selectedInstanceId) store.moveCharacter(session.selectedInstanceId, 0.02, 0);
+        };
+        document.getElementById("btn-char-move-up").onclick = () => {
+            if (session.selectedInstanceId) store.moveCharacter(session.selectedInstanceId, 0, -0.02);
+        };
+        document.getElementById("btn-char-move-down").onclick = () => {
+            if (session.selectedInstanceId) store.moveCharacter(session.selectedInstanceId, 0, 0.02);
+        };
+        document.getElementById("btn-char-grow").onclick = () => {
+            if (session.selectedInstanceId) {
+                const inst = store.getPage().character_instances.find(i => i.instance_id === session.selectedInstanceId);
+                if (inst) store.resizeCharacter(session.selectedInstanceId, inst.area.w + 0.03, inst.area.h + 0.03);
+            }
+        };
+        document.getElementById("btn-char-shrink").onclick = () => {
+            if (session.selectedInstanceId) {
+                const inst = store.getPage().character_instances.find(i => i.instance_id === session.selectedInstanceId);
+                if (inst) store.resizeCharacter(session.selectedInstanceId, inst.area.w - 0.03, inst.area.h - 0.03);
+            }
+        };
+
+        document.getElementById("btn-remove-instance").onclick = () => {
+            clearErrors();
+            if (!session.selectedInstanceId) return;
+            try {
+                store.removeCharacter(session.selectedInstanceId);
+                session.selectInstance(null);
+            } catch (err) {
+                showCastError(err.message);
+            }
+        };
+
+        // -----------------------------------------------------------------
+        // Canvas Drag & Resize Direct Manipulation
+        // -----------------------------------------------------------------
+        let dragMode = null; // 'move_scene' | 'resize_scene' | 'move_char' | 'resize_char'
+        let dragTargetId = null;
+        let startNorm = { x: 0, y: 0 };
+        let startArea = null;
+
+        canvas.addEventListener("mousedown", (e) => {
+            clearErrors();
+            const rect = canvas.getBoundingClientRect();
+            const normX = (e.clientX - rect.left) / canvas.width;
+            const normY = (e.clientY - rect.top) / canvas.height;
+            const page = store.getPage();
+
+            const hit = hitTestCanvas(canvas.width, canvas.height, page, normX, normY, session);
+            if (!hit) return;
+
+            startNorm = { x: normX, y: normY };
+
+            if (hit.type === "handle_instance") {
+                dragMode = "resize_char";
+                dragTargetId = hit.item.instance_id;
+                startArea = { ...hit.item.area };
+            } else if (hit.type === "instance") {
+                dragMode = "move_char";
+                dragTargetId = hit.item.instance_id;
+                session.selectInstance(hit.item.instance_id);
+                session.selectCast(hit.item.cast_id);
+                session.setActiveTab("cast");
+                startArea = { ...hit.item.area };
+            } else if (hit.type === "handle_scene") {
+                dragMode = "resize_scene";
+                dragTargetId = hit.item.scene_id;
+                startArea = { ...hit.item.area };
+            } else if (hit.type === "scene") {
+                dragMode = "move_scene";
+                dragTargetId = hit.item.scene_id;
+                session.selectScene(hit.item.scene_id);
+                session.setActiveTab("scenes");
+                startArea = { ...hit.item.area };
+            } else if (hit.type === "frame") {
+                session.selectFrame(hit.item.frame_id);
+                session.setActiveTab("frames");
+            }
+        });
+
+        window.addEventListener("mousemove", (e) => {
+            if (!dragMode || !dragTargetId) return;
+            const rect = canvas.getBoundingClientRect();
+            const normX = (e.clientX - rect.left) / canvas.width;
+            const normY = (e.clientY - rect.top) / canvas.height;
+            const dx = normX - startNorm.x;
+            const dy = normY - startNorm.y;
+
+            if (dragMode === "move_scene") {
+                store.moveScene(dragTargetId, dx, dy);
+                startNorm = { x: normX, y: normY };
+            } else if (dragMode === "resize_scene") {
+                if (startArea) {
+                    store.resizeScene(dragTargetId, {
+                        x: startArea.x,
+                        y: startArea.y,
+                        w: Math.max(0.1, startArea.w + dx),
+                        h: Math.max(0.1, startArea.h + dy)
+                    });
+                }
+            } else if (dragMode === "move_char") {
+                store.moveCharacter(dragTargetId, dx, dy);
+                startNorm = { x: normX, y: normY };
+            } else if (dragMode === "resize_char") {
+                if (startArea) {
+                    store.resizeCharacter(
+                        dragTargetId,
+                        Math.max(0.04, startArea.w + dx),
+                        Math.max(0.04, startArea.h + dy)
+                    );
+                }
+            }
+        });
+
+        window.addEventListener("mouseup", () => {
+            dragMode = null;
+            dragTargetId = null;
+            startArea = null;
+        });
+
+        // -----------------------------------------------------------------
+        // Header Actions & Modal (Steps K & L)
+        // -----------------------------------------------------------------
         document.getElementById("btn-reset-default").onclick = () => {
+            clearErrors();
             store.resetDefault();
             session.selectScene("scene_top");
         };
 
         document.getElementById("btn-load-fixture").onclick = () => {
+            clearErrors();
             store.loadRichFixture();
             session.selectScene("scene_action_top");
         };
@@ -303,7 +768,9 @@
             modal.style.display = "none";
         };
 
-        // Backend Connection & Probes
+        // -----------------------------------------------------------------
+        // Backend Connection & Probes (Steps N, O, P, Q)
+        // -----------------------------------------------------------------
         async function checkBackend() {
             client.setBackendUrl(backendUrlInput.value);
             backendStatusBadge.className = "status-indicator status-unavailable";

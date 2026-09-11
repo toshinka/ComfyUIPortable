@@ -168,6 +168,15 @@ export function renderMangaCanvas(canvas, document, sessionState, pageIndex = 0)
         ctx.fillRect(rx, ry, tw + 8, 18);
         ctx.fillStyle = "#ffffff";
         ctx.fillText(label, rx + 4, ry + 13);
+
+        // Handle for selected scene
+        if (isSelected) {
+            ctx.fillStyle = col.hex;
+            ctx.fillRect(rx + rw - 10, ry + rh - 10, 10, 10);
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(rx + rw - 10, ry + rh - 10, 10, 10);
+        }
     });
 
     // 5. Draw Character Instances
@@ -200,6 +209,80 @@ export function renderMangaCanvas(canvas, document, sessionState, pageIndex = 0)
         ctx.fillRect(rx, ry + rh - 16, itw + 8, 16);
         ctx.fillStyle = "#ffffff";
         ctx.fillText(instLabel, rx + 4, ry + rh - 4);
+
+        // Handle for selected character instance
+        if (isSelected) {
+            ctx.fillStyle = colHex;
+            ctx.fillRect(rx + rw - 8, ry + rh - 8, 8, 8);
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 1;
+            ctx.strokeRect(rx + rw - 8, ry + rh - 8, 8, 8);
+        }
         ctx.restore();
     });
+}
+
+/**
+ * Hit test helper for canvas interaction
+ */
+export function hitTestCanvas(cw, ch, page, normX, normY, sessionState) {
+    if (!page) return null;
+    const pxX = normX * cw;
+    const pxY = normY * ch;
+
+    // 1. Check selected instance handle
+    if (sessionState?.selectedInstanceId) {
+        const inst = (page.character_instances || []).find(i => i.instance_id === sessionState.selectedInstanceId);
+        if (inst) {
+            const hx = (inst.area.x + inst.area.w) * cw;
+            const hy = (inst.area.y + inst.area.h) * cw;
+            if (Math.abs(pxX - hx) <= 12 && Math.abs(pxY - hy) <= 12) {
+                return { type: "handle_instance", item: inst };
+            }
+        }
+    }
+
+    // 2. Check character instances
+    const instances = page.character_instances || [];
+    for (let i = instances.length - 1; i >= 0; i--) {
+        const inst = instances[i];
+        const a = inst.area;
+        if (normX >= a.x && normX <= a.x + a.w && normY >= a.y && normY <= a.y + a.h) {
+            return { type: "instance", item: inst };
+        }
+    }
+
+    // 3. Check selected scene handle
+    if (sessionState?.selectedSceneId) {
+        const sc = (page.scenes || []).find(s => s.scene_id === sessionState.selectedSceneId);
+        if (sc) {
+            const hx = (sc.area.x + sc.area.w) * cw;
+            const hy = (sc.area.y + sc.area.h) * ch;
+            if (Math.abs(pxX - hx) <= 14 && Math.abs(pxY - hy) <= 14) {
+                return { type: "handle_scene", item: sc };
+            }
+        }
+    }
+
+    // 4. Check scenes
+    const scenes = page.scenes || [];
+    for (let i = scenes.length - 1; i >= 0; i--) {
+        const sc = scenes[i];
+        const a = sc.area;
+        if (normX >= a.x && normX <= a.x + a.w && normY >= a.y && normY <= a.y + a.h) {
+            return { type: "scene", item: sc };
+        }
+    }
+
+    // 5. Check visual frames (read-only)
+    const frames = page.visual_frames || [];
+    for (let i = frames.length - 1; i >= 0; i--) {
+        const fr = frames[i];
+        const a = fr.area || fr.shape;
+        if (a && normX >= a.x && normX <= a.x + a.w && normY >= a.y && normY <= a.y + a.h) {
+            return { type: "frame", item: fr };
+        }
+    }
+
+    return null;
 }

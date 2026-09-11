@@ -40,13 +40,13 @@ export class SessionState {
         this.notify();
     }
 
-    selectCast(castId) {
-        this.selectedCastId = (this.selectedCastId === castId) ? null : castId;
+    selectCast(castId, toggle = false) {
+        this.selectedCastId = (toggle && this.selectedCastId === castId) ? null : castId;
         this.notify();
     }
 
-    selectInstance(instanceId) {
-        this.selectedInstanceId = (this.selectedInstanceId === instanceId) ? null : instanceId;
+    selectInstance(instanceId, toggle = false) {
+        this.selectedInstanceId = (toggle && this.selectedInstanceId === instanceId) ? null : instanceId;
         this.notify();
     }
 
