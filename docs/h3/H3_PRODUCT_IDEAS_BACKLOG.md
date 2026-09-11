@@ -1,0 +1,102 @@
+# H3 Product Ideas & Backlog
+
+Status: `LIVING BACKLOG / SSOT`  
+Updated: `2026-09-11 JST`  
+Authority: `H3 Architecture (SOL/WebGPT) & Owner Decisions`  
+Implementation Authorization: `NONE (This backlog document is not an automatic implementation grant)`
+
+---
+
+## 1. Overview & Policy
+
+This backlog tracks user experience refinements, generation pipeline enhancements, and architectural directions for the TEGAKI H3 (MiniMax video/still/prep) track.
+
+### Guiding Principles
+- **Truthful Status & Vocabulary**: No fake ETA, no fabricated percentages, no invented states. activeJob != previewJob.
+- **Stage is Protagonist**: The generation preview remains central. Stage actions must be compact, intuitive, and non-dominant.
+- **Earn Every Slope (Cognitive Level)**: Do not turn simple generation into a bloated NLE video editor. Introduce advanced surfaces progressively when justified by real workflows.
+- **Strict Bounded Execution**: Items listed in this backlog require explicit Card authorization before implementation begins.
+
+---
+
+## 2. Categorized Backlog
+
+### NOW (Current Card: H3-G1A)
+- **Stage Action Area Compression**:
+  - Unify Generate and Cancel into a single primary action slot.
+  - Idle / Ready state: One compact Generate button.
+  - Active Generation state: Generate is replaced by Cancel in the exact same slot; never show both side-by-side.
+  - Compact one-line Stage-top status row to preserve vertical Preview area.
+  - Rely on Preview overlay for live elapsed time (`Generating · 126.0s`).
+  - Errors remain prominent, truthful, and non-truncated.
+- **Media Input & Progress Feasibility Audits**:
+  - Sampler-only vs total workflow progress via ComfyUI WebSocket.
+  - Aspect ratio distortion root-cause analysis across Standard Start/End and Ref2VA Picture inputs.
+  - Reference video trimming and start-offset feasibility using Native core nodes.
+
+---
+
+### NEAR (Next Prioritized Implementations)
+- **Truthful Sampler Progress Percentage**:
+  - Surface real step counts from ComfyUI's internal `ProgressBar` / WebSocket `progress` events (e.g., `Sampling 7 / 20` or `Sampling 35%`).
+  - Label specifically as sampler progress—never misrepresent as total-generation percentage.
+  - Expose via `Job` metadata in H3 Skin polling without breaking HTTP polling resilience.
+- **Aspect-Safe Image Reference Preparation**:
+  - Address anamorphic stretching of portrait / non-16:9 images in Standard Start Frame and Still Source Image.
+  - Evaluate and implement bounded aspect policies:
+    1. Aspect-preserving cover-crop (crop-to-fill) matching `last_frame` behavior.
+    2. Aspect-preserving letterbox/pillarbox (contain/pad) with clean neutral borders.
+    3. Dedicated Prep/Edit handoff with interactive framing.
+- **Reference Video Trimming (First N Seconds)**:
+  - Automatically or declaratively limit input motion videos to the required generation duration (initially 5.0 seconds / 124 frames).
+  - Utilize ComfyUI's core `VideoSlice` (`Trim Video`) node before frame decoding to avoid memory bloat and excessive frame extraction.
+- **Reference Video Start Offset (IN Time)**:
+  - Add a single `start_time` (IN point) control in the Reference Video slot.
+  - Materialize `VideoSlice(start_time=T, duration=5.0)` to consume seconds $T \to T+5$.
+  - Avoid requiring an explicit OUT point while output duration is fixed.
+
+---
+
+### LATER (Future Studio & Iteration Features)
+- **Stage-Bottom Shot Strip / Compact Timeline (Candidate A)**:
+  - Place a horizontal take/shot strip strictly below the left Stage column.
+  - Preserve the two-column Wide layout (Stage left, Inspector right).
+  - Provide shot sequencing and take selection without expanding into a full-width NLE.
+- **Inspector Create / Edit Mode Separation**:
+  - Split Inspector into `[ Create ]` and `[ Edit ]` tabs only when substantive editing controls (e.g. shot retiming, continuation tuning, per-shot overrides) exist.
+  - Avoid empty placeholder tabs.
+- **Dedicated Image Preparation Surface**:
+  - Full image cropping, aspect conversion, and reference retouching within TEGAKI before handoff to H3 generation.
+
+---
+
+### DEFERRED / EXTERNAL DEPENDENCY
+- **Cross-Track Asset Handoff (H3 <-> Illustrious Manga)**:
+  - Shared asset promotion and bidirectional handoff between H3 video/still and Manga panel creation.
+  - Blocked pending common supervisor and cross-track integration freeze.
+- **Unified TEGAKI Shell (Top-Level Tabs)**:
+  - Common application wrapper hosting Video, Still, and Manga workspaces.
+  - Implementation deferred to dedicated cross-track integration phase.
+- **Dedicated Audio Track & Reference System**:
+  - Lip-sync, audio mixing, soundtrack assignment, and voice timeline tracks remain disconnected and deferred.
+- **Full Video Editing & Multi-Track NLE (Candidate B)**:
+  - Complex multi-track transitions, cutting room, and timeline editing are deferred. The standalone TEGAKI editor may own rich creative manipulation.
+- **Runtime Process Supervisor**:
+  - Unified process control, automated backend profile switching, and shared-port supervision.
+
+---
+
+## 3. Backlog Status Register
+
+| Item ID | Description | Category | Feasibility Status | Target Card |
+|---|---|---|---|---|
+| `ACT-01` | Stage action compression & single-slot Cancel swap | NOW | Feasible & Safe | `H3-G1A` |
+| `PRG-01` | Truthful sampler progress display (`Sampling X%`) | NEAR | Feasible with limit (WS / sampler-only) | Next Card |
+| `MED-01` | Aspect-safe Start Frame & Source Image policy | NEAR | Root cause identified (`crop="disabled"`) | Next Card |
+| `VID-01` | Reference video first 5s auto-trim | NEAR | Feasible via core `VideoSlice` | Next Card |
+| `VID-02` | Reference video start offset (IN time $T$) | NEAR | Feasible via core `VideoSlice` | Next Card |
+| `STU-01` | Compact Stage Shot strip (Candidate A) | LATER | Architectural direction accepted | Future Studio |
+| `STU-02` | Inspector Create/Edit split | LATER | Deferred until edit controls exist | Future Studio |
+| `EXT-01` | Cross-track Manga/H3 handoff | DEFERRED | External dependency | Cross-Track |
+| `EXT-02` | Shared TEGAKI Shell | DEFERRED | External dependency | Cross-Track |
+| `EXT-03` | Dedicated audio references & mixer | DEFERRED | Deferred by policy | Future Audio |

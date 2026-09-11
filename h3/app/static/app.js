@@ -440,6 +440,7 @@ function updateGenerateAvailability() {
     || !prepReady
     || state.submitting
     || Boolean(state.activeJob && !TERMINAL.has(state.activeJob.state));
+  generateButton.hidden = !cancelButton.hidden;
 }
 
 function setDetails(message) {

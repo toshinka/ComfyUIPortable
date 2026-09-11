@@ -139,23 +139,32 @@ button { cursor: pointer; }
 .preview-column { min-width: 0; }
 
 .stage-action-bar {
-  min-height: 58px;
+  min-height: 42px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 12px;
-  padding: 8px 10px;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding: 4px 10px;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 9px;
   background: var(--surface-cream);
-  box-shadow: 0 6px 16px rgba(91, 39, 28, 0.08);
+  box-shadow: 0 4px 12px rgba(91, 39, 28, 0.06);
 }
 
 .stage-status-slot { min-width: 0; flex: 1 1 auto; }
-.stage-status-slot .status-block { min-height: 0; padding: 0; background: transparent; }
-.stage-status-slot .status-label { margin-bottom: 2px; }
-.stage-status-slot .status-detail { overflow-wrap: anywhere; }
+.stage-status-slot .status-block {
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.stage-status-slot .status-label { display: none; }
+.stage-status-slot strong { margin-right: 0; font-size: 0.88rem; }
+.stage-status-slot .status-detail { font-size: 0.76rem; color: var(--muted); overflow-wrap: anywhere; }
 .stage-action-slot { min-width: 0; flex: 0 0 auto; }
 .generate-action-slot { min-width: 0; }
 
@@ -491,7 +500,7 @@ textarea::placeholder, input::placeholder { color: #a58a82; }
   box-shadow: 0 8px 18px rgba(91, 39, 28, 0.12);
 }
 .generate-action-dock .primary-button { margin-top: 0; }
-.generate-action-dock .cancel-button { margin-top: 8px; }
+.generate-action-dock .cancel-button { margin-top: 0; }
 .stage-action-slot .generate-action-dock {
   position: static;
   display: flex;
@@ -507,10 +516,20 @@ textarea::placeholder, input::placeholder { color: #a58a82; }
 }
 .stage-action-slot .primary-button {
   width: auto;
-  min-width: 156px;
-  min-height: 40px;
+  min-width: 110px;
+  min-height: 34px;
+  padding: 0 14px;
+  font-size: 0.82rem;
+  margin-top: 0;
 }
-.stage-action-slot .cancel-button { width: auto; min-height: 40px; margin-top: 0; }
+.stage-action-slot .cancel-button {
+  width: auto;
+  min-width: 110px;
+  min-height: 34px;
+  padding: 0 14px;
+  font-size: 0.82rem;
+  margin-top: 0;
+}
 .stage-action-slot .submit-status { flex-basis: 100%; margin-top: 0; text-align: right; }
 .submit-status {
   margin-top: 8px;
