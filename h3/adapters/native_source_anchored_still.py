@@ -42,6 +42,7 @@ SCHEMA = "tegaki.h3.h2b.source-anchored-still/v1"
 ROUTE_SOURCE_ANCHORED_STILL = "native_source_anchored_still"
 PROMPT_ONLY_ROUTE = "native_prompt_only_still_control"
 SOURCE_IMAGE_ROLE = "source_image_loader"
+SOURCE_FRAMING_ROLE = "source_image_framing"
 ALLOWED_SOURCE_SUFFIXES = {".png", ".jpg", ".jpeg"}
 MAX_SEED = 2**63 - 1
 
@@ -183,6 +184,7 @@ def validate_workflow(workflow: Mapping[str, Any]) -> None:
         "conditioning_latent",
         "select_frame",
         SOURCE_IMAGE_ROLE,
+        SOURCE_FRAMING_ROLE,
     }
     missing = sorted(required_roles.difference(semantic_nodes))
     if missing:
@@ -214,6 +216,29 @@ def validate_workflow(workflow: Mapping[str, Any]) -> None:
 
     conditioning_id = str(semantic_nodes["conditioning_latent"]["id"])
     loader_id = str(semantic_nodes[SOURCE_IMAGE_ROLE]["id"])
+    framing_id = str(semantic_nodes[SOURCE_FRAMING_ROLE]["id"])
+
+    framing_node = prompt[framing_id]
+    framing_inputs = framing_node.get("inputs")
+    if not isinstance(framing_inputs, Mapping):
+        raise WorkflowIncompatibleError("Workflow incompatible: source_image_framing inputs are missing.")
+    if framing_inputs.get("image") != [loader_id, 0]:
+        raise WorkflowIncompatibleError(
+            "Workflow incompatible: source_image_framing must target the source image loader."
+        )
+    if framing_inputs.get("upscale_method") != "lanczos":
+        raise WorkflowIncompatibleError(
+            "Workflow incompatible: source_image_framing must use upscale_method=lanczos."
+        )
+    if framing_inputs.get("width") != WIDTH or framing_inputs.get("height") != HEIGHT:
+        raise WorkflowIncompatibleError(
+            f"Workflow incompatible: source_image_framing must target {WIDTH} x {HEIGHT}."
+        )
+    if framing_inputs.get("crop") != "center":
+        raise WorkflowIncompatibleError(
+            "Workflow incompatible: source_image_framing must use crop=center."
+        )
+
     conditioning = prompt[conditioning_id]
     conditioning_inputs = conditioning.get("inputs")
     if conditioning.get("class_type") != "MiniMaxH3ImageToVideo" or not isinstance(
@@ -226,9 +251,9 @@ def validate_workflow(workflow: Mapping[str, Any]) -> None:
         raise WorkflowIncompatibleError(
             "Workflow incompatible: H2B packet must contain exactly five frames."
         )
-    if conditioning_inputs.get("first_frame") != [loader_id, 0]:
+    if conditioning_inputs.get("first_frame") != [framing_id, 0]:
         raise WorkflowIncompatibleError(
-            "Workflow incompatible: source anchor must bind first_frame to LoadImage."
+            "Workflow incompatible: source anchor must bind first_frame to source_image_framing."
         )
 
     loader = prompt[loader_id]
@@ -275,17 +300,28 @@ def compile_workflow(
     workflow = _validated_workflow()
     graph = deepcopy(workflow["prompt"])
     roles = workflow["semantic_nodes"]
+    loader_id = str(roles[SOURCE_IMAGE_ROLE]["id"])
+    framing_id = str(roles[SOURCE_FRAMING_ROLE]["id"])
 
+    _node(graph, roles, SOURCE_IMAGE_ROLE)["inputs"]["image"] = source_path
+    _node(graph, roles, SOURCE_FRAMING_ROLE)["inputs"].update(
+        {
+            "image": [loader_id, 0],
+            "upscale_method": "lanczos",
+            "width": normalized.width,
+            "height": normalized.height,
+            "crop": "center",
+        }
+    )
     _node(graph, roles, "conditioning_latent")["inputs"].update(
         {
             "prompt": normalized.prompt,
             "width": normalized.width,
             "height": normalized.height,
             "length": PACKET_FRAMES,
-            "first_frame": [str(roles[SOURCE_IMAGE_ROLE]["id"]), 0],
+            "first_frame": [framing_id, 0],
         }
     )
-    _node(graph, roles, SOURCE_IMAGE_ROLE)["inputs"]["image"] = source_path
     _node(graph, roles, "noise")["inputs"]["noise_seed"] = normalized.seed
     _node(graph, roles, "scheduler")["inputs"]["steps"] = normalized.steps
     _node(graph, roles, "save_image")["inputs"]["filename_prefix"] = "still/h2b_source_anchor"
@@ -304,6 +340,7 @@ def compile_prompt_only_workflow(
     conditioning = _node(graph, roles, "conditioning_latent")
     conditioning["inputs"].pop("first_frame", None)
     graph.pop(str(roles[SOURCE_IMAGE_ROLE]["id"]), None)
+    graph.pop(str(roles[SOURCE_FRAMING_ROLE]["id"]), None)
     conditioning["inputs"].update(
         {
             "prompt": normalized.prompt,

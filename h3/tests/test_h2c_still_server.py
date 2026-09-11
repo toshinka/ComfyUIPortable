@@ -152,6 +152,22 @@ class H2CStillServerTests(unittest.TestCase):
             session.backend.graph["133"]["inputs"]["image"],
             f"inputs/{source.filename}",
         )
+        self.assertEqual(
+            session.backend.graph["134"]["class_type"],
+            "ImageScale",
+        )
+        self.assertEqual(
+            session.backend.graph["134"]["inputs"]["image"],
+            ["133", 0],
+        )
+        self.assertEqual(
+            session.backend.graph["134"]["inputs"]["crop"],
+            "center",
+        )
+        self.assertEqual(
+            session.backend.graph["131"]["inputs"]["first_frame"],
+            ["134", 0],
+        )
         with self.assertRaisesRegex(ValueError, "server-issued source_id"):
             session.submit_still(
                 {"prompt": "raw path", "source_path": r"D:\private\source.png"}

@@ -47,9 +47,13 @@ This backlog tracks user experience refinements, generation pipeline enhancement
   - Standard Start Frame aspect-safe center cover-crop: `IMPLEMENTED / VERIFIED SOURCE-LOGIC` (Card H3-G1C1).
     - Materializes ComfyUI's core `ImageScale` (`upscale_method="lanczos"`, `crop="center"`, `width=W`, `height=H`) between `LoadImage` and `MiniMaxH3ImageToVideo.first_frame`.
     - Eliminates anamorphic squashing/stretching for Standard Video Start Frame; center crops outer edges if aspect differs from output resolution.
-  - Still Source Image aspect-safe framing: `NEAR / NOT IMPLEMENTED` (Deferred).
+  - Still Source center cover-crop: `IMPLEMENTED / VERIFIED SOURCE-LOGIC` (Card H3-G1C2).
+    - Materializes ComfyUI's core `ImageScale` (`upscale_method="lanczos"`, `crop="center"`, `width=608`, `height=352`) between `LoadImage` (`133`) and `MiniMaxH3ImageToVideo.first_frame` (`131`).
+    - Eliminates anamorphic squashing/stretching for Still Source Image; outer edges are center-cropped to fill 608x352 canvas.
+    - Matched prompt-only control prunes both `LoadImage` and `ImageScale` framing node cleanly.
   - Contain/pad (letterbox/pillarbox) mode selector: `NEAR / NOT IMPLEMENTED` (Deferred).
-  - Dedicated Prep/Edit interactive framing surface: `LATER / NOT IMPLEMENTED` (Deferred).
+  - Interactive crop positioning: `NEAR / NOT IMPLEMENTED` (Deferred).
+  - Dedicated Prep/Edit interactive framing surface & TEGAKI image-editor integration: `LATER / NOT IMPLEMENTED` (Deferred).
 - **Reference Video Trimming (First N Seconds)**:
   - First-5s Native trim: `IMPLEMENTED / VERIFIED SOURCE-LOGIC` (Card H3-G1B1).
   - Materializes ComfyUI's core `VideoSlice` (`Trim Video`) node (`start_time: 0.0`, `duration: 5.0`, `strict_duration: false`) before frame extraction to avoid memory bloat and excessive frame extraction.

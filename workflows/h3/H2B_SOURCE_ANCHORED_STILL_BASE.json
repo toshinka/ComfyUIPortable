@@ -3,7 +3,7 @@
   "source": {
     "basis_workflow": "workflows/h3/H2A_NATIVE_STILL_BASE.json",
     "official_conditioning_source": "ComfyUI/comfy_extras/nodes_minimax_h3.py",
-    "adaptation": "H2B feasibility-only adaptation of the verified Native H3 still path: one LoadImage source bound to MiniMaxH3ImageToVideo.first_frame, minimum five-frame temporal packet, video VAE decode, and one selected frame. No reference array, REF2VA node, source-strength control, audio decode, video container, custom node, or production UI is introduced."
+    "adaptation": "H2B feasibility-only adaptation of the verified Native H3 still path: one LoadImage source framed via ImageScale (lanczos, 608x352, crop=center) bound to MiniMaxH3ImageToVideo.first_frame, minimum five-frame temporal packet, video VAE decode, and one selected frame. No reference array, REF2VA node, source-strength control, audio decode, video container, custom node, or production UI is introduced."
   },
   "baseline": {
     "route": "native_source_anchored_still",
@@ -19,7 +19,7 @@
     "scheduler": "simple",
     "output_prefix": "still/h2b_source_anchor",
     "prompt_only_output_prefix": "still/h2b_prompt_only",
-    "source_resize": "Native MiniMaxH3ImageToVideo resizes first_frame[:1] to 608x352 with crop=disabled (plain stretch).",
+    "source_resize": "ComfyUI core ImageScale (upscale_method=lanczos, width=608, height=352, crop=center) preserves aspect ratio via center cover-crop before MiniMaxH3ImageToVideo.",
     "source_temporal_placement": "frame 0",
     "source_strength": "NOT APPLICABLE; the existing Native node exposes no bounded strength/fidelity input.",
     "model": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
@@ -40,7 +40,8 @@
     "noise": {"id": "129", "class_type": "RandomNoise"},
     "conditioning_latent": {"id": "131", "class_type": "MiniMaxH3ImageToVideo"},
     "select_frame": {"id": "132", "class_type": "ImageFromBatch"},
-    "source_image_loader": {"id": "133", "class_type": "LoadImage"}
+    "source_image_loader": {"id": "133", "class_type": "LoadImage"},
+    "source_image_framing": {"id": "134", "class_type": "ImageScale"}
   },
   "prompt": {
     "92": {
@@ -113,7 +114,7 @@
         "width": 608,
         "height": 352,
         "length": 5,
-        "first_frame": ["133", 0]
+        "first_frame": ["134", 0]
       }
     },
     "132": {
@@ -127,6 +128,16 @@
     "133": {
       "class_type": "LoadImage",
       "inputs": {"image": "inputs/h2b_source.png"}
+    },
+    "134": {
+      "class_type": "ImageScale",
+      "inputs": {
+        "image": ["133", 0],
+        "upscale_method": "lanczos",
+        "width": 608,
+        "height": 352,
+        "crop": "center"
+      }
     }
   }
 }
