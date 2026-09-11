@@ -5,6 +5,7 @@ Source: XT-ALIGN1 / Manga Integration Boundary Synchronization
 M3B: M3B_PRODUCTION_CLOSED
 Classification: MANGA_READY_FOR_INTEGRATION_DESIGN
 Shared-shell implementation: NOT AUTHORIZED
+Cross-track plan: [TEGAKI_CROSS_TRACK_INTEGRATION_PLAN.md](../integration/TEGAKI_CROSS_TRACK_INTEGRATION_PLAN.md)
 
 ---
 

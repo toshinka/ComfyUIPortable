@@ -7,6 +7,7 @@ Classification: `H3_READY_FOR_INTEGRATION_DESIGN`
 Shared-shell design: `READY TO REVIEW`
 Shared-shell implementation: `NOT AUTHORIZED`
 Owner acceptance: `PENDING`
+Cross-track plan: [TEGAKI_CROSS_TRACK_INTEGRATION_PLAN.md](../integration/TEGAKI_CROSS_TRACK_INTEGRATION_PLAN.md)
 
 ## 1. Purpose and readiness
 
