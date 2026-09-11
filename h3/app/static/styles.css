@@ -122,6 +122,10 @@ button { cursor: pointer; }
 .backend-pill.ready .status-dot { background: var(--success); }
 .backend-pill.disconnected { color: var(--danger); border-color: #e1b7b0; }
 .backend-pill.disconnected .status-dot { background: var(--danger); }
+.backend-pill.profile_mismatch,
+.backend-pill.profile_unverifiable { color: var(--danger); border-color: #e1b7b0; }
+.backend-pill.profile_mismatch .status-dot,
+.backend-pill.profile_unverifiable .status-dot { background: var(--danger); }
 
 .workspace {
   width: min(1320px, calc(100% - 48px));

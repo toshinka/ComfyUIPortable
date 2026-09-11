@@ -8,6 +8,8 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from h3.app.server import (  # noqa: E402
+    PORTABLE_ROOT,
+    build_h3_profile_expectation,
     map_history_state,
     map_queue_state,
     parse_backend_status,
@@ -16,9 +18,35 @@ from h3.app.server import (  # noqa: E402
 
 class H1AServerMappingTests(unittest.TestCase):
     def test_backend_status_parsing(self):
+        expected = build_h3_profile_expectation("http://127.0.0.1:8188", PORTABLE_ROOT)
         parsed = parse_backend_status(
-            {"devices": [{"vram_total": 120, "vram_free": 45}]},
+            {
+                "system": {
+                    "argv": [
+                        expected.native_main,
+                        "--listen",
+                        expected.native_host,
+                        "--port",
+                        str(expected.native_port),
+                        "--disable-all-custom-nodes",
+                        "--extra-model-paths-config",
+                        expected.allowed_model_paths[0],
+                        "--output-directory",
+                        expected.output_directory,
+                        "--input-directory",
+                        expected.input_directory,
+                        "--user-directory",
+                        expected.user_directory,
+                        "--temp-directory",
+                        expected.temp_directory,
+                        "--database-url",
+                        expected.database_url,
+                    ],
+                },
+                "devices": [{"vram_total": 120, "vram_free": 45}],
+            },
             {"queue_pending": [["pending-id"]], "queue_running": [["running-id"]]},
+            expected,
         )
         self.assertEqual(parsed["state"], "READY")
         self.assertEqual(parsed["queue_count"], 2)

@@ -99,10 +99,20 @@ from h3.adapters.native_ref2va import (  # noqa: E402
     materialize_prompt,
     workflow_metadata as ref2va_workflow_metadata,
 )
+from h3.app.native_profile import (  # noqa: E402
+    CANONICAL_H3,
+    PROFILE_MISMATCH,
+    PROFILE_UNVERIFIABLE,
+    UNAVAILABLE,
+    build_h3_profile_expectation,
+    validate_h3_native_profile,
+)
 
 
 STATE_LABELS = {
     "READY": "Ready",
+    PROFILE_MISMATCH: "Wrong H3 backend profile",
+    PROFILE_UNVERIFIABLE: "H3 backend profile unverifiable",
     "QUEUED": "Queued",
     "RUNNING": "Running",
     "COMPLETED": "Completed",
@@ -134,6 +144,14 @@ class BackendError(RuntimeError):
 
 class BackendRejected(BackendError):
     """ComfyUI rejected a validly shaped request."""
+
+
+class BackendProfileError(BackendError):
+    """The reachable backend is not the canonical H3 Native profile."""
+
+    def __init__(self, profile: str, detail: str):
+        super().__init__(detail)
+        self.profile = profile
 
 
 class ReferenceRequestError(RequestValidationError):
@@ -392,6 +410,7 @@ class BackendClient:
     def __init__(self, base_url: str, timeout: float = 8.0):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
+        self.expected_profile = build_h3_profile_expectation(self.base_url, PORTABLE_ROOT)
 
     def _request(
         self,
@@ -434,7 +453,7 @@ class BackendClient:
     def status(self) -> dict[str, Any]:
         stats = self._request("GET", "/system_stats")
         queue = self._request("GET", "/queue")
-        return parse_backend_status(stats, queue)
+        return parse_backend_status(stats, queue, self.expected_profile)
 
     def reference_node_available(self) -> bool:
         """Check the exact Native node without loading or hashing model weights."""
@@ -446,6 +465,12 @@ class BackendClient:
         return isinstance(object_info, Mapping) and "MiniMaxH3ReferenceToVideo" in object_info
 
     def submit(self, graph: Mapping[str, Any], client_id: str) -> dict[str, Any]:
+        status = self.status()
+        if status["state"] != "READY":
+            raise BackendProfileError(
+                status["backend_profile"],
+                status["backend_profile_detail"],
+            )
         response = self._request(
             "POST",
             "/prompt",
@@ -496,22 +521,44 @@ def _contains_prompt(entries: Iterable[Any], prompt_id: str) -> bool:
     return any(walk(entry) for entry in entries)
 
 
-def parse_backend_status(stats: Mapping[str, Any], queue: Mapping[str, Any]) -> dict[str, Any]:
-    """Normalize Native ComfyUI system/queue payloads for the local skin."""
+def parse_backend_status(
+    stats: Mapping[str, Any],
+    queue: Mapping[str, Any],
+    expected_profile=None,
+) -> dict[str, Any]:
+    """Normalize Native system/queue payloads and require the H3 profile."""
+    expected_profile = expected_profile or build_h3_profile_expectation(
+        "http://127.0.0.1:8188",
+        PORTABLE_ROOT,
+    )
+    profile = validate_h3_native_profile(stats, expected_profile)
+    queue_valid = (
+        isinstance(queue, Mapping)
+        and isinstance(queue.get("queue_pending"), list)
+        and isinstance(queue.get("queue_running"), list)
+    )
+    if not queue_valid:
+        profile = {
+            "classification": PROFILE_UNVERIFIABLE,
+            "detail": "Native queue response could not be verified.",
+        }
     devices = stats.get("devices") if isinstance(stats, Mapping) else None
     device = devices[0] if isinstance(devices, list) and devices else {}
-    pending = queue.get("queue_pending") if isinstance(queue, Mapping) else None
-    running = queue.get("queue_running") if isinstance(queue, Mapping) else None
+    pending = queue.get("queue_pending") if queue_valid else None
+    running = queue.get("queue_running") if queue_valid else None
     pending = pending if isinstance(pending, list) else []
     running = running if isinstance(running, list) else []
+    classification = profile["classification"]
+    state = "READY" if classification == CANONICAL_H3 else classification
     return {
-        "state": "READY",
-        "label": STATE_LABELS["READY"],
+        "state": state,
+        "label": STATE_LABELS[state],
+        "backend_profile": classification,
+        "backend_profile_detail": profile["detail"],
         "queue_count": len(pending) + len(running),
         "running_count": len(running),
         "vram_total": device.get("vram_total") if isinstance(device, Mapping) else None,
         "vram_free": device.get("vram_free") if isinstance(device, Mapping) else None,
-        "system_stats": stats,
     }
 
 
@@ -1956,6 +2003,8 @@ class H1AHandler(BaseHTTPRequestHandler):
                     {
                         "state": "DISCONNECTED",
                         "label": STATE_LABELS["DISCONNECTED"],
+                        "backend_profile": UNAVAILABLE,
+                        "backend_profile_detail": str(exc),
                         "queue_count": 0,
                         "running_count": 0,
                         "error": str(exc),
@@ -2269,6 +2318,15 @@ class H1AHandler(BaseHTTPRequestHandler):
             self._send_json(
                 HTTPStatus.CONFLICT,
                 {"error": str(exc), "kind": "workflow_incompatible"},
+            )
+        except BackendProfileError as exc:
+            self._send_json(
+                HTTPStatus.SERVICE_UNAVAILABLE,
+                {
+                    "error": str(exc),
+                    "kind": "backend_profile",
+                    "backend_profile": exc.profile,
+                },
             )
         except BackendRejected as exc:
             self._send_json(HTTPStatus.BAD_GATEWAY, {"error": str(exc), "kind": "workflow_rejected"})

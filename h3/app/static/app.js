@@ -161,6 +161,12 @@ const historyActionStatus = $("history-action-status");
 const footerMode = $("footer-mode");
 
 const TERMINAL = new Set(["COMPLETED", "FAILED", "CANCELLED"]);
+const BACKEND_STATUS_LABELS = Object.freeze({
+  READY: "Ready",
+  DISCONNECTED: "Backend disconnected",
+  PROFILE_MISMATCH: "Wrong H3 backend profile",
+  PROFILE_UNVERIFIABLE: "H3 profile unverifiable",
+});
 
 async function requestJson(url, options = {}) {
   const response = await fetch(url, { cache: "no-store", ...options });
@@ -177,7 +183,7 @@ async function requestJson(url, options = {}) {
 function setBackendStatus(next, message = "") {
   state.backend = next;
   backendPill.className = `backend-pill ${next.toLowerCase()}`;
-  backendLabel.textContent = next === "READY" ? "Ready" : next === "DISCONNECTED" ? "Backend disconnected" : "Connecting";
+  backendLabel.textContent = BACKEND_STATUS_LABELS[next] || "Connecting";
   const presentation = resolveBackendStatusPresentation({
     previousBackendDetail: state.backendStatusDetail,
     next,
@@ -991,7 +997,7 @@ async function cancelGeneration() {
 async function pollBackend() {
   try {
     const status = await requestJson("/api/status");
-    setBackendStatus(status.state, status.error || "");
+    setBackendStatus(status.state, status.backend_profile_detail || status.error || "");
     queueCount.textContent = String(status.queue_count ?? 0);
   } catch (error) {
     setBackendStatus("DISCONNECTED", error.message);
