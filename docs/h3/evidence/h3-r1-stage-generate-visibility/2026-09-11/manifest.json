@@ -11,7 +11,9 @@
     "ONE REAL STILL GENERATION",
     "OWNER ACCEPTANCE PENDING"
   ],
-  "publication": "PENDING BEFORE COMMIT",
+  "publication": "PUBLISHED ON MAIN",
+  "implementation_commit": "988ea5db210bce386904ff24db974f8af996c3ac",
+  "verified_origin_main": "988ea5db210bce386904ff24db974f8af996c3ac",
   "owner_acceptance": "PENDING",
   "base_origin_main": "67b9396481d24be7b4bea51643d589c7a7b7ee28",
   "implementation": {

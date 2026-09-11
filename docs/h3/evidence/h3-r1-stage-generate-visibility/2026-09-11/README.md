@@ -2,7 +2,7 @@
 
 Evidence date: `2026-09-11 JST`
 
-Status: `IMPLEMENTED / VERIFIED BROWSER UI / PASS WITH LIMIT / OWNER ACCEPTANCE PENDING`
+Status: `IMPLEMENTED / VERIFIED BROWSER UI / PASS WITH LIMIT / PUBLISHED ON MAIN / OWNER ACCEPTANCE PENDING`
 
 This package records the H3-only responsive Stage/Generate visibility slice.
 The canonical skin was tested at `http://127.0.0.1:8190/` with the Native
@@ -78,7 +78,8 @@ list. No upload or file-scheme permission was used.
 - Manga files: `NONE`
 - Shared-shell implementation: `NOT AUTHORIZED`
 - Initial `origin/main`: `67b9396481d24be7b4bea51643d589c7a7b7ee28`
-- Publication: `PENDING BEFORE COMMIT`
+- Implementation commit: `988ea5db210bce386904ff24db974f8af996c3ac`
+- Publication: `PUBLISHED ON MAIN` (verified `origin/main` and GitHub raw URLs)
 - Owner acceptance: `PENDING`
 
 The live Browser screenshots were used for visual review but are not persisted

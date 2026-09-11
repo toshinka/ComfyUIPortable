@@ -3,6 +3,7 @@
 Card: `H3-R1 — Stage / Generate Visibility Responsive Stage + Truthful Submission / Generation Status`
 
 Result: `PASS WITH LIMIT`
+Publication: `PUBLISHED ON MAIN` at implementation commit `988ea5db210bce386904ff24db974f8af996c3ac`
 
 This closeout covers the H3-only responsive Stage/Generate visibility slice. It
 does not implement a shared shell, change the Native lifecycle, alter Manga,
@@ -136,9 +137,9 @@ The cross-track plan remains the authority for architecture boundaries:
 - Shared-shell implementation: `NOT AUTHORIZED`
 - Cross-track asset handoff: `DEFERRED`
 
-Publication is recorded separately from local verification. At report creation
-time publication was `PENDING`; the final publication commit is recorded in the
-evidence manifest and the final integration updates.
+Publication was verified after push: `origin/main` and the GitHub raw report,
+evidence manifest, and cross-track plan URLs returned the published R1 files.
+The evidence manifest records the implementation commit and verified remote.
 
 Owner acceptance: `PENDING`
 
