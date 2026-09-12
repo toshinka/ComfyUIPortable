@@ -44,6 +44,13 @@ MANGA-M1D1 (and subsequent SOL audit hotfix MANGA-M1D1A) implements the Manga-sp
 3. **Truthful Public Status on Startup Failure**: Failure in `start()` transitions `internalSubstate` to `FAILED` and records `lastError`. Any subsequent `getStatus()` check truthfully reflects `FAILED` or `DEGRADED` (if pre-existing backend is compatible), never a misleading `STOPPED` or `READY`.
 4. **Lifecycle Exit Synchronization**: Child exit listeners on the spawned processes exclusively reset `processRecord` to `null` and return ownership to `UNAVAILABLE` once the OS process has actually terminated.
 
+### 2.4 Preserve Owned Process Identity Across start() Re-entry (MANGA-M1D1C)
+1. **Root Cause**: While M1D1B established immediate ownership assignment upon spawn, subsequent calls to `start()` (e.g. repeated `start()`, `stopBackend() -> start()`, or `stopWorkspace() -> start()`) probed target ports and unconditionally overwrote ownership to `PREEXISTING_COMPATIBLE` while discarding `backendProcessRecord` / `workspaceProcessRecord`.
+2. **Re-entry Invariant**: If this runtime already has `OWNED_BY_THIS_RUNTIME` and a live matching `processRecord` / child handle, positive service probe retains `OWNED_BY_THIS_RUNTIME` and preserves the existing process record. Only when no live owned child exists is positive identity classified as `PREEXISTING_COMPATIBLE`.
+3. **Idempotency**: Invoking `await runtime.start()` when both services are already running and owned returns `READY`, spawns zero additional children, and keeps both child handles, PIDs, and ownerships intact.
+4. **Zero Duplicate Spawn on Unavailable / Wrong Profile Probe**: If an owned child handle is alive but the HTTP probe is temporarily `UNAVAILABLE` or reports `WRONG_PROFILE`, `start()` fails closed without spawning a duplicate second child or detaching from the owned handle.
+5. **Partial Service Recovery & Clean Teardown**: After `stopBackend() -> start()` or `stopWorkspace() -> start()`, exactly one replacement child is spawned for the stopped service while the survivor's handle and PID remain untouched. Subsequent `stopAll()` terminates both owned processes cleanly without process leaks.
+
 ---
 
 ## 3. Runtime Architecture & Ownership Contract
@@ -143,8 +150,16 @@ Implemented comprehensive test suite `ComfyUIPortable/manga/tests/test_domain_li
   - **Check J**: Spawned backend wrong profile -> retains `OWNED_BY_THIS_RUNTIME` while child process is alive, not killed automatically, resets to `UNAVAILABLE` on exit (`PASS`).
   - **Check K**: Workspace startup polling timeout -> retains `OWNED_BY_THIS_RUNTIME` while child process is alive, not killed automatically, reports truthful `DEGRADED` (pre-existing compatible backend) and `internalSubstate: FAILED` (`PASS`).
   - **Check L**: Spawned workspace wrong profile -> retains `OWNED_BY_THIS_RUNTIME` while child process is alive, reports truthful `FAILED` (`PASS`).
+- **M1D1C Re-entry & Recovery Matrix (Checks A through H)**:
+  - **Check A**: `start()` on already-owned READY runtime is idempotent -> zero additional children spawned, handles/PIDs/ownerships preserved (`PASS`).
+  - **Check B**: `stopBackend() -> start()` -> workspace child/PID/ownership preserved, exactly one replacement backend spawned, both cleaned on `stopAll()` (`PASS`).
+  - **Check C**: `stopWorkspace() -> start()` -> backend child/PID/ownership preserved, exactly one replacement workspace spawned, both cleaned on `stopAll()` (`PASS`).
+  - **Check D**: Owned backend child alive + unavailable probe -> zero duplicate spawn, ownership retained, state not READY (`PASS`).
+  - **Check E**: Owned workspace child alive + unavailable probe -> zero duplicate spawn, ownership retained, state not READY (`PASS`).
+  - **Check F**: Owned live service returning wrong profile -> fails closed, zero duplicate spawn, ownership retained (`PASS`).
+  - **Check G, H**: Genuine pre-existing compatible backend/workspace remain `PREEXISTING_COMPATIBLE` and are never killed (`PASS`).
 
-Execution performance: **~300 ms** total wall time (well below the 2-minute target).
+Execution performance: **~350 ms** total wall time (well below the 2-minute target).
 
 ---
 

@@ -1203,6 +1203,440 @@ function makeFakeChild(name, onKill = null) {
     console.log("✓ M1D1B Check L Passed: Spawned Workspace wrong profile retains OWNED truth while child is alive");
 }
 
+// =========================================================================
+// M1D1C Checks: Preserve Owned Process Identity Across start() Re-entry
+// =========================================================================
+
+// M1D1C Check A: start() on already-owned READY runtime is idempotent
+{
+    const bPort = 58950 + Math.floor(Math.random() * 300);
+    const wsPort = 59950 + Math.floor(Math.random() * 300);
+
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    const fakeWs = createFakeWorkspace({ mode: "COMPATIBLE", backendTarget: `http://127.0.0.1:${bPort}` });
+
+    let bSpawnCount = 0;
+    let wsSpawnCount = 0;
+    let bChild = null;
+    let wsChild = null;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        customSpawnBackend: () => {
+            bSpawnCount++;
+            bChild = makeFakeChild("python.exe", () => {
+                fakeBackend.server.close();
+            });
+            fakeBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        },
+        customSpawnWorkspace: () => {
+            wsSpawnCount++;
+            wsChild = makeFakeChild("node.exe", () => {
+                fakeWs.server.close();
+            });
+            fakeWs.server.listen(wsPort, "127.0.0.1");
+            return wsChild;
+        }
+    });
+
+    const status1 = await runtime.start();
+    assert.strictEqual(status1, LifecycleState.READY, "First start must reach READY");
+    assert.strictEqual(bSpawnCount, 1, "Backend spawned once");
+    assert.strictEqual(wsSpawnCount, 1, "Workspace spawned once");
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+    assert.strictEqual(runtime.workspaceOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+
+    const savedBChild = runtime.backendProcessRecord.child;
+    const savedWsChild = runtime.workspaceProcessRecord.child;
+    const savedBPid = runtime.backendProcessRecord.pid;
+    const savedWsPid = runtime.workspaceProcessRecord.pid;
+
+    // Second start() call — must be idempotent
+    const status2 = await runtime.start();
+    assert.strictEqual(status2, LifecycleState.READY, "Second start must return READY");
+    assert.strictEqual(bSpawnCount, 1, "Zero additional backend children spawned");
+    assert.strictEqual(wsSpawnCount, 1, "Zero additional workspace children spawned");
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME, "Backend ownership must remain OWNED");
+    assert.strictEqual(runtime.workspaceOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME, "Workspace ownership must remain OWNED");
+    assert.strictEqual(runtime.backendProcessRecord.child, savedBChild, "Backend child handle unchanged");
+    assert.strictEqual(runtime.workspaceProcessRecord.child, savedWsChild, "Workspace child handle unchanged");
+    assert.strictEqual(runtime.backendProcessRecord.pid, savedBPid, "Backend PID unchanged");
+    assert.strictEqual(runtime.workspaceProcessRecord.pid, savedWsPid, "Workspace PID unchanged");
+
+    await runtime.stopAll();
+    assert.strictEqual(bChild.killed, true);
+    assert.strictEqual(wsChild.killed, true);
+    await closeServer(fakeBackend.server);
+    await closeServer(fakeWs.server);
+
+    console.log("✓ M1D1C Check A Passed: start() on already-owned READY runtime is idempotent");
+}
+
+// M1D1C Check B: stopBackend() -> start() preserves Workspace handle, spawns new backend, cleans both on stopAll
+{
+    const bPort = 58950 + Math.floor(Math.random() * 300);
+    const wsPort = 59950 + Math.floor(Math.random() * 300);
+
+    let fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    const fakeWs = createFakeWorkspace({ mode: "COMPATIBLE", backendTarget: `http://127.0.0.1:${bPort}` });
+
+    let bSpawnCount = 0;
+    let wsSpawnCount = 0;
+    let bChild = null;
+    let wsChild = null;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        customSpawnBackend: () => {
+            bSpawnCount++;
+            bChild = makeFakeChild(`python.exe_${bSpawnCount}`, () => {
+                fakeBackend.server.close();
+            });
+            fakeBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        },
+        customSpawnWorkspace: () => {
+            wsSpawnCount++;
+            wsChild = makeFakeChild("node.exe", () => {
+                fakeWs.server.close();
+            });
+            fakeWs.server.listen(wsPort, "127.0.0.1");
+            return wsChild;
+        }
+    });
+
+    await runtime.start();
+    assert.strictEqual(bSpawnCount, 1);
+    assert.strictEqual(wsSpawnCount, 1);
+    const initialWsChild = runtime.workspaceProcessRecord.child;
+    const initialWsPid = runtime.workspaceProcessRecord.pid;
+
+    // Stop backend safely
+    await runtime.stopBackend();
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.UNAVAILABLE);
+    assert.strictEqual(runtime.backendProcessRecord, null);
+    assert.strictEqual(runtime.workspaceOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+    assert.strictEqual(await runtime.getStatus(), LifecycleState.DEGRADED);
+
+    // Prepare new fake backend server for 2nd spawn
+    fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+
+    // Call start() again to recover backend
+    const statusAfter = await runtime.start();
+    assert.strictEqual(statusAfter, LifecycleState.READY);
+    assert.strictEqual(bSpawnCount, 2, "Exactly one replacement backend spawned");
+    assert.strictEqual(wsSpawnCount, 1, "Existing workspace child NOT respawned");
+    assert.strictEqual(runtime.workspaceProcessRecord.child, initialWsChild, "Workspace child handle preserved");
+    assert.strictEqual(runtime.workspaceProcessRecord.pid, initialWsPid, "Workspace PID preserved");
+    assert.strictEqual(runtime.workspaceOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+
+    // stopAll cleans both owned processes
+    const currentBChild = runtime.backendProcessRecord.child;
+    await runtime.stopAll();
+    assert.strictEqual(currentBChild.killed, true);
+    assert.strictEqual(initialWsChild.killed, true);
+    await closeServer(fakeBackend.server);
+    await closeServer(fakeWs.server);
+
+    console.log("✓ M1D1C Check B Passed: stopBackend() -> start() preserves workspace, spawns exactly one backend, cleans both on stopAll");
+}
+
+// M1D1C Check C: stopWorkspace() -> start() preserves Backend handle, spawns new workspace, cleans both on stopAll
+{
+    const bPort = 58950 + Math.floor(Math.random() * 300);
+    const wsPort = 59950 + Math.floor(Math.random() * 300);
+
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    let fakeWs = createFakeWorkspace({ mode: "COMPATIBLE", backendTarget: `http://127.0.0.1:${bPort}` });
+
+    let bSpawnCount = 0;
+    let wsSpawnCount = 0;
+    let bChild = null;
+    let wsChild = null;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        customSpawnBackend: () => {
+            bSpawnCount++;
+            bChild = makeFakeChild("python.exe", () => {
+                fakeBackend.server.close();
+            });
+            fakeBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        },
+        customSpawnWorkspace: () => {
+            wsSpawnCount++;
+            wsChild = makeFakeChild(`node.exe_${wsSpawnCount}`, () => {
+                fakeWs.server.close();
+            });
+            fakeWs.server.listen(wsPort, "127.0.0.1");
+            return wsChild;
+        }
+    });
+
+    await runtime.start();
+    assert.strictEqual(bSpawnCount, 1);
+    assert.strictEqual(wsSpawnCount, 1);
+    const initialBChild = runtime.backendProcessRecord.child;
+    const initialBPid = runtime.backendProcessRecord.pid;
+
+    // Stop workspace
+    await runtime.stopWorkspace();
+    assert.strictEqual(runtime.workspaceOwnership, OwnershipClassification.UNAVAILABLE);
+    assert.strictEqual(runtime.workspaceProcessRecord, null);
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+    assert.strictEqual(await runtime.getStatus(), LifecycleState.DEGRADED);
+
+    // Prepare new fake workspace for 2nd spawn
+    fakeWs = createFakeWorkspace({ mode: "COMPATIBLE", backendTarget: `http://127.0.0.1:${bPort}` });
+
+    // Call start() again to recover workspace
+    const statusAfter = await runtime.start();
+    assert.strictEqual(statusAfter, LifecycleState.READY);
+    assert.strictEqual(bSpawnCount, 1, "Existing backend NOT respawned");
+    assert.strictEqual(wsSpawnCount, 2, "Exactly one replacement workspace spawned");
+    assert.strictEqual(runtime.backendProcessRecord.child, initialBChild, "Backend child handle preserved");
+    assert.strictEqual(runtime.backendProcessRecord.pid, initialBPid, "Backend PID preserved");
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+    assert.strictEqual(runtime.workspaceOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+
+    // stopAll cleans both owned processes
+    const currentWsChild = runtime.workspaceProcessRecord.child;
+    await runtime.stopAll();
+    assert.strictEqual(initialBChild.killed, true);
+    assert.strictEqual(currentWsChild.killed, true);
+    await closeServer(fakeBackend.server);
+    await closeServer(fakeWs.server);
+
+    console.log("✓ M1D1C Check C Passed: stopWorkspace() -> start() preserves backend, spawns exactly one workspace, cleans both on stopAll");
+}
+
+// M1D1C Check D: owned backend child alive + backend probe unavailable -> no second backend spawned
+{
+    const bPort = 58950 + Math.floor(Math.random() * 300);
+    const wsPort = 59950 + Math.floor(Math.random() * 300);
+
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    const fakeWs = createFakeWorkspace({ mode: "COMPATIBLE", backendTarget: `http://127.0.0.1:${bPort}` });
+
+    let bSpawnCount = 0;
+    let wsSpawnCount = 0;
+    let bChild = null;
+    let wsChild = null;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        customSpawnBackend: () => {
+            bSpawnCount++;
+            bChild = makeFakeChild("python.exe");
+            return bChild;
+        },
+        customSpawnWorkspace: () => {
+            wsSpawnCount++;
+            wsChild = makeFakeChild("node.exe", () => {
+                fakeWs.server.close();
+            });
+            fakeWs.server.listen(wsPort, "127.0.0.1");
+            return wsChild;
+        }
+    });
+
+    // Start with backend server closed (so backend probe will be UNAVAILABLE)
+    let startThrew = false;
+    try {
+        await runtime.start();
+    } catch (_) {
+        startThrew = true;
+    }
+    assert.strictEqual(startThrew, true);
+    assert.strictEqual(bSpawnCount, 1);
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+    assert.notStrictEqual(runtime.backendProcessRecord, null);
+
+    // Second start while owned child is still alive and probe is unavailable
+    let secondStartThrew = false;
+    try {
+        await runtime.start();
+    } catch (err) {
+        secondStartThrew = true;
+        assert(err.message.includes("is running") && err.message.includes("UNAVAILABLE"));
+    }
+    assert.strictEqual(secondStartThrew, true);
+    assert.strictEqual(bSpawnCount, 1, "Must NOT spawn a second backend child while owned child is alive");
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+    assert.notStrictEqual(runtime.backendProcessRecord, null);
+    assert.notStrictEqual(await runtime.getStatus(), LifecycleState.READY);
+
+    // Clean up
+    bChild.kill();
+    await new Promise(r => setTimeout(r, 50));
+    await closeServer(fakeWs.server);
+    console.log("✓ M1D1C Check D Passed: Owned backend child alive + unavailable probe -> zero duplicate spawn, ownership retained");
+}
+
+// M1D1C Check E: owned workspace child alive + workspace probe unavailable -> no second workspace spawned
+{
+    const bPort = 58950 + Math.floor(Math.random() * 300);
+    const wsPort = 59950 + Math.floor(Math.random() * 300);
+
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+
+    let bSpawnCount = 0;
+    let wsSpawnCount = 0;
+    let bChild = null;
+    let wsChild = null;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        customSpawnBackend: () => {
+            bSpawnCount++;
+            bChild = makeFakeChild("python.exe", () => {
+                fakeBackend.server.close();
+            });
+            fakeBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        },
+        customSpawnWorkspace: () => {
+            wsSpawnCount++;
+            wsChild = makeFakeChild("node.exe");
+            return wsChild;
+        }
+    });
+
+    let startThrew = false;
+    try {
+        await runtime.start();
+    } catch (_) {
+        startThrew = true;
+    }
+    assert.strictEqual(startThrew, true);
+    assert.strictEqual(wsSpawnCount, 1);
+    assert.strictEqual(runtime.workspaceOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+    assert.notStrictEqual(runtime.workspaceProcessRecord, null);
+
+    // Second start while owned workspace child is still alive and probe is unavailable
+    let secondStartThrew = false;
+    try {
+        await runtime.start();
+    } catch (err) {
+        secondStartThrew = true;
+        assert(err.message.includes("is running") && err.message.includes("UNAVAILABLE"));
+    }
+    assert.strictEqual(secondStartThrew, true);
+    assert.strictEqual(wsSpawnCount, 1, "Must NOT spawn a second workspace child while owned child is alive");
+    assert.strictEqual(runtime.workspaceOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+    assert.notStrictEqual(runtime.workspaceProcessRecord, null);
+    assert.notStrictEqual(await runtime.getStatus(), LifecycleState.READY);
+
+    // Clean up
+    if (bChild) bChild.kill();
+    wsChild.kill();
+    await new Promise(r => setTimeout(r, 50));
+    await closeServer(fakeBackend.server);
+    console.log("✓ M1D1C Check E Passed: Owned workspace child alive + unavailable probe -> zero duplicate spawn, ownership retained");
+}
+
+// M1D1C Check F: owned live service returning wrong profile fails closed without duplicate spawn
+{
+    const bPort = 58950 + Math.floor(Math.random() * 300);
+    const wsPort = 59950 + Math.floor(Math.random() * 300);
+
+    const fakeBackend = createFakeBackend({ mode: "WRONG_PROFILE" });
+    let bSpawnCount = 0;
+    let bChild = null;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        customSpawnBackend: () => {
+            bSpawnCount++;
+            bChild = makeFakeChild("python.exe", () => {
+                fakeBackend.server.close();
+            });
+            fakeBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        }
+    });
+
+    let startThrew = false;
+    try {
+        await runtime.start();
+    } catch (err) {
+        startThrew = true;
+        assert(err.message.includes("wrong profile"));
+    }
+    assert.strictEqual(startThrew, true);
+    assert.strictEqual(bSpawnCount, 1);
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+    assert.notStrictEqual(runtime.backendProcessRecord, null);
+
+    // Re-attempt start() with live owned child
+    let secondStartThrew = false;
+    try {
+        await runtime.start();
+    } catch (err) {
+        secondStartThrew = true;
+    }
+    assert.strictEqual(secondStartThrew, true);
+    assert.strictEqual(bSpawnCount, 1, "Must NOT spawn another child on wrong profile re-entry");
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+
+    // Clean up
+    await closeServer(fakeBackend.server);
+    bChild.kill();
+    await new Promise(r => setTimeout(r, 50));
+    console.log("✓ M1D1C Check F Passed: Owned live service returning wrong profile fails closed, zero duplicate spawn");
+}
+
+// M1D1C Check G & H: Genuine pre-existing compatible backend/Workspace remain PREEXISTING and are never killed
+{
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    const bPort = await listenDynamic(fakeBackend.server);
+    const fakeWs = createFakeWorkspace({ mode: "COMPATIBLE", backendTarget: `http://127.0.0.1:${bPort}` });
+    const wsPort = await listenDynamic(fakeWs.server);
+
+    let bSpawnCount = 0;
+    let wsSpawnCount = 0;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        customSpawnBackend: () => { bSpawnCount++; return makeFakeChild("python.exe"); },
+        customSpawnWorkspace: () => { wsSpawnCount++; return makeFakeChild("node.exe"); }
+    });
+
+    const st = await runtime.start();
+    assert.strictEqual(st, LifecycleState.READY);
+    assert.strictEqual(bSpawnCount, 0, "No backend spawned for pre-existing");
+    assert.strictEqual(wsSpawnCount, 0, "No workspace spawned for pre-existing");
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.PREEXISTING_COMPATIBLE);
+    assert.strictEqual(runtime.workspaceOwnership, OwnershipClassification.PREEXISTING_COMPATIBLE);
+    assert.strictEqual(runtime.backendProcessRecord, null);
+    assert.strictEqual(runtime.workspaceProcessRecord, null);
+
+    // Calling stopAll() on runtime with pre-existing services must NOT kill them
+    await runtime.stopAll();
+    assert.strictEqual(fakeBackend.server.listening, true, "Pre-existing backend must NEVER be killed");
+    assert.strictEqual(fakeWs.server.listening, true, "Pre-existing workspace must NEVER be killed");
+
+    await closeServer(fakeBackend.server);
+    await closeServer(fakeWs.server);
+    console.log("✓ M1D1C Checks G, H Passed: Genuine pre-existing services remain PREEXISTING and are never killed");
+}
+
 // Test Matrix X, Y: Child cleanup & absence of kill-by-port utilities
 {
     // X: Active fake children cleaned up
@@ -1222,4 +1656,4 @@ function makeFakeChild(name, onKill = null) {
     console.log("✓ Tests X, Y Passed: All test children cleaned up; zero kill-by-port utilities found");
 }
 
-console.log("--- ALL MANGA DOMAIN LIFECYCLE TESTS (A through Y + M1D1A A-H + M1D1B I-L) PASSED ---");
+console.log("--- ALL MANGA DOMAIN LIFECYCLE TESTS (A through Y + M1D1A A-H + M1D1B I-L + M1D1C A-H) PASSED ---");

@@ -389,6 +389,24 @@ export class MangaDomainRuntime {
         return LifecycleState.STOPPED;
     }
 
+    _hasOwnedBackendChild() {
+        return (
+            this.backendOwnership === OwnershipClassification.OWNED_BY_THIS_RUNTIME &&
+            this.backendProcessRecord != null &&
+            this.backendProcessRecord.child != null &&
+            !this.backendProcessRecord.child.killed
+        );
+    }
+
+    _hasOwnedWorkspaceChild() {
+        return (
+            this.workspaceOwnership === OwnershipClassification.OWNED_BY_THIS_RUNTIME &&
+            this.workspaceProcessRecord != null &&
+            this.workspaceProcessRecord.child != null &&
+            !this.workspaceProcessRecord.child.killed
+        );
+    }
+
     // -------------------------------------------------------------
     // Startup Sequence (Card Section 14, 15, 16)
     // -------------------------------------------------------------
@@ -400,15 +418,27 @@ export class MangaDomainRuntime {
         try {
             // 1. Establish backend classification / start
             const backendInitial = await this.probeBackend();
+            const hasOwnedBackend = this._hasOwnedBackendChild();
+
             if (backendInitial.classification === OwnershipClassification.PORT_OCCUPIED_WRONG_PROFILE) {
                 this.internalSubstate = InternalSubstate.FAILED;
                 this.lastError = new Error(`Backend port ${this.backendPort} occupied by incompatible profile: ${backendInitial.details}`);
                 throw this.lastError;
             } else if (backendInitial.classification === OwnershipClassification.PREEXISTING_COMPATIBLE) {
-                this.backendOwnership = OwnershipClassification.PREEXISTING_COMPATIBLE;
-                this.backendProcessRecord = null;
+                if (!hasOwnedBackend) {
+                    this.backendOwnership = OwnershipClassification.PREEXISTING_COMPATIBLE;
+                    this.backendProcessRecord = null;
+                }
+                // If hasOwnedBackend, preserve OWNED_BY_THIS_RUNTIME and backendProcessRecord
             } else {
-                // UNAVAILABLE -> spawn candidate backend child
+                // Backend is UNAVAILABLE
+                if (hasOwnedBackend) {
+                    // Retain owned child record and ownership; do NOT spawn a duplicate backend child
+                    this.internalSubstate = InternalSubstate.FAILED;
+                    this.lastError = new Error(`Owned backend child is running (PID ${this.backendProcessRecord.pid}) but probe returned UNAVAILABLE`);
+                    throw this.lastError;
+                }
+                // UNAVAILABLE and not owned -> spawn candidate backend child
                 await this._spawnBackendChild();
             }
 
@@ -416,11 +446,14 @@ export class MangaDomainRuntime {
 
             // 2. Establish workspace classification / start
             const wsInitial = await this.probeWorkspace();
+            const hasOwnedWs = this._hasOwnedWorkspaceChild();
+
             if (wsInitial.classification === OwnershipClassification.PORT_OCCUPIED_WRONG_PROFILE) {
                 this.internalSubstate = InternalSubstate.FAILED;
                 this.lastError = new Error(`Workspace port ${this.workspacePort} occupied by incompatible profile: ${wsInitial.details}`);
 
-                // Card M1D1A Section 11: Attempt normal safe stop of the just-spawned owned backend
+                // Attempt normal safe stop of newly spawned owned backend if applicable
+                // Only if backend was NOT previously established/running before this start()
                 if (this.backendOwnership === OwnershipClassification.OWNED_BY_THIS_RUNTIME) {
                     try {
                         await this.stopBackend();
@@ -430,10 +463,20 @@ export class MangaDomainRuntime {
                 }
                 throw this.lastError;
             } else if (wsInitial.classification === OwnershipClassification.PREEXISTING_COMPATIBLE) {
-                this.workspaceOwnership = OwnershipClassification.PREEXISTING_COMPATIBLE;
-                this.workspaceProcessRecord = null;
+                if (!hasOwnedWs) {
+                    this.workspaceOwnership = OwnershipClassification.PREEXISTING_COMPATIBLE;
+                    this.workspaceProcessRecord = null;
+                }
+                // If hasOwnedWs, preserve OWNED_BY_THIS_RUNTIME and workspaceProcessRecord
             } else {
-                // UNAVAILABLE -> spawn candidate workspace child
+                // Workspace is UNAVAILABLE
+                if (hasOwnedWs) {
+                    // Retain owned child record and ownership; do NOT spawn a duplicate workspace child
+                    this.internalSubstate = InternalSubstate.FAILED;
+                    this.lastError = new Error(`Owned workspace child is running (PID ${this.workspaceProcessRecord.pid}) but probe returned UNAVAILABLE`);
+                    throw this.lastError;
+                }
+                // UNAVAILABLE and not owned -> spawn candidate workspace child
                 try {
                     await this._spawnWorkspaceChild();
                 } catch (err) {
