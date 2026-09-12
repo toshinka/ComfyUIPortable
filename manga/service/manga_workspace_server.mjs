@@ -14,6 +14,8 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { GenerationService, GenerationServiceError } from "./generation_service.mjs";
+import { GenerationJournal, JournalError } from "./generation_journal.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -54,6 +56,11 @@ export const ALLOWED_PROXY_PATHS = new Set([
     "/tegaki/manga/generation/prepare",
     "/extensions/tegaki_manga_nodes/js/minimum_hand_scene_editor.js"
 ]);
+
+const generationService = new GenerationService({
+    backendUrl: parsedBackend.origin,
+    journal: new GenerationJournal(process.env.MANGA_GENERATION_JOURNAL_DIR || undefined)
+});
 
 const server = http.createServer(async (req, res) => {
     // Restricted same-origin CORS: do not expose wildcard '*' (Card Section 5)
@@ -175,6 +182,79 @@ const server = http.createServer(async (req, res) => {
         } catch (err) {
             reply(502, err.name === "TimeoutError" ? "BACKEND_TIMEOUT" : "BACKEND_UNAVAILABLE",
                 err.name === "TimeoutError" ? "Backend capability request timed out" : "Backend capability request failed");
+        }
+        return;
+    }
+    // PLAY1b: Manga-owned job API; graph, backend URL, and output paths are never client inputs.
+    if (/^\/api\/manga\/generation\/jobs(?:\/|$)/.test(pathname)) {
+        const pieces = pathname.split("/").filter(Boolean);
+        const collection = pieces.length === 4;
+        const result = pieces.length === 6 && pieces[5] === "result";
+        const item = pieces.length === 5 || result;
+        const reply = (status, code, message) => {
+            res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
+            res.end(JSON.stringify({ ok: false, error_code: code, error: message }));
+        };
+        if (!collection && !item) {
+            reply(404, "ROUTE_NOT_FOUND", "Unknown Manga job route");
+            return;
+        }
+        if (req.method !== (collection ? "POST" : "GET")) {
+            reply(405, "METHOD_NOT_ALLOWED", `Use ${collection ? "POST" : "GET"}`);
+            return;
+        }
+        if ((requestOrigin && !allowedLocalOrigins.has(requestOrigin)) ||
+            (req.headers["sec-fetch-site"] && !["same-origin", "none"].includes(req.headers["sec-fetch-site"]))) {
+            reply(403, "ORIGIN_FORBIDDEN", "Request origin is not the Manga workspace");
+            return;
+        }
+        try {
+            if (collection) {
+                if ((req.headers["content-type"] || "").split(";")[0].trim().toLowerCase() !== "application/json") {
+                    reply(415, "INVALID_CONTENT_TYPE", "Content-Type must be application/json");
+                    return;
+                }
+                const declared = Number(req.headers["content-length"]);
+                if (req.headers["content-length"] && (!Number.isSafeInteger(declared) || declared > 256 * 1024)) {
+                    reply(413, "REQUEST_TOO_LARGE", "Manga job request exceeds 256 KiB");
+                    return;
+                }
+                const chunks = [];
+                let size = 0;
+                for await (const chunk of req) {
+                    size += chunk.length;
+                    if (size > 256 * 1024) {
+                        req.resume();
+                        reply(413, "REQUEST_TOO_LARGE", "Manga job request exceeds 256 KiB");
+                        return;
+                    }
+                    chunks.push(chunk);
+                }
+                let body;
+                try {
+                    body = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+                } catch {
+                    reply(400, "INVALID_JSON", "Manga job request is not valid JSON");
+                    return;
+                }
+                const job = await generationService.createJob(body);
+                res.writeHead(202, { "Content-Type": "application/json; charset=utf-8" });
+                res.end(JSON.stringify({ ok: true, job }));
+            } else if (result) {
+                const bytes = await generationService.getResult(pieces[4]);
+                res.writeHead(200, { "Content-Type": "image/png", "Cache-Control": "no-store" });
+                res.end(bytes);
+            } else {
+                const job = await generationService.getJob(pieces[4]);
+                res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+                res.end(JSON.stringify({ ok: true, job }));
+            }
+        } catch (error) {
+            if (error instanceof GenerationServiceError || error instanceof JournalError) {
+                reply(error.status || 503, error.code, error.message);
+            } else {
+                reply(500, "MANGA_JOB_INTERNAL_ERROR", "Manga job service failed");
+            }
         }
         return;
     }
