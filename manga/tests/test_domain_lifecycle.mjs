@@ -1,34 +1,18 @@
 /**
  * test_domain_lifecycle.mjs — Manga Domain Lifecycle Runtime Deterministic Tests
  * ==============================================================================
- * TEGAKI Manga Standalone Runtime (M1D1)
+ * TEGAKI Manga Standalone Runtime (M1D1 / M1D1A)
  *
- * Full test matrix covering all requirements A through Y in Card Section 28:
- * A. Unavailable backend -> owned fake backend spawned
- * B. Unavailable Workspace -> owned Workspace/fake Workspace spawned
- * C. Owned child PID/handle recorded
- * D. Pre-existing compatible backend reused, never killed
- * E. Pre-existing compatible Workspace reused, never killed
- * F. Wrong backend profile blocks startup, no kill
- * G. Wrong Workspace service blocks startup, no kill
- * H. Prepare capability probe checks error_code MISSING_DOCUMENT
- * I. Capability probe does not change fake queue
- * J. READY only with both positive identities + idle queue
- * K. BUSY when running queue nonempty
- * L. BUSY when pending queue nonempty
- * M. Invalid queue never READY
- * N. Busy backend refuses stop
- * O. Invalid queue refuses stop
- * P. Pre-existing backend refuses stop/restart
- * Q. Owned idle backend stops
- * R. Workspace remains alive after backend stop
- * S. Owned backend restart reconnects and reaches READY
- * T. Unexpected backend exit -> DEGRADED with Workspace alive
- * U. Unexpected Workspace exit reflected truthfully
- * V. stopWorkspace never stops backend
- * W. stopAll refuses to orphan owned unsafe backend
- * X. All fake children cleaned at test teardown
- * Y. No kill-by-port utility exists or is called
+ * Full test matrix covering all requirements A through Y (M1D1) plus
+ * M1D1A hotfix assertions:
+ * A. Second queue unavailable after valid first read -> not compatible
+ * B. Second queue malformed after valid first read -> not compatible
+ * C. stopBackend with stale first-idle / failed second queue -> refused, child kill count = 0
+ * D. Generic { input: {} } object-info -> wrong profile
+ * E. Public await runtime.restartBackend() -> old child stopped, new child started, workspace survives, reaches READY
+ * F. Unexpected workspace exit -> backend untouched, status DEGRADED, lastWorkspaceExit recorded
+ * G. Unexpected backend exit -> lastBackendExit recorded
+ * H. Partial startup failure (owned backend spawned, then wrong workspace encountered) -> wrong external workspace not killed, owned backend safely stopped
  */
 
 import assert from "node:assert";
@@ -41,7 +25,7 @@ import {
     OwnershipClassification
 } from "../service/manga_domain_runtime.mjs";
 
-console.log("--- Running test_domain_lifecycle.mjs (M1D1 Fake Lifecycle Suite) ---");
+console.log("--- Running test_domain_lifecycle.mjs (M1D1 / M1D1A Suite) ---");
 
 /**
  * Fake Child Process mock that implements ChildProcess handle contract without spawning OS processes.
@@ -81,11 +65,27 @@ function createFakeBackend(options = {}) {
     let mode = options.mode || "MANGA_IDLE";
     let prepareProbeCount = 0;
     let lastPrepareBody = null;
+    let queueReadCount = 0;
+    let secondQueueMode = options.secondQueueMode || null; // e.g. "UNAVAILABLE", "MALFORMED"
 
     const server = http.createServer(async (req, res) => {
         const url = new URL(req.url, "http://127.0.0.1");
 
         if (url.pathname === "/queue") {
+            queueReadCount++;
+            if (queueReadCount >= 2 && secondQueueMode) {
+                if (secondQueueMode === "UNAVAILABLE") {
+                    res.writeHead(500, { "Content-Type": "text/plain" });
+                    res.end("Internal Server Error");
+                    return;
+                }
+                if (secondQueueMode === "MALFORMED") {
+                    res.writeHead(200, { "Content-Type": "application/json" });
+                    res.end(JSON.stringify({ not_a_queue: true }));
+                    return;
+                }
+            }
+
             if (mode === "INVALID_QUEUE") {
                 res.writeHead(200, { "Content-Type": "application/json" });
                 res.end(JSON.stringify({ not_a_queue: true }));
@@ -120,6 +120,15 @@ function createFakeBackend(options = {}) {
             if (mode === "WRONG_PROFILE") {
                 res.writeHead(404, { "Content-Type": "application/json" });
                 res.end(JSON.stringify({ error: "Node not found" }));
+                return;
+            }
+            if (mode === "GENERIC_INPUT_NODE") {
+                // Returns top-level { "input": {...} } without TegakiMinimumHandSceneEditor key
+                res.writeHead(200, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({
+                    input: { required: {} },
+                    output: ["IMAGE"]
+                }));
                 return;
             }
             res.writeHead(200, { "Content-Type": "application/json" });
@@ -171,6 +180,8 @@ function createFakeBackend(options = {}) {
     return {
         server,
         setMode(newMode) { mode = newMode; },
+        setSecondQueueMode(sqm) { secondQueueMode = sqm; },
+        getQueueReadCount() { return queueReadCount; },
         getPrepareProbeCount() { return prepareProbeCount; },
         getLastPrepareBody() { return lastPrepareBody; }
     };
@@ -266,7 +277,6 @@ function makeFakeChild(name, onKill = null) {
             spawnedBackendChild = makeFakeChild("python.exe", () => {
                 fakeBackend.server.close();
             });
-            // Simulate child opening port
             fakeBackend.server.listen(bPort, "127.0.0.1");
             return spawnedBackendChild;
         },
@@ -274,7 +284,6 @@ function makeFakeChild(name, onKill = null) {
             spawnedWsChild = makeFakeChild("node.exe", () => {
                 fakeWs.server.close();
             });
-            // Simulate child opening port
             fakeWs.server.listen(wsPort, "127.0.0.1");
             return spawnedWsChild;
         }
@@ -497,7 +506,9 @@ function makeFakeChild(name, onKill = null) {
     fakeBackend.setMode("MANGA_IDLE");
     await runtime.stopBackend();
     assert.strictEqual(bChild.killed, true, "Owned idle child must be terminated");
+    assert.strictEqual(runtime.backendProcessRecord, null);
     assert.strictEqual(runtime.backendOwnership, OwnershipClassification.UNAVAILABLE);
+    assert.strictEqual(runtime.lastBackendExit?.intentional, true, "Intentional backend exit flag recorded");
 
     // R: Workspace remains alive and compatible after backend stop
     assert.strictEqual(fakeWs.server.listening, true, "Workspace server must remain listening");
@@ -589,6 +600,7 @@ function makeFakeChild(name, onKill = null) {
     await new Promise(r => setTimeout(r, 50));
     assert.strictEqual(await runtime.getStatus(), LifecycleState.DEGRADED, "Status becomes DEGRADED when backend crashes");
     assert.strictEqual(wsChild.killed, false, "Workspace child remains untouched");
+    assert.strictEqual(runtime.lastBackendExit?.intentional, false, "lastBackendExit recorded as unintentional");
 
     // V: stopWorkspace never stops backend (re-listen backend first)
     const newFakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
@@ -601,6 +613,7 @@ function makeFakeChild(name, onKill = null) {
     await runtime.stopWorkspace();
     assert.strictEqual(wsChild.killed, true, "Workspace stopped");
     assert.strictEqual(bChild.killed, false, "stopWorkspace must not stop backend");
+    assert.strictEqual(runtime.lastWorkspaceExit?.intentional, true, "lastWorkspaceExit recorded as intentional");
 
     // W: stopAll refuses to orphan owned unsafe backend
     fakeBackend.setMode("MANGA_BUSY_RUNNING");
@@ -624,6 +637,342 @@ function makeFakeChild(name, onKill = null) {
     await closeServer(fakeBackend.server);
 }
 
+// =========================================================================
+// M1D1A HOTFIX DETERMINISTIC MATRIX (Checks A through H)
+// =========================================================================
+
+// M1D1A Check A: Second queue unavailable after valid first read -> not compatible
+{
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE", secondQueueMode: "UNAVAILABLE" });
+    const bPort = await listenDynamic(fakeBackend.server);
+
+    const runtime = new MangaDomainRuntime({ backendPort: bPort, workspacePort: 59990 });
+    const probe = await runtime.probeBackend();
+
+    assert.strictEqual(
+        probe.classification,
+        OwnershipClassification.PORT_OCCUPIED_WRONG_PROFILE,
+        "Second queue unavailable must fail closed to PORT_OCCUPIED_WRONG_PROFILE"
+    );
+    assert.strictEqual(probe.queue, null, "Queue must be null when second queue check fails");
+    assert(fakeBackend.getQueueReadCount() >= 2, "Must have performed two queue reads");
+
+    await closeServer(fakeBackend.server);
+    console.log("✓ M1D1A Check A Passed: Second queue unavailable fails closed to PORT_OCCUPIED_WRONG_PROFILE");
+}
+
+// M1D1A Check B: Second queue malformed after valid first read -> not compatible
+{
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE", secondQueueMode: "MALFORMED" });
+    const bPort = await listenDynamic(fakeBackend.server);
+
+    const runtime = new MangaDomainRuntime({ backendPort: bPort, workspacePort: 59991 });
+    const probe = await runtime.probeBackend();
+
+    assert.strictEqual(
+        probe.classification,
+        OwnershipClassification.PORT_OCCUPIED_WRONG_PROFILE,
+        "Second queue malformed must fail closed to PORT_OCCUPIED_WRONG_PROFILE"
+    );
+    assert.strictEqual(probe.queue, null, "Queue must be null when second queue is malformed");
+
+    await closeServer(fakeBackend.server);
+    console.log("✓ M1D1A Check B Passed: Second queue malformed fails closed to PORT_OCCUPIED_WRONG_PROFILE");
+}
+
+// M1D1A Check C: stopBackend with stale first-idle / failed second queue -> refused, child kill count = 0
+{
+    const bPort = 58400 + Math.floor(Math.random() * 500);
+    const wsPort = 59400 + Math.floor(Math.random() * 500);
+
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    const fakeWs = createFakeWorkspace({ backendTarget: `http://127.0.0.1:${bPort}` });
+
+    let bChild = null;
+    let wsChild = null;
+    let killCount = 0;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        customSpawnBackend: () => {
+            bChild = makeFakeChild("python.exe", () => {
+                killCount++;
+                fakeBackend.server.close();
+            });
+            fakeBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        },
+        customSpawnWorkspace: () => {
+            wsChild = makeFakeChild("node.exe", () => {
+                fakeWs.server.close();
+            });
+            fakeWs.server.listen(wsPort, "127.0.0.1");
+            return wsChild;
+        }
+    });
+
+    await runtime.start();
+    assert.strictEqual(await runtime.getStatus(), LifecycleState.READY);
+
+    // Configure second queue mode to fail when stopBackend calls safe-stop probe
+    fakeBackend.setSecondQueueMode("UNAVAILABLE");
+
+    let stopThrew = false;
+    try {
+        await runtime.stopBackend();
+    } catch (err) {
+        stopThrew = true;
+        assert(err.message.includes("positive profile identity failed") || err.message.includes("invalid") || err.message.includes("unreadable"), "Error cites failed identity probe or unreadable queue");
+    }
+
+    assert.strictEqual(stopThrew, true, "stopBackend must throw when queue recheck is unavailable");
+    assert.strictEqual(killCount, 0, "Child kill count must be strictly 0");
+    assert.strictEqual(bChild.killed, false, "Backend child must not be killed");
+
+    // Clean up
+    fakeBackend.setSecondQueueMode(null);
+    fakeBackend.setMode("MANGA_IDLE");
+    await runtime.stopBackend();
+    assert.strictEqual(killCount, 1);
+    await runtime.stopWorkspace();
+    await closeServer(fakeBackend.server);
+    await closeServer(fakeWs.server);
+    console.log("✓ M1D1A Check C Passed: stopBackend refused on failed second queue, kill count = 0");
+}
+
+// M1D1A Check D: Generic { input: {} } object-info -> wrong profile
+{
+    const fakeBackend = createFakeBackend({ mode: "GENERIC_INPUT_NODE" });
+    const bPort = await listenDynamic(fakeBackend.server);
+
+    const runtime = new MangaDomainRuntime({ backendPort: bPort, workspacePort: 59992 });
+    const probe = await runtime.probeBackend();
+
+    assert.strictEqual(
+        probe.classification,
+        OwnershipClassification.PORT_OCCUPIED_WRONG_PROFILE,
+        "Generic top-level input node must be rejected as PORT_OCCUPIED_WRONG_PROFILE"
+    );
+
+    await closeServer(fakeBackend.server);
+    console.log("✓ M1D1A Check D Passed: Generic object-info rejected, exact node fingerprint required");
+}
+
+// M1D1A Check E: Public await runtime.restartBackend() test
+{
+    const bPort = 58500 + Math.floor(Math.random() * 500);
+    const wsPort = 59500 + Math.floor(Math.random() * 500);
+
+    let backendServer = createFakeBackend({ mode: "MANGA_IDLE" });
+    const fakeWs = createFakeWorkspace({ backendTarget: `http://127.0.0.1:${bPort}` });
+
+    let firstBChild = null;
+    let secondBChild = null;
+    let wsChild = null;
+    let backendSpawnCount = 0;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        customSpawnBackend: () => {
+            backendSpawnCount++;
+            if (backendSpawnCount === 1) {
+                firstBChild = makeFakeChild("python.exe", () => {
+                    backendServer.server.close();
+                });
+                backendServer.server.listen(bPort, "127.0.0.1");
+                return firstBChild;
+            } else {
+                backendServer = createFakeBackend({ mode: "MANGA_IDLE" });
+                secondBChild = makeFakeChild("python.exe", () => {
+                    backendServer.server.close();
+                });
+                backendServer.server.listen(bPort, "127.0.0.1");
+                return secondBChild;
+            }
+        },
+        customSpawnWorkspace: () => {
+            wsChild = makeFakeChild("node.exe", () => {
+                fakeWs.server.close();
+            });
+            fakeWs.server.listen(wsPort, "127.0.0.1");
+            return wsChild;
+        }
+    });
+
+    await runtime.start();
+    assert.strictEqual(await runtime.getStatus(), LifecycleState.READY);
+    assert.strictEqual(runtime.backendProcessRecord.child, firstBChild);
+
+    // Call the real public restartBackend() method
+    await runtime.restartBackend();
+    assert.strictEqual(await runtime.getStatus(), LifecycleState.READY, "Restart reaches READY");
+    assert.strictEqual(firstBChild.killed, true, "First backend child terminated");
+    assert.strictEqual(secondBChild.killed, false, "Second backend child active");
+    assert.strictEqual(runtime.backendProcessRecord.child, secondBChild);
+    assert.strictEqual(wsChild.killed, false, "Workspace child remained untouched across restart");
+    assert.strictEqual(fakeWs.server.listening, true, "Workspace server still listening");
+
+    await runtime.stopAll();
+    await closeServer(backendServer.server);
+    await closeServer(fakeWs.server);
+    console.log("✓ M1D1A Check E Passed: Public restartBackend() stopped old child, spawned new child, preserved workspace, reached READY");
+}
+
+// M1D1A Check F: Unexpected workspace exit
+{
+    const bPort = 58600 + Math.floor(Math.random() * 500);
+    const wsPort = 59600 + Math.floor(Math.random() * 500);
+
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    const fakeWs = createFakeWorkspace({ backendTarget: `http://127.0.0.1:${bPort}` });
+
+    let bChild = null;
+    let wsChild = null;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        customSpawnBackend: () => {
+            bChild = makeFakeChild("python.exe", () => {
+                fakeBackend.server.close();
+            });
+            fakeBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        },
+        customSpawnWorkspace: () => {
+            wsChild = makeFakeChild("node.exe", () => {
+                fakeWs.server.close();
+            });
+            fakeWs.server.listen(wsPort, "127.0.0.1");
+            return wsChild;
+        }
+    });
+
+    await runtime.start();
+    assert.strictEqual(await runtime.getStatus(), LifecycleState.READY);
+
+    // Simulate unexpected crash of workspace child
+    await closeServer(fakeWs.server);
+    wsChild.kill("SIGSEGV");
+    await new Promise(r => setTimeout(r, 50));
+
+    // Backend must remain completely untouched
+    assert.strictEqual(bChild.killed, false, "Backend child must not be touched by workspace crash");
+    assert.strictEqual(fakeBackend.server.listening, true, "Backend server still listening");
+
+    // Workspace process record updated
+    assert.strictEqual(runtime.workspaceProcessRecord, null, "Workspace process record cleared on exit");
+    assert.strictEqual(runtime.workspaceOwnership, OwnershipClassification.UNAVAILABLE);
+
+    // Overall status is DEGRADED
+    assert.strictEqual(await runtime.getStatus(), LifecycleState.DEGRADED, "Status is DEGRADED when workspace crashes");
+
+    // Exit diagnostics recorded truthfully
+    assert.strictEqual(runtime.lastWorkspaceExit?.intentional, false, "lastWorkspaceExit recorded as unintentional");
+    assert.strictEqual(runtime.lastWorkspaceExit?.signal, "SIGSEGV", "Exit signal recorded");
+    assert(runtime.lastWorkspaceExit?.timestamp > 0, "Exit timestamp recorded");
+
+    await runtime.stopBackend();
+    await closeServer(fakeBackend.server);
+    console.log("✓ M1D1A Check F Passed: Unexpected workspace exit leaves backend untouched, updates records, records diagnostics");
+}
+
+// M1D1A Check G: Unexpected backend exit records lastBackendExit
+{
+    const bPort = 58700 + Math.floor(Math.random() * 500);
+    const wsPort = 59700 + Math.floor(Math.random() * 500);
+
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    const fakeWs = createFakeWorkspace({ backendTarget: `http://127.0.0.1:${bPort}` });
+
+    let bChild = null;
+    let wsChild = null;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        customSpawnBackend: () => {
+            bChild = makeFakeChild("python.exe", () => {
+                fakeBackend.server.close();
+            });
+            fakeBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        },
+        customSpawnWorkspace: () => {
+            wsChild = makeFakeChild("node.exe", () => {
+                fakeWs.server.close();
+            });
+            fakeWs.server.listen(wsPort, "127.0.0.1");
+            return wsChild;
+        }
+    });
+
+    await runtime.start();
+    assert.strictEqual(await runtime.getStatus(), LifecycleState.READY);
+
+    // Unexpected backend crash
+    await closeServer(fakeBackend.server);
+    bChild.kill("SIGTERM");
+    await new Promise(r => setTimeout(r, 50));
+
+    assert.strictEqual(runtime.lastBackendExit?.intentional, false, "Unintentional backend exit recorded");
+    assert.strictEqual(runtime.lastBackendExit?.signal, "SIGTERM");
+    assert(runtime.lastBackendExit?.timestamp > 0);
+
+    await runtime.stopWorkspace();
+    await closeServer(fakeWs.server);
+    console.log("✓ M1D1A Check G Passed: Unexpected backend exit recorded with code/signal/timestamp/intentional");
+}
+
+// M1D1A Check H: Partial startup failure handling
+// (backend spawned, then workspace encounters pre-existing wrong profile: wrong workspace is NEVER killed, owned backend is safely stopped)
+{
+    const bPort = 58800 + Math.floor(Math.random() * 500);
+
+    // Pre-listen an incompatible external workspace on wsPort
+    const wrongExternalWs = createFakeWorkspace({ mode: "WRONG_PROFILE" });
+    const wsPort = await listenDynamic(wrongExternalWs.server);
+
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    let bChild = null;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        customSpawnBackend: () => {
+            bChild = makeFakeChild("python.exe", () => {
+                fakeBackend.server.close();
+            });
+            fakeBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        }
+    });
+
+    let startThrew = false;
+    try {
+        await runtime.start();
+    } catch (err) {
+        startThrew = true;
+        assert(err.message.includes("incompatible profile"));
+    }
+
+    assert.strictEqual(startThrew, true, "start() must throw when workspace has wrong profile");
+    assert.strictEqual(wrongExternalWs.server.listening, true, "Wrong external workspace must NEVER be killed");
+    assert.strictEqual(bChild.killed, true, "Owned backend must be safely stopped on partial startup failure");
+    assert.strictEqual(runtime.backendProcessRecord, null, "Owned backend record cleared");
+
+    await closeServer(wrongExternalWs.server);
+    await closeServer(fakeBackend.server);
+    console.log("✓ M1D1A Check H Passed: Partial startup failure safely stops owned backend and never touches external workspace");
+}
+
 // Test Matrix X, Y: Child cleanup & absence of kill-by-port utilities
 {
     // X: Active fake children cleaned up
@@ -643,4 +992,4 @@ function makeFakeChild(name, onKill = null) {
     console.log("✓ Tests X, Y Passed: All test children cleaned up; zero kill-by-port utilities found");
 }
 
-console.log("--- ALL MANGA DOMAIN LIFECYCLE TESTS (A through Y) PASSED ---");
+console.log("--- ALL MANGA DOMAIN LIFECYCLE TESTS (A through Y + M1D1A A-H) PASSED ---");

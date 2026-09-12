@@ -140,6 +140,12 @@ export class MangaDomainRuntime {
         this.backendProcessRecord = null; // { pid, spawnTimestamp, argv, child }
         this.workspaceProcessRecord = null; // { pid, spawnTimestamp, argv, child }
 
+        // Exit diagnostics (Card M1D1A Section 9, 10)
+        this.lastBackendExit = null; // { code, signal, timestamp, intentional }
+        this.lastWorkspaceExit = null; // { code, signal, timestamp, intentional }
+        this._intentionalBackendStop = false;
+        this._intentionalWorkspaceStop = false;
+
         // Internal substate
         this.internalSubstate = InternalSubstate.IDLE;
         this.lastError = null;
@@ -203,8 +209,7 @@ export class MangaDomainRuntime {
             nodeRes.status === 200 &&
             nodeRes.json &&
             typeof nodeRes.json === "object" &&
-            (Boolean(nodeRes.json.TegakiMinimumHandSceneEditor) ||
-             Boolean(nodeRes.json.input));
+            Boolean(nodeRes.json.TegakiMinimumHandSceneEditor);
 
         if (!isNodeValid) {
             return {
@@ -239,13 +244,33 @@ export class MangaDomainRuntime {
             };
         }
 
-        // Re-read /queue to verify queue unchanged/idle
+        // Re-read /queue: MUST fail closed if unavailable, non-200, invalid JSON, or missing arrays (no fallback to first read)
         const queueRecheck = await httpRequest(`${this.backendUrl}/queue`, { timeout: this.probeTimeoutMs });
-        const queueData = queueRecheck.status === 200 && queueRecheck.json ? queueRecheck.json : queueRes.json;
+        if (queueRecheck.status === 0) {
+            return {
+                classification: OwnershipClassification.PORT_OCCUPIED_WRONG_PROFILE,
+                queue: null,
+                details: "Second /queue read after capability probe was unavailable/unreachable"
+            };
+        }
+
+        const isRecheckValid =
+            queueRecheck.status === 200 &&
+            queueRecheck.json &&
+            Array.isArray(queueRecheck.json.queue_running) &&
+            Array.isArray(queueRecheck.json.queue_pending);
+
+        if (!isRecheckValid) {
+            return {
+                classification: OwnershipClassification.PORT_OCCUPIED_WRONG_PROFILE,
+                queue: null,
+                details: "Second /queue read after capability probe was invalid or malformed"
+            };
+        }
 
         return {
             classification: OwnershipClassification.PREEXISTING_COMPATIBLE,
-            queue: queueData,
+            queue: queueRecheck.json,
             details: "Positive Manga backend identity verified"
         };
     }
@@ -394,14 +419,34 @@ export class MangaDomainRuntime {
         if (wsInitial.classification === OwnershipClassification.PORT_OCCUPIED_WRONG_PROFILE) {
             this.internalSubstate = InternalSubstate.FAILED;
             this.lastError = new Error(`Workspace port ${this.workspacePort} occupied by incompatible profile: ${wsInitial.details}`);
+
+            // Card M1D1A Section 11: Attempt normal safe stop of the just-spawned owned backend
+            if (this.backendOwnership === OwnershipClassification.OWNED_BY_THIS_RUNTIME) {
+                try {
+                    await this.stopBackend();
+                } catch (_) {
+                    // Retain explicit owned-process record and FAILED state; do not force kill
+                }
+            }
             throw this.lastError;
         } else if (wsInitial.classification === OwnershipClassification.PREEXISTING_COMPATIBLE) {
             this.workspaceOwnership = OwnershipClassification.PREEXISTING_COMPATIBLE;
             this.workspaceProcessRecord = null;
         } else {
             // UNAVAILABLE -> spawn candidate workspace child
-            await this._spawnWorkspaceChild();
-            this.workspaceOwnership = OwnershipClassification.OWNED_BY_THIS_RUNTIME;
+            try {
+                await this._spawnWorkspaceChild();
+                this.workspaceOwnership = OwnershipClassification.OWNED_BY_THIS_RUNTIME;
+            } catch (err) {
+                this.internalSubstate = InternalSubstate.FAILED;
+                this.lastError = err;
+                if (this.backendOwnership === OwnershipClassification.OWNED_BY_THIS_RUNTIME) {
+                    try {
+                        await this.stopBackend();
+                    } catch (_) {}
+                }
+                throw err;
+            }
         }
 
         this.internalSubstate = InternalSubstate.RUNNING;
@@ -442,6 +487,13 @@ export class MangaDomainRuntime {
         this.backendProcessRecord = record;
 
         child.on("exit", (code, signal) => {
+            this.lastBackendExit = {
+                code: code ?? null,
+                signal: signal ?? null,
+                timestamp: Date.now(),
+                intentional: this._intentionalBackendStop
+            };
+
             if (this.backendProcessRecord?.child === child) {
                 this.backendProcessRecord = null;
                 this.backendOwnership = OwnershipClassification.UNAVAILABLE;
@@ -498,6 +550,13 @@ export class MangaDomainRuntime {
         this.workspaceProcessRecord = record;
 
         child.on("exit", (code, signal) => {
+            this.lastWorkspaceExit = {
+                code: code ?? null,
+                signal: signal ?? null,
+                timestamp: Date.now(),
+                intentional: this._intentionalWorkspaceStop
+            };
+
             if (this.workspaceProcessRecord?.child === child) {
                 this.workspaceProcessRecord = null;
                 this.workspaceOwnership = OwnershipClassification.UNAVAILABLE;
@@ -554,7 +613,12 @@ export class MangaDomainRuntime {
         }
 
         // Preconditions satisfied: terminate owned ChildProcess handle
-        await this._terminateChild(this.backendProcessRecord.child, "Backend");
+        this._intentionalBackendStop = true;
+        try {
+            await this._terminateChild(this.backendProcessRecord.child, "Backend");
+        } finally {
+            this._intentionalBackendStop = false;
+        }
         this.backendProcessRecord = null;
         this.backendOwnership = OwnershipClassification.UNAVAILABLE;
     }
@@ -582,7 +646,12 @@ export class MangaDomainRuntime {
             throw new Error("Cannot stop workspace: process is not OWNED_BY_THIS_RUNTIME (pre-existing or not managed).");
         }
 
-        await this._terminateChild(this.workspaceProcessRecord.child, "Workspace");
+        this._intentionalWorkspaceStop = true;
+        try {
+            await this._terminateChild(this.workspaceProcessRecord.child, "Workspace");
+        } finally {
+            this._intentionalWorkspaceStop = false;
+        }
         this.workspaceProcessRecord = null;
         this.workspaceOwnership = OwnershipClassification.UNAVAILABLE;
     }

@@ -1,7 +1,7 @@
 # MANGA-M1D1 Domain Lifecycle Implementation Report
 
-CARD_ID: MANGA-M1D1
-BASE_SHA: 6d4dbbbfc45045eae377ec38143ac6e1e0b3a32d
+CARD_ID: MANGA-M1D1 (Hardened by MANGA-M1D1A)
+BASE_SHA: 39fdea87e4c5d2ce77829802956ab4ba995e4a53
 STATUS: COMPLETED (SOURCE / LOGIC / FAKE-PROCESS VERIFICATION)
 EXECUTOR: GEMINI
 
@@ -9,7 +9,7 @@ EXECUTOR: GEMINI
 
 ## 1. Executive Summary
 
-MANGA-M1D1 implements the Manga-specific domain lifecycle controller defined in MANGA-M1D0. In accordance with card requirements, this implementation was verified using source, logic, and deterministic fake-process fixtures only:
+MANGA-M1D1 (and subsequent SOL audit hotfix MANGA-M1D1A) implements the Manga-specific domain lifecycle controller defined in MANGA-M1D0. In accordance with card requirements, this implementation was verified using source, logic, and deterministic fake-process fixtures only:
 - **0 real ComfyUI processes started** (no real Python ComfyUI backend child).
 - **0 real generations executed**.
 - **No GPU or model loading performed**.
@@ -18,17 +18,25 @@ MANGA-M1D1 implements the Manga-specific domain lifecycle controller defined in 
 
 ---
 
-## 2. Corrections to M1D0 Audit Report
+## 2. Corrections to M1D0 Audit Report & Audit Fixes (M1D1A)
 
-Before implementation, `ComfyUIPortable/docs/manga/reports/MANGA_M1D0_RUNTIME_LIFECYCLE_OWNERSHIP_AUDIT.md` was corrected to resolve all SOL audit findings:
+### 2.1 Initial M1D0 Audit Corrections
 1. **Language Truthfulness**: Replaced all claims of "cryptographically sound identity" and "cryptographic ownership verification" with "positive deterministic service/profile identity" and "process ownership evidence".
 2. **Prepare Route Fingerprint Expectation**: Corrected capability probe expectation to `HTTP 400` with `ok == false` and `error_code == "MISSING_DOCUMENT"`.
 3. **No Force Stop / Force Kill Exception**: Completely eliminated normal force stop/kill exceptions. The Manga Domain Runtime strictly fails closed.
-4. **Public Lifecycle States**: Standardized public states to `STOPPED`, `STARTING`, `READY`, `BUSY`, `DEGRADED`, `STOPPING`, `FAILED`. Internal states (`STARTING_BACKEND`, etc.) exist internally only.
+4. **Public Lifecycle States**: Standardized public states to `STOPPED`, `STARTING`, `READY`, `BUSY`, `DEGRADED`, `STOPPING`, `FAILED`. Internal states exist internally only.
 5. **Identity Route Status**: Marked `GET /api/runtime/identity` as proposed in M1D0 and implemented by M1D1.
 6. **Browser Authoring Separation Truth**: Clarified that browser-held authoring state is independent from backend lifetime, surviving backend restart while the browser page remains alive, but uncommitted memory is not guaranteed across tab destruction.
 7. **Port Assignments**: Defined ports 8188, 8189, and 8191 as current configurable defaults, not eternal reservations.
 8. **Canonical Command**: Designated the canonical backend command as a source-derived candidate pending CODEX real runtime validation.
+
+### 2.2 SOL Audit Hardening (MANGA-M1D1A)
+1. **Fail-Closed Second Queue Recheck**: Removed fallback to first queue read. If the second `/queue` recheck is unavailable (`status === 0`), non-200, invalid JSON, or missing array fields, probe returns `PORT_OCCUPIED_WRONG_PROFILE` with `queue: null`.
+2. **Exact Node Fingerprint**: Removed overly permissive check (`|| Boolean(nodeRes.json.input)`). Exactly requires `TegakiMinimumHandSceneEditor` in node definition object.
+3. **Child Exit Diagnostics**: Added `lastBackendExit` and `lastWorkspaceExit` recording `{ code, signal, timestamp, intentional }`.
+4. **Tested Public restartBackend()**: Full deterministic test of public `await runtime.restartBackend()` asserting termination of old child, spawning of new child, workspace process preservation, and reaching `READY`.
+5. **Tested Unexpected Workspace Exit**: Full deterministic test asserting backend survives untouched, workspace process record is cleared, status reports `DEGRADED`, and exit diagnostics are recorded.
+6. **Partial Startup Failure Handling**: When owned backend is spawned and workspace probe encounters pre-existing wrong profile, external wrong workspace is NEVER killed, and owned backend is safely stopped (or kept explicitly owned if busy, never orphaned).
 
 ---
 
@@ -59,9 +67,9 @@ Implemented in `ComfyUIPortable/manga/service/manga_domain_runtime.mjs`:
 ### 4.1 Backend Fingerprint
 Requires ALL of:
 1. `GET /queue`: Returns HTTP 200 with arrays `queue_running` and `queue_pending`.
-2. `GET /object_info/TegakiMinimumHandSceneEditor`: Returns HTTP 200 with node definition.
+2. `GET /object_info/TegakiMinimumHandSceneEditor`: Returns HTTP 200 with exact node key `TegakiMinimumHandSceneEditor`.
 3. Non-mutating Capability Probe `POST /tegaki/manga/generation/prepare` with body `{}`: Returns HTTP 400 with `ok == false` and `error_code == "MISSING_DOCUMENT"`.
-4. Re-reads `/queue` to ensure queue remained completely untouched and idle.
+4. Second `GET /queue` recheck: Confirms queue remained completely untouched and idle. If this second check fails, returns `PORT_OCCUPIED_WRONG_PROFILE` with `queue: null` (fail-closed; no fallback).
 
 ### 4.2 Workspace Server Fingerprint
 Added endpoint `GET /api/runtime/identity` to `ComfyUIPortable/manga/service/manga_workspace_server.mjs`:
@@ -105,17 +113,27 @@ The existing standalone Manga track is the **Illustrious / ReForge Manga Engine*
 
 ## 7. Deterministic Fake-Process Test Evidence
 
-Implemented comprehensive test suite `ComfyUIPortable/manga/tests/test_domain_lifecycle.mjs` verifying all requirements A through Y (Card Section 28):
-- **Test A, B, C**: Unavailable backend & workspace -> spawned owned fake children, recorded PIDs and child handles (`PASS`).
-- **Test D, E**: Pre-existing compatible backend & workspace reused and never killed (`PASS`).
-- **Test F, G**: Incompatible wrong profile on backend or workspace blocks startup with diagnostic error, without killing (`PASS`).
-- **Test H, I**: Capability probe checks `MISSING_DOCUMENT` without altering idle queue (`PASS`).
-- **Test J, K, L, M**: Public state mapping correctly transitions between `READY`, `BUSY` (running/pending), and `DEGRADED` on invalid queue (`PASS`).
-- **Test N, O, P, Q, R, S**: Busy and invalid queues refuse stop; pre-existing backend refuses stop/restart; owned idle backend stops cleanly; workspace survives backend stop; restart reconnects cleanly (`PASS`).
-- **Test T, U, V, W**: Unexpected backend exit leaves workspace alive and reports `DEGRADED`; stopWorkspace does not stop backend; stopAll refuses to orphan owned busy backend (`PASS`).
-- **Test X, Y**: All fake test children cleaned at teardown; zero kill-by-port or taskkill utilities exist (`PASS`).
+Implemented comprehensive test suite `ComfyUIPortable/manga/tests/test_domain_lifecycle.mjs` verifying:
+- **Base Matrix A through Y**:
+  - **Test A, B, C**: Unavailable backend & workspace -> spawned owned fake children, recorded PIDs and child handles (`PASS`).
+  - **Test D, E**: Pre-existing compatible backend & workspace reused and never killed (`PASS`).
+  - **Test F, G**: Incompatible wrong profile on backend or workspace blocks startup with diagnostic error, without killing (`PASS`).
+  - **Test H, I**: Capability probe checks `MISSING_DOCUMENT` without altering idle queue (`PASS`).
+  - **Test J, K, L, M**: Public state mapping correctly transitions between `READY`, `BUSY` (running/pending), and `DEGRADED` on invalid queue (`PASS`).
+  - **Test N, O, P, Q, R, S**: Busy and invalid queues refuse stop; pre-existing backend refuses stop/restart; owned idle backend stops cleanly; workspace survives backend stop; restart reconnects cleanly (`PASS`).
+  - **Test T, U, V, W**: Unexpected backend exit leaves workspace alive and reports `DEGRADED`; stopWorkspace does not stop backend; stopAll refuses to orphan owned busy backend (`PASS`).
+  - **Test X, Y**: All fake test children cleaned at teardown; zero kill-by-port or taskkill utilities exist (`PASS`).
+- **M1D1A Hotfix Matrix (Checks A through H)**:
+  - **Check A**: Second queue unavailable after valid first read -> not compatible (`PASS`).
+  - **Check B**: Second queue malformed after valid first read -> not compatible (`PASS`).
+  - **Check C**: `stopBackend` with stale first-idle / failed second queue -> refused, child kill count = 0 (`PASS`).
+  - **Check D**: Generic `{ input: {} }` object-info -> wrong profile (`PASS`).
+  - **Check E**: Public `await runtime.restartBackend()` -> old child stopped, new child started, workspace survives, reaches `READY` (`PASS`).
+  - **Check F**: Unexpected workspace exit -> backend untouched, status `DEGRADED`, `lastWorkspaceExit` recorded (`PASS`).
+  - **Check G**: Unexpected backend exit -> `lastBackendExit` recorded (`PASS`).
+  - **Check H**: Partial startup failure -> wrong external workspace not killed, owned backend safely stopped (`PASS`).
 
-Execution performance: **233 ms** total wall time (well below the 2-minute target).
+Execution performance: **250 ms** total wall time (well below the 2-minute target).
 
 ---
 
