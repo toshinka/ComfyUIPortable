@@ -32,7 +32,7 @@ console.log("--- Running test_domain_lifecycle.mjs (M1D1 / M1D1A Suite) ---");
  * Fake Child Process mock that implements ChildProcess handle contract without spawning OS processes.
  */
 class FakeChildProcess extends EventEmitter {
-    constructor(pid, command, args, onKill = null) {
+    constructor(pid, command, args, onKill = null, stubborn = false) {
         super();
         this.pid = pid;
         this.command = command;
@@ -41,21 +41,33 @@ class FakeChildProcess extends EventEmitter {
         this.exitCode = null;
         this.signalCode = null;
         this._onKill = onKill;
+        this._stubborn = stubborn;
     }
 
     kill(signal = "SIGTERM") {
         if (this.killed) return true;
         this.killed = true;
         this.signalCode = signal;
-        this.exitCode = 0;
         if (this._onKill) {
             this._onKill(signal);
         }
-        process.nextTick(() => {
-            this.emit("exit", 0, signal);
-            this.emit("close", 0, signal);
-        });
+        if (!this._stubborn) {
+            this.exitCode = 0;
+            process.nextTick(() => {
+                this.emit("exit", 0, signal);
+                this.emit("close", 0, signal);
+            });
+        }
         return true;
+    }
+
+    triggerExit(code = 0, signal = "SIGTERM") {
+        this.exitCode = code;
+        this.signalCode = signal;
+        process.nextTick(() => {
+            this.emit("exit", code, signal);
+            this.emit("close", code, signal);
+        });
     }
 }
 
@@ -247,9 +259,9 @@ async function closeServer(server) {
 const activeFakeChildren = new Set();
 let nextFakePid = 7000;
 
-function makeFakeChild(name, onKill = null) {
+function makeFakeChild(name, onKill = null, stubborn = false) {
     const pid = nextFakePid++;
-    const child = new FakeChildProcess(pid, name, [], onKill);
+    const child = new FakeChildProcess(pid, name, [], onKill, stubborn);
     activeFakeChildren.add(child);
     child.once("exit", () => activeFakeChildren.delete(child));
     return child;
@@ -1637,6 +1649,343 @@ function makeFakeChild(name, onKill = null) {
     console.log("✓ M1D1C Checks G, H Passed: Genuine pre-existing services remain PREEXISTING and are never killed");
 }
 
+// =========================================================================
+// M1D1D Checks: Existing-Owned Cleanup Guard + Exit-Truth Ownership
+// =========================================================================
+
+// M1D1D Check A: child.killed == true without exit event retains owned record & ownership
+{
+    const bPort = 58980 + Math.floor(Math.random() * 200);
+    const wsPort = 59980 + Math.floor(Math.random() * 200);
+
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    const fakeWs = createFakeWorkspace({ mode: "COMPATIBLE", backendTarget: `http://127.0.0.1:${bPort}` });
+
+    let bChild = null;
+    let wsChild = null;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        shutdownTimeoutMs: 200,
+        customSpawnBackend: () => {
+            bChild = makeFakeChild("python.exe", () => {
+                fakeBackend.server.close();
+            }, /* stubborn */ true);
+            fakeBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        },
+        customSpawnWorkspace: () => {
+            wsChild = makeFakeChild("node.exe", () => {
+                fakeWs.server.close();
+            });
+            fakeWs.server.listen(wsPort, "127.0.0.1");
+            return wsChild;
+        }
+    });
+
+    await runtime.start();
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+    assert.strictEqual(runtime.workspaceOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+
+    // Explicitly send kill signal to bChild (sets bChild.killed = true, but DOES NOT emit exit because stubborn = true)
+    bChild.kill("SIGTERM");
+    assert.strictEqual(bChild.killed, true, "kill signal sent, killed property set");
+
+    // The runtime bookkeeping must NOT consider this process exited!
+    assert.strictEqual(
+        runtime._hasOwnedBackendChild(),
+        true,
+        "_hasOwnedBackendChild must remain true while child has not emitted exit"
+    );
+    assert.strictEqual(
+        runtime.backendOwnership,
+        OwnershipClassification.OWNED_BY_THIS_RUNTIME,
+        "Ownership must remain OWNED while child has not emitted exit"
+    );
+    assert.strictEqual(
+        runtime.backendProcessRecord?.child,
+        bChild,
+        "Process record must remain intact while child has not emitted exit"
+    );
+
+    // Now emit exit and verify exit listener cleans it up
+    bChild.triggerExit(0, "SIGTERM");
+    await new Promise(r => setTimeout(r, 50));
+
+    assert.strictEqual(runtime.backendProcessRecord, null, "Exit event clears processRecord");
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.UNAVAILABLE, "Exit event resets ownership to UNAVAILABLE");
+    assert.strictEqual(runtime._hasOwnedBackendChild(), false, "_hasOwnedBackendChild is now false");
+
+    await runtime.stopWorkspace();
+    await closeServer(fakeBackend.server);
+    await closeServer(fakeWs.server);
+
+    console.log("✓ M1D1D Check A Passed: child.killed == true without exit event retains owned record & ownership");
+}
+
+// M1D1D Checks B & C: Backend termination timeout retains ownership & record; subsequent start() spawns 0 duplicate backend
+{
+    const bPort = 58980 + Math.floor(Math.random() * 200);
+    const wsPort = 59980 + Math.floor(Math.random() * 200);
+
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    const fakeWs = createFakeWorkspace({ mode: "COMPATIBLE", backendTarget: `http://127.0.0.1:${bPort}` });
+
+    let bSpawnCount = 0;
+    let bChild = null;
+    let wsChild = null;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        shutdownTimeoutMs: 150, // Short shutdown timeout for deterministic test
+        customSpawnBackend: () => {
+            bSpawnCount++;
+            bChild = makeFakeChild(`python.exe_${bSpawnCount}`, () => {
+                fakeBackend.server.close();
+            }, /* stubborn */ true);
+            fakeBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        },
+        customSpawnWorkspace: () => {
+            wsChild = makeFakeChild("node.exe", () => {
+                fakeWs.server.close();
+            });
+            fakeWs.server.listen(wsPort, "127.0.0.1");
+            return wsChild;
+        }
+    });
+
+    await runtime.start();
+    assert.strictEqual(bSpawnCount, 1);
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+
+    // Attempt stopBackend() -> SIGTERM sent, stubborn child does not exit -> throws timeout error
+    let stopThrew = false;
+    try {
+        await runtime.stopBackend();
+    } catch (err) {
+        stopThrew = true;
+        assert(err.message.includes("Timed out waiting for Backend child process"));
+    }
+    assert.strictEqual(stopThrew, true, "stopBackend() must throw when child does not exit in time");
+
+    // Invariant: Ownership and record must be RETAINED
+    assert.strictEqual(
+        runtime.backendOwnership,
+        OwnershipClassification.OWNED_BY_THIS_RUNTIME,
+        "backendOwnership must remain OWNED_BY_THIS_RUNTIME after termination timeout"
+    );
+    assert.strictEqual(
+        runtime.backendProcessRecord?.child,
+        bChild,
+        "backendProcessRecord must point to original child after termination timeout"
+    );
+
+    // Call start() after backend termination timeout
+    // Invariant: Must NOT spawn a replacement/duplicate backend, must NOT downgrade to PREEXISTING
+    let startThrew = false;
+    try {
+        await runtime.start();
+    } catch (err) {
+        startThrew = true;
+    }
+    assert.strictEqual(bSpawnCount, 1, "Must spawn ZERO duplicate backend children after termination timeout");
+    assert.strictEqual(
+        runtime.backendOwnership,
+        OwnershipClassification.OWNED_BY_THIS_RUNTIME,
+        "Ownership must not be downgraded or lost"
+    );
+    assert.strictEqual(
+        runtime.backendProcessRecord?.child,
+        bChild,
+        "Process record must not be discarded"
+    );
+
+    // Trigger stubborn child exit and verify clean state
+    bChild.triggerExit(0, "SIGTERM");
+    await new Promise(r => setTimeout(r, 50));
+    assert.strictEqual(runtime.backendProcessRecord, null);
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.UNAVAILABLE);
+
+    await runtime.stopWorkspace();
+    await closeServer(fakeBackend.server);
+    await closeServer(fakeWs.server);
+
+    console.log("✓ M1D1D Checks B, C Passed: Backend termination timeout retains ownership & record; 0 duplicate spawned on start()");
+}
+
+// M1D1D Checks D & E: Workspace termination timeout retains ownership & record; subsequent start() spawns 0 duplicate workspace
+{
+    const bPort = 58980 + Math.floor(Math.random() * 200);
+    const wsPort = 59980 + Math.floor(Math.random() * 200);
+
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    const fakeWs = createFakeWorkspace({ mode: "COMPATIBLE", backendTarget: `http://127.0.0.1:${bPort}` });
+
+    let wsSpawnCount = 0;
+    let bChild = null;
+    let wsChild = null;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        shutdownTimeoutMs: 150,
+        customSpawnBackend: () => {
+            bChild = makeFakeChild("python.exe", () => {
+                fakeBackend.server.close();
+            });
+            fakeBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        },
+        customSpawnWorkspace: () => {
+            wsSpawnCount++;
+            wsChild = makeFakeChild(`node.exe_${wsSpawnCount}`, () => {
+                fakeWs.server.close();
+            }, /* stubborn */ true);
+            fakeWs.server.listen(wsPort, "127.0.0.1");
+            return wsChild;
+        }
+    });
+
+    await runtime.start();
+    assert.strictEqual(wsSpawnCount, 1);
+    assert.strictEqual(runtime.workspaceOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+
+    // Attempt stopWorkspace() -> timeout
+    let stopThrew = false;
+    try {
+        await runtime.stopWorkspace();
+    } catch (err) {
+        stopThrew = true;
+        assert(err.message.includes("Timed out waiting for Workspace child process"));
+    }
+    assert.strictEqual(stopThrew, true, "stopWorkspace() must throw on timeout");
+
+    // Invariant: Workspace ownership and record retained
+    assert.strictEqual(
+        runtime.workspaceOwnership,
+        OwnershipClassification.OWNED_BY_THIS_RUNTIME,
+        "workspaceOwnership must remain OWNED_BY_THIS_RUNTIME after termination timeout"
+    );
+    assert.strictEqual(
+        runtime.workspaceProcessRecord?.child,
+        wsChild,
+        "workspaceProcessRecord must point to original child after termination timeout"
+    );
+
+    // Call start() after workspace termination timeout
+    let startThrew = false;
+    try {
+        await runtime.start();
+    } catch (_) {
+        startThrew = true;
+    }
+    assert.strictEqual(wsSpawnCount, 1, "Must spawn ZERO duplicate workspace children after termination timeout");
+    assert.strictEqual(
+        runtime.workspaceOwnership,
+        OwnershipClassification.OWNED_BY_THIS_RUNTIME,
+        "Workspace ownership must not be downgraded or lost"
+    );
+    assert.strictEqual(
+        runtime.workspaceProcessRecord?.child,
+        wsChild,
+        "Workspace process record must not be discarded"
+    );
+
+    // Clean up
+    wsChild.triggerExit(0, "SIGTERM");
+    await new Promise(r => setTimeout(r, 50));
+    assert.strictEqual(runtime.workspaceProcessRecord, null);
+    assert.strictEqual(runtime.workspaceOwnership, OwnershipClassification.UNAVAILABLE);
+
+    await runtime.stopBackend();
+    await closeServer(fakeBackend.server);
+    await closeServer(fakeWs.server);
+
+    console.log("✓ M1D1D Checks D, E Passed: Workspace termination timeout retains ownership & record; 0 duplicate spawned on start()");
+}
+
+// M1D1D Check F: Pre-owned backend + wrong external Workspace -> existing backend NOT killed
+{
+    const bPort = 58980 + Math.floor(Math.random() * 200);
+    const wsPort = 59980 + Math.floor(Math.random() * 200);
+
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    let fakeWs = createFakeWorkspace({ mode: "COMPATIBLE", backendTarget: `http://127.0.0.1:${bPort}` });
+
+    let bChild = null;
+    let wsChild = null;
+    let bSpawnCount = 0;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        customSpawnBackend: () => {
+            bSpawnCount++;
+            bChild = makeFakeChild("python.exe", () => {
+                fakeBackend.server.close();
+            });
+            fakeBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        },
+        customSpawnWorkspace: () => {
+            wsChild = makeFakeChild("node.exe", () => {
+                fakeWs.server.close();
+            });
+            fakeWs.server.listen(wsPort, "127.0.0.1");
+            return wsChild;
+        }
+    });
+
+    // 1. Initial start reaches READY
+    await runtime.start();
+    assert.strictEqual(bSpawnCount, 1);
+    const initialBChild = runtime.backendProcessRecord.child;
+    const initialBPid = runtime.backendProcessRecord.pid;
+
+    // 2. Stop workspace cleanly -> backend remains OWNED and alive
+    await runtime.stopWorkspace();
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+    assert.strictEqual(runtime.workspaceOwnership, OwnershipClassification.UNAVAILABLE);
+
+    // 3. Start a wrong external service on workspace port
+    const wrongExternalWs = createFakeWorkspace({ mode: "WRONG_PROFILE" });
+    await new Promise(r => wrongExternalWs.server.listen(wsPort, "127.0.0.1", r));
+
+    // 4. Call start()
+    let startThrew = false;
+    try {
+        await runtime.start();
+    } catch (err) {
+        startThrew = true;
+        assert(err.message.includes("incompatible profile"));
+    }
+    assert.strictEqual(startThrew, true, "start() must throw on wrong profile workspace");
+
+    // Invariant: Wrong external workspace must NOT be touched/killed
+    assert.strictEqual(wrongExternalWs.server.listening, true, "Wrong external workspace must NOT be killed");
+
+    // Invariant (Defect A fix): Existing pre-owned backend must NOT be killed!
+    assert.strictEqual(initialBChild.killed, false, "Pre-owned backend MUST NOT be killed when workspace fails startup");
+    assert.strictEqual(runtime.backendProcessRecord?.child, initialBChild, "Backend child handle preserved");
+    assert.strictEqual(runtime.backendProcessRecord?.pid, initialBPid, "Backend PID preserved");
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+
+    // 5. Clean up: close wrong external workspace, stop backend safely
+    await closeServer(wrongExternalWs.server);
+    await runtime.stopBackend();
+    assert.strictEqual(initialBChild.killed, true);
+    await closeServer(fakeBackend.server);
+
+    console.log("✓ M1D1D Check F Passed: Pre-owned backend + wrong external Workspace -> existing backend NOT killed");
+}
+
 // Test Matrix X, Y: Child cleanup & absence of kill-by-port utilities
 {
     // X: Active fake children cleaned up
@@ -1656,4 +2005,4 @@ function makeFakeChild(name, onKill = null) {
     console.log("✓ Tests X, Y Passed: All test children cleaned up; zero kill-by-port utilities found");
 }
 
-console.log("--- ALL MANGA DOMAIN LIFECYCLE TESTS (A through Y + M1D1A A-H + M1D1B I-L + M1D1C A-H) PASSED ---");
+console.log("--- ALL MANGA DOMAIN LIFECYCLE TESTS (A through Y + M1D1A A-H + M1D1B I-L + M1D1C A-H + M1D1D A-F) PASSED ---");

@@ -51,6 +51,11 @@ MANGA-M1D1 (and subsequent SOL audit hotfix MANGA-M1D1A) implements the Manga-sp
 4. **Zero Duplicate Spawn on Unavailable / Wrong Profile Probe**: If an owned child handle is alive but the HTTP probe is temporarily `UNAVAILABLE` or reports `WRONG_PROFILE`, `start()` fails closed without spawning a duplicate second child or detaching from the owned handle.
 5. **Partial Service Recovery & Clean Teardown**: After `stopBackend() -> start()` or `stopWorkspace() -> start()`, exactly one replacement child is spawned for the stopped service while the survivor's handle and PID remain untouched. Subsequent `stopAll()` terminates both owned processes cleanly without process leaks.
 
+### 2.5 Existing-Owned Cleanup Guard + Exit-Truth Ownership (MANGA-M1D1D)
+1. **Exit Event Authority**: A child process remains owned and recorded until the child's `exit` event actually fires. `child.killed` indicates only that a signal was sent; it is not treated as evidence of process termination.
+2. **Termination Timeout Truth**: If `child.kill("SIGTERM")` is sent and the child fails to exit within `shutdownTimeoutMs`, termination throws a timeout error while preserving `processRecord` and `OWNED_BY_THIS_RUNTIME`. No duplicate process is spawned on subsequent `start()`, and ownership is never downgraded to `PREEXISTING` or cleared to `UNAVAILABLE`.
+3. **Pre-Owned Backend Preservation**: In `start()`, cleanup upon discovering an incompatible Workspace profile is strictly scoped to backends spawned during that exact `start()` call (`spawnedBackendThisStart`). An already-running, pre-owned backend is never stopped or killed when Workspace startup fails.
+
 ---
 
 ## 3. Runtime Architecture & Ownership Contract
@@ -158,8 +163,13 @@ Implemented comprehensive test suite `ComfyUIPortable/manga/tests/test_domain_li
   - **Check E**: Owned workspace child alive + unavailable probe -> zero duplicate spawn, ownership retained, state not READY (`PASS`).
   - **Check F**: Owned live service returning wrong profile -> fails closed, zero duplicate spawn, ownership retained (`PASS`).
   - **Check G, H**: Genuine pre-existing compatible backend/workspace remain `PREEXISTING_COMPATIBLE` and are never killed (`PASS`).
+- **M1D1D Ownership Truth & Partial-Start Matrix (Checks A through F)**:
+  - **Check A**: `child.killed == true` without exit event retains owned process record & ownership; exit event cleans record (`PASS`).
+  - **Check B, C**: Backend termination timeout retains ownership & record; subsequent `start()` spawns 0 duplicate backend (`PASS`).
+  - **Check D, E**: Workspace termination timeout retains ownership & record; subsequent `start()` spawns 0 duplicate workspace (`PASS`).
+  - **Check F**: Pre-owned backend + wrong external Workspace -> existing backend NOT killed, process handle/PID preserved (`PASS`).
 
-Execution performance: **~350 ms** total wall time (well below the 2-minute target).
+Execution performance: **~400 ms** total wall time (well below the 2-minute target).
 
 ---
 

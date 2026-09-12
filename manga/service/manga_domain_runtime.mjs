@@ -393,8 +393,7 @@ export class MangaDomainRuntime {
         return (
             this.backendOwnership === OwnershipClassification.OWNED_BY_THIS_RUNTIME &&
             this.backendProcessRecord != null &&
-            this.backendProcessRecord.child != null &&
-            !this.backendProcessRecord.child.killed
+            this.backendProcessRecord.child != null
         );
     }
 
@@ -402,8 +401,7 @@ export class MangaDomainRuntime {
         return (
             this.workspaceOwnership === OwnershipClassification.OWNED_BY_THIS_RUNTIME &&
             this.workspaceProcessRecord != null &&
-            this.workspaceProcessRecord.child != null &&
-            !this.workspaceProcessRecord.child.killed
+            this.workspaceProcessRecord.child != null
         );
     }
 
@@ -414,6 +412,7 @@ export class MangaDomainRuntime {
     async start() {
         this.lastError = null;
         this.internalSubstate = InternalSubstate.STARTING_BACKEND;
+        let spawnedBackendThisStart = false;
 
         try {
             // 1. Establish backend classification / start
@@ -440,6 +439,7 @@ export class MangaDomainRuntime {
                 }
                 // UNAVAILABLE and not owned -> spawn candidate backend child
                 await this._spawnBackendChild();
+                spawnedBackendThisStart = true;
             }
 
             this.internalSubstate = InternalSubstate.STARTING_WORKSPACE;
@@ -452,9 +452,9 @@ export class MangaDomainRuntime {
                 this.internalSubstate = InternalSubstate.FAILED;
                 this.lastError = new Error(`Workspace port ${this.workspacePort} occupied by incompatible profile: ${wsInitial.details}`);
 
-                // Attempt normal safe stop of newly spawned owned backend if applicable
-                // Only if backend was NOT previously established/running before this start()
-                if (this.backendOwnership === OwnershipClassification.OWNED_BY_THIS_RUNTIME) {
+                // M1D1D: Only attempt safe stop if backend was newly spawned by THIS start() invocation.
+                // Pre-existing owned backend MUST be preserved.
+                if (spawnedBackendThisStart && this.backendOwnership === OwnershipClassification.OWNED_BY_THIS_RUNTIME) {
                     try {
                         await this.stopBackend();
                     } catch (_) {
@@ -482,7 +482,7 @@ export class MangaDomainRuntime {
                 } catch (err) {
                     this.internalSubstate = InternalSubstate.FAILED;
                     this.lastError = err;
-                    if (this.backendOwnership === OwnershipClassification.OWNED_BY_THIS_RUNTIME) {
+                    if (spawnedBackendThisStart && this.backendOwnership === OwnershipClassification.OWNED_BY_THIS_RUNTIME) {
                         try {
                             await this.stopBackend();
                         } catch (_) {}
