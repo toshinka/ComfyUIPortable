@@ -38,6 +38,12 @@ MANGA-M1D1 (and subsequent SOL audit hotfix MANGA-M1D1A) implements the Manga-sp
 5. **Tested Unexpected Workspace Exit**: Full deterministic test asserting backend survives untouched, workspace process record is cleared, status reports `DEGRADED`, and exit diagnostics are recorded.
 6. **Partial Startup Failure Handling**: When owned backend is spawned and workspace probe encounters pre-existing wrong profile, external wrong workspace is NEVER killed, and owned backend is safely stopped (or kept explicitly owned if busy, never orphaned).
 
+### 2.3 Spawn Ownership Truth on Startup Failure (MANGA-M1D1B)
+1. **Immediate Ownership Assignment**: In `_spawnBackendChild()` and `_spawnWorkspaceChild()`, ownership is assigned to `OWNED_BY_THIS_RUNTIME` immediately upon acquiring the `ChildProcess` handle and recording the process metadata, prior to any readiness polling.
+2. **No False Reversion to UNAVAILABLE**: Startup polling timeout, wrong profile verification, or internal error cannot cause an active, running child handle to revert to `UNAVAILABLE`.
+3. **Truthful Public Status on Startup Failure**: Failure in `start()` transitions `internalSubstate` to `FAILED` and records `lastError`. Any subsequent `getStatus()` check truthfully reflects `FAILED` or `DEGRADED` (if pre-existing backend is compatible), never a misleading `STOPPED` or `READY`.
+4. **Lifecycle Exit Synchronization**: Child exit listeners on the spawned processes exclusively reset `processRecord` to `null` and return ownership to `UNAVAILABLE` once the OS process has actually terminated.
+
 ---
 
 ## 3. Runtime Architecture & Ownership Contract
@@ -132,8 +138,13 @@ Implemented comprehensive test suite `ComfyUIPortable/manga/tests/test_domain_li
   - **Check F**: Unexpected workspace exit -> backend untouched, status `DEGRADED`, `lastWorkspaceExit` recorded (`PASS`).
   - **Check G**: Unexpected backend exit -> `lastBackendExit` recorded (`PASS`).
   - **Check H**: Partial startup failure -> wrong external workspace not killed, owned backend safely stopped (`PASS`).
+- **M1D1B Ownership Truth Matrix (Checks I through L)**:
+  - **Check I**: Backend startup polling timeout -> retains `OWNED_BY_THIS_RUNTIME` while child process is alive, not killed automatically, resets to `UNAVAILABLE` on exit (`PASS`).
+  - **Check J**: Spawned backend wrong profile -> retains `OWNED_BY_THIS_RUNTIME` while child process is alive, not killed automatically, resets to `UNAVAILABLE` on exit (`PASS`).
+  - **Check K**: Workspace startup polling timeout -> retains `OWNED_BY_THIS_RUNTIME` while child process is alive, not killed automatically, reports truthful `DEGRADED` (pre-existing compatible backend) and `internalSubstate: FAILED` (`PASS`).
+  - **Check L**: Spawned workspace wrong profile -> retains `OWNED_BY_THIS_RUNTIME` while child process is alive, reports truthful `FAILED` (`PASS`).
 
-Execution performance: **250 ms** total wall time (well below the 2-minute target).
+Execution performance: **~300 ms** total wall time (well below the 2-minute target).
 
 ---
 

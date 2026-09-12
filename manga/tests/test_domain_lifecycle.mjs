@@ -22,7 +22,8 @@ import { EventEmitter } from "node:events";
 import {
     MangaDomainRuntime,
     LifecycleState,
-    OwnershipClassification
+    OwnershipClassification,
+    InternalSubstate
 } from "../service/manga_domain_runtime.mjs";
 
 console.log("--- Running test_domain_lifecycle.mjs (M1D1 / M1D1A Suite) ---");
@@ -973,6 +974,235 @@ function makeFakeChild(name, onKill = null) {
     console.log("✓ M1D1A Check H Passed: Partial startup failure safely stops owned backend and never touches external workspace");
 }
 
+// M1D1B Checks: Spawn Ownership Truth on Startup Failure
+// Invariant: Immediately upon child handle creation, ownership is OWNED_BY_THIS_RUNTIME.
+// Failure during startup polling (timeout or wrong profile) retains OWNED_BY_THIS_RUNTIME while child is alive.
+// When child exits, ownership becomes UNAVAILABLE and record is null.
+// Status reports FAILED while owned child remains alive without compatible service.
+// No live child may ever have UNAVAILABLE ownership.
+
+// M1D1B Check I: Backend startup timeout retains OWNED truth while child is alive
+{
+    const bPort = 58900 + Math.floor(Math.random() * 500);
+    const wsPort = 59900 + Math.floor(Math.random() * 500);
+
+    let bChild = null;
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 250,
+        customSpawnBackend: () => {
+            // Child never starts server -> timeout
+            bChild = makeFakeChild("python.exe");
+            return bChild;
+        }
+    });
+
+    let startThrew = false;
+    try {
+        await runtime.start();
+    } catch (err) {
+        startThrew = true;
+        assert(err.message.includes("Timed out waiting for backend"));
+    }
+
+    assert.strictEqual(startThrew, true, "start() must fail on backend startup timeout");
+    assert.notStrictEqual(bChild, null, "Child handle must have been acquired");
+    assert.strictEqual(bChild.killed, false, "Child must NOT be killed automatically by product code");
+    assert.strictEqual(runtime.backendProcessRecord?.child, bChild, "backendProcessRecord must point to live child");
+    assert.strictEqual(
+        runtime.backendOwnership,
+        OwnershipClassification.OWNED_BY_THIS_RUNTIME,
+        "Ownership must remain OWNED_BY_THIS_RUNTIME even on startup timeout"
+    );
+    assert.notStrictEqual(
+        runtime.backendOwnership,
+        OwnershipClassification.UNAVAILABLE,
+        "Live child must never have UNAVAILABLE ownership"
+    );
+    assert.strictEqual(await runtime.getStatus(), LifecycleState.FAILED, "Status must report FAILED");
+
+    // Clean up child and verify exit transition
+    bChild.kill();
+    await new Promise(r => setTimeout(r, 50));
+    assert.strictEqual(runtime.backendProcessRecord, null, "backendProcessRecord cleared on exit");
+    assert.strictEqual(
+        runtime.backendOwnership,
+        OwnershipClassification.UNAVAILABLE,
+        "backendOwnership becomes UNAVAILABLE after child exit"
+    );
+
+    console.log("✓ M1D1B Check I Passed: Backend startup timeout retains OWNED truth while child is alive");
+}
+
+// M1D1B Check J: Spawned backend wrong profile retains OWNED truth while child is alive
+{
+    const bPort = 58900 + Math.floor(Math.random() * 500);
+    const wsPort = 59900 + Math.floor(Math.random() * 500);
+
+    const wrongBackend = createFakeBackend({ mode: "WRONG_PROFILE" });
+    let bChild = null;
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1000,
+        customSpawnBackend: () => {
+            bChild = makeFakeChild("python.exe", () => {
+                wrongBackend.server.close();
+            });
+            wrongBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        }
+    });
+
+    let startThrew = false;
+    try {
+        await runtime.start();
+    } catch (err) {
+        startThrew = true;
+        assert(err.message.includes("Spawned backend reported wrong profile"));
+    }
+
+    assert.strictEqual(startThrew, true, "start() must fail on wrong profile backend");
+    assert.notStrictEqual(bChild, null, "Child handle must have been acquired");
+    assert.strictEqual(bChild.killed, false, "Child must NOT be killed automatically by product code");
+    assert.strictEqual(runtime.backendProcessRecord?.child, bChild, "backendProcessRecord must point to live child");
+    assert.strictEqual(
+        runtime.backendOwnership,
+        OwnershipClassification.OWNED_BY_THIS_RUNTIME,
+        "Ownership must remain OWNED_BY_THIS_RUNTIME when spawned backend reports wrong profile"
+    );
+    assert.notStrictEqual(
+        runtime.backendOwnership,
+        OwnershipClassification.UNAVAILABLE,
+        "Live child must never have UNAVAILABLE ownership"
+    );
+    assert.strictEqual(await runtime.getStatus(), LifecycleState.FAILED, "Status must report FAILED");
+
+    // Clean up
+    await closeServer(wrongBackend.server);
+    bChild.kill();
+    await new Promise(r => setTimeout(r, 50));
+    assert.strictEqual(runtime.backendProcessRecord, null);
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.UNAVAILABLE);
+
+    console.log("✓ M1D1B Check J Passed: Spawned backend wrong profile retains OWNED truth while child is alive");
+}
+
+// M1D1B Check K: Workspace startup timeout retains OWNED truth while child is alive
+{
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    const bPort = await listenDynamic(fakeBackend.server);
+    const wsPort = 59900 + Math.floor(Math.random() * 500);
+
+    let wsChild = null;
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 250,
+        customSpawnWorkspace: () => {
+            // Child never starts server -> timeout
+            wsChild = makeFakeChild("node.exe");
+            return wsChild;
+        }
+    });
+
+    let startThrew = false;
+    try {
+        await runtime.start();
+    } catch (err) {
+        startThrew = true;
+        assert(err.message.includes("Timed out waiting for workspace"));
+    }
+
+    assert.strictEqual(startThrew, true, "start() must fail on workspace startup timeout");
+    assert.notStrictEqual(wsChild, null, "Workspace child handle must have been acquired");
+    assert.strictEqual(wsChild.killed, false, "Workspace child must NOT be killed automatically");
+    assert.strictEqual(runtime.workspaceProcessRecord?.child, wsChild, "workspaceProcessRecord must point to live child");
+    assert.strictEqual(
+        runtime.workspaceOwnership,
+        OwnershipClassification.OWNED_BY_THIS_RUNTIME,
+        "Ownership must remain OWNED_BY_THIS_RUNTIME even on workspace startup timeout"
+    );
+    assert.notStrictEqual(
+        runtime.workspaceOwnership,
+        OwnershipClassification.UNAVAILABLE,
+        "Live child must never have UNAVAILABLE ownership"
+    );
+    assert.strictEqual(
+        await runtime.getStatus(),
+        LifecycleState.DEGRADED,
+        "Status must report DEGRADED when pre-existing backend is compatible but workspace startup timed out"
+    );
+    assert.strictEqual(runtime.internalSubstate, InternalSubstate.FAILED);
+    assert(runtime.lastError !== null);
+
+    // Clean up
+    wsChild.kill();
+    await new Promise(r => setTimeout(r, 50));
+    assert.strictEqual(runtime.workspaceProcessRecord, null);
+    assert.strictEqual(runtime.workspaceOwnership, OwnershipClassification.UNAVAILABLE);
+    await closeServer(fakeBackend.server);
+
+    console.log("✓ M1D1B Check K Passed: Workspace startup timeout retains OWNED truth while child is alive");
+}
+
+// M1D1B Check L: Spawned Workspace wrong profile retains OWNED truth while child is alive
+{
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    const bPort = await listenDynamic(fakeBackend.server);
+    const wsPort = 59900 + Math.floor(Math.random() * 500);
+
+    const wrongWs = createFakeWorkspace({ mode: "WRONG_PROFILE" });
+    let wsChild = null;
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1000,
+        customSpawnWorkspace: () => {
+            wsChild = makeFakeChild("node.exe", () => {
+                wrongWs.server.close();
+            });
+            wrongWs.server.listen(wsPort, "127.0.0.1");
+            return wsChild;
+        }
+    });
+
+    let startThrew = false;
+    try {
+        await runtime.start();
+    } catch (err) {
+        startThrew = true;
+        assert(err.message.includes("Spawned workspace reported wrong profile"));
+    }
+
+    assert.strictEqual(startThrew, true, "start() must fail on wrong profile workspace");
+    assert.notStrictEqual(wsChild, null, "Child handle must have been acquired");
+    assert.strictEqual(wsChild.killed, false, "Child must NOT be killed automatically by product code");
+    assert.strictEqual(runtime.workspaceProcessRecord?.child, wsChild, "workspaceProcessRecord must point to live child");
+    assert.strictEqual(
+        runtime.workspaceOwnership,
+        OwnershipClassification.OWNED_BY_THIS_RUNTIME,
+        "Ownership must remain OWNED_BY_THIS_RUNTIME when spawned workspace reports wrong profile"
+    );
+    assert.notStrictEqual(
+        runtime.workspaceOwnership,
+        OwnershipClassification.UNAVAILABLE,
+        "Live child must never have UNAVAILABLE ownership"
+    );
+    assert.strictEqual(await runtime.getStatus(), LifecycleState.FAILED, "Status must report FAILED");
+
+    // Clean up
+    await closeServer(wrongWs.server);
+    wsChild.kill();
+    await new Promise(r => setTimeout(r, 50));
+    assert.strictEqual(runtime.workspaceProcessRecord, null);
+    assert.strictEqual(runtime.workspaceOwnership, OwnershipClassification.UNAVAILABLE);
+    await closeServer(fakeBackend.server);
+
+    console.log("✓ M1D1B Check L Passed: Spawned Workspace wrong profile retains OWNED truth while child is alive");
+}
+
 // Test Matrix X, Y: Child cleanup & absence of kill-by-port utilities
 {
     // X: Active fake children cleaned up
@@ -992,4 +1222,4 @@ function makeFakeChild(name, onKill = null) {
     console.log("✓ Tests X, Y Passed: All test children cleaned up; zero kill-by-port utilities found");
 }
 
-console.log("--- ALL MANGA DOMAIN LIFECYCLE TESTS (A through Y + M1D1A A-H) PASSED ---");
+console.log("--- ALL MANGA DOMAIN LIFECYCLE TESTS (A through Y + M1D1A A-H + M1D1B I-L) PASSED ---");

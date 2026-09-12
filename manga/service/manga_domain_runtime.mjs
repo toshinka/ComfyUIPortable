@@ -370,15 +370,15 @@ export class MangaDomainRuntime {
             return LifecycleState.DEGRADED;
         }
 
-        // Backend compatible but workspace down
-        if (isBackendCompatible && !isWorkspaceCompatible) {
-            return LifecycleState.DEGRADED;
-        }
-
         // If wrong profile is detected on either port during running state without compatible workspace
         if (backendProbe.classification === OwnershipClassification.PORT_OCCUPIED_WRONG_PROFILE ||
             workspaceProbe.classification === OwnershipClassification.PORT_OCCUPIED_WRONG_PROFILE) {
             return LifecycleState.FAILED;
+        }
+
+        // Backend compatible but workspace down
+        if (isBackendCompatible && !isWorkspaceCompatible) {
+            return LifecycleState.DEGRADED;
         }
 
         // Both down but we have records or substate not idle
@@ -397,60 +397,64 @@ export class MangaDomainRuntime {
         this.lastError = null;
         this.internalSubstate = InternalSubstate.STARTING_BACKEND;
 
-        // 1. Establish backend classification / start
-        const backendInitial = await this.probeBackend();
-        if (backendInitial.classification === OwnershipClassification.PORT_OCCUPIED_WRONG_PROFILE) {
-            this.internalSubstate = InternalSubstate.FAILED;
-            this.lastError = new Error(`Backend port ${this.backendPort} occupied by incompatible profile: ${backendInitial.details}`);
-            throw this.lastError;
-        } else if (backendInitial.classification === OwnershipClassification.PREEXISTING_COMPATIBLE) {
-            this.backendOwnership = OwnershipClassification.PREEXISTING_COMPATIBLE;
-            this.backendProcessRecord = null;
-        } else {
-            // UNAVAILABLE -> spawn candidate backend child
-            await this._spawnBackendChild();
-            this.backendOwnership = OwnershipClassification.OWNED_BY_THIS_RUNTIME;
-        }
-
-        this.internalSubstate = InternalSubstate.STARTING_WORKSPACE;
-
-        // 2. Establish workspace classification / start
-        const wsInitial = await this.probeWorkspace();
-        if (wsInitial.classification === OwnershipClassification.PORT_OCCUPIED_WRONG_PROFILE) {
-            this.internalSubstate = InternalSubstate.FAILED;
-            this.lastError = new Error(`Workspace port ${this.workspacePort} occupied by incompatible profile: ${wsInitial.details}`);
-
-            // Card M1D1A Section 11: Attempt normal safe stop of the just-spawned owned backend
-            if (this.backendOwnership === OwnershipClassification.OWNED_BY_THIS_RUNTIME) {
-                try {
-                    await this.stopBackend();
-                } catch (_) {
-                    // Retain explicit owned-process record and FAILED state; do not force kill
-                }
-            }
-            throw this.lastError;
-        } else if (wsInitial.classification === OwnershipClassification.PREEXISTING_COMPATIBLE) {
-            this.workspaceOwnership = OwnershipClassification.PREEXISTING_COMPATIBLE;
-            this.workspaceProcessRecord = null;
-        } else {
-            // UNAVAILABLE -> spawn candidate workspace child
-            try {
-                await this._spawnWorkspaceChild();
-                this.workspaceOwnership = OwnershipClassification.OWNED_BY_THIS_RUNTIME;
-            } catch (err) {
+        try {
+            // 1. Establish backend classification / start
+            const backendInitial = await this.probeBackend();
+            if (backendInitial.classification === OwnershipClassification.PORT_OCCUPIED_WRONG_PROFILE) {
                 this.internalSubstate = InternalSubstate.FAILED;
-                this.lastError = err;
+                this.lastError = new Error(`Backend port ${this.backendPort} occupied by incompatible profile: ${backendInitial.details}`);
+                throw this.lastError;
+            } else if (backendInitial.classification === OwnershipClassification.PREEXISTING_COMPATIBLE) {
+                this.backendOwnership = OwnershipClassification.PREEXISTING_COMPATIBLE;
+                this.backendProcessRecord = null;
+            } else {
+                // UNAVAILABLE -> spawn candidate backend child
+                await this._spawnBackendChild();
+            }
+
+            this.internalSubstate = InternalSubstate.STARTING_WORKSPACE;
+
+            // 2. Establish workspace classification / start
+            const wsInitial = await this.probeWorkspace();
+            if (wsInitial.classification === OwnershipClassification.PORT_OCCUPIED_WRONG_PROFILE) {
+                this.internalSubstate = InternalSubstate.FAILED;
+                this.lastError = new Error(`Workspace port ${this.workspacePort} occupied by incompatible profile: ${wsInitial.details}`);
+
+                // Card M1D1A Section 11: Attempt normal safe stop of the just-spawned owned backend
                 if (this.backendOwnership === OwnershipClassification.OWNED_BY_THIS_RUNTIME) {
                     try {
                         await this.stopBackend();
-                    } catch (_) {}
+                    } catch (_) {
+                        // Retain explicit owned-process record and FAILED state; do not force kill
+                    }
                 }
-                throw err;
+                throw this.lastError;
+            } else if (wsInitial.classification === OwnershipClassification.PREEXISTING_COMPATIBLE) {
+                this.workspaceOwnership = OwnershipClassification.PREEXISTING_COMPATIBLE;
+                this.workspaceProcessRecord = null;
+            } else {
+                // UNAVAILABLE -> spawn candidate workspace child
+                try {
+                    await this._spawnWorkspaceChild();
+                } catch (err) {
+                    this.internalSubstate = InternalSubstate.FAILED;
+                    this.lastError = err;
+                    if (this.backendOwnership === OwnershipClassification.OWNED_BY_THIS_RUNTIME) {
+                        try {
+                            await this.stopBackend();
+                        } catch (_) {}
+                    }
+                    throw err;
+                }
             }
-        }
 
-        this.internalSubstate = InternalSubstate.RUNNING;
-        return this.getStatus();
+            this.internalSubstate = InternalSubstate.RUNNING;
+            return this.getStatus();
+        } catch (err) {
+            this.internalSubstate = InternalSubstate.FAILED;
+            this.lastError = err;
+            throw err;
+        }
     }
 
     async _spawnBackendChild() {
@@ -485,6 +489,7 @@ export class MangaDomainRuntime {
             child
         };
         this.backendProcessRecord = record;
+        this.backendOwnership = OwnershipClassification.OWNED_BY_THIS_RUNTIME;
 
         child.on("exit", (code, signal) => {
             this.lastBackendExit = {
@@ -548,6 +553,7 @@ export class MangaDomainRuntime {
             child
         };
         this.workspaceProcessRecord = record;
+        this.workspaceOwnership = OwnershipClassification.OWNED_BY_THIS_RUNTIME;
 
         child.on("exit", (code, signal) => {
             this.lastWorkspaceExit = {
@@ -634,7 +640,6 @@ export class MangaDomainRuntime {
 
         await this.stopBackend();
         await this._spawnBackendChild();
-        this.backendOwnership = OwnershipClassification.OWNED_BY_THIS_RUNTIME;
     }
 
     // -------------------------------------------------------------
