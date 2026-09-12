@@ -2354,6 +2354,29 @@ function makeFakeChild(name, onKill = null, stubborn = false) {
     console.log("✓ M1D1E Check J Passed: Zero child.killed early-success paths remain in _terminateChild");
 }
 
+// =========================================================================
+// M1D2 Checks: Production Manga Startup Timeout — Apply EV1 Real-Runtime Finding
+// =========================================================================
+
+// M1D2 Check A: Production default startupWaitTimeoutMs == 120000; custom override preserved
+{
+    const defaultRuntime = new MangaDomainRuntime();
+    assert.strictEqual(
+        defaultRuntime.startupWaitTimeoutMs,
+        120000,
+        "Production default startupWaitTimeoutMs must be 120000ms (established by TEGAKI-EV1 real runtime finding)"
+    );
+
+    const customRuntime = new MangaDomainRuntime({ startupWaitTimeoutMs: 45000 });
+    assert.strictEqual(
+        customRuntime.startupWaitTimeoutMs,
+        45000,
+        "Explicit startupWaitTimeoutMs override must be preserved"
+    );
+
+    console.log("✓ M1D2 Check A Passed: Production default startupWaitTimeoutMs is 120000ms; override preserved");
+}
+
 // Test Matrix X, Y: Child cleanup & absence of kill-by-port utilities
 {
     // X: Active fake children cleaned up
@@ -2373,4 +2396,4 @@ function makeFakeChild(name, onKill = null, stubborn = false) {
     console.log("✓ Tests X, Y Passed: All test children cleaned up; zero kill-by-port utilities found");
 }
 
-console.log("--- ALL MANGA DOMAIN LIFECYCLE TESTS (A through Y + M1D1A A-H + M1D1B I-L + M1D1C A-H + M1D1D A-F + M1D1E A-J) PASSED ---");
+console.log("--- ALL MANGA DOMAIN LIFECYCLE TESTS (A through Y + M1D1A A-H + M1D1B I-L + M1D1C A-H + M1D1D A-F + M1D1E A-J + M1D2 A) PASSED ---");

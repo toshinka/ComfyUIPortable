@@ -152,7 +152,7 @@ export class MangaDomainRuntime {
 
         // Poll timeouts (configurable, bounded)
         this.probeTimeoutMs = config.probeTimeoutMs || 800;
-        this.startupWaitTimeoutMs = config.startupWaitTimeoutMs || 5000;
+        this.startupWaitTimeoutMs = config.startupWaitTimeoutMs || 120000;
         this.shutdownTimeoutMs = config.shutdownTimeoutMs || 3000;
     }
 
