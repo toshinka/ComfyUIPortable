@@ -8,6 +8,7 @@ request can be submitted so a stale or partially edited workflow fails closed.
 
 from __future__ import annotations
 
+from h3.adapters.playable_controls import validate_selection, materialize_model
 from copy import deepcopy
 from dataclasses import dataclass
 import json
@@ -27,11 +28,14 @@ MAX_PROMPT_LENGTH = 4000
 MIN_DURATION_SECONDS = 0.2
 MAX_DURATION_SECONDS = 15.0
 VIDEO_RESOLUTION_OPTIONS = (
-    {"label": "608 x 352", "width": 608, "height": 352},
-    {"label": "736 x 416", "width": 736, "height": 416},
+    {"label": "512 x 288 · Experimental Small", "width": 512, "height": 288},
+    {"label": "608 x 352 · Default", "width": 608, "height": 352},
+    {"label": "736 x 416 · Large", "width": 736, "height": 416},
 )
 VIDEO_DURATION_OPTIONS = (
+    {"label": "3 seconds", "value": 3},
     {"label": "5 seconds", "value": 5},
+    {"label": "10 seconds", "value": 10},
     {"label": "15 seconds", "value": 15},
 )
 ALLOWED_RESOLUTIONS = tuple(
@@ -106,8 +110,12 @@ class H3Request:
     reference: H3Reference | None = None
     references: H3ReferenceSlots | None = None
     legacy_reference: bool = False
+    model_name: str | None = None
+    loras: tuple = ()
 
     def __post_init__(self) -> None:
+        _, loras = validate_selection(self.model_name, self.loras)
+        object.__setattr__(self, "loras", loras)
         slots = self.references
         if slots is None:
             slots = H3ReferenceSlots(start_frame=self.reference)
@@ -130,6 +138,8 @@ class H3Request:
             "steps": self.steps,
             "reference": self.reference.public() if self.reference else None,
             "references": self.references.public(),
+            "model_name": self.model_name,
+            "loras": list(self.loras),
         }
 
 
@@ -264,7 +274,7 @@ def validate_request(payload: Mapping[str, Any]) -> H3Request:
     height = _coerce_int(payload.get("height", 352), "Height")
     if (width, height) not in ALLOWED_RESOLUTIONS:
         raise RequestValidationError(
-            "H3 currently supports the verified resolutions 608 x 352 and 736 x 416 only."
+            "H3 currently supports the video resolutions 512 x 288, 608 x 352 and 736 x 416 only."
         )
 
     duration_value = payload.get("duration", DEFAULT_DURATION_SECONDS)
@@ -280,7 +290,7 @@ def validate_request(payload: Mapping[str, Any]) -> H3Request:
     duration_to_frames(duration)
     if duration not in ALLOWED_DURATIONS:
         raise RequestValidationError(
-            "H3 currently supports the verified duration options 5 and 15 seconds only."
+            "H3 currently supports the video duration options 3, 5, 10 and 15 seconds only."
         )
 
     steps = _coerce_int(payload.get("steps", DEFAULT_STEPS), "Steps")
@@ -327,6 +337,8 @@ def validate_request(payload: Mapping[str, Any]) -> H3Request:
         reference=references.start_frame,
         references=references,
         legacy_reference=legacy_reference,
+        model_name=payload.get("model_name"),
+        loras=payload.get("loras", []),
     )
 
 
@@ -386,7 +398,7 @@ def validate_workflow(workflow: Mapping[str, Any]) -> None:
         )
 
 
-def compile_workflow(request: H3Request | Mapping[str, Any]) -> dict[str, dict[str, Any]]:
+def compile_workflow(request: H3Request | Mapping[str, Any], *, capability=None) -> dict[str, dict[str, Any]]:
     """Return a ComfyUI API prompt graph after fail-closed validation."""
 
     normalized = request if isinstance(request, H3Request) else validate_request(request)
@@ -409,6 +421,7 @@ def compile_workflow(request: H3Request | Mapping[str, Any]) -> dict[str, dict[s
     node_for("noise")["inputs"]["noise_seed"] = normalized.seed
     node_for("scheduler")["inputs"]["steps"] = normalized.steps
     node_for("save_video")["inputs"]["filename_prefix"] = "video/h1a_native_t2v"
+    materialize_model(graph, roles, normalized.model_name, normalized.loras, "standard", capability)
     return graph
 
 

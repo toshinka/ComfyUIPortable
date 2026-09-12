@@ -9,6 +9,7 @@ paths and fail closed when optional frame edges disagree with the workflow.
 
 from __future__ import annotations
 
+from h3.adapters.playable_controls import materialize_model
 from copy import deepcopy
 from pathlib import Path, PurePosixPath
 import json
@@ -121,6 +122,7 @@ def _safe_reference_path(value: str) -> str:
 def compile_workflow(
     request: H3Request | Mapping[str, Any],
     reference_path: str,
+    *, capability=None,
 ) -> dict[str, dict[str, Any]]:
     """Compile one Start Frame into the Native H3 I2V API graph."""
 
@@ -150,6 +152,7 @@ def compile_workflow(
     node_for("noise")["inputs"]["noise_seed"] = normalized.seed
     node_for("scheduler")["inputs"]["steps"] = normalized.steps
     node_for("save_video")["inputs"]["filename_prefix"] = "video/h1b_native_i2v"
+    materialize_model(graph, roles, normalized.model_name, normalized.loras, "standard", capability)
     return graph
 
 
@@ -267,6 +270,7 @@ def validate_fl2va_workflow(workflow: Mapping[str, Any]) -> None:
 def compile_fl2va_workflow(
     request: H3Request | Mapping[str, Any],
     reference_paths: Mapping[str, str],
+    *, capability=None,
 ) -> dict[str, dict[str, Any]]:
     """Compile zero/one/two fixed keyframes without creating dummy images."""
 
@@ -340,6 +344,7 @@ def compile_fl2va_workflow(
     node_for("noise")["inputs"]["noise_seed"] = normalized.seed
     node_for("scheduler")["inputs"]["steps"] = normalized.steps
     node_for("save_video")["inputs"]["filename_prefix"] = "video/h1b1_native_fl2va"
+    materialize_model(graph, roles, normalized.model_name, normalized.loras, "standard", capability)
     return graph
 
 

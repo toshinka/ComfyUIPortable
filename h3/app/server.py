@@ -88,6 +88,11 @@ from h3.adapters.native_image_prep import (  # noqa: E402
     validate_request as validate_image_prep_request,
     workflow_metadata as image_prep_workflow_metadata,
 )
+from h3.adapters.playable_controls import (  # noqa: E402
+    DEFAULT_MODELS,
+    capability_from_object_info,
+    validate_available_selection,
+)
 from h3.adapters.native_ref2va import (  # noqa: E402
     BASELINE_DURATION_SECONDS as REF2VA_DURATION_SECONDS,
     BASELINE_HEIGHT as REF2VA_HEIGHT,
@@ -402,11 +407,15 @@ class ReferenceVideoRequest:
     seed: int
     steps: int
     motion_start_seconds: float | None = None
+    model_name: str | None = None
+    loras: tuple = ()
 
     def public(self) -> dict[str, Any]:
         data: dict[str, Any] = {
             "prompt": self.prompt,
             "materialized_prompt": self.materialized_prompt,
+            "model_name": self.model_name,
+            "loras": list(self.loras),
             "width": self.width,
             "height": self.height,
             "duration": self.duration,
@@ -469,6 +478,16 @@ class BackendClient:
         stats = self._request("GET", "/system_stats")
         queue = self._request("GET", "/queue")
         return parse_backend_status(stats, queue, self.expected_profile)
+
+    def playable_capability(self) -> dict[str, Any]:
+        # A fresh profile + capability read is required for every selected submit.
+        status = self.status()
+        if status["state"] != "READY":
+            raise BackendProfileError(status["backend_profile"], status["backend_profile_detail"])
+        info = self._request("GET", "/object_info", timeout=4.0)
+        if not isinstance(info, Mapping):
+            raise BackendError("Native capability metadata is invalid.")
+        return capability_from_object_info(info)
 
     def reference_node_available(self) -> bool:
         """Check the exact Native node without loading or hashing model weights."""
@@ -1049,10 +1068,27 @@ class H1ASession:
         with self.lock:
             return self.prep_assets.get(asset_id)
 
-    def reference_video_capability(self) -> dict[str, Any]:
+    def playable_capability(self) -> dict[str, Any]:
+        try:
+            return self.backend.playable_capability()
+        except (BackendError, AttributeError):
+            return {"state": "UNVERIFIED", "defaults": DEFAULT_MODELS.copy(),
+                    "models": {"standard": [], "reference": []},
+                    "lora": {"state": "UNVERIFIED", "names": [], "max_entries": 3}}
+
+    def selected_capability(self, request, family="standard"):
+        if request.model_name is not None or request.loras:
+            capability = self.backend.playable_capability()
+            validate_available_selection(request.model_name, request.loras, family, capability)
+            return capability
+        return None
+
+    def reference_video_capability(self, capability=None) -> dict[str, Any]:
         """Return the small UI capability record for Experimental Reference."""
 
-        model_available = _configured_ref2va_model() is not None
+        model_available = (_configured_ref2va_model() is not None) if capability is None else (
+            capability.get("state") == "AVAILABLE" and bool(capability.get("models", {}).get("reference"))
+        )
         node_checker = getattr(self.backend, "reference_node_available", None)
         node_available = bool(node_checker()) if callable(node_checker) else True
         return {
@@ -1324,6 +1360,8 @@ class H1ASession:
             "picture_id",
             "motion_video_id",
             "motion_start_seconds",
+            "model_name",
+            "loras",
             "width",
             "height",
             "duration",
@@ -1401,6 +1439,8 @@ class H1ASession:
             "width": payload.get("width", REF2VA_WIDTH),
             "height": payload.get("height", REF2VA_HEIGHT),
             "duration_seconds": payload.get("duration", REF2VA_DURATION_SECONDS),
+            "model_name": payload.get("model_name"),
+            "loras": payload.get("loras", []),
             "seed": seed_value,
             "steps": payload.get("steps", REF2VA_STEPS),
             "output_prefix": "video/vp2b_r2v_reference",
@@ -1408,7 +1448,7 @@ class H1ASession:
         }
         try:
             native_request = H3Ref2VARequest(**native_payload)
-            graph = compile_ref2va(native_request)
+            graph = compile_ref2va(native_request, capability=self.selected_capability(native_request, "reference"))
         except Ref2VARequestValidationError as exc:
             raise RequestValidationError(str(exc)) from exc
 
@@ -1427,6 +1467,8 @@ class H1ASession:
             seed=native_request.seed,
             steps=native_request.steps,
             motion_start_seconds=parsed_motion_start,
+            model_name=native_request.model_name,
+            loras=native_request.loras,
         )
         job_id = uuid_token()
         sampler_node_ids = discover_sampler_node_ids(graph)
@@ -1468,17 +1510,18 @@ class H1ASession:
         if any(field in payload for field in ("picture_id", "motion_video_id", "picture_path", "video_path")):
             raise RequestValidationError("Standard Video does not accept Reference Video assets.")
         request = validate_request(payload)
+        capability = self.selected_capability(request)
         route = resolve_route(request.references)
         assets: dict[str, ReferenceAsset] = {}
         if route == ROUTE_T2V:
-            graph = compile_t2v(request)
+            graph = compile_t2v(request, capability=capability)
         elif request.legacy_reference and request.references.start_frame is not None:
             reference = request.references.start_frame
             asset = self.get_reference(reference.id)
             if asset is None or not asset.path.is_file():
                 raise ReferenceAssetMissingError("Start Frame asset is missing.")
             assets[REFERENCE_ROLE_START_FRAME] = asset
-            graph = compile_i2v(request, f"inputs/{asset.filename}")
+            graph = compile_i2v(request, f"inputs/{asset.filename}", capability=capability)
         else:
             reference_paths: dict[str, str] = {}
             for role, reference in (
@@ -1492,7 +1535,7 @@ class H1ASession:
                     raise ReferenceAssetMissingError(f"{role} asset is missing.")
                 assets[role] = asset
                 reference_paths[role] = f"inputs/{asset.filename}"
-            graph = compile_fl2va_workflow(request, reference_paths)
+            graph = compile_fl2va_workflow(request, reference_paths, capability=capability)
         job_id = uuid_token()
         sampler_node_ids = discover_sampler_node_ids(graph)
         references_public = {
@@ -2108,11 +2151,13 @@ class H1AHandler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == "/api/config":
             video_options = video_option_metadata()
-            reference_video = self.server.session.reference_video_capability()
+            playable = self.server.session.playable_capability()
+            reference_video = self.server.session.reference_video_capability(playable)
             self._send_json(
                 HTTPStatus.OK,
                 {
                     **video_options,
+                    "playable": playable,
                     "video_type_options": [
                         {"id": "standard", "label": "Standard", "enabled": True},
                         {
@@ -2124,10 +2169,7 @@ class H1AHandler(BaseHTTPRequestHandler):
                     "reference_video": {
                         **reference_video,
                         "schema": "tegaki.h3.vp2b.experimental-r2v/v1",
-                        "resolution_options": [
-                            {"label": "608 x 352", "width": REF2VA_WIDTH, "height": REF2VA_HEIGHT}
-                        ],
-                        "duration_options": [{"label": "5 seconds", "value": 5}],
+                        **video_options,
                         "default_steps": REF2VA_STEPS,
                         "picture": {
                             "extensions": [".png", ".jpg", ".jpeg", ".webp"],

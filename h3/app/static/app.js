@@ -15,6 +15,7 @@ const state = {
   videoResolution: "608x352",
   stillResolution: "608x352",
   videoDuration: "5",
+  playableSelections: { standard: { model_name: null, loras: [] }, reference: { model_name: null, loras: [] } },
   activeJob: null,
   previewJob: null,
   submitting: false,
@@ -135,6 +136,93 @@ const endReferenceStatus = $("end-reference-status");
 const resolutionInput = $("resolution");
 const resolutionField = $("resolution-field");
 const durationInput = $("duration");
+const modelInput = $("video-model");
+const loraStack = $("lora-stack");
+
+function playableSelection() {
+  return state.playableSelections[state.videoType];
+}
+
+function populateNamedOptions(select, names, selected, emptyLabel) {
+  select.replaceChildren();
+  const values = [...names];
+  if (selected && !values.includes(selected)) values.push(selected);
+  if (!selected) values.unshift("");
+  for (const name of values) {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = name ? `${name}${names.includes(name) ? "" : " · unavailable"}` : emptyLabel;
+    select.append(option);
+  }
+  select.value = selected || "";
+}
+
+function renderPlayableControls() {
+  const video = state.mode === "video";
+  $("video-model-controls").hidden = !video;
+  modelInput.disabled = !video;
+  const cap = state.config?.playable;
+  const selected = playableSelection();
+  if (selected.model_name === null && cap?.defaults?.[state.videoType]) {
+    selected.model_name = cap.defaults[state.videoType];
+  }
+  const models = cap?.models?.[state.videoType] || [];
+  populateNamedOptions(modelInput, models, selected.model_name, "Native models not yet available");
+  $("model-status").textContent = models.includes(selected.model_name)
+    ? "Native model · rechecked when you Generate"
+    : "Selected model is unavailable. Refresh after connecting Native or choose an available model.";
+  const loraCap = cap?.lora;
+  $("lora-status").textContent = loraCap?.state === "AVAILABLE"
+    ? "Up to 3, applied from top to bottom. Strength −2 to 2. Use H3-compatible LoRAs."
+    : loraCap?.state === "UNAVAILABLE" ? "Unavailable for this Native profile"
+    : "Native LoRA capability has not been verified. Refresh after connecting.";
+  $("add-lora").disabled = loraCap?.state !== "AVAILABLE" || !loraCap?.names?.length || selected.loras.length >= 3;
+  loraStack.replaceChildren();
+  selected.loras.forEach((item, index) => {
+    const row = document.createElement("div");
+    row.className = "lora-row";
+    const file = document.createElement("select");
+    file.setAttribute("aria-label", `LoRA ${index + 1} file`);
+    populateNamedOptions(file, loraCap?.names || [], item.name, "Choose LoRA");
+    file.addEventListener("change", () => { item.name = file.value; });
+    const strength = document.createElement("input");
+    file.disabled = !video;
+    strength.disabled = !video;
+    strength.type = "number";
+    strength.min = "-2";
+    strength.max = "2";
+    strength.step = "0.1";
+    strength.value = String(item.strength);
+    strength.setAttribute("aria-label", `LoRA ${index + 1} strength`);
+    strength.addEventListener("input", () => { item.strength = strength.value === "" ? null : Number(strength.value); });
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "quiet-button";
+    remove.textContent = "Remove";
+    remove.setAttribute("aria-label", `Remove LoRA ${index + 1}`);
+    remove.addEventListener("click", () => { selected.loras.splice(index, 1); renderPlayableControls(); });
+    row.append(file, strength, remove);
+    loraStack.append(row);
+  });
+}
+
+function playablePayload() {
+  const selected = playableSelection();
+  if (!selected.model_name) throw new Error("Native model selection is unavailable. Refresh available models first.");
+  if (selected.loras.length > 3 || selected.loras.some(item => !item.name || !Number.isFinite(item.strength) || item.strength < -2 || item.strength > 2)) {
+    throw new Error("Choose a file and a strength between −2 and 2 for each LoRA.");
+  }
+  return { model_name: selected.model_name, loras: selected.loras.map(item => ({ ...item })) };
+}
+
+function restorePlayableSettings(settings) {
+  state.playableSelections[state.videoType] = {
+    model_name: settings.model_name ?? state.config?.playable?.defaults?.[state.videoType] ?? null,
+    loras: (settings.loras || []).map(item => ({ ...item })),
+  };
+  renderPlayableControls();
+}
+
 const seedInput = $("seed");
 const stepsInput = $("steps");
 const generateButton = $("generate-button");
@@ -245,7 +333,6 @@ function configuredDurationOptions() {
 }
 
 function rememberCurrentResolution() {
-  if (state.mode === "video" && state.videoType === "reference") return;
   const key = state.mode === "still" ? "stillResolution" : "videoResolution";
   if (resolutionInput.value) state[key] = resolutionInput.value;
 }
@@ -278,7 +365,6 @@ function restoreModeSettings(mode) {
 function populateResolutionOptions() {
   const still = state.mode === "still";
   const prep = state.mode === "prep";
-  const reference = !still && state.videoType === "reference";
   const key = still ? "stillResolution" : "videoResolution";
   const options = configuredResolutionOptions(still, state.videoType).filter((item) =>
     Number.isInteger(Number(item.width)) && Number.isInteger(Number(item.height)),
@@ -293,12 +379,11 @@ function populateResolutionOptions() {
     resolutionInput.append(option);
   });
   if (prep) state.prepResolution = values[0];
-  if (!reference && !prep) state[key] = values.includes(state[key]) ? state[key] : values[0];
-  resolutionInput.value = reference || prep ? values[0] : state[key];
+  if (!prep) state[key] = values.includes(state[key]) ? state[key] : "608x352";
+  resolutionInput.value = prep ? values[0] : state[key];
 }
 
 function populateDurationOptions() {
-  const reference = state.mode === "video" && state.videoType === "reference";
   const options = configuredDurationOptions().filter((item) => Number.isFinite(Number(item.value)));
   const values = options.map((item) => String(item.value));
   if (!values.length) return;
@@ -309,8 +394,8 @@ function populateDurationOptions() {
     option.textContent = item.label || `${item.value} seconds`;
     durationInput.append(option);
   });
-  if (!reference) state.videoDuration = values.includes(state.videoDuration) ? state.videoDuration : values[0];
-  durationInput.value = reference ? values[0] : state.videoDuration;
+  state.videoDuration = values.includes(state.videoDuration) ? state.videoDuration : "5";
+  durationInput.value = state.videoDuration;
 }
 
 function referenceVideoEnabled() {
@@ -330,12 +415,10 @@ function updateVideoTypeView() {
   videoTypeReference.classList.toggle("active", showingReference);
   videoTypeStandard.setAttribute("aria-pressed", String(!showingReference));
   videoTypeReference.setAttribute("aria-pressed", String(showingReference));
-  resolutionInput.disabled = showingReference || prep;
-  durationInput.disabled = still || prep || showingReference;
-  if (showingReference || prep) {
-    resolutionInput.value = "608x352";
-    if (showingReference) durationInput.value = "5";
-  }
+  resolutionInput.disabled = prep;
+  durationInput.disabled = still || prep;
+  if (prep) resolutionInput.value = "608x352";
+  renderPlayableControls();
 }
 
 function setVideoType(nextType) {
@@ -964,6 +1047,7 @@ async function submitGeneration(event) {
       if (state.stillSource) payload.source_id = state.stillSource.id;
     } else if (state.mode === "video") {
       payload.duration = Number(durationInput.value);
+      Object.assign(payload, playablePayload());
       if (state.videoType === "reference") {
         if (state.backend !== "READY") throw new Error("Reference Video is waiting for the Native backend.");
         if (!state.r2vPicture) throw new Error("Character Image is required for Reference Video.");
@@ -979,10 +1063,7 @@ async function submitGeneration(event) {
           state.r2vMotionStartSeconds = parsed.value;
           payload.motion_start_seconds = parsed.value;
         }
-        delete payload.duration;
-        payload.duration = 5;
-        payload.width = 608;
-        payload.height = 352;
+
       } else {
         payload.references = {
           start_frame: state.references.start_frame
@@ -1174,8 +1255,8 @@ async function resolveReferenceVideoHistorySettings(entry) {
     throw new Error("Reference Video History settings are invalid.");
   }
   const scalars = resolveHistoryScalars(entry, {
-    resolutionValues: ["608x352"],
-    durationValues: ["5"],
+    resolutionValues: configuredResolutionOptions(false, "reference").map(resolutionValue),
+    durationValues: (state.config?.reference_video?.duration_options || [{ value: 5 }]).map(item => String(item.value)),
     stepsValue: "20",
     maxPromptLength: promptInput.maxLength,
   });
@@ -1196,6 +1277,7 @@ async function resolveReferenceVideoHistorySettings(entry) {
 }
 
 function applyHistorySettings(settings) {
+  restorePlayableSettings(settings);
   promptInput.value = settings.prompt;
   state.videoResolution = settings.resolution;
   state.videoDuration = settings.duration;
@@ -1210,6 +1292,11 @@ function applyHistorySettings(settings) {
 }
 
 function applyReferenceVideoHistorySettings(settings) {
+  restorePlayableSettings(settings);
+  state.videoResolution = settings.resolution;
+  state.videoDuration = settings.duration;
+  resolutionInput.value = settings.resolution;
+  durationInput.value = settings.duration;
   promptInput.value = settings.prompt;
   seedInput.value = settings.seed;
   stepsInput.value = settings.steps;
@@ -1842,10 +1929,21 @@ async function loadConfig() {
   }
 }
 
+modelInput.addEventListener("change", () => {
+  playableSelection().model_name = modelInput.value;
+  renderPlayableControls();
+});
+$("refresh-playable").addEventListener("click", loadConfig);
+$("add-lora").addEventListener("click", () => {
+  const selected = playableSelection();
+  const cap = state.config?.playable?.lora;
+  if (cap?.state !== "AVAILABLE" || selected.loras.length >= 3 || !cap.names?.length) return;
+  selected.loras.push({ name: "", strength: 1.0 });
+  renderPlayableControls();
+});
 promptInput.addEventListener("input", updatePromptCount);
 resolutionInput.addEventListener("change", rememberCurrentResolution);
 durationInput.addEventListener("change", () => {
-  if (state.mode === "video" && state.videoType === "reference") return;
   state.videoDuration = durationInput.value;
 });
 form.addEventListener("submit", submitGeneration);

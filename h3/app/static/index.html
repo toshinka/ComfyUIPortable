@@ -299,24 +299,34 @@
             </div>
           </section>
 
-          <div class="control-grid">
-            <div id="resolution-field">
-              <label class="field-label" for="resolution">Resolution</label>
-              <select id="resolution" name="resolution">
-                <option value="608x352">608 x 352</option>
-              </select>
-            </div>
-            <div id="duration-field">
-              <label class="field-label" for="duration">Duration</label>
-              <select id="duration" name="duration">
-                <option value="5">5 seconds</option>
-              </select>
-            </div>
-          </div>
-
           <details class="advanced-panel">
             <summary>Advanced</summary>
             <div class="advanced-body">
+              <div class="control-grid">
+                <div id="resolution-field">
+                  <label class="field-label" for="resolution">Resolution</label>
+                  <select id="resolution" name="resolution">
+                    <option value="608x352">608 x 352</option>
+                  </select>
+                </div>
+                <div id="duration-field">
+                  <label class="field-label" for="duration">Duration</label>
+                  <select id="duration" name="duration">
+                    <option value="5">5 seconds</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="video-model-controls">
+                <label class="field-label" for="video-model">Model</label>
+                <select id="video-model" aria-describedby="model-status"></select>
+                <p class="field-hint" id="model-status" aria-live="polite"></p>
+                <button class="quiet-button" id="refresh-playable" type="button">Refresh available models / LoRAs</button>
+                <label class="field-label">LoRA · optional</label>
+                <div id="lora-stack"></div>
+                <p class="field-hint" id="lora-status" aria-live="polite"></p>
+                <button class="quiet-button" id="add-lora" type="button">Add LoRA</button>
+              </div>
               <label class="field-label" for="seed">Seed</label>
               <div class="seed-row">
                 <input id="seed" name="seed" type="number" min="0" max="9223372036854775807" placeholder="Random" />

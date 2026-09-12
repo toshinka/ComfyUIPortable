@@ -319,7 +319,7 @@ class VP2BR2VPlaygroundTests(unittest.TestCase):
         }
         for override in (
             {"width": 736},
-            {"duration": 15},
+            {"duration": 16},
             {"steps": 21},
             {"references": []},
             {"picture_path": "C:/outside.png"},
@@ -344,8 +344,8 @@ class VP2BR2VPlaygroundTests(unittest.TestCase):
         try:
             with urlopen(f"{base_url}/api/config") as response:
                 config = json.loads(response.read().decode("utf-8"))
-            self.assertEqual(config["reference_video"]["resolution_options"], [{"label": "608 x 352", "width": 608, "height": 352}])
-            self.assertEqual(config["reference_video"]["duration_options"], [{"label": "5 seconds", "value": 5}])
+            self.assertEqual(config["reference_video"]["resolution_options"], config["resolution_options"])
+            self.assertEqual(config["reference_video"]["duration_options"], config["duration_options"])
             self.assertEqual(config["reference_video"]["default_steps"], 20)
             self.assertFalse(config["reference_video"]["audio_reference"])
 

@@ -122,7 +122,7 @@ class H3Ref2VAAdapterTests(unittest.TestCase):
             {"video_path": "video/motion.mp4"},
             {"video_path": "inputs/motion.txt"},
             {"width": 736},
-            {"duration_seconds": 15.0},
+            {"duration_seconds": 16.0},
             {"steps": 21},
             {"motion_start_seconds": -0.1},
             {"motion_start_seconds": float("nan")},

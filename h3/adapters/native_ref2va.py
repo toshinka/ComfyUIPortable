@@ -1,14 +1,16 @@
 """Bounded Native MiniMax H3 Ref2VA graph materialization.
 
 This adapter is intentionally separate from the browser H3 route.  It accepts
-only already-staged local input names and the VP2A-R1 608x352 / 5 second /
-20-step feasibility contract.  One picture is always connected; one video can
+only already-staged local input names and the H3-PLAY1 video presets with
+20 steps.  One picture is always connected; one video can
 be connected for the matched Picture+Video row.  Audio reference lanes are
 never materialized by this adapter.
 """
 
 from __future__ import annotations
 
+from h3.adapters.playable_controls import validate_selection, materialize_model
+from h3.adapters.native_t2v import ALLOWED_RESOLUTIONS, ALLOWED_DURATIONS, duration_to_frames, RequestValidationError as VideoValidationError
 from copy import deepcopy
 from dataclasses import dataclass
 import json
@@ -60,8 +62,15 @@ class H3Ref2VARequest:
     steps: int = BASELINE_STEPS
     output_prefix: str = "video/vp2a_r1_ref2va_picture"
     motion_start_seconds: float = 0.0
+    model_name: str | None = None
+    loras: tuple = ()
 
     def __post_init__(self) -> None:
+        try:
+            _, loras = validate_selection(self.model_name, self.loras)
+        except VideoValidationError as exc:
+            raise RequestValidationError(str(exc)) from exc
+        object.__setattr__(self, "loras", loras)
         normalized_prompt = _validate_prompt(self.prompt)
         object.__setattr__(self, "prompt", normalized_prompt)
         _validate_picture_path(self.picture_path)
@@ -85,7 +94,7 @@ class H3Ref2VARequest:
 
     @property
     def length_frames(self) -> int:
-        return BASELINE_FRAMES
+        return duration_to_frames(self.duration_seconds)
 
     @property
     def stage(self) -> str:
@@ -122,10 +131,10 @@ def materialize_prompt(user_prompt: Any, *, has_video: bool) -> tuple[str, str]:
 
 
 def _validate_baseline(width: Any, height: Any, duration_seconds: Any, steps: Any) -> None:
-    if (width, height) != (BASELINE_WIDTH, BASELINE_HEIGHT):
-        raise RequestValidationError("VP2A-R1 is limited to the 608x352 baseline.")
-    if duration_seconds != BASELINE_DURATION_SECONDS:
-        raise RequestValidationError("VP2A-R1 is limited to the 5 second baseline.")
+    if type(width) is not int or type(height) is not int or (width, height) not in ALLOWED_RESOLUTIONS:
+        raise RequestValidationError("Video resolution is unsupported.")
+    if isinstance(duration_seconds, bool) or not isinstance(duration_seconds, (int, float)) or duration_seconds not in ALLOWED_DURATIONS:
+        raise RequestValidationError("Video duration must be 3, 5, 10 or 15 seconds.")
     if steps != BASELINE_STEPS:
         raise RequestValidationError("VP2A-R1 is limited to 20 steps.")
 
@@ -177,6 +186,8 @@ def validate_request(payload: Mapping[str, Any]) -> H3Ref2VARequest:
         steps=payload.get("steps", BASELINE_STEPS),
         output_prefix=payload.get("output_prefix", "video/vp2a_r1_ref2va_picture"),
         motion_start_seconds=payload.get("motion_start_seconds", 0.0),
+        model_name=payload.get("model_name"),
+        loras=payload.get("loras", []),
     )
 
 
@@ -257,7 +268,7 @@ def validate_workflow(workflow: Mapping[str, Any]) -> None:
         raise WorkflowIncompatibleError("Workflow incompatible: motion_components must be connected to motion_slice.")
 
 
-def compile_workflow(request: H3Ref2VARequest | Mapping[str, Any]) -> dict[str, dict[str, Any]]:
+def compile_workflow(request: H3Ref2VARequest | Mapping[str, Any], *, capability=None) -> dict[str, dict[str, Any]]:
     """Return one validated Native API graph for the requested R1 stage."""
 
     normalized = request if isinstance(request, H3Ref2VARequest) else validate_request(request)
@@ -306,6 +317,10 @@ def compile_workflow(request: H3Ref2VARequest | Mapping[str, Any]) -> dict[str, 
         )
         node_for("motion_components")["inputs"]["video"] = [motion_slice_id, 0]
         conditioning["inputs"]["ref_videos.ref_video_1"] = [motion_components_id, 0]
+    try:
+        materialize_model(graph, roles, normalized.model_name, normalized.loras, "reference", capability)
+    except VideoValidationError as exc:
+        raise RequestValidationError(str(exc)) from exc
     return graph
 
 

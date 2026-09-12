@@ -116,7 +116,18 @@ export function resolveHistoryScalars(entry, {
     invalidSettings("Steps cannot be restored with the current UI.");
   }
 
+  const playable = {};
+  if (request.model_name != null || (request.loras?.length ?? 0) > 0) {
+    if (request.model_name != null && typeof request.model_name !== "string") invalidSettings("Model metadata is invalid.");
+    const loras = request.loras ?? [];
+    if (!Array.isArray(loras) || loras.length > 3 || loras.some(item => !item || typeof item.name !== "string" || !item.name || !Number.isFinite(item.strength) || item.strength < -2 || item.strength > 2)) {
+      invalidSettings("LoRA metadata is invalid.");
+    }
+    playable.model_name = request.model_name ?? null;
+    playable.loras = loras.map(item => ({ name: item.name, strength: item.strength }));
+  }
   return {
+    ...playable,
     prompt: request.prompt,
     resolution,
     duration: durationOption,

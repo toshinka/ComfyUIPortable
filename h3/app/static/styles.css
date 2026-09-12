@@ -667,3 +667,9 @@ textarea::placeholder, input::placeholder { color: #a58a82; }
   .status-strip { grid-template-columns: 1fr; }
   .history-heading-row, .footer-note { align-items: start; flex-direction: column; }
 }
+
+/* H3-PLAY1: bounded Advanced controls, matching existing form treatment. */
+.lora-row { display: grid; grid-template-columns: minmax(0, 1fr) 72px auto; gap: 6px; margin-bottom: 8px; }
+.lora-row select { min-width: 0; }
+#video-model-controls > .field-label { margin-top: 14px; }
+#video-model { width: 100%; min-width: 0; }

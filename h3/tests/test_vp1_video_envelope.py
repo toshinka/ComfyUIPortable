@@ -75,11 +75,11 @@ class VP1VideoEnvelopeTests(unittest.TestCase):
         for payload, message in (
             (
                 {"prompt": "unsupported size", "width": 864, "height": 480, "duration": 5},
-                "verified resolutions",
+                "video resolutions",
             ),
             (
-                {"prompt": "unsupported duration", "width": 608, "height": 352, "duration": 10},
-                "verified duration options",
+                {"prompt": "unsupported duration", "width": 608, "height": 352, "duration": 7},
+                "video duration options",
             ),
         ):
             with self.subTest(payload=payload):
