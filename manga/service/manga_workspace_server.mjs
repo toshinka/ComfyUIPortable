@@ -403,7 +403,26 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 2. Static File Serving
+    // 4. Positive Service Identity Endpoint (Card M1D1 Section 10)
+    if (pathname === "/api/runtime/identity") {
+        if (req.method !== "GET") {
+            res.writeHead(405, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "Method Not Allowed" }));
+            return;
+        }
+
+        res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+        res.end(JSON.stringify({
+            service: "tegaki_manga_workspace",
+            version: "1.0.0",
+            domain: "manga",
+            authoring_schema: "1.0.0",
+            backend_target: parsedBackend.origin
+        }));
+        return;
+    }
+
+    // 5. Static File Serving
     const safePath = path.normalize(path.join(APP_DIR, pathname));
     if (!safePath.startsWith(APP_DIR)) {
         res.writeHead(403);
