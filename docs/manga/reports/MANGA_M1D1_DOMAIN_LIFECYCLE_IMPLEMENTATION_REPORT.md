@@ -56,6 +56,10 @@ MANGA-M1D1 (and subsequent SOL audit hotfix MANGA-M1D1A) implements the Manga-sp
 2. **Termination Timeout Truth**: If `child.kill("SIGTERM")` is sent and the child fails to exit within `shutdownTimeoutMs`, termination throws a timeout error while preserving `processRecord` and `OWNED_BY_THIS_RUNTIME`. No duplicate process is spawned on subsequent `start()`, and ownership is never downgraded to `PREEXISTING` or cleared to `UNAVAILABLE`.
 3. **Pre-Owned Backend Preservation**: In `start()`, cleanup upon discovering an incompatible Workspace profile is strictly scoped to backends spawned during that exact `start()` call (`spawnedBackendThisStart`). An already-running, pre-owned backend is never stopped or killed when Workspace startup fails.
 
+### 2.6 Termination Retry Must Wait for Exit (MANGA-M1D1E)
+1. **Removal of child.killed Early-Return**: Removed `if (!child || child.killed) return;` from `_terminateChild()`. A child that was previously signaled (`child.killed === true`) but has not exited must still be waited on boundedly. Repeated termination calls do not report premature success or clear process bookkeeping.
+2. **Persistent Intentional Attribution**: Replaced transient global flags with per-child tracking (`_intentionalBackendChild`, `_intentionalWorkspaceChild`). If a termination request times out and the child exits later from that signal, `lastBackendExit.intentional` / `lastWorkspaceExit.intentional` faithfully reports `true`. Unexpected crashes without controller stop requests remain `intentional: false`.
+
 ---
 
 ## 3. Runtime Architecture & Ownership Contract
@@ -168,8 +172,15 @@ Implemented comprehensive test suite `ComfyUIPortable/manga/tests/test_domain_li
   - **Check B, C**: Backend termination timeout retains ownership & record; subsequent `start()` spawns 0 duplicate backend (`PASS`).
   - **Check D, E**: Workspace termination timeout retains ownership & record; subsequent `start()` spawns 0 duplicate workspace (`PASS`).
   - **Check F**: Pre-owned backend + wrong external Workspace -> existing backend NOT killed, process handle/PID preserved (`PASS`).
+- **M1D1E Termination Retry & Delayed Exit Matrix (Checks A through J)**:
+  - **Check A, B, C**: First stubborn Workspace stop times out; second retry does NOT return premature success; exit event clears record (`PASS`).
+  - **Check D, E, F**: First stubborn Backend stop times out; second retry does NOT return premature success; exit event clears record (`PASS`).
+  - **Check G**: `stopAll()` after unresolved backend termination does not orphan or clear process record (`PASS`).
+  - **Check H**: Delayed exit following controller SIGTERM has `intentional == true` (`PASS`).
+  - **Check I**: Unexpected exit without termination request has `intentional == false` (`PASS`).
+  - **Check J**: Zero `child.killed` early-return paths remain in `_terminateChild()` (`PASS`).
 
-Execution performance: **~400 ms** total wall time (well below the 2-minute target).
+Execution performance: **~500 ms** total wall time (well below the 2-minute target).
 
 ---
 

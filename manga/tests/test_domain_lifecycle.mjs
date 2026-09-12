@@ -1986,6 +1986,374 @@ function makeFakeChild(name, onKill = null, stubborn = false) {
     console.log("✓ M1D1D Check F Passed: Pre-owned backend + wrong external Workspace -> existing backend NOT killed");
 }
 
+// =========================================================================
+// M1D1E Checks: Termination Retry Must Wait for Exit
+// =========================================================================
+
+// M1D1E Checks A, B, C: Stubborn Workspace stop retry times out; exit event clears record & ownership
+{
+    const bPort = 58990 + Math.floor(Math.random() * 100);
+    const wsPort = 59990 + Math.floor(Math.random() * 100);
+
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    const fakeWs = createFakeWorkspace({ mode: "COMPATIBLE", backendTarget: `http://127.0.0.1:${bPort}` });
+
+    let bChild = null;
+    let wsChild = null;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        shutdownTimeoutMs: 150, // Short timeout for deterministic tests
+        customSpawnBackend: () => {
+            bChild = makeFakeChild("python.exe", () => {
+                fakeBackend.server.close();
+            });
+            fakeBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        },
+        customSpawnWorkspace: () => {
+            wsChild = makeFakeChild("node.exe", () => {
+                fakeWs.server.close();
+            }, /* stubborn */ true);
+            fakeWs.server.listen(wsPort, "127.0.0.1");
+            return wsChild;
+        }
+    });
+
+    await runtime.start();
+    assert.strictEqual(runtime.workspaceOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+
+    // First stop attempt times out because child is stubborn (does not emit exit)
+    let firstStopThrew = false;
+    try {
+        await runtime.stopWorkspace();
+    } catch (err) {
+        firstStopThrew = true;
+        assert(err.message.includes("Timed out waiting for Workspace child process"));
+    }
+    assert.strictEqual(firstStopThrew, true, "First stopWorkspace must time out on stubborn child");
+    assert.strictEqual(wsChild.killed, true, "Child.killed was set to true by SIGTERM");
+    assert.strictEqual(
+        runtime.workspaceOwnership,
+        OwnershipClassification.OWNED_BY_THIS_RUNTIME,
+        "Ownership must remain OWNED after first timeout"
+    );
+    assert.strictEqual(
+        runtime.workspaceProcessRecord?.child,
+        wsChild,
+        "workspaceProcessRecord must remain present after first timeout"
+    );
+
+    // Second stop attempt: MUST NOT return early success merely because child.killed == true!
+    let secondStopThrew = false;
+    try {
+        await runtime.stopWorkspace();
+    } catch (err) {
+        secondStopThrew = true;
+        assert(err.message.includes("Timed out waiting for Workspace child process"));
+    }
+    assert.strictEqual(secondStopThrew, true, "Second stopWorkspace must ALSO time out / refuse until actual exit");
+    assert.strictEqual(
+        runtime.workspaceOwnership,
+        OwnershipClassification.OWNED_BY_THIS_RUNTIME,
+        "Ownership must STILL remain OWNED after second timeout"
+    );
+    assert.strictEqual(
+        runtime.workspaceProcessRecord?.child,
+        wsChild,
+        "workspaceProcessRecord must STILL remain present after second timeout"
+    );
+
+    // Now trigger actual exit: exit event must clear record and set UNAVAILABLE
+    wsChild.triggerExit(0, "SIGTERM");
+    await new Promise(r => setTimeout(r, 50));
+
+    assert.strictEqual(runtime.workspaceProcessRecord, null, "Exit event clears workspaceProcessRecord");
+    assert.strictEqual(runtime.workspaceOwnership, OwnershipClassification.UNAVAILABLE, "Exit event resets ownership to UNAVAILABLE");
+
+    await runtime.stopBackend();
+    await closeServer(fakeBackend.server);
+    await closeServer(fakeWs.server);
+
+    console.log("✓ M1D1E Checks A, B, C Passed: Workspace termination retry waits boundedly for exit; exit clears record");
+}
+
+// M1D1E Checks D, E, F: Stubborn Backend stop retry times out; exit event clears record & ownership
+{
+    const bPort = 58990 + Math.floor(Math.random() * 100);
+    const wsPort = 59990 + Math.floor(Math.random() * 100);
+
+    // Note: Do NOT close fake backend server on kill signal so probe remains compatible
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    const fakeWs = createFakeWorkspace({ mode: "COMPATIBLE", backendTarget: `http://127.0.0.1:${bPort}` });
+
+    let bChild = null;
+    let wsChild = null;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        shutdownTimeoutMs: 150,
+        customSpawnBackend: () => {
+            bChild = makeFakeChild("python.exe", null, /* stubborn */ true);
+            fakeBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        },
+        customSpawnWorkspace: () => {
+            wsChild = makeFakeChild("node.exe", () => {
+                fakeWs.server.close();
+            });
+            fakeWs.server.listen(wsPort, "127.0.0.1");
+            return wsChild;
+        }
+    });
+
+    await runtime.start();
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+
+    // First stopBackend times out because child is stubborn
+    let firstStopThrew = false;
+    try {
+        await runtime.stopBackend();
+    } catch (err) {
+        firstStopThrew = true;
+        assert(err.message.includes("Timed out waiting for Backend child process"));
+    }
+    assert.strictEqual(firstStopThrew, true, "First stopBackend must time out on stubborn child");
+    assert.strictEqual(bChild.killed, true, "bChild.killed was set to true");
+    assert.strictEqual(
+        runtime.backendOwnership,
+        OwnershipClassification.OWNED_BY_THIS_RUNTIME,
+        "Backend ownership must remain OWNED after first timeout"
+    );
+    assert.strictEqual(
+        runtime.backendProcessRecord?.child,
+        bChild,
+        "backendProcessRecord must remain present after first timeout"
+    );
+
+    // Second stopBackend attempt: MUST NOT return early success merely because child.killed == true!
+    let secondStopThrew = false;
+    try {
+        await runtime.stopBackend();
+    } catch (err) {
+        secondStopThrew = true;
+        assert(err.message.includes("Timed out waiting for Backend child process"));
+    }
+    assert.strictEqual(secondStopThrew, true, "Second stopBackend must ALSO time out until actual exit");
+    assert.strictEqual(
+        runtime.backendOwnership,
+        OwnershipClassification.OWNED_BY_THIS_RUNTIME,
+        "Backend ownership must STILL remain OWNED after second timeout"
+    );
+    assert.strictEqual(
+        runtime.backendProcessRecord?.child,
+        bChild,
+        "backendProcessRecord must STILL remain present after second timeout"
+    );
+
+    // Trigger actual exit
+    bChild.triggerExit(0, "SIGTERM");
+    await new Promise(r => setTimeout(r, 50));
+
+    assert.strictEqual(runtime.backendProcessRecord, null, "Exit event clears backendProcessRecord");
+    assert.strictEqual(runtime.backendOwnership, OwnershipClassification.UNAVAILABLE, "Exit event resets backendOwnership");
+
+    await runtime.stopWorkspace();
+    await closeServer(fakeBackend.server);
+    await closeServer(fakeWs.server);
+
+    console.log("✓ M1D1E Checks D, E, F Passed: Backend termination retry waits boundedly for exit; exit clears record");
+}
+
+// M1D1E Check G: stopAll after unresolved backend termination does not orphan or clear it
+{
+    const bPort = 58990 + Math.floor(Math.random() * 100);
+    const wsPort = 59990 + Math.floor(Math.random() * 100);
+
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    const fakeWs = createFakeWorkspace({ mode: "COMPATIBLE", backendTarget: `http://127.0.0.1:${bPort}` });
+
+    let bChild = null;
+    let wsChild = null;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        shutdownTimeoutMs: 150,
+        customSpawnBackend: () => {
+            bChild = makeFakeChild("python.exe", null, /* stubborn */ true);
+            fakeBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        },
+        customSpawnWorkspace: () => {
+            wsChild = makeFakeChild("node.exe", () => {
+                fakeWs.server.close();
+            });
+            fakeWs.server.listen(wsPort, "127.0.0.1");
+            return wsChild;
+        }
+    });
+
+    await runtime.start();
+
+    // Call stopAll() -> backend stop will time out
+    let stopAllThrew = false;
+    try {
+        await runtime.stopAll();
+    } catch (err) {
+        stopAllThrew = true;
+        assert(err.message.includes("Timed out waiting for Backend child process"));
+    }
+    assert.strictEqual(stopAllThrew, true, "stopAll must throw when backend safe stop fails");
+    assert.strictEqual(
+        runtime.backendOwnership,
+        OwnershipClassification.OWNED_BY_THIS_RUNTIME,
+        "stopAll must NOT clear backend ownership when termination timed out"
+    );
+    assert.strictEqual(
+        runtime.backendProcessRecord?.child,
+        bChild,
+        "backendProcessRecord must NOT be cleared when termination timed out"
+    );
+    assert.strictEqual(
+        runtime.internalSubstate,
+        InternalSubstate.FAILED,
+        "Internal substate must be FAILED"
+    );
+
+    // Clean up
+    bChild.triggerExit(0, "SIGTERM");
+    await new Promise(r => setTimeout(r, 50));
+    await runtime.stopWorkspace();
+    await closeServer(fakeBackend.server);
+    await closeServer(fakeWs.server);
+
+    console.log("✓ M1D1E Check G Passed: stopAll does not orphan or clear unresolved backend process");
+}
+
+// M1D1E Check H: Delayed exit after controller SIGTERM has intentional == true
+{
+    const bPort = 58990 + Math.floor(Math.random() * 100);
+    const wsPort = 59990 + Math.floor(Math.random() * 100);
+
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    const fakeWs = createFakeWorkspace({ mode: "COMPATIBLE", backendTarget: `http://127.0.0.1:${bPort}` });
+
+    let bChild = null;
+    let wsChild = null;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        shutdownTimeoutMs: 100,
+        customSpawnBackend: () => {
+            bChild = makeFakeChild("python.exe", null, /* stubborn */ true);
+            fakeBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        },
+        customSpawnWorkspace: () => {
+            wsChild = makeFakeChild("node.exe", () => {
+                fakeWs.server.close();
+            });
+            fakeWs.server.listen(wsPort, "127.0.0.1");
+            return wsChild;
+        }
+    });
+
+    await runtime.start();
+
+    // stopBackend times out
+    try {
+        await runtime.stopBackend();
+    } catch (_) {}
+
+    // Wait 50ms past timeout (simulating delayed exit after controller stop attempt)
+    await new Promise(r => setTimeout(r, 50));
+
+    // Child finally exits
+    bChild.triggerExit(0, "SIGTERM");
+    await new Promise(r => setTimeout(r, 50));
+
+    assert.notStrictEqual(runtime.lastBackendExit, null, "lastBackendExit recorded");
+    assert.strictEqual(
+        runtime.lastBackendExit.intentional,
+        true,
+        "Delayed exit following controller termination request must have intentional == true"
+    );
+
+    await runtime.stopWorkspace();
+    await closeServer(fakeBackend.server);
+    await closeServer(fakeWs.server);
+
+    console.log("✓ M1D1E Check H Passed: Delayed exit following controller SIGTERM has intentional == true");
+}
+
+// M1D1E Check I: Unexpected exit without termination request has intentional == false
+{
+    const bPort = 58990 + Math.floor(Math.random() * 100);
+    const wsPort = 59990 + Math.floor(Math.random() * 100);
+
+    const fakeBackend = createFakeBackend({ mode: "MANGA_IDLE" });
+    const fakeWs = createFakeWorkspace({ mode: "COMPATIBLE", backendTarget: `http://127.0.0.1:${bPort}` });
+
+    let bChild = null;
+    let wsChild = null;
+
+    const runtime = new MangaDomainRuntime({
+        backendPort: bPort,
+        workspacePort: wsPort,
+        startupWaitTimeoutMs: 1500,
+        customSpawnBackend: () => {
+            bChild = makeFakeChild("python.exe", null);
+            fakeBackend.server.listen(bPort, "127.0.0.1");
+            return bChild;
+        },
+        customSpawnWorkspace: () => {
+            wsChild = makeFakeChild("node.exe", () => {
+                fakeWs.server.close();
+            });
+            fakeWs.server.listen(wsPort, "127.0.0.1");
+            return wsChild;
+        }
+    });
+
+    await runtime.start();
+
+    // Simulate unexpected crash of backend child without calling stopBackend()
+    bChild.emit("exit", 1, null);
+    await new Promise(r => setTimeout(r, 50));
+
+    assert.notStrictEqual(runtime.lastBackendExit, null);
+    assert.strictEqual(runtime.lastBackendExit.code, 1);
+    assert.strictEqual(
+        runtime.lastBackendExit.intentional,
+        false,
+        "Unexpected exit must have intentional == false"
+    );
+
+    await runtime.stopWorkspace();
+    await closeServer(fakeBackend.server);
+    await closeServer(fakeWs.server);
+
+    console.log("✓ M1D1E Check I Passed: Unexpected exit without termination request has intentional == false");
+}
+
+// M1D1E Check J: Static check that no child.killed early-success path remains in _terminateChild
+{
+    const runtimeSource = fs.readFileSync(
+        new URL("../service/manga_domain_runtime.mjs", import.meta.url),
+        "utf-8"
+    );
+    assert(!runtimeSource.includes("child.killed) return"), "Must not return early on child.killed");
+    console.log("✓ M1D1E Check J Passed: Zero child.killed early-success paths remain in _terminateChild");
+}
+
 // Test Matrix X, Y: Child cleanup & absence of kill-by-port utilities
 {
     // X: Active fake children cleaned up
@@ -2005,4 +2373,4 @@ function makeFakeChild(name, onKill = null, stubborn = false) {
     console.log("✓ Tests X, Y Passed: All test children cleaned up; zero kill-by-port utilities found");
 }
 
-console.log("--- ALL MANGA DOMAIN LIFECYCLE TESTS (A through Y + M1D1A A-H + M1D1B I-L + M1D1C A-H + M1D1D A-F) PASSED ---");
+console.log("--- ALL MANGA DOMAIN LIFECYCLE TESTS (A through Y + M1D1A A-H + M1D1B I-L + M1D1C A-H + M1D1D A-F + M1D1E A-J) PASSED ---");

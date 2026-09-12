@@ -140,11 +140,11 @@ export class MangaDomainRuntime {
         this.backendProcessRecord = null; // { pid, spawnTimestamp, argv, child }
         this.workspaceProcessRecord = null; // { pid, spawnTimestamp, argv, child }
 
-        // Exit diagnostics (Card M1D1A Section 9, 10)
+        // Exit diagnostics (Card M1D1A Section 9, 10; Card M1D1E Section 8)
         this.lastBackendExit = null; // { code, signal, timestamp, intentional }
         this.lastWorkspaceExit = null; // { code, signal, timestamp, intentional }
-        this._intentionalBackendStop = false;
-        this._intentionalWorkspaceStop = false;
+        this._intentionalBackendChild = null;
+        this._intentionalWorkspaceChild = null;
 
         // Internal substate
         this.internalSubstate = InternalSubstate.IDLE;
@@ -539,12 +539,15 @@ export class MangaDomainRuntime {
                 code: code ?? null,
                 signal: signal ?? null,
                 timestamp: Date.now(),
-                intentional: this._intentionalBackendStop
+                intentional: Boolean(this._intentionalBackendChild === child)
             };
 
             if (this.backendProcessRecord?.child === child) {
                 this.backendProcessRecord = null;
                 this.backendOwnership = OwnershipClassification.UNAVAILABLE;
+            }
+            if (this._intentionalBackendChild === child) {
+                this._intentionalBackendChild = null;
             }
         });
 
@@ -603,12 +606,15 @@ export class MangaDomainRuntime {
                 code: code ?? null,
                 signal: signal ?? null,
                 timestamp: Date.now(),
-                intentional: this._intentionalWorkspaceStop
+                intentional: Boolean(this._intentionalWorkspaceChild === child)
             };
 
             if (this.workspaceProcessRecord?.child === child) {
                 this.workspaceProcessRecord = null;
                 this.workspaceOwnership = OwnershipClassification.UNAVAILABLE;
+            }
+            if (this._intentionalWorkspaceChild === child) {
+                this._intentionalWorkspaceChild = null;
             }
         });
 
@@ -662,12 +668,7 @@ export class MangaDomainRuntime {
         }
 
         // Preconditions satisfied: terminate owned ChildProcess handle
-        this._intentionalBackendStop = true;
-        try {
-            await this._terminateChild(this.backendProcessRecord.child, "Backend");
-        } finally {
-            this._intentionalBackendStop = false;
-        }
+        await this._terminateChild(this.backendProcessRecord.child, "Backend");
         this.backendProcessRecord = null;
         this.backendOwnership = OwnershipClassification.UNAVAILABLE;
     }
@@ -694,12 +695,7 @@ export class MangaDomainRuntime {
             throw new Error("Cannot stop workspace: process is not OWNED_BY_THIS_RUNTIME (pre-existing or not managed).");
         }
 
-        this._intentionalWorkspaceStop = true;
-        try {
-            await this._terminateChild(this.workspaceProcessRecord.child, "Workspace");
-        } finally {
-            this._intentionalWorkspaceStop = false;
-        }
+        await this._terminateChild(this.workspaceProcessRecord.child, "Workspace");
         this.workspaceProcessRecord = null;
         this.workspaceOwnership = OwnershipClassification.UNAVAILABLE;
     }
@@ -731,29 +727,53 @@ export class MangaDomainRuntime {
 
     /**
      * Terminates a ChildProcess handle without killing discovered external PIDs.
+     * Must wait boundedly for actual child exit.
+     * child.killed == true must NOT return early or be treated as exited.
      */
     async _terminateChild(child, serviceName) {
-        if (!child || child.killed) return;
+        if (!child) return;
 
         return new Promise((resolve, reject) => {
             let exited = false;
             const timeoutTimer = setTimeout(() => {
                 if (!exited) {
+                    cleanup();
                     reject(new Error(`Timed out waiting for ${serviceName} child process (PID ${child.pid}) to exit.`));
                 }
             }, this.shutdownTimeoutMs);
 
-            child.once("exit", () => {
+            const onExit = () => {
                 exited = true;
-                clearTimeout(timeoutTimer);
+                cleanup();
                 resolve();
-            });
+            };
 
-            try {
-                child.kill("SIGTERM");
-            } catch (err) {
+            const cleanup = () => {
                 clearTimeout(timeoutTimer);
-                reject(err);
+                child.removeListener("exit", onExit);
+            };
+
+            child.once("exit", onExit);
+
+            if (!child.killed) {
+                try {
+                    child.kill("SIGTERM");
+                    if (serviceName === "Backend") {
+                        this._intentionalBackendChild = child;
+                    } else if (serviceName === "Workspace") {
+                        this._intentionalWorkspaceChild = child;
+                    }
+                } catch (err) {
+                    cleanup();
+                    reject(err);
+                }
+            } else {
+                // Signal was previously sent; ensure intentional tracking is set
+                if (serviceName === "Backend" && this._intentionalBackendChild == null) {
+                    this._intentionalBackendChild = child;
+                } else if (serviceName === "Workspace" && this._intentionalWorkspaceChild == null) {
+                    this._intentionalWorkspaceChild = child;
+                }
             }
         });
     }
