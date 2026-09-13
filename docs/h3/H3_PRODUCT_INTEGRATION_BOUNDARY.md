@@ -59,10 +59,10 @@ User
 H3 owns these areas and their generation semantics:
 
 ```text
-ComfyUIPortable/h3/
-ComfyUIPortable/docs/h3/
-ComfyUIPortable/workflows/h3/
-ComfyUIPortable/output/h3/
+h3/
+docs/h3/
+workflows/h3/
+output/h3/
 ```
 
 `output/h3/` is the H3 runtime input/output namespace. Generated media and

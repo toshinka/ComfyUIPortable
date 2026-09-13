@@ -8,15 +8,16 @@
 監修し、ローカルのLUNAチャットへ安全な限定Cardを発行するための引き継ぎ正本である。
 この文書自体は実装Cardではない。
 
-Repository: `https://github.com/toshinka/tegaki`
+Repository: `ComfyUIPortable local extracted repository`
 
 - Branch: `main`
-- Manga project root: `ComfyUIPortable/`
-- Manga external entry: `ComfyUIPortable/GITHUB_MANGA.txt`
-- Manga entry raw URL: `https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB_MANGA.txt`
-- This handoff raw URL: `https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md`
-- H3 external entry: `ComfyUIPortable/GITHUB_H3.txt`
-- Domain router: `ComfyUIPortable/GITHUB_ComfyUI.txt`
+- Remote: `pending publication`
+- Manga project root: repository root
+- Manga external entry: `GITHUB_MANGA.txt`
+- Manga entry path: `GITHUB_MANGA.txt`
+- This handoff path: `docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md`
+- H3 external entry: `GITHUB_H3.txt`
+- Domain router: `GITHUB_ComfyUI.txt`
 - M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`
 - M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`
 - Manga namespace/card migration publication: `ef7daa502f501211cd6b06f378e9024dbff6f284`
@@ -88,18 +89,18 @@ domain別に維持する。H3 Mangaは後段の別gateであり、今回のManga
 
 ## 4. Web GPT SOLの読む順序
 
-以下をGitHubの`main`から順に読む。
+以下をこのリポジトリのルートから順に読む。
 
-1. `ComfyUIPortable/GITHUB_MANGA.txt`
-2. `ComfyUIPortable/docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md`
-3. `ComfyUIPortable/docs/manga/STATUS.md`
-4. `ComfyUIPortable/docs/manga/README.md`
-5. `ComfyUIPortable/docs/manga/DOCUMENT_REGISTER.md`
-6. `ComfyUIPortable/docs/manga/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md`
-7. `ComfyUIPortable/docs/manga/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md`
-8. `ComfyUIPortable/docs/manga/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md`
-9. `ComfyUIPortable/docs/manga/plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md`
-10. `ComfyUIPortable/docs/manga/cards/README.md`
+1. `GITHUB_MANGA.txt`
+2. `docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md`
+3. `docs/manga/STATUS.md`
+4. `docs/manga/README.md`
+5. `docs/manga/DOCUMENT_REGISTER.md`
+6. `docs/manga/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md`
+7. `docs/manga/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md`
+8. `docs/manga/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md`
+9. `docs/manga/plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md`
+10. `docs/manga/cards/README.md`
 11. M3A.1 report、verification、必要なsourceだけをReview Target SHAで読む。
 12. 統合判断が関係する時だけ `GITHUB_H3.txt` と `docs/h3/README.md` を読む。
 
@@ -117,7 +118,7 @@ domain別に維持する。H3 Mangaは後段の別gateであり、今回のManga
 - 実装と文書が食い違う: feature追加を止め、truth-fix Cardを先に発行する。
 
 SOLはCard全文をチャットに出すと同時に、保存先を
-`ComfyUIPortable/docs/manga/cards/current/<CARD_ID>.md` と指定する。
+`docs/manga/cards/current/<CARD_ID>.md` と指定する。
 
 ## 6. LUNAへ渡すCardの条件
 
@@ -127,10 +128,10 @@ Browser/GPU条件、evidence path、正本文書更新、stop条件、close stat
 
 Manga Cardでは原則として次を触らない。
 
-- `ComfyUIPortable/h3/`
-- `ComfyUIPortable/workflows/h3/`
-- `ComfyUIPortable/docs/h3/`
-- `ComfyUIPortable/output/h3/`
+- `h3/`
+- `workflows/h3/`
+- `docs/h3/`
+- `output/h3/`
 - Tegaki本体、EasyReforgeExtension、RegionalLoRALab
 - ComfyUI core/frontend/shared model store
 
@@ -163,12 +164,14 @@ SOLやLUNAがOwner acceptanceを代理で確定しない。公開済みである
 GitHub上のComfyUIPortable Manga Authoring改修の設計監修者として進行してください。
 あなたはWeb GPT SOL、ローカル実装担当は別チャットのLUNA、私はOwnerです。
 
-Repository:
+Source lineage repository (historical):
 https://github.com/toshinka/tegaki
+Current repository: ComfyUIPortable local extracted repository
+Remote: pending publication
 
 最初に以下を順番に読んでください。
-1. https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB_MANGA.txt
-2. https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md
+1. GITHUB_MANGA.txt
+2. docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md
 3. そこに指定されたcurrent authorityと実行プロトコル
 
 目的はIllustriousによるScene-first / Minimum-Hand漫画生成です。長期的には同じTEGAKI

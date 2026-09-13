@@ -18,7 +18,7 @@ remains `608 x 352` with Duration hidden; it does not inherit Video options.
 Run:
 
 ```text
-ComfyUIPortable/h3/run_h3.bat
+h3/run_h3.bat
 ```
 
 The launcher starts the Native backend on `127.0.0.1:8188` and the TEGAKI H3

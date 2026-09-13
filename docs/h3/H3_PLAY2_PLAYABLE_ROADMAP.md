@@ -222,17 +222,17 @@ state は表示用のラベルではなく、server の submit gate と同じ分
 
 #### Target files
 
-- `ComfyUIPortable/h3/adapters/playable_resolution.py`（新規 pure helper 候補）
-- `ComfyUIPortable/h3/adapters/native_t2v.py`
-- `ComfyUIPortable/h3/adapters/native_i2v.py`
-- `ComfyUIPortable/h3/adapters/native_ref2va.py`
-- `ComfyUIPortable/h3/app/server.py`
-- `ComfyUIPortable/h3/app/static/app.js`
-- `ComfyUIPortable/h3/app/static/index.html`
-- `ComfyUIPortable/h3/app/static/history-settings.js`
-- `ComfyUIPortable/h3/app/static/styles.css`（表示調整が必要な場合だけ）
-- `ComfyUIPortable/h3/tests/test_play2_resolution.py`（新規）
-- `ComfyUIPortable/h3/tests/verify_play2_resolution.mjs`（新規）
+- `h3/adapters/playable_resolution.py`（新規 pure helper 候補）
+- `h3/adapters/native_t2v.py`
+- `h3/adapters/native_i2v.py`
+- `h3/adapters/native_ref2va.py`
+- `h3/app/server.py`
+- `h3/app/static/app.js`
+- `h3/app/static/index.html`
+- `h3/app/static/history-settings.js`
+- `h3/app/static/styles.css`（表示調整が必要な場合だけ）
+- `h3/tests/test_play2_resolution.py`（新規）
+- `h3/tests/verify_play2_resolution.mjs`（新規）
 
 #### Semantic contract
 
@@ -277,14 +277,14 @@ state は表示用のラベルではなく、server の submit gate と同じ分
 
 #### Target files
 
-- `ComfyUIPortable/h3/adapters/playable_resolution.py`
-- `ComfyUIPortable/h3/app/server.py`
-- `ComfyUIPortable/h3/adapters/native_i2v.py`
-- `ComfyUIPortable/h3/app/static/app.js`
-- `ComfyUIPortable/h3/app/static/index.html`
-- `ComfyUIPortable/h3/app/static/history-settings.js`
-- `ComfyUIPortable/h3/tests/test_play2_start_frame_aspect.py`（新規）
-- `ComfyUIPortable/h3/tests/verify_play2_start_frame_aspect.mjs`（新規）
+- `h3/adapters/playable_resolution.py`
+- `h3/app/server.py`
+- `h3/adapters/native_i2v.py`
+- `h3/app/static/app.js`
+- `h3/app/static/index.html`
+- `h3/app/static/history-settings.js`
+- `h3/tests/test_play2_start_frame_aspect.py`（新規）
+- `h3/tests/verify_play2_start_frame_aspect.mjs`（新規）
 
 #### Semantic contract
 
@@ -329,17 +329,17 @@ state は表示用のラベルではなく、server の submit gate と同じ分
 
 #### Target files
 
-- `ComfyUIPortable/h3/adapters/playable_controls.py`
-- `ComfyUIPortable/h3/adapters/native_t2v.py`
-- `ComfyUIPortable/h3/adapters/native_i2v.py`
-- `ComfyUIPortable/h3/adapters/native_ref2va.py`
-- `ComfyUIPortable/h3/app/server.py`
-- `ComfyUIPortable/h3/app/static/app.js`
-- `ComfyUIPortable/h3/app/static/index.html`
-- `ComfyUIPortable/h3/app/static/history-settings.js`
-- `ComfyUIPortable/h3/app/static/styles.css`（必要最小限）
-- `ComfyUIPortable/h3/tests/test_play2_checkpoint_model.py`（新規）
-- `ComfyUIPortable/h3/tests/verify_play2_checkpoint_model.mjs`（新規）
+- `h3/adapters/playable_controls.py`
+- `h3/adapters/native_t2v.py`
+- `h3/adapters/native_i2v.py`
+- `h3/adapters/native_ref2va.py`
+- `h3/app/server.py`
+- `h3/app/static/app.js`
+- `h3/app/static/index.html`
+- `h3/app/static/history-settings.js`
+- `h3/app/static/styles.css`（必要最小限）
+- `h3/tests/test_play2_checkpoint_model.py`（新規）
+- `h3/tests/verify_play2_checkpoint_model.mjs`（新規）
 
 #### Semantic contract
 
@@ -385,15 +385,15 @@ state は表示用のラベルではなく、server の submit gate と同じ分
 
 #### Target files
 
-- `ComfyUIPortable/h3/adapters/model_catalog.py`（新規 read-only catalog helper 候補）
-- `ComfyUIPortable/h3/adapters/playable_controls.py`
-- `ComfyUIPortable/h3/app/server.py`
-- `ComfyUIPortable/h3/app/static/app.js`
-- `ComfyUIPortable/h3/app/static/index.html`
-- `ComfyUIPortable/h3/app/static/history-settings.js`
-- `ComfyUIPortable/h3/app/static/styles.css`（状態表示の最小追加のみ）
-- `ComfyUIPortable/h3/tests/test_play2_offline_lora_catalog.py`（新規）
-- `ComfyUIPortable/h3/tests/verify_play2_offline_lora_catalog.mjs`（新規）
+- `h3/adapters/model_catalog.py`（新規 read-only catalog helper 候補）
+- `h3/adapters/playable_controls.py`
+- `h3/app/server.py`
+- `h3/app/static/app.js`
+- `h3/app/static/index.html`
+- `h3/app/static/history-settings.js`
+- `h3/app/static/styles.css`（状態表示の最小追加のみ）
+- `h3/tests/test_play2_offline_lora_catalog.py`（新規）
+- `h3/tests/verify_play2_offline_lora_catalog.mjs`（新規）
 
 #### Semantic contract
 
@@ -445,11 +445,11 @@ state は表示用のラベルではなく、server の submit gate と同じ分
 
 #### Target files
 
-- `ComfyUIPortable/h3/run_h3.bat`（読み取りのみ。変更禁止）
-- `ComfyUIPortable/h3/tools/run_native_isolated.py`（読み取りのみ。変更禁止）
-- `ComfyUIPortable/h3/app/server.py`、adapters、static assets（runtime contract の観測対象。通常は変更禁止）
-- `ComfyUIPortable/h3/tests/` の temporary validation harness / scripts（Card の許可範囲内。永続化は必要最小限）
-- `ComfyUIPortable/docs/h3/reports/H3_PLAY2_RUNTIME_VALIDATION_REPORT.md`（結果 report、新規）
+- `h3/run_h3.bat`（読み取りのみ。変更禁止）
+- `h3/tools/run_native_isolated.py`（読み取りのみ。変更禁止）
+- `h3/app/server.py`、adapters、static assets（runtime contract の観測対象。通常は変更禁止）
+- `h3/tests/` の temporary validation harness / scripts（Card の許可範囲内。永続化は必要最小限）
+- `docs/h3/reports/H3_PLAY2_RUNTIME_VALIDATION_REPORT.md`（結果 report、新規）
 
 #### Semantic contract
 
@@ -542,7 +542,7 @@ Manga、EasyReforge、共通 ComfyUI core/frontend、既存の H3 lifecycle は�
 
 この Card の成果はこの roadmap 文書だけである。実装は行わない。
 
-- Allowed current change: `ComfyUIPortable/docs/h3/H3_PLAY2_PLAYABLE_ROADMAP.md` の追加のみ
+- Allowed current change: `docs/h3/H3_PLAY2_PLAYABLE_ROADMAP.md` の追加のみ
 - product source changes: NONE
 - workflow/config changes: NONE
 - runtime/browser generation: NONE

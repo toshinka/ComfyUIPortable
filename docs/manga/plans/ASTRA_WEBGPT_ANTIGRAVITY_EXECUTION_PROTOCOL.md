@@ -52,7 +52,7 @@ M0は契約文書＋fixture提案のみ。SOLがschema/旧import表を確定し�
 
 ## GitHub受渡し
 
-Mangaの現在入口は `ComfyUIPortable/GITHUB_MANGA.txt`。`GITHUB_ComfyUI.txt`はManga/H3 routerであり、詳細な状態を二重管理しない。
+Mangaの現在入口は `GITHUB_MANGA.txt`。`GITHUB_ComfyUI.txt`はManga/H3 routerであり、詳細な状態を二重管理しない。
 
 - 実装Review Target SHAは実装commitを指す。今回の計画追加だけではPhase 3LのSHAを置き換えない。
 - Planning Commit SHAは計画のcommit。今回はローカル発行で未commit。架空SHAや未公開pinned URLを作らない。
@@ -64,7 +64,7 @@ Mangaの現在入口は `ComfyUIPortable/GITHUB_MANGA.txt`。`GITHUB_ComfyUI.txt
 
 ```text
 ComfyUIPortableのScene-first漫画生成を監修してください。
-入口は ComfyUIPortable/GITHUB_MANGA.txt です。
+入口は GITHUB_MANGA.txt です。
 STATUS→Astra Master Plan→UX→棚卸しのギャップ→実行プロトコルを読み、
 M0 / 3M-0だけのGemini 3.8向けカードを発行してください。
 優先はかんたんScene-only→CAST複数出演→白ハゲGuideです。
