@@ -35,7 +35,7 @@ Illustrious / SDXL系モデルを主力とし、構図・ポーズ探索、複�
 ## 2. 起動方法
 
 ### 通常起動 (NVIDIA GPU推奨)
-`D:\GitHub\tegaki\ComfyUIPortable` に移動し、以下のバッチファイルを実行してください。
+`D:\GitHub\ComfyUIPortable` に移動し、以下のバッチファイルを実行してください。
 
 ```bat
 run_nvidia_gpu.bat
@@ -56,7 +56,7 @@ run_nvidia_gpu_fast_fp16_accumulation.bat
 ## 3. ディレクトリ構成
 
 ```text
-D:\GitHub\tegaki\ComfyUIPortable\
+D:\GitHub\ComfyUIPortable\
  ├─ run_nvidia_gpu.bat                      # 起動バッチ
  ├─ .gitignore                              # Git除外設定
  ├─ README.md                               # 本ドキュメント

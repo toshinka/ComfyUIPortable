@@ -1,9 +1,16 @@
 ComfyUIPortable — Manga Authoring External AI Entry (canonical)
 Updated: 2026-09-11 JST
-Repository: https://github.com/toshinka/tegaki
-Branch: main
-Canonical path: ComfyUIPortable/GITHUB_MANGA.txt
-Latest Entry: https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB_MANGA.txt
+Repository: ComfyUIPortable local extracted repository
+Branch: codex/manga-playable
+Remote: pending publication
+Lineage:
+Extracted from `toshinka/tegaki` into the standalone `ComfyUIPortable` repository.
+Historical publication SHAs, pinned URLs, and evidence may refer to the former
+Tegaki repository and remain unchanged. “PUBLISHED ON MAIN” in historical
+sections refers to legacy Tegaki publication unless superseded.
+New ComfyUIPortable remote publication: pending.
+Canonical path: GITHUB_MANGA.txt
+Latest Entry: GITHUB_MANGA.txt
 
 M3A.1 Core Implementation SHA: a7f0baaa89a2e315b0492573c9da19e50727928b
 M3A.1 Current Closure Review Target: ad91c9277715e998663e8c12b6c37cca16e53955
@@ -187,42 +194,42 @@ M3B-LR2R1 closeout:
 
 Reading order
 -------------
-1. ComfyUIPortable/GITHUB_MANGA.txt
-2. ComfyUIPortable/docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md
-3. ComfyUIPortable/docs/manga/STATUS.md
-4. ComfyUIPortable/docs/manga/README.md
-5. ComfyUIPortable/docs/manga/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md
-6. ComfyUIPortable/docs/manga/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md
-7. ComfyUIPortable/docs/manga/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md
-8. ComfyUIPortable/docs/manga/plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md
-9. ComfyUIPortable/docs/manga/cards/README.md
+1. GITHUB_MANGA.txt
+2. docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md
+3. docs/manga/STATUS.md
+4. docs/manga/README.md
+5. docs/manga/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md
+6. docs/manga/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md
+7. docs/manga/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md
+8. docs/manga/plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md
+9. docs/manga/cards/README.md
 10. Current report, then only relevant source/workflows/tests.
 
 Current review documents
 ------------------------
 Status:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/STATUS.md
+docs/manga/STATUS.md
 Manga document hub:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/README.md
+docs/manga/README.md
 SOL/LUNA new-chat handoff:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md
+docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md
 M3A.1 report at the implementation review target (historical path at that SHA):
 https://raw.githubusercontent.com/toshinka/tegaki/a7f0baaa89a2e315b0492573c9da19e50727928b/ComfyUIPortable/docs/reports/M3A1_FRAME_RUNTIME_TRUTH_AND_BROWSER_CLOSURE_REPORT.md
 Document register:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/DOCUMENT_REGISTER.md
+docs/manga/DOCUMENT_REGISTER.md
 Card router:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/cards/README.md
+docs/manga/cards/README.md
 
 Strategic SSOT
 --------------
 Master plan:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md
+docs/manga/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md
 UX blueprint:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md
+docs/manga/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md
 Asset/workflow inventory:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md
+docs/manga/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md
 SOL/LUNA protocol:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md
+docs/manga/plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md
 
 Evidence cautions
 -----------------
@@ -240,7 +247,7 @@ currently separate production subsystems with separate planning, evidence,
 runtime semantics, and canonical External AI entries.
 
 MiniMax H3 entry:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB_H3.txt
+GITHUB_H3.txt
 
 The target product uses one TEGAKI shell/skin with top-level `Video (H3)` and
 `Manga` tabs. Shell integration gets its own later Card after both domain flows
@@ -250,11 +257,11 @@ H3 Manga remains deferred.
 Namespace migration
 -------------------
 Migration map:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/MANGA_DOCUMENT_NAMESPACE_MIGRATION_MAP.md
+docs/manga/MANGA_DOCUMENT_NAMESPACE_MIGRATION_MAP.md
 Migration report:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/MANGA_DOCUMENT_NAMESPACE_MIGRATION_REPORT.md
+docs/manga/reports/MANGA_DOCUMENT_NAMESPACE_MIGRATION_REPORT.md
 Docs/workflow consolidation report:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/docs/manga/reports/MANGA_DOCS_WORKFLOW_NAMESPACE_MIGRATION_REPORT.md
+docs/manga/reports/MANGA_DOCS_WORKFLOW_NAMESPACE_MIGRATION_REPORT.md
 
 Production outputs remain at output/Tegaki and output/debug_guides for now.
 They were audited but not moved. A later MANGA_OUTPUT_NAMESPACE_MIGRATION card

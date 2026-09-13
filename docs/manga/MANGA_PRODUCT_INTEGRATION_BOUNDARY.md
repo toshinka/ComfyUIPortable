@@ -11,8 +11,8 @@ Cross-track plan: [TEGAKI_CROSS_TRACK_INTEGRATION_PLAN.md](../integration/TEGAKI
 
 ## 1. Manga Product Entry
 
-- **Canonical documentation entry**: `ComfyUIPortable/GITHUB_MANGA.txt`
-- **Domain handoff anchor**: `ComfyUIPortable/docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md`
+- **Canonical documentation entry**: `GITHUB_MANGA.txt`
+- **Domain handoff anchor**: `docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md`
 - **Primary UI Editor**: `TegakiMinimumHandSceneEditor` (`minimum_hand_scene_editor.js` / `.py`)
 - **Interactive Action**: `✨ Generate Draft` button with live preview route badge (`Generation: Standard` vs `Generation: Guide-assisted`).
 
