@@ -7,6 +7,14 @@
     <link rel="stylesheet" href="css/manga_workspace.css">
 </head>
 <body>
+    <nav id="manga-mode-nav" aria-label="Manga workspace modes">
+        <div class="manga-identity"><span class="manga-mark">T</span><span>TEGAKI</span><span class="manga-slash">/</span><strong>MANGA</strong></div>
+        <div class="manga-mode-tabs" role="tablist" aria-label="Manga mode">
+            <button id="manga-tab-generate" type="button" role="tab" aria-selected="false" aria-controls="generate-view">Generate</button>
+            <button id="manga-tab-authoring" type="button" role="tab" aria-selected="true" aria-controls="authoring-workspace">Authoring</button>
+        </div>
+    </nav>
+    <div id="authoring-workspace" role="tabpanel" aria-labelledby="manga-tab-authoring">
     <!-- Top Header -->
     <header id="workspace-header">
         <div class="header-brand">
@@ -307,6 +315,48 @@
         </div>
     </div>
 
+    </div>
+
+    <section id="generate-view" role="tabpanel" aria-labelledby="manga-tab-generate" hidden>
+        <div class="mg-page-heading"><div><span class="mg-eyebrow">MANGA ENGINE</span><h1>Generate</h1><p>One image from an Illustrious-compatible checkpoint and your prompt.</p></div></div>
+        <div class="mg-main">
+            <div class="mg-stage-column">
+                <div class="mg-action-bar">
+                    <div><span class="mg-eyebrow">STATUS</span><div id="mg-status" role="status" aria-live="polite">Loading Manga capabilities…</div></div>
+                    <button id="mg-generate" type="button" class="mg-generate-button" disabled>Generate →</button>
+                </div>
+                <div id="mg-error" class="mg-error" role="alert" hidden></div>
+                <div class="mg-preview-head"><span class="mg-eyebrow">RESULT PREVIEW</span><span id="mg-preview-label">No verified result yet</span></div>
+                <div class="mg-stage">
+                    <div id="mg-preview-empty" class="mg-stage-empty"><span class="mg-stage-icon">✦</span><strong>Your Manga result appears here</strong><span>Only a verified Manga job image enters this stage.</span></div>
+                    <img id="mg-preview-image" alt="Verified Manga generation result" hidden>
+                </div>
+            </div>
+            <aside id="mg-create" aria-label="Create settings">
+                <div class="mg-create-head"><span class="mg-eyebrow">CREATE</span><button id="mg-refresh-catalog" type="button">Refresh models</button></div>
+                <p id="mg-catalog-note" class="mg-note">Loading Manga capabilities…</p>
+                <div class="mg-section-label">BASIC</div>
+                <label for="mg-checkpoint_id">Checkpoint</label>
+                <select id="mg-checkpoint_id"></select>
+                <p class="mg-hint">Select an available Illustrious-compatible checkpoint. Missing selections stay visible.</p>
+                <label for="mg-positive_raw">Prompt</label>
+                <textarea id="mg-positive_raw" rows="6" placeholder="Describe the image…"></textarea>
+                <label for="mg-negative_raw">Negative Prompt</label>
+                <textarea id="mg-negative_raw" rows="3" placeholder="What should be excluded…"></textarea>
+                <div class="mg-section-label">RESOLUTION</div>
+                <div class="mg-pair"><div><label for="mg-width">Width</label><input id="mg-width" type="number" step="8" value="832"></div><div><label for="mg-height">Height</label><input id="mg-height" type="number" step="8" value="1216"></div></div>
+                <div class="mg-section-label">GENERATION</div>
+                <label for="mg-sampler_id">Sampler</label><select id="mg-sampler_id"></select>
+                <label for="mg-scheduler_id">Scheduler</label><select id="mg-scheduler_id"></select>
+                <div class="mg-pair"><div><label for="mg-steps">Steps</label><input id="mg-steps" type="number" step="1" value="20"></div><div><label for="mg-cfg">CFG</label><input id="mg-cfg" type="number" step="0.1" value="7"></div></div>
+                <label for="mg-seed_requested">Seed</label><input id="mg-seed_requested" type="text" inputmode="numeric" value="0" aria-describedby="mg-seed-help">
+                <p id="mg-seed-help" class="mg-hint">0..4294967295, or -1 for a server-resolved random seed.</p>
+                <details class="mg-advanced"><summary>Advanced</summary><p>Multiple LoRAs can be written directly in either prompt as &lt;lora:name:weight&gt;. Unknown or malformed tags stop the entire job before submit.</p></details>
+            </aside>
+        </div>
+        <section class="mg-history-section" aria-labelledby="mg-history-title"><div><span class="mg-eyebrow">QUEUE / HISTORY</span><h2 id="mg-history-title">Manga generation jobs</h2><p>Observed job facts are separate from your Authoring document. Restore settings never generates.</p></div><div id="mg-history"></div></section>
+    </section>
+
     <!-- Export / Import Modal -->
     <div id="export-modal">
         <div class="modal-content">
@@ -326,6 +376,7 @@
         import { SessionState } from "./src/state/session_state.js";
         import { renderMangaCanvas, hitTestCanvas } from "./src/view/canvas_renderer.js";
         import { MangaBackendClient, BACKEND_STATUS } from "./src/adapters/manga_backend_client.js";
+        import { mountGenerationView } from "./src/view/generation_view.js";
 
         const store = new AuthoringStore();
         const session = new SessionState();
@@ -1417,14 +1468,28 @@
             }
         };
 
-        // Initialize view
+        // Initialize both domain views once; hiding one never resets its state.
         updateAll();
+        const generation = mountGenerationView(document.getElementById("generate-view"));
+        function setMangaMode(mode) {
+            const isGenerate = mode === "generate";
+            document.getElementById("generate-view").hidden = !isGenerate;
+            document.getElementById("authoring-workspace").hidden = isGenerate;
+            document.getElementById("manga-tab-generate").setAttribute("aria-selected", String(isGenerate));
+            document.getElementById("manga-tab-authoring").setAttribute("aria-selected", String(!isGenerate));
+            document.body.classList.toggle("manga-generate-active", isGenerate);
+            if (!isGenerate) updateAll();
+        }
+        document.getElementById("manga-tab-generate").onclick = () => setMangaMode("generate");
+        document.getElementById("manga-tab-authoring").onclick = () => setMangaMode("authoring");
 
         // Expose to window for automated testing
         window.__tegakiManga = {
             store,
             session,
             client,
+            generation,
+            setMangaMode,
             checkBackend,
             updateAll
         };
