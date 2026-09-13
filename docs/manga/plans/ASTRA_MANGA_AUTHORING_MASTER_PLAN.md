@@ -1,7 +1,7 @@
 # 最小手数で漫画Draftを作る — Strategic Master Plan
 
 発行: 2026-09-06 / revision 1 / 状態: 計画発行、実装・Owner制作受入は未実施。
-対象は `ComfyUIPortable/` のみ。上位戦略の正本は本書。個別実装はWEB GPT-SOLが限定カードにしてGemini 3.8 / Antigravity2へ渡す。
+対象は新しいリポジトリのルート配下のみ。上位戦略の正本は本書。個別実装はWEB GPT-SOLが限定カードにしてGemini 3.8 / Antigravity2へ渡す。
 
 ## 1. 結論と優先順位
 

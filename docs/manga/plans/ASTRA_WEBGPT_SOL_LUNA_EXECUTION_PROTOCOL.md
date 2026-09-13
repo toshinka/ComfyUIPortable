@@ -96,11 +96,11 @@ LUNAが次の作業を誤推定しないようCard内で順序とstop条件を�
 
 ## GitHub受渡し
 
-- External AI router: `ComfyUIPortable/GITHUB_ComfyUI.txt`
-- Manga canonical entry: `ComfyUIPortable/GITHUB_MANGA.txt`
-- H3 canonical entry: `ComfyUIPortable/GITHUB_H3.txt`
-- New-chat handoff: `ComfyUIPortable/docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md`
-- Current Card directory: `ComfyUIPortable/docs/manga/cards/current/`
+- External AI router: `GITHUB_ComfyUI.txt`
+- Manga canonical entry: `GITHUB_MANGA.txt`
+- H3 canonical entry: `GITHUB_H3.txt`
+- New-chat handoff: `docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md`
+- Current Card directory: `docs/manga/cards/current/`
 
 SOLは入口には`main`、コード・workflow・reportの精査には入口が指定した固定SHAを使う。
 raw URLが404なら未公開として止め、別revisionへ黙ってfallbackしない。LUNA完了後はOwnerが公開したSHAを

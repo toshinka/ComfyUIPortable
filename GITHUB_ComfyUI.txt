@@ -1,8 +1,15 @@
 ComfyUIPortable — External AI Router / Compatibility Entry
 Updated: 2026-09-09 JST
-Repository: https://github.com/toshinka/tegaki
-Branch: main
-Canonical router path: ComfyUIPortable/GITHUB_ComfyUI.txt
+Repository: ComfyUIPortable local extracted repository
+Branch: h3-play1-longrun
+Remote: pending publication
+Lineage:
+Extracted from `toshinka/tegaki` into the standalone `ComfyUIPortable` repository.
+Historical publication SHAs, pinned URLs, and evidence may refer to the former
+Tegaki repository and remain unchanged. “PUBLISHED ON MAIN” in historical
+sections refers to legacy Tegaki publication unless superseded.
+New ComfyUIPortable remote publication: pending.
+Canonical router path: GITHUB_ComfyUI.txt
 Router/namespace publication: ef7daa502f501211cd6b06f378e9024dbff6f284
 Docs domain consolidation: LOCAL PENDING OWNER COMMIT/PUSH
 
@@ -12,18 +19,18 @@ Do not maintain detailed project status, Review Target SHA, plans, or evidence h
 Manga Authoring
 ---------------
 Canonical entry:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB_MANGA.txt
+GITHUB_MANGA.txt
 
 Local path:
-ComfyUIPortable/GITHUB_MANGA.txt
+GITHUB_MANGA.txt
 
 MiniMax H3
 ----------
 Canonical entry:
-https://raw.githubusercontent.com/toshinka/tegaki/main/ComfyUIPortable/GITHUB_H3.txt
+GITHUB_H3.txt
 
 Local path:
-ComfyUIPortable/GITHUB_H3.txt
+GITHUB_H3.txt
 
 Boundary
 --------

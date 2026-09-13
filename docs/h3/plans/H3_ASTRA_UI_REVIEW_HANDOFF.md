@@ -4,7 +4,7 @@
 Status: bounded review completed; this file remains the historical handoff contract
 
 The result of the bounded pass is recorded at:
-`ComfyUIPortable/docs/h3/reports/H3_ASTRA_UI_REVIEW_RESULT.md`
+`docs/h3/reports/H3_ASTRA_UI_REVIEW_RESULT.md`
 
 ## Purpose
 
@@ -14,18 +14,18 @@ The result of the bounded pass is recorded at:
 
 ## Read order
 
-1. ComfyUIPortable/GITHUB_H3.txt — current entry、scope、publication state。
-2. ComfyUIPortable/docs/h3/README.md — H3 document hub と evidence vocabulary。
+1. GITHUB_H3.txt — current entry、scope、publication state。
+2. docs/h3/README.md — H3 document hub と evidence vocabulary。
 3. MiniMax H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
    — Rev.3 current master roadmap。Archive/ 版と同一内容であることを local
    hash で確認する。
-4. ComfyUIPortable/docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md — cognitive
+4. docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md — cognitive
    level、cognitive lens、progressive disclosure、mountain。
-5. ComfyUIPortable/docs/h3/plans/H3_GUI_VISUAL_LANGUAGE_AND_BRAND.md —
+5. docs/h3/plans/H3_GUI_VISUAL_LANGUAGE_AND_BRAND.md —
    Futaba heritage と 2020年代 production UI の接続。
-6. ComfyUIPortable/docs/h3/research/H3_CURRENT_LANDSCAPE.md — Video / Still /
+6. docs/h3/research/H3_CURRENT_LANDSCAPE.md — Video / Still /
    runtime の現在地。候補を採用済みと読まない。
-7. ComfyUIPortable/docs/h3/references/H3_REFERENCE_INVENTORY.md — provenance、
+7. docs/h3/references/H3_REFERENCE_INVENTORY.md — provenance、
    license、checked revision、候補の review 境界。
 
 ## Current handoff state

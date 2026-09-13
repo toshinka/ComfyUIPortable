@@ -1,7 +1,14 @@
 ComfyUIPortable — MiniMax H3 External AI Entry
-Repository: https://github.com/toshinka/tegaki
-Branch: main
-Canonical path: ComfyUIPortable/GITHUB_H3.txt
+Repository: ComfyUIPortable local extracted repository
+Branch: h3-play1-longrun
+Remote: pending publication
+Lineage:
+Extracted from `toshinka/tegaki` into the standalone `ComfyUIPortable` repository.
+Historical publication SHAs, pinned URLs, and evidence may refer to the former
+Tegaki repository and remain unchanged. “PUBLISHED ON MAIN” in historical
+sections refers to legacy Tegaki publication unless superseded.
+New ComfyUIPortable remote publication: pending.
+Canonical path: GITHUB_H3.txt
 Updated: 2026-09-11 JST
 
 Current Stage
@@ -141,80 +148,80 @@ is an index and boundary document, not an implementation instruction.
 
 Read Order
 ----------
-1. ComfyUIPortable/GITHUB_H3.txt
-2. ComfyUIPortable/docs/h3/README.md
-3. MiniMax H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md
-3a. MiniMax H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md (historical)
-4. ComfyUIPortable/docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md
-5. ComfyUIPortable/docs/h3/plans/H3_GUI_VISUAL_LANGUAGE_AND_BRAND.md
-6. ComfyUIPortable/docs/h3/research/H3_CURRENT_LANDSCAPE.md
-7. ComfyUIPortable/docs/h3/references/H3_REFERENCE_INVENTORY.md
-8. ComfyUIPortable/docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md
-9. ComfyUIPortable/docs/h3/plans/H3_ASTRA_UI_REVIEW_HANDOFF.md
-10. ComfyUIPortable/docs/h3/reports/H3_ASTRA_UI_REVIEW_RESULT.md
-11. ComfyUIPortable/docs/h3/evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md
-12. ComfyUIPortable/docs/h3/evidence/H3_MODEL_ACQUISITION_MANIFEST.md
-13. ComfyUIPortable/docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_GENERATION_EVALUATION_REPORT.md
-14. ComfyUIPortable/docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md (historical H0)
-15. ComfyUIPortable/docs/h3/reports/H1A_MINIMUM_VIDEO_SKIN_NATIVE_T2V_REPORT.md
-16. ComfyUIPortable/docs/h3/evidence/h1a/2026-09-08/README.md
-17. ComfyUIPortable/docs/h3/evidence/h1a/2026-09-08/manifest.json
-18. ComfyUIPortable/docs/h3/reports/H1B_SINGLE_REFERENCE_NATIVE_I2V_REPORT.md
-19. ComfyUIPortable/docs/h3/evidence/h1b/2026-09-09/README.md
-20. ComfyUIPortable/docs/h3/evidence/h1b/2026-09-09/manifest.json
-21. ComfyUIPortable/docs/h3/reports/H1B1_START_END_FRAME_NATIVE_FL2VA_REPORT.md
-22. ComfyUIPortable/docs/h3/evidence/h1b1/2026-09-09/README.md
-23. ComfyUIPortable/docs/h3/evidence/h1b1/2026-09-09/manifest.json
-24. ComfyUIPortable/docs/h3/reports/H1B1_UX_INTEGRITY_P0_FIX_REPORT.md
-25. ComfyUIPortable/docs/h3/evidence/h1b1-ux/2026-09-09/README.md
-26. ComfyUIPortable/docs/h3/reports/H1B1_UX_P1_PRIMARY_ACTION_VISIBILITY_REPORT.md
-27. ComfyUIPortable/docs/h3/evidence/h1b1-ux-p1/2026-09-09/README.md
-28. ComfyUIPortable/docs/h3/reports/H1B1_UX_P2_STATUS_HISTORY_REUSE_REPORT.md
-29. ComfyUIPortable/docs/h3/evidence/h1b1-ux-p2/2026-09-09/README.md
-30. ComfyUIPortable/docs/h3/reports/H1C_FRAME_BRIDGED_CONTINUATION_REPORT.md
-31. ComfyUIPortable/docs/h3/evidence/h1c/2026-09-09/README.md
-32. ComfyUIPortable/docs/h3/evidence/h1c/2026-09-09/manifest.json
-33. ComfyUIPortable/docs/h3/reports/H2C_STILL_UI_VERTICAL_SLICE_REPORT.md
-34. ComfyUIPortable/docs/h3/evidence/h2c-still-ui/2026-09-10/README.md
-35. ComfyUIPortable/docs/h3/evidence/h2c-still-ui/2026-09-10/manifest.json
-36. ComfyUIPortable/docs/h3/reports/VP1_VIDEO_RESOLUTION_DURATION_ENVELOPE_REPORT.md
-37. ComfyUIPortable/docs/h3/evidence/vp1-video-envelope/2026-09-10/README.md
-38. ComfyUIPortable/docs/h3/evidence/vp1-video-envelope/2026-09-10/manifest.json
-39. ComfyUIPortable/docs/h3/reports/VP2A_NATIVE_REF2VA_R2V_FEASIBILITY_REPORT.md
-40. ComfyUIPortable/docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/README.md
-41. ComfyUIPortable/docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/manifest.json
-42. ComfyUIPortable/docs/h3/reports/VP2B_EXPERIMENTAL_R2V_PLAYGROUND_REPORT.md
-43. ComfyUIPortable/docs/h3/evidence/vp2b-r2v-playground/2026-09-10/README.md
-44. ComfyUIPortable/docs/h3/evidence/vp2b-r2v-playground/2026-09-10/manifest.json
-45. ComfyUIPortable/docs/h3/reports/VP2C_REFERENCE_HANDOFF_AND_DND_REPORT.md
-46. ComfyUIPortable/docs/h3/evidence/vp2c-reference-handoff/2026-09-11/README.md
-47. ComfyUIPortable/docs/h3/evidence/vp2c-reference-handoff/2026-09-11/manifest.json
-48. ComfyUIPortable/docs/h3/reports/IP1_NATIVE_IMAGE_PREP_REFERENCE_EDIT_FEASIBILITY_REPORT.md
-49. ComfyUIPortable/docs/h3/evidence/ip1-native-image-prep/2026-09-11/README.md
-50. ComfyUIPortable/docs/h3/evidence/ip1-native-image-prep/2026-09-11/manifest.json
-51. ComfyUIPortable/docs/h3/reports/IP2_BROWSER_PREP_EDIT_LENS_REPORT.md
-52. ComfyUIPortable/docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/README.md
-53. ComfyUIPortable/docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/manifest.json
-54. ComfyUIPortable/docs/h3/H3_PRODUCT_INTEGRATION_BOUNDARY.md
+1. GITHUB_H3.txt
+2. docs/h3/README.md
+3. External legacy/reference in Tegaki repository: MiniMax H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md
+3a. External legacy/reference in Tegaki repository (historical): MiniMax H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md (historical)
+4. docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md
+5. docs/h3/plans/H3_GUI_VISUAL_LANGUAGE_AND_BRAND.md
+6. docs/h3/research/H3_CURRENT_LANDSCAPE.md
+7. docs/h3/references/H3_REFERENCE_INVENTORY.md
+8. docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md
+9. docs/h3/plans/H3_ASTRA_UI_REVIEW_HANDOFF.md
+10. docs/h3/reports/H3_ASTRA_UI_REVIEW_RESULT.md
+11. docs/h3/evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md
+12. docs/h3/evidence/H3_MODEL_ACQUISITION_MANIFEST.md
+13. docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_GENERATION_EVALUATION_REPORT.md
+14. docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md (historical H0)
+15. docs/h3/reports/H1A_MINIMUM_VIDEO_SKIN_NATIVE_T2V_REPORT.md
+16. docs/h3/evidence/h1a/2026-09-08/README.md
+17. docs/h3/evidence/h1a/2026-09-08/manifest.json
+18. docs/h3/reports/H1B_SINGLE_REFERENCE_NATIVE_I2V_REPORT.md
+19. docs/h3/evidence/h1b/2026-09-09/README.md
+20. docs/h3/evidence/h1b/2026-09-09/manifest.json
+21. docs/h3/reports/H1B1_START_END_FRAME_NATIVE_FL2VA_REPORT.md
+22. docs/h3/evidence/h1b1/2026-09-09/README.md
+23. docs/h3/evidence/h1b1/2026-09-09/manifest.json
+24. docs/h3/reports/H1B1_UX_INTEGRITY_P0_FIX_REPORT.md
+25. docs/h3/evidence/h1b1-ux/2026-09-09/README.md
+26. docs/h3/reports/H1B1_UX_P1_PRIMARY_ACTION_VISIBILITY_REPORT.md
+27. docs/h3/evidence/h1b1-ux-p1/2026-09-09/README.md
+28. docs/h3/reports/H1B1_UX_P2_STATUS_HISTORY_REUSE_REPORT.md
+29. docs/h3/evidence/h1b1-ux-p2/2026-09-09/README.md
+30. docs/h3/reports/H1C_FRAME_BRIDGED_CONTINUATION_REPORT.md
+31. docs/h3/evidence/h1c/2026-09-09/README.md
+32. docs/h3/evidence/h1c/2026-09-09/manifest.json
+33. docs/h3/reports/H2C_STILL_UI_VERTICAL_SLICE_REPORT.md
+34. docs/h3/evidence/h2c-still-ui/2026-09-10/README.md
+35. docs/h3/evidence/h2c-still-ui/2026-09-10/manifest.json
+36. docs/h3/reports/VP1_VIDEO_RESOLUTION_DURATION_ENVELOPE_REPORT.md
+37. docs/h3/evidence/vp1-video-envelope/2026-09-10/README.md
+38. docs/h3/evidence/vp1-video-envelope/2026-09-10/manifest.json
+39. docs/h3/reports/VP2A_NATIVE_REF2VA_R2V_FEASIBILITY_REPORT.md
+40. docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/README.md
+41. docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/manifest.json
+42. docs/h3/reports/VP2B_EXPERIMENTAL_R2V_PLAYGROUND_REPORT.md
+43. docs/h3/evidence/vp2b-r2v-playground/2026-09-10/README.md
+44. docs/h3/evidence/vp2b-r2v-playground/2026-09-10/manifest.json
+45. docs/h3/reports/VP2C_REFERENCE_HANDOFF_AND_DND_REPORT.md
+46. docs/h3/evidence/vp2c-reference-handoff/2026-09-11/README.md
+47. docs/h3/evidence/vp2c-reference-handoff/2026-09-11/manifest.json
+48. docs/h3/reports/IP1_NATIVE_IMAGE_PREP_REFERENCE_EDIT_FEASIBILITY_REPORT.md
+49. docs/h3/evidence/ip1-native-image-prep/2026-09-11/README.md
+50. docs/h3/evidence/ip1-native-image-prep/2026-09-11/manifest.json
+51. docs/h3/reports/IP2_BROWSER_PREP_EDIT_LENS_REPORT.md
+52. docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/README.md
+53. docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/manifest.json
+54. docs/h3/H3_PRODUCT_INTEGRATION_BOUNDARY.md
 
 Master Roadmap
 --------------
-Current local Rev.4 master:
-D:\GitHub\tegaki\MiniMax H3\H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md
+External legacy/reference Rev.4 master in Tegaki repository:
+Tegaki repository / MiniMax H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md
 
-Historical Rev.3 master:
-D:\GitHub\tegaki\MiniMax H3\H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
+External legacy/reference Rev.3 master in Tegaki repository:
+Tegaki repository / MiniMax H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
 
-Preserved Archive source:
-D:\GitHub\tegaki\MiniMax H3\Archive\H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
+Preserved external legacy/reference source in Tegaki repository:
+Tegaki repository / MiniMax H3/Archive/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
 
 The Rev.3 root master and Archive source are byte-identical. Archive was preserved;
 it was not deleted, moved, renamed, or edited.
 
-Canonical GitHub URL:
+External legacy/reference URL:
 https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md
 
-Historical Rev.3 canonical URL:
+External legacy/reference Rev.3 URL:
 https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
 
 The Rev.4 file and pointer updates are published on `main` at
@@ -237,16 +244,16 @@ Rev.3 direction, summarized for historical continuity:
 
 H3 Document Map
 ---------------
-- ComfyUIPortable/docs/h3/README.md
-- ComfyUIPortable/docs/h3/plans/
-- ComfyUIPortable/docs/h3/references/
-- ComfyUIPortable/docs/h3/research/
-- ComfyUIPortable/docs/h3/evidence/
-- ComfyUIPortable/docs/h3/reports/
-- MiniMax H3/<Rev.4 current master>
-- MiniMax H3/<Rev.3 historical master>
-- ComfyUIPortable/h3/
-- ComfyUIPortable/workflows/h3/
+- docs/h3/README.md
+- docs/h3/plans/
+- docs/h3/references/
+- docs/h3/research/
+- docs/h3/evidence/
+- docs/h3/reports/
+- External legacy/reference: MiniMax H3/<Rev.4 current master>
+- External legacy/reference: MiniMax H3/<Rev.3 historical master>
+- h3/
+- workflows/h3/
 
 Boundary
 --------

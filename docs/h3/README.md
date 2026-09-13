@@ -93,101 +93,101 @@ The H3 Stage / Studio UI direction SSOT is [H3_STAGE_STUDIO_UI_DIRECTION.md](H3_
 
 ## Canonical files
 
-| Path | Role | Status | GitHub URL after Owner push |
+| Path | Role | Status | Current local path / external reference |
 |---|---|---|---|
-| `GITHUB_H3.txt` | H3 External AI Entry | CURRENT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/GITHUB_H3.txt` |
-| `docs/h3/README.md` | H3 document hub | CURRENT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/README.md` |
-| `docs/h3/H3_PRODUCT_INTEGRATION_BOUNDARY.md` | H3 product entry, runtime, ownership, integration readiness, and open architecture questions | CURRENT XT1 / H3_READY_FOR_INTEGRATION_DESIGN | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/H3_PRODUCT_INTEGRATION_BOUNDARY.md` |
-| `MiniMax H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md` | Current H3 master roadmap | CURRENT / DOCS-ONLY | `https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md` |
-| `MiniMax H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md` | Historical H3 master roadmap | HISTORICAL / SUPERSEDED | `https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md` |
-| `docs/h3/research/H3_CURRENT_LANDSCAPE.md` | Current candidate landscape summary | CURRENT RESEARCH | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/research/H3_CURRENT_LANDSCAPE.md` |
-| `docs/h3/references/H3_REFERENCE_INVENTORY.md` | Candidate and provenance inventory | CURRENT RESEARCH | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/references/H3_REFERENCE_INVENTORY.md` |
-| `docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md` | Rev.3 GUI principle summary | CURRENT DESIGN SUMMARY | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md` |
-| `docs/h3/plans/H3_GUI_VISUAL_LANGUAGE_AND_BRAND.md` | TEGAKI visual / brand language | CURRENT DESIGN SUMMARY | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/plans/H3_GUI_VISUAL_LANGUAGE_AND_BRAND.md` |
-| `docs/h3/plans/H3_ASTRA_UI_REVIEW_HANDOFF.md` | Astra UI review handoff index | CURRENT HANDOFF INDEX | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/plans/H3_ASTRA_UI_REVIEW_HANDOFF.md` |
-| `docs/h3/reports/H3_ASTRA_UI_REVIEW_RESULT.md` | Bounded Astra UI review evidence | CURRENT REVIEW EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_ASTRA_UI_REVIEW_RESULT.md` |
-| `docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md` | This groundwork report | CURRENT REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md` |
-| `docs/h3/reports/H3_GROUNDWORK_CLOSEOUT_REPORT.md` | Groundwork closeout and publication distinction | CURRENT CLOSEOUT REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_GROUNDWORK_CLOSEOUT_REPORT.md` |
-| `docs/h3/reports/H3_ASTRA_PREP_SEMANTIC_ALIGNMENT_REPORT.md` | Astra preparation semantic alignment report | CURRENT PREP REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_ASTRA_PREP_SEMANTIC_ALIGNMENT_REPORT.md` |
-| `docs/h3/evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md` | Candidate evidence index | HISTORICAL H0.1 GATE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md` |
-| `docs/h3/evidence/H3_MODEL_ACQUISITION_MANIFEST.md` | Official first-wave model provenance, license, size, and hash ledger | HISTORICAL H0.1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/H3_MODEL_ACQUISITION_MANIFEST.md` |
-| `docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_GENERATION_EVALUATION_REPORT.md` | Fixed-task generation comparison and H1 ingredient disposition | HISTORICAL H0.1 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_GENERATION_EVALUATION_REPORT.md` |
-| `docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md` | Historical H0 startup/source evaluation | HISTORICAL H0 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md` |
-| `docs/h3/reports/H1A_MINIMUM_VIDEO_SKIN_NATIVE_T2V_REPORT.md` | H1A implementation, Native runtime, browser UI, and closeout boundary | CURRENT H1A REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H1A_MINIMUM_VIDEO_SKIN_NATIVE_T2V_REPORT.md` |
-| `docs/h3/evidence/h1a/2026-09-08/README.md` | H1A browser/UI generation evidence and frame review | CURRENT H1A EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1a/2026-09-08/README.md` |
-| `docs/h3/evidence/h1a/2026-09-08/manifest.json` | Machine-readable H1A runtime/output manifest | CURRENT H1A EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1a/2026-09-08/manifest.json` |
-| `docs/h3/reports/H1B_SINGLE_REFERENCE_NATIVE_I2V_REPORT.md` | H1B implementation, single-reference contract, Native runtime, browser UI, and closeout boundary | CURRENT H1B REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H1B_SINGLE_REFERENCE_NATIVE_I2V_REPORT.md` |
-| `docs/h3/evidence/h1b/2026-09-09/README.md` | H1B T2V regression, reference controls, Native I2V, and media evidence | CURRENT H1B EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1b/2026-09-09/README.md` |
-| `docs/h3/evidence/h1b/2026-09-09/manifest.json` | Machine-readable H1B runtime/output manifest | CURRENT H1B EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1b/2026-09-09/manifest.json` |
-| `docs/h3/reports/H1B1_START_END_FRAME_NATIVE_FL2VA_REPORT.md` | H1B.1 fixed-slot Start/End implementation, Native runtime, browser UI, and closeout boundary | CURRENT H1B.1 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H1B1_START_END_FRAME_NATIVE_FL2VA_REPORT.md` |
-| `docs/h3/evidence/h1b1/2026-09-09/README.md` | H1B.1 Start-only, Start+End, End-only, T2V regression, and media evidence | CURRENT H1B.1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1b1/2026-09-09/README.md` |
-| `docs/h3/evidence/h1b1/2026-09-09/manifest.json` | Machine-readable H1B.1 runtime/output manifest | CURRENT H1B.1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1b1/2026-09-09/manifest.json` |
-| `docs/h3/reports/H1B1_UX_INTEGRITY_P0_FIX_REPORT.md` | H1B.1 Astra P0-A/P0-B UX integrity fix, verification, and deferred findings | CURRENT H1B.1 UX P0 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H1B1_UX_INTEGRITY_P0_FIX_REPORT.md` |
-| `docs/h3/evidence/h1b1-ux/2026-09-09/README.md` | H1B.1 UX P0 browser/static evidence and one bounded Native completion | CURRENT H1B.1 UX P0 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1b1-ux/2026-09-09/README.md` |
-| `docs/h3/reports/H1B1_UX_P1_PRIMARY_ACTION_VISIBILITY_REPORT.md` | H1B.1 primary Generate visibility, compactness, measurement, and deferred findings | CURRENT H1B.1 UX P1 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H1B1_UX_P1_PRIMARY_ACTION_VISIBILITY_REPORT.md` |
-| `docs/h3/evidence/h1b1-ux-p1/2026-09-09/README.md` | H1B.1 P1 layout measurements and Browser evidence | CURRENT H1B.1 UX P1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1b1-ux-p1/2026-09-09/README.md` |
-| `docs/h3/reports/H1B1_UX_P2_STATUS_HISTORY_REUSE_REPORT.md` | H1B.1 state semantics and History settings reuse contract, verification, and boundary | CURRENT H1B.1 UX P2 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H1B1_UX_P2_STATUS_HISTORY_REUSE_REPORT.md` |
-| `docs/h3/evidence/h1b1-ux-p2/2026-09-09/README.md` | H1B.1 P2 status/history source, logic, and bounded Browser evidence | CURRENT H1B.1 UX P2 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1b1-ux-p2/2026-09-09/README.md` |
-| `docs/h3/reports/H1C_FRAME_BRIDGED_CONTINUATION_REPORT.md` | H1C Browser bridge, Native continuation, evidence, and closeout boundary | CURRENT H1C REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H1C_FRAME_BRIDGED_CONTINUATION_REPORT.md` |
-| `docs/h3/evidence/h1c/2026-09-09/README.md` | H1C source/bridge/continuation Browser and media evidence | CURRENT H1C EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1c/2026-09-09/README.md` |
-| `docs/h3/evidence/h1c/2026-09-09/manifest.json` | Machine-readable H1C runtime/bridge/output manifest | CURRENT H1C EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h1c/2026-09-09/manifest.json` |
-| `docs/h3/reports/H2A_H3_STILL_NATIVE_FEASIBILITY_REPORT.md` | H2A bounded Native still feasibility route, telemetry, visual review, and closeout boundary | CURRENT H2A REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H2A_H3_STILL_NATIVE_FEASIBILITY_REPORT.md` |
-| `docs/h3/evidence/h2a-still/2026-09-09/README.md` | H2A Native still output and runtime evidence | CURRENT H2A EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2a-still/2026-09-09/README.md` |
-| `docs/h3/evidence/h2a-still/2026-09-09/manifest.json` | Machine-readable H2A still/runtime/output manifest | CURRENT H2A EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2a-still/2026-09-09/manifest.json` |
-| `docs/h3/reports/H2B_SOURCE_ANCHORED_STILL_FEASIBILITY_REPORT.md` | H2B single-source anchored Still feasibility route, matched comparison, telemetry, and closeout boundary | CURRENT H2B REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H2B_SOURCE_ANCHORED_STILL_FEASIBILITY_REPORT.md` |
-| `docs/h3/evidence/h2b-source-anchor/2026-09-10/README.md` | H2B source image, prompt-only/anchored outputs, source-influence review, and runtime evidence | CURRENT H2B EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2b-source-anchor/2026-09-10/README.md` |
-| `docs/h3/evidence/h2b-source-anchor/2026-09-10/manifest.json` | Machine-readable H2B source/runtime/output manifest | CURRENT H2B EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2b-source-anchor/2026-09-10/manifest.json` |
-| `docs/h3/reports/H2C_STILL_UI_VERTICAL_SLICE_REPORT.md` | H2C Still UI Browser acceptance, state separation, visual review, and closeout | CURRENT H2C REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H2C_STILL_UI_VERTICAL_SLICE_REPORT.md` |
-| `docs/h3/evidence/h2c-still-ui/2026-09-10/README.md` | H2C prompt-only/source Still Browser, History, cross-media, and visual evidence | CURRENT H2C EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2c-still-ui/2026-09-10/README.md` |
-| `docs/h3/evidence/h2c-still-ui/2026-09-10/manifest.json` | Machine-readable H2C Browser/runtime/output manifest | CURRENT H2C EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h2c-still-ui/2026-09-10/manifest.json` |
-| `docs/h3/reports/VP1_VIDEO_RESOLUTION_DURATION_ENVELOPE_REPORT.md` | VP1 safe Video resolution/duration envelope, Native matrix, Browser unlock, and closeout boundary | CURRENT VP1 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/VP1_VIDEO_RESOLUTION_DURATION_ENVELOPE_REPORT.md` |
-| `docs/h3/evidence/vp1-video-envelope/2026-09-10/README.md` | VP1 Native/Browser media, config, History, Still-isolation, and telemetry evidence | CURRENT VP1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp1-video-envelope/2026-09-10/README.md` |
-| `docs/h3/evidence/vp1-video-envelope/2026-09-10/manifest.json` | Machine-readable VP1 runtime/output manifest | CURRENT VP1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp1-video-envelope/2026-09-10/manifest.json` |
-| `docs/h3/reports/VP2A_NATIVE_REF2VA_R2V_FEASIBILITY_REPORT.md` | VP2A Native Ref2VA/R2V R1 acquisition, source contract, feasibility, transition, and historical stop | CURRENT VP2A-R1 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/VP2A_NATIVE_REF2VA_R2V_FEASIBILITY_REPORT.md` |
-| `docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/README.md` | VP2A-R1 exact model verification, Native Picture/Video rows, telemetry, visual review, and historical gate | CURRENT VP2A-R1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/README.md` |
-| `docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/manifest.json` | Machine-readable VP2A-R1 acquisition/runtime manifest | CURRENT VP2A-R1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/manifest.json` |
-| `docs/h3/reports/VP2B_EXPERIMENTAL_R2V_PLAYGROUND_REPORT.md` | VP2B experimental Reference Video playground, Browser acceptance, fixed contract, visual limitation, and closeout boundary | CURRENT VP2B REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/VP2B_EXPERIMENTAL_R2V_PLAYGROUND_REPORT.md` |
-| `docs/h3/evidence/vp2b-r2v-playground/2026-09-10/README.md` | VP2B authorized Picture+Motion Browser run, Standard regression, History/Use settings, isolation, and telemetry | CURRENT VP2B EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp2b-r2v-playground/2026-09-10/README.md` |
-| `docs/h3/evidence/vp2b-r2v-playground/2026-09-10/manifest.json` | Machine-readable VP2B Browser/runtime/media manifest | CURRENT VP2B EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp2b-r2v-playground/2026-09-10/manifest.json` |
-| `docs/h3/reports/VP2C_REFERENCE_HANDOFF_AND_DND_REPORT.md` | VP2C same-session Reference handoff, scoped D&D, local contracts, and Browser gate | CURRENT VP2C REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/VP2C_REFERENCE_HANDOFF_AND_DND_REPORT.md` |
-| `docs/h3/evidence/vp2c-reference-handoff/2026-09-11/README.md` | VP2C implementation, authorized Browser acceptance, and bounded D&D limitation | CURRENT VP2C EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp2c-reference-handoff/2026-09-11/README.md` |
-| `docs/h3/evidence/vp2c-reference-handoff/2026-09-11/manifest.json` | Machine-readable VP2C acceptance manifest | CURRENT VP2C EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/vp2c-reference-handoff/2026-09-11/manifest.json` |
-| `docs/h3/reports/IP1_NATIVE_IMAGE_PREP_REFERENCE_EDIT_FEASIBILITY_REPORT.md` | IP1 Native Ref2VA Image Prep feasibility, runtime, visual limits, and non-scope | CURRENT IP1 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/IP1_NATIVE_IMAGE_PREP_REFERENCE_EDIT_FEASIBILITY_REPORT.md` |
-| `docs/h3/evidence/ip1-native-image-prep/2026-09-11/README.md` | IP1 Native audit, donor, three edit cases, frame-0, telemetry, and visual evidence | CURRENT IP1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/ip1-native-image-prep/2026-09-11/README.md` |
-| `docs/h3/evidence/ip1-native-image-prep/2026-09-11/manifest.json` | Machine-readable IP1 Native/runtime/output manifest | CURRENT IP1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/ip1-native-image-prep/2026-09-11/manifest.json` |
-| `docs/h3/reports/IP2_BROWSER_PREP_EDIT_LENS_REPORT.md` | IP2 experimental Browser Prep/Edit Source/Donor acceptance, handoff, limits, and closeout | CURRENT IP2 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/IP2_BROWSER_PREP_EDIT_LENS_REPORT.md` |
-| `docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/README.md` | IP2 authorized local Browser acceptance, visual review, and handoff evidence | CURRENT IP2 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/README.md` |
-| `docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/manifest.json` | Machine-readable IP2 Browser/runtime/output manifest | CURRENT IP2 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/manifest.json` |
-| `docs/h3/reports/H3_R1_STAGE_GENERATE_VISIBILITY_REPORT.md` | H3-R1 responsive Stage/Generate visibility, truthful status, Browser acceptance, and closeout | CURRENT H3-R1 REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_R1_STAGE_GENERATE_VISIBILITY_REPORT.md` |
-| `docs/h3/evidence/h3-r1-stage-generate-visibility/2026-09-11/README.md` | H3-R1 rendered Browser, one Still generation, responsive, and scope evidence | CURRENT H3-R1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h3-r1-stage-generate-visibility/2026-09-11/README.md` |
-| `docs/h3/evidence/h3-r1-stage-generate-visibility/2026-09-11/manifest.json` | Machine-readable H3-R1 UI/runtime/output manifest | CURRENT H3-R1 EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/h3-r1-stage-generate-visibility/2026-09-11/manifest.json` |
-| `docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` | H2-INFRA external model migration, isolation, shortcuts, cold restart, and closeout | CURRENT H2-INFRA REPORT | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` |
-| `docs/h3/evidence/model-library/2026-09-10/README.md` | H2-INFRA inventory, migration, deletion, shortcut, and runtime evidence index | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/README.md` |
-| `docs/h3/evidence/model-library/2026-09-10/inventory.json` | Machine-readable before/after H3 model inventory | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/inventory.json` |
-| `docs/h3/evidence/model-library/2026-09-10/migration_manifest.json` | Machine-readable migration, deletion, runtime, and regression manifest | CURRENT H2-INFRA EVIDENCE | `https://github.com/toshinka/tegaki/blob/main/ComfyUIPortable/docs/h3/evidence/model-library/2026-09-10/migration_manifest.json` |
+| `GITHUB_H3.txt` | H3 External AI Entry | CURRENT | `GITHUB_H3.txt` |
+| `docs/h3/README.md` | H3 document hub | CURRENT | `docs/h3/README.md` |
+| `docs/h3/H3_PRODUCT_INTEGRATION_BOUNDARY.md` | H3 product entry, runtime, ownership, integration readiness, and open architecture questions | CURRENT XT1 / H3_READY_FOR_INTEGRATION_DESIGN | `docs/h3/H3_PRODUCT_INTEGRATION_BOUNDARY.md` |
+| `MiniMax H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md` (external legacy/reference in Tegaki repository) | External legacy/reference current H3 master roadmap | CURRENT / DOCS-ONLY | `https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md` |
+| `MiniMax H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md` (external legacy/reference in Tegaki repository) | External legacy/reference historical H3 master roadmap | HISTORICAL / SUPERSEDED | `https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md` |
+| `docs/h3/research/H3_CURRENT_LANDSCAPE.md` | Current candidate landscape summary | CURRENT RESEARCH | `docs/h3/research/H3_CURRENT_LANDSCAPE.md` |
+| `docs/h3/references/H3_REFERENCE_INVENTORY.md` | Candidate and provenance inventory | CURRENT RESEARCH | `docs/h3/references/H3_REFERENCE_INVENTORY.md` |
+| `docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md` | Rev.3 GUI principle summary | CURRENT DESIGN SUMMARY | `docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md` |
+| `docs/h3/plans/H3_GUI_VISUAL_LANGUAGE_AND_BRAND.md` | TEGAKI visual / brand language | CURRENT DESIGN SUMMARY | `docs/h3/plans/H3_GUI_VISUAL_LANGUAGE_AND_BRAND.md` |
+| `docs/h3/plans/H3_ASTRA_UI_REVIEW_HANDOFF.md` | Astra UI review handoff index | CURRENT HANDOFF INDEX | `docs/h3/plans/H3_ASTRA_UI_REVIEW_HANDOFF.md` |
+| `docs/h3/reports/H3_ASTRA_UI_REVIEW_RESULT.md` | Bounded Astra UI review evidence | CURRENT REVIEW EVIDENCE | `docs/h3/reports/H3_ASTRA_UI_REVIEW_RESULT.md` |
+| `docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md` | This groundwork report | CURRENT REPORT | `docs/h3/reports/H3_GROUNDWORK_INITIALIZATION_REPORT.md` |
+| `docs/h3/reports/H3_GROUNDWORK_CLOSEOUT_REPORT.md` | Groundwork closeout and publication distinction | CURRENT CLOSEOUT REPORT | `docs/h3/reports/H3_GROUNDWORK_CLOSEOUT_REPORT.md` |
+| `docs/h3/reports/H3_ASTRA_PREP_SEMANTIC_ALIGNMENT_REPORT.md` | Astra preparation semantic alignment report | CURRENT PREP REPORT | `docs/h3/reports/H3_ASTRA_PREP_SEMANTIC_ALIGNMENT_REPORT.md` |
+| `docs/h3/evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md` | Candidate evidence index | HISTORICAL H0.1 GATE | `docs/h3/evidence/H3_REFERENCE_IMPLEMENTATION_EVALUATION_INDEX.md` |
+| `docs/h3/evidence/H3_MODEL_ACQUISITION_MANIFEST.md` | Official first-wave model provenance, license, size, and hash ledger | HISTORICAL H0.1 EVIDENCE | `docs/h3/evidence/H3_MODEL_ACQUISITION_MANIFEST.md` |
+| `docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_GENERATION_EVALUATION_REPORT.md` | Fixed-task generation comparison and H1 ingredient disposition | HISTORICAL H0.1 REPORT | `docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_GENERATION_EVALUATION_REPORT.md` |
+| `docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md` | Historical H0 startup/source evaluation | HISTORICAL H0 REPORT | `docs/h3/reports/H3_REFERENCE_IMPLEMENTATION_EVALUATION_REPORT.md` |
+| `docs/h3/reports/H1A_MINIMUM_VIDEO_SKIN_NATIVE_T2V_REPORT.md` | H1A implementation, Native runtime, browser UI, and closeout boundary | CURRENT H1A REPORT | `docs/h3/reports/H1A_MINIMUM_VIDEO_SKIN_NATIVE_T2V_REPORT.md` |
+| `docs/h3/evidence/h1a/2026-09-08/README.md` | H1A browser/UI generation evidence and frame review | CURRENT H1A EVIDENCE | `docs/h3/evidence/h1a/2026-09-08/README.md` |
+| `docs/h3/evidence/h1a/2026-09-08/manifest.json` | Machine-readable H1A runtime/output manifest | CURRENT H1A EVIDENCE | `docs/h3/evidence/h1a/2026-09-08/manifest.json` |
+| `docs/h3/reports/H1B_SINGLE_REFERENCE_NATIVE_I2V_REPORT.md` | H1B implementation, single-reference contract, Native runtime, browser UI, and closeout boundary | CURRENT H1B REPORT | `docs/h3/reports/H1B_SINGLE_REFERENCE_NATIVE_I2V_REPORT.md` |
+| `docs/h3/evidence/h1b/2026-09-09/README.md` | H1B T2V regression, reference controls, Native I2V, and media evidence | CURRENT H1B EVIDENCE | `docs/h3/evidence/h1b/2026-09-09/README.md` |
+| `docs/h3/evidence/h1b/2026-09-09/manifest.json` | Machine-readable H1B runtime/output manifest | CURRENT H1B EVIDENCE | `docs/h3/evidence/h1b/2026-09-09/manifest.json` |
+| `docs/h3/reports/H1B1_START_END_FRAME_NATIVE_FL2VA_REPORT.md` | H1B.1 fixed-slot Start/End implementation, Native runtime, browser UI, and closeout boundary | CURRENT H1B.1 REPORT | `docs/h3/reports/H1B1_START_END_FRAME_NATIVE_FL2VA_REPORT.md` |
+| `docs/h3/evidence/h1b1/2026-09-09/README.md` | H1B.1 Start-only, Start+End, End-only, T2V regression, and media evidence | CURRENT H1B.1 EVIDENCE | `docs/h3/evidence/h1b1/2026-09-09/README.md` |
+| `docs/h3/evidence/h1b1/2026-09-09/manifest.json` | Machine-readable H1B.1 runtime/output manifest | CURRENT H1B.1 EVIDENCE | `docs/h3/evidence/h1b1/2026-09-09/manifest.json` |
+| `docs/h3/reports/H1B1_UX_INTEGRITY_P0_FIX_REPORT.md` | H1B.1 Astra P0-A/P0-B UX integrity fix, verification, and deferred findings | CURRENT H1B.1 UX P0 REPORT | `docs/h3/reports/H1B1_UX_INTEGRITY_P0_FIX_REPORT.md` |
+| `docs/h3/evidence/h1b1-ux/2026-09-09/README.md` | H1B.1 UX P0 browser/static evidence and one bounded Native completion | CURRENT H1B.1 UX P0 EVIDENCE | `docs/h3/evidence/h1b1-ux/2026-09-09/README.md` |
+| `docs/h3/reports/H1B1_UX_P1_PRIMARY_ACTION_VISIBILITY_REPORT.md` | H1B.1 primary Generate visibility, compactness, measurement, and deferred findings | CURRENT H1B.1 UX P1 REPORT | `docs/h3/reports/H1B1_UX_P1_PRIMARY_ACTION_VISIBILITY_REPORT.md` |
+| `docs/h3/evidence/h1b1-ux-p1/2026-09-09/README.md` | H1B.1 P1 layout measurements and Browser evidence | CURRENT H1B.1 UX P1 EVIDENCE | `docs/h3/evidence/h1b1-ux-p1/2026-09-09/README.md` |
+| `docs/h3/reports/H1B1_UX_P2_STATUS_HISTORY_REUSE_REPORT.md` | H1B.1 state semantics and History settings reuse contract, verification, and boundary | CURRENT H1B.1 UX P2 REPORT | `docs/h3/reports/H1B1_UX_P2_STATUS_HISTORY_REUSE_REPORT.md` |
+| `docs/h3/evidence/h1b1-ux-p2/2026-09-09/README.md` | H1B.1 P2 status/history source, logic, and bounded Browser evidence | CURRENT H1B.1 UX P2 EVIDENCE | `docs/h3/evidence/h1b1-ux-p2/2026-09-09/README.md` |
+| `docs/h3/reports/H1C_FRAME_BRIDGED_CONTINUATION_REPORT.md` | H1C Browser bridge, Native continuation, evidence, and closeout boundary | CURRENT H1C REPORT | `docs/h3/reports/H1C_FRAME_BRIDGED_CONTINUATION_REPORT.md` |
+| `docs/h3/evidence/h1c/2026-09-09/README.md` | H1C source/bridge/continuation Browser and media evidence | CURRENT H1C EVIDENCE | `docs/h3/evidence/h1c/2026-09-09/README.md` |
+| `docs/h3/evidence/h1c/2026-09-09/manifest.json` | Machine-readable H1C runtime/bridge/output manifest | CURRENT H1C EVIDENCE | `docs/h3/evidence/h1c/2026-09-09/manifest.json` |
+| `docs/h3/reports/H2A_H3_STILL_NATIVE_FEASIBILITY_REPORT.md` | H2A bounded Native still feasibility route, telemetry, visual review, and closeout boundary | CURRENT H2A REPORT | `docs/h3/reports/H2A_H3_STILL_NATIVE_FEASIBILITY_REPORT.md` |
+| `docs/h3/evidence/h2a-still/2026-09-09/README.md` | H2A Native still output and runtime evidence | CURRENT H2A EVIDENCE | `docs/h3/evidence/h2a-still/2026-09-09/README.md` |
+| `docs/h3/evidence/h2a-still/2026-09-09/manifest.json` | Machine-readable H2A still/runtime/output manifest | CURRENT H2A EVIDENCE | `docs/h3/evidence/h2a-still/2026-09-09/manifest.json` |
+| `docs/h3/reports/H2B_SOURCE_ANCHORED_STILL_FEASIBILITY_REPORT.md` | H2B single-source anchored Still feasibility route, matched comparison, telemetry, and closeout boundary | CURRENT H2B REPORT | `docs/h3/reports/H2B_SOURCE_ANCHORED_STILL_FEASIBILITY_REPORT.md` |
+| `docs/h3/evidence/h2b-source-anchor/2026-09-10/README.md` | H2B source image, prompt-only/anchored outputs, source-influence review, and runtime evidence | CURRENT H2B EVIDENCE | `docs/h3/evidence/h2b-source-anchor/2026-09-10/README.md` |
+| `docs/h3/evidence/h2b-source-anchor/2026-09-10/manifest.json` | Machine-readable H2B source/runtime/output manifest | CURRENT H2B EVIDENCE | `docs/h3/evidence/h2b-source-anchor/2026-09-10/manifest.json` |
+| `docs/h3/reports/H2C_STILL_UI_VERTICAL_SLICE_REPORT.md` | H2C Still UI Browser acceptance, state separation, visual review, and closeout | CURRENT H2C REPORT | `docs/h3/reports/H2C_STILL_UI_VERTICAL_SLICE_REPORT.md` |
+| `docs/h3/evidence/h2c-still-ui/2026-09-10/README.md` | H2C prompt-only/source Still Browser, History, cross-media, and visual evidence | CURRENT H2C EVIDENCE | `docs/h3/evidence/h2c-still-ui/2026-09-10/README.md` |
+| `docs/h3/evidence/h2c-still-ui/2026-09-10/manifest.json` | Machine-readable H2C Browser/runtime/output manifest | CURRENT H2C EVIDENCE | `docs/h3/evidence/h2c-still-ui/2026-09-10/manifest.json` |
+| `docs/h3/reports/VP1_VIDEO_RESOLUTION_DURATION_ENVELOPE_REPORT.md` | VP1 safe Video resolution/duration envelope, Native matrix, Browser unlock, and closeout boundary | CURRENT VP1 REPORT | `docs/h3/reports/VP1_VIDEO_RESOLUTION_DURATION_ENVELOPE_REPORT.md` |
+| `docs/h3/evidence/vp1-video-envelope/2026-09-10/README.md` | VP1 Native/Browser media, config, History, Still-isolation, and telemetry evidence | CURRENT VP1 EVIDENCE | `docs/h3/evidence/vp1-video-envelope/2026-09-10/README.md` |
+| `docs/h3/evidence/vp1-video-envelope/2026-09-10/manifest.json` | Machine-readable VP1 runtime/output manifest | CURRENT VP1 EVIDENCE | `docs/h3/evidence/vp1-video-envelope/2026-09-10/manifest.json` |
+| `docs/h3/reports/VP2A_NATIVE_REF2VA_R2V_FEASIBILITY_REPORT.md` | VP2A Native Ref2VA/R2V R1 acquisition, source contract, feasibility, transition, and historical stop | CURRENT VP2A-R1 REPORT | `docs/h3/reports/VP2A_NATIVE_REF2VA_R2V_FEASIBILITY_REPORT.md` |
+| `docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/README.md` | VP2A-R1 exact model verification, Native Picture/Video rows, telemetry, visual review, and historical gate | CURRENT VP2A-R1 EVIDENCE | `docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/README.md` |
+| `docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/manifest.json` | Machine-readable VP2A-R1 acquisition/runtime manifest | CURRENT VP2A-R1 EVIDENCE | `docs/h3/evidence/vp2a-ref2va-r2v-feasibility/2026-09-10/manifest.json` |
+| `docs/h3/reports/VP2B_EXPERIMENTAL_R2V_PLAYGROUND_REPORT.md` | VP2B experimental Reference Video playground, Browser acceptance, fixed contract, visual limitation, and closeout boundary | CURRENT VP2B REPORT | `docs/h3/reports/VP2B_EXPERIMENTAL_R2V_PLAYGROUND_REPORT.md` |
+| `docs/h3/evidence/vp2b-r2v-playground/2026-09-10/README.md` | VP2B authorized Picture+Motion Browser run, Standard regression, History/Use settings, isolation, and telemetry | CURRENT VP2B EVIDENCE | `docs/h3/evidence/vp2b-r2v-playground/2026-09-10/README.md` |
+| `docs/h3/evidence/vp2b-r2v-playground/2026-09-10/manifest.json` | Machine-readable VP2B Browser/runtime/media manifest | CURRENT VP2B EVIDENCE | `docs/h3/evidence/vp2b-r2v-playground/2026-09-10/manifest.json` |
+| `docs/h3/reports/VP2C_REFERENCE_HANDOFF_AND_DND_REPORT.md` | VP2C same-session Reference handoff, scoped D&D, local contracts, and Browser gate | CURRENT VP2C REPORT | `docs/h3/reports/VP2C_REFERENCE_HANDOFF_AND_DND_REPORT.md` |
+| `docs/h3/evidence/vp2c-reference-handoff/2026-09-11/README.md` | VP2C implementation, authorized Browser acceptance, and bounded D&D limitation | CURRENT VP2C EVIDENCE | `docs/h3/evidence/vp2c-reference-handoff/2026-09-11/README.md` |
+| `docs/h3/evidence/vp2c-reference-handoff/2026-09-11/manifest.json` | Machine-readable VP2C acceptance manifest | CURRENT VP2C EVIDENCE | `docs/h3/evidence/vp2c-reference-handoff/2026-09-11/manifest.json` |
+| `docs/h3/reports/IP1_NATIVE_IMAGE_PREP_REFERENCE_EDIT_FEASIBILITY_REPORT.md` | IP1 Native Ref2VA Image Prep feasibility, runtime, visual limits, and non-scope | CURRENT IP1 REPORT | `docs/h3/reports/IP1_NATIVE_IMAGE_PREP_REFERENCE_EDIT_FEASIBILITY_REPORT.md` |
+| `docs/h3/evidence/ip1-native-image-prep/2026-09-11/README.md` | IP1 Native audit, donor, three edit cases, frame-0, telemetry, and visual evidence | CURRENT IP1 EVIDENCE | `docs/h3/evidence/ip1-native-image-prep/2026-09-11/README.md` |
+| `docs/h3/evidence/ip1-native-image-prep/2026-09-11/manifest.json` | Machine-readable IP1 Native/runtime/output manifest | CURRENT IP1 EVIDENCE | `docs/h3/evidence/ip1-native-image-prep/2026-09-11/manifest.json` |
+| `docs/h3/reports/IP2_BROWSER_PREP_EDIT_LENS_REPORT.md` | IP2 experimental Browser Prep/Edit Source/Donor acceptance, handoff, limits, and closeout | CURRENT IP2 REPORT | `docs/h3/reports/IP2_BROWSER_PREP_EDIT_LENS_REPORT.md` |
+| `docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/README.md` | IP2 authorized local Browser acceptance, visual review, and handoff evidence | CURRENT IP2 EVIDENCE | `docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/README.md` |
+| `docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/manifest.json` | Machine-readable IP2 Browser/runtime/output manifest | CURRENT IP2 EVIDENCE | `docs/h3/evidence/ip2-browser-prep-edit/2026-09-11/manifest.json` |
+| `docs/h3/reports/H3_R1_STAGE_GENERATE_VISIBILITY_REPORT.md` | H3-R1 responsive Stage/Generate visibility, truthful status, Browser acceptance, and closeout | CURRENT H3-R1 REPORT | `docs/h3/reports/H3_R1_STAGE_GENERATE_VISIBILITY_REPORT.md` |
+| `docs/h3/evidence/h3-r1-stage-generate-visibility/2026-09-11/README.md` | H3-R1 rendered Browser, one Still generation, responsive, and scope evidence | CURRENT H3-R1 EVIDENCE | `docs/h3/evidence/h3-r1-stage-generate-visibility/2026-09-11/README.md` |
+| `docs/h3/evidence/h3-r1-stage-generate-visibility/2026-09-11/manifest.json` | Machine-readable H3-R1 UI/runtime/output manifest | CURRENT H3-R1 EVIDENCE | `docs/h3/evidence/h3-r1-stage-generate-visibility/2026-09-11/manifest.json` |
+| `docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` | H2-INFRA external model migration, isolation, shortcuts, cold restart, and closeout | CURRENT H2-INFRA REPORT | `docs/h3/reports/H3_MODEL_LIBRARY_SHORTCUT_NORMALIZATION_REPORT.md` |
+| `docs/h3/evidence/model-library/2026-09-10/README.md` | H2-INFRA inventory, migration, deletion, shortcut, and runtime evidence index | CURRENT H2-INFRA EVIDENCE | `docs/h3/evidence/model-library/2026-09-10/README.md` |
+| `docs/h3/evidence/model-library/2026-09-10/inventory.json` | Machine-readable before/after H3 model inventory | CURRENT H2-INFRA EVIDENCE | `docs/h3/evidence/model-library/2026-09-10/inventory.json` |
+| `docs/h3/evidence/model-library/2026-09-10/migration_manifest.json` | Machine-readable migration, deletion, runtime, and regression manifest | CURRENT H2-INFRA EVIDENCE | `docs/h3/evidence/model-library/2026-09-10/migration_manifest.json` |
 
 ## External master roadmap
 
-The current local Rev.4 master is:
+The current Rev.4 master is external legacy/reference material in the Tegaki repository:
 
-D:/GitHub/tegaki/MiniMax H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md
+Tegaki repository / MiniMax H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md
 
-The historical Rev.3 master is:
+The historical Rev.3 master is external legacy/reference material in the Tegaki repository:
 
-D:/GitHub/tegaki/MiniMax H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
+Tegaki repository / MiniMax H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
 
-The preserved source remains:
+The preserved source remains external legacy/reference material in the Tegaki repository:
 
-D:/GitHub/tegaki/MiniMax H3/Archive/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
+Tegaki repository / MiniMax H3/Archive/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
 
 The two files are byte-identical. The Archive source was not deleted, moved,
 renamed, merged, or edited.
 
-Current Rev.4 canonical GitHub URL:
+External legacy/reference Rev.4 URL:
 
 https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md
 
-Historical Rev.3 canonical GitHub URL:
+External legacy/reference Rev.3 URL:
 
 https://github.com/toshinka/tegaki/blob/main/MiniMax%20H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md
 
