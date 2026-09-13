@@ -8,10 +8,12 @@ import { resolveBackendStatusPresentation } from "./backend-status-presentation.
 
 const state = {
   mode: "video",
+  product: "h3",
   videoType: "standard",
   backend: "CONNECTING",
   backendStatusDetail: "",
   config: null,
+  mangaWorkspaceUrl: null,
   videoResolution: "608x352",
   stillResolution: "608x352",
   videoDuration: "5",
@@ -51,6 +53,11 @@ const brandMode = $("brand-mode");
 const modeVideo = $("mode-video");
 const modeStill = $("mode-still");
 const modePrep = $("mode-prep");
+const productH3 = $("product-h3");
+const productManga = $("product-manga");
+const mangaShellPanel = $("manga-shell-panel");
+const mangaWorkspaceFrame = $("manga-workspace-frame");
+const mangaShellStatus = $("manga-shell-status");
 const controlColumn = $("control-column");
 const stageActionBar = $("stage-action-bar");
 const stageActionSlot = $("stage-action-slot");
@@ -451,8 +458,10 @@ function setMode(nextMode) {
   modeVideo.setAttribute("aria-pressed", String(nextMode === "video"));
   modeStill.setAttribute("aria-pressed", String(still));
   modePrep.setAttribute("aria-pressed", String(prep));
-  brandMode.textContent = prep ? "Prep/Edit" : still ? "Still" : "Video";
-  document.title = `TEGAKI / ${prep ? "Prep/Edit" : still ? "Still" : "Video"}`;
+  if (state.product === "h3") {
+    brandMode.textContent = prep ? "Prep/Edit" : still ? "Still" : "Video";
+    document.title = `TEGAKI / ${prep ? "Prep/Edit" : still ? "Still" : "Video"}`;
+  }
   document.body.dataset.mode = nextMode;
   stillSourceCard.hidden = !still;
   prepCard.hidden = !prep;
@@ -474,6 +483,47 @@ function setMode(nextMode) {
   promptInput.placeholder = prep ? "Describe the requested image preparation…" : "Describe the video...";
   footerMode.textContent = `H3 / Native ${prep ? "Prep/Edit" : still ? "Still" : "Video"}`;
   updateGenerateAvailability();
+}
+
+function configureMangaWorkspace() {
+  const configured = state.config?.manga_workspace_url;
+  if (typeof configured !== "string" || !configured) {
+    state.mangaWorkspaceUrl = null;
+    mangaShellStatus.textContent = "Manga workspace endpoint is unavailable.";
+    return;
+  }
+  try {
+    const parsed = new URL(configured, window.location.href);
+    if (parsed.protocol !== "http:" || !["127.0.0.1", "localhost"].includes(parsed.hostname)
+        || parsed.username || parsed.password || parsed.search || parsed.hash
+        || !/^\/$/.test(parsed.pathname)) throw new Error("endpoint is not a local HTTP workspace");
+    state.mangaWorkspaceUrl = parsed.href;
+    mangaShellStatus.textContent = `Workspace ${parsed.host}`;
+    if (!mangaWorkspaceFrame.src || mangaWorkspaceFrame.src !== parsed.href) mangaWorkspaceFrame.src = parsed.href;
+  } catch (error) {
+    state.mangaWorkspaceUrl = null;
+    mangaShellStatus.textContent = `Manga workspace unavailable: ${error.message}`;
+  }
+}
+
+function setProduct(nextProduct) {
+  if (!["h3", "manga"].includes(nextProduct)) return;
+  state.product = nextProduct;
+  const isManga = nextProduct === "manga";
+  productH3.classList.toggle("active", !isManga);
+  productManga.classList.toggle("active", isManga);
+  productH3.setAttribute("aria-selected", String(!isManga));
+  productManga.setAttribute("aria-selected", String(isManga));
+  mangaShellPanel.hidden = !isManga;
+  document.body.dataset.product = nextProduct;
+  if (isManga) {
+    brandMode.textContent = "MANGA";
+    document.title = "TEGAKI / MANGA";
+    configureMangaWorkspace();
+  } else {
+    brandMode.textContent = state.mode === "prep" ? "Prep/Edit" : state.mode === "still" ? "Still" : "Video";
+    document.title = `TEGAKI / ${brandMode.textContent}`;
+  }
 }
 
 function isNarrowViewport() {
@@ -1916,6 +1966,7 @@ async function loadConfig() {
   try {
     const config = await requestJson("/api/config");
     state.config = config;
+    configureMangaWorkspace();
     videoTypeReference.disabled = !referenceVideoEnabled();
     videoTypeReference.title = referenceVideoEnabled()
       ? "Experimental Reference Video"
@@ -1953,6 +2004,8 @@ narrowResultButton.addEventListener("click", () => setNarrowView("result"));
 modeVideo.addEventListener("click", () => setMode("video"));
 modeStill.addEventListener("click", () => setMode("still"));
 modePrep.addEventListener("click", () => setMode("prep"));
+productH3.addEventListener("click", () => setProduct("h3"));
+productManga.addEventListener("click", () => setProduct("manga"));
 videoTypeStandard.addEventListener("click", () => setVideoType("standard"));
 videoTypeReference.addEventListener("click", () => setVideoType("reference"));
 $("random-seed").addEventListener("click", () => { seedInput.value = ""; seedInput.focus(); });
@@ -2005,6 +2058,7 @@ setPrepAssetView("source", null);
 setPrepAssetView("donor", null);
 setNarrowView("create");
 setMode("video");
+setProduct("h3");
 loadConfig();
 loadHistory();
 pollBackend();

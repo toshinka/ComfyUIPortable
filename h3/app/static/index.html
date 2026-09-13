@@ -16,6 +16,10 @@
         <span class="brand-mode" id="brand-mode">Video</span>
       </a>
       <div class="topbar-actions">
+        <div class="product-switch" role="tablist" aria-label="TEGAKI engine">
+          <button class="product-button active" id="product-h3" type="button" role="tab" aria-selected="true">H3</button>
+          <button class="product-button" id="product-manga" type="button" role="tab" aria-selected="false">MANGA</button>
+        </div>
         <div class="mode-switch" role="group" aria-label="Media mode">
           <button class="mode-button active" id="mode-video" type="button" data-mode="video" aria-pressed="true">Video</button>
           <button class="mode-button" id="mode-still" type="button" data-mode="still" aria-pressed="false">Still</button>
@@ -27,6 +31,17 @@
         </div>
       </div>
     </header>
+
+    <section id="manga-shell-panel" hidden aria-label="TEGAKI Manga workspace">
+      <div class="manga-shell-heading">
+        <div>
+          <span class="section-kicker">MANGA</span>
+          <h1>Generate and Author</h1>
+        </div>
+        <span id="manga-shell-status" class="manga-shell-status" role="status" aria-live="polite">Connecting to Manga workspace…</span>
+      </div>
+      <iframe id="manga-workspace-frame" title="TEGAKI Manga workspace" loading="eager" referrerpolicy="same-origin"></iframe>
+    </section>
 
     <div class="narrow-view-switch" id="narrow-view-switch" role="group" aria-label="H3 workspace view">
       <button class="narrow-view-button active" id="narrow-create-button" type="button" aria-pressed="true">Create</button>

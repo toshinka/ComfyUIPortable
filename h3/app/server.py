@@ -2156,6 +2156,7 @@ class H1AHandler(BaseHTTPRequestHandler):
             self._send_json(
                 HTTPStatus.OK,
                 {
+                    "manga_workspace_url": self.server.manga_workspace_url,
                     **video_options,
                     "playable": playable,
                     "video_type_options": [
@@ -2572,9 +2573,35 @@ class H1AServer(ThreadingHTTPServer):
     daemon_threads = True
     allow_reuse_address = True
 
-    def __init__(self, address: tuple[str, int], session: H1ASession):
+    def __init__(
+        self,
+        address: tuple[str, int],
+        session: H1ASession,
+        manga_workspace_url: str = "http://127.0.0.1:8191/",
+    ):
         super().__init__(address, H1AHandler)
         self.session = session
+        self.manga_workspace_url = manga_workspace_url
+
+
+def _manga_workspace_url(value: str) -> str:
+    """Accept only a local HTTP Manga workspace endpoint for shell embedding."""
+
+    parsed = urlparse(value)
+    if (
+        parsed.scheme != "http"
+        or parsed.hostname not in {"127.0.0.1", "localhost"}
+        or parsed.username
+        or parsed.password
+        or parsed.query
+        or parsed.fragment
+        or (parsed.path not in {"", "/"})
+        or parsed.port is None
+    ):
+        raise argparse.ArgumentTypeError(
+            "Manga workspace URL must be a loopback http://host:port/ endpoint."
+        )
+    return f"http://{parsed.hostname}:{parsed.port}/"
 
 
 def parse_args() -> argparse.Namespace:
@@ -2583,6 +2610,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--port", type=int, default=8190)
     parser.add_argument("--comfy-url", default="http://127.0.0.1:8188")
     parser.add_argument("--output-dir", default="output/h3")
+    parser.add_argument(
+        "--manga-workspace-url",
+        type=_manga_workspace_url,
+        default=_manga_workspace_url(
+            os.environ.get("TEGAKI_MANGA_WORKSPACE_URL", "http://127.0.0.1:8191/")
+        ),
+    )
     return parser.parse_args()
 
 
@@ -2592,7 +2626,7 @@ def main() -> None:
     output_root.mkdir(parents=True, exist_ok=True)
     session = H1ASession(args.comfy_url, output_root)
     session.start_progress_listener()
-    server = H1AServer((args.host, args.port), session)
+    server = H1AServer((args.host, args.port), session, args.manga_workspace_url)
     print(
         f"TEGAKI H3 UI listening on http://{args.host}:{args.port}/ "
         f"(Native backend: {args.comfy_url})",
