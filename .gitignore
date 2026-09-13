@@ -56,3 +56,27 @@ custom_nodes_custom/**/*.pyc
 !*.md
 !*.bat
 !GITHUB.TXT
+
+# Re-assert payload exclusions after the allow-rules above.  These files must
+# remain local even when placed under scripts, configs, workflows, or custom
+# nodes.
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.onnx
+*.7z
+*.zip
+*.rar
+*.tar
+*.tar.gz
+*.whl
+*.msi
+*.pkg
+*.dmg
+*.exe
+*.dll
+*.pyd
+*.so
+*.dylib
