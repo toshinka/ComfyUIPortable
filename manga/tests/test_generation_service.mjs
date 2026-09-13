@@ -5,6 +5,7 @@ import http from "node:http";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { randomUUID } from "node:crypto";
 import { GenerationService } from "../service/generation_service.mjs";
 import { GenerationJournal, JournalError } from "../service/generation_journal.mjs";
 
@@ -43,6 +44,8 @@ class FakeBackend {
         this.promptCalls = 0;
         this.requests = [];
         this.lastPayload = null;
+        this.lastSubmittedPayload = null;
+        this.releasePrompt = null;
         this.imageBytes = PNG;
         this.server = http.createServer((req, res) => this.handle(req, res));
     }
@@ -79,23 +82,39 @@ class FakeBackend {
             let body = "";
             for await (const chunk of req) body += chunk;
             const payload = JSON.parse(body);
-            this.lastPayload = payload;
+            this.lastSubmittedPayload = payload;
+            this.lastPayload = { ...payload, prompt_id: randomUUID() };
             if (this.mode === "reject") {
                 json(res, 400, { error: { message: "Invalid backend graph" }, node_errors: {} });
                 return;
             }
-            if (this.mode !== "timeout_lost") this.queuePending = [this.queueItem(payload)];
-            if (this.mode === "http408_accept") {
+            if (!["timeout_lost", "malformed_accept"].includes(this.mode)) this.queuePending = [this.queueItem()];
+            if (this.mode === "http408_duplicate") {
+                const duplicate = this.queueItem();
+                duplicate[1] = randomUUID();
+                this.queuePending.push(duplicate);
+            }
+            const accepted = () => json(res, 200, {
+                prompt_id: this.mode === "malformed_accept" ? "invalid" : this.lastPayload.prompt_id,
+                number: 1, node_errors: {}
+            });
+            if (this.mode === "hold_accept") {
+                this.releasePrompt = accepted;
+                return;
+            }
+            if (["http408_accept", "http408_duplicate"].includes(this.mode)) {
                 json(res, 408, { error: "backend timed out after acceptance" });
                 return;
             }
             if (this.mode.startsWith("timeout")) {
                 setTimeout(() => {
-                    if (!res.writableEnded) json(res, 200, { prompt_id: payload.prompt_id });
+                    if (!res.writableEnded) accepted();
                 }, 300);
             } else {
-                json(res, 200, { prompt_id: payload.prompt_id });
+                accepted();
             }
+        } else if (target.pathname === "/history") {
+            json(res, 200, Object.fromEntries(this.history));
         } else if (target.pathname.startsWith("/history/")) {
             const promptId = target.pathname.slice("/history/".length);
             json(res, 200, this.history.has(promptId) ? { [promptId]: this.history.get(promptId) } : {});
@@ -116,7 +135,7 @@ class FakeBackend {
             prompt: this.queueItem(payload),
             status: { status_str: status, completed: status === "success", messages: [] },
             outputs: { "7": { images: [locator || {
-                filename: `${payload.prompt_id}_00001_.png`, subfolder: "Manga\\Playable", type: "output"
+                filename: `${payload.extra_data.tegaki_manga.job_id}_00001_.png`, subfolder: "Manga\\Playable", type: "output"
             }] } }
         });
     }
@@ -139,11 +158,38 @@ async function rejectsCode(operation, code) {
     await assert.rejects(operation, error => error.code === code, code);
 }
 
+async function waitFor(predicate) {
+    for (let attempt = 0; attempt < 100; attempt++) {
+        if (predicate()) return;
+        await new Promise(resolve => setTimeout(resolve, 10));
+    }
+    throw new Error("Timed out waiting for fake backend request");
+}
+
+test("job exists with null prompt ID before backend accepts", async t => {
+    const { backend, journal, service } = await fixture(t, 5000);
+    backend.mode = "hold_accept";
+    const pending = service.createJob(input());
+    await waitFor(() => backend.releasePrompt !== null);
+    const [beforeAcceptance] = await journal.list();
+    assert.match(beforeAcceptance.job_id, /^[0-9a-f-]{36}$/);
+    assert.equal(beforeAcceptance.state, "SUBMITTING");
+    assert.equal(beforeAcceptance.prompt_id, null);
+    assert.equal(Object.hasOwn(backend.lastSubmittedPayload, "prompt_id"), false);
+    backend.releasePrompt();
+    const accepted = await pending;
+    assert.equal(accepted.prompt_id, backend.lastPayload.prompt_id);
+    assert.notEqual(accepted.job_id, accepted.prompt_id);
+});
+
 test("accepted submit follows QUEUED, RUNNING, completed history, verified PNG", async t => {
     const { backend, journal, service } = await fixture(t);
     const queued = await service.createJob(input());
-    assert.equal(queued.state, "QUEUED");
-    assert.equal(queued.prompt_id, queued.job_id);
+    assert.equal(queued.state, "QUEUED", JSON.stringify(queued.error));
+    assert.notEqual(queued.prompt_id, queued.job_id);
+    assert.equal(queued.prompt_id, backend.lastPayload.prompt_id);
+    assert.equal(Object.hasOwn(backend.lastSubmittedPayload, "prompt_id"), false);
+    assert.equal((await journal.get(queued.job_id)).prompt_id, backend.lastPayload.prompt_id);
     assert.equal(backend.promptCalls, 1);
     assert.equal(backend.lastPayload.prompt["7"].inputs.filename_prefix, `Manga/Playable/${queued.job_id}`);
     assert.equal(backend.lastPayload.extra_data.tegaki_manga.request_id, queued.request_id);
@@ -152,6 +198,8 @@ test("accepted submit follows QUEUED, RUNNING, completed history, verified PNG",
     backend.queuePending = [];
     const running = await service.getJob(queued.job_id);
     assert.equal(running.state, "RUNNING");
+    assert.ok(backend.requests.some(([method, route]) => method === "GET" && route === `/history/${queued.prompt_id}`));
+    assert.ok(!backend.requests.some(([method, route]) => method === "GET" && route === `/history/${queued.job_id}`));
     backend.complete();
     const completed = await service.getJob(queued.job_id);
     assert.equal(completed.state, "SUCCEEDED");
@@ -169,6 +217,7 @@ test("backend validation rejection is FAILED, without output", async t => {
     const failed = await service.createJob(input());
     assert.equal(failed.state, "FAILED");
     assert.equal(failed.error.code, "BACKEND_REJECTED");
+    assert.equal(failed.prompt_id, null);
     await rejectsCode(() => service.getResult(failed.job_id), "RESULT_NOT_READY");
     assert.equal(backend.promptCalls, 1);
 });
@@ -186,7 +235,9 @@ test("timeout after acceptance reconciles owned queue without a second POST", as
     const { backend, service } = await fixture(t, 100);
     backend.mode = "timeout_accept";
     const queued = await service.createJob(input());
-    assert.equal(queued.state, "QUEUED");
+    assert.equal(queued.state, "QUEUED", JSON.stringify(queued.error));
+    assert.equal(queued.prompt_id, backend.lastPayload.prompt_id);
+    assert.notEqual(queued.prompt_id, queued.job_id);
     assert.equal(backend.promptCalls, 1);
     assert.equal((await service.getJob(queued.job_id)).state, "QUEUED");
     assert.equal(backend.promptCalls, 1);
@@ -196,19 +247,41 @@ test("HTTP 408 after possible acceptance reconciles instead of failing", async t
     const { backend, service } = await fixture(t);
     backend.mode = "http408_accept";
     const queued = await service.createJob(input());
-    assert.equal(queued.state, "QUEUED");
+    assert.equal(queued.state, "QUEUED", JSON.stringify(queued.error));
     assert.equal(backend.promptCalls, 1);
 });
+test("ambiguous submit with two matching backend IDs stays UNKNOWN and does not retry", async t => {
+    const { backend, service } = await fixture(t);
+    backend.mode = "http408_duplicate";
+    const unknown = await service.createJob(input());
+    assert.equal(unknown.state, "UNKNOWN");
+    assert.equal(unknown.prompt_id, null);
+    assert.equal(backend.promptCalls, 1);
+});
+
+test("malformed accepted response without backend evidence cannot invent a prompt ID", async t => {
+    const { backend, service } = await fixture(t);
+    backend.mode = "malformed_accept";
+    const unknown = await service.createJob(input());
+    assert.equal(unknown.state, "UNKNOWN");
+    assert.equal(unknown.prompt_id, null);
+    assert.equal(backend.promptCalls, 1);
+});
+
 test("unresolved timeout becomes UNKNOWN; late owned result can recover", async t => {
     const { backend, service } = await fixture(t, 100);
     backend.mode = "timeout_lost";
     const unknown = await service.createJob(input());
     assert.equal(unknown.state, "UNKNOWN");
+    assert.equal(unknown.prompt_id, null);
     assert.equal(backend.promptCalls, 1);
     await rejectsCode(() => service.createJob(input()), "DUPLICATE_REQUEST");
     assert.equal(backend.promptCalls, 1);
     backend.complete();
-    assert.equal((await service.getJob(unknown.job_id)).state, "SUCCEEDED");
+    const recovered = await service.getJob(unknown.job_id);
+    assert.equal(recovered.state, "SUCCEEDED");
+    assert.equal(recovered.prompt_id, backend.lastPayload.prompt_id);
+    assert.notEqual(recovered.prompt_id, recovered.job_id);
     assert.equal(backend.promptCalls, 1);
 });
 
@@ -306,6 +379,16 @@ test("missing or invalid PNG cannot certify successful history", async t => {
     backend.imageBytes = PNG;
     assert.equal((await service.getJob(queued.job_id)).state, "SUCCEEDED");
 });
+test("journal allows distinct backend ID and rejects malformed present prompt ID", async t => {
+    const { journal, service } = await fixture(t);
+    const queued = await service.createJob(input());
+    const record = await journal.get(queued.job_id);
+    assert.notEqual(record.job_id, record.prompt_id);
+    await rejectsCode(() => journal.put({ ...record, prompt_id: "not-a-uuid" }), "JOURNAL_CORRUPT");
+    await rejectsCode(() => journal.put({ ...record, prompt_id: null }), "JOURNAL_CORRUPT");
+    assert.equal((await journal.get(queued.job_id)).prompt_id, queued.prompt_id);
+});
+
 test("corrupt and partial journal block recovery and new submits", async t => {
     const { backend, service, journal, directory } = await fixture(t);
     const queued = await service.createJob(input());

@@ -26,7 +26,11 @@ function validate(record, expectedId) {
         typeof record.created_at !== "string" ||
         !record.requested_settings || typeof record.requested_settings !== "object" ||
         !Object.hasOwn(record, "effective_settings") ||
-        record.prompt_id !== expectedId || !Object.hasOwn(record, "output_locator")) {
+        !Object.hasOwn(record, "prompt_id") ||
+        (record.prompt_id !== null && (typeof record.prompt_id !== "string" || !JOB_ID.test(record.prompt_id))) ||
+        (["QUEUED", "RUNNING", "SUCCEEDED"].includes(record.state) && record.prompt_id === null) ||
+        (["VALIDATING", "SUBMITTING"].includes(record.state) && record.prompt_id !== null) ||
+        !Object.hasOwn(record, "output_locator")) {
         throw new JournalError("JOURNAL_CORRUPT", `Invalid Manga job record ${expectedId}`);
     }
     const output = record.output_locator;

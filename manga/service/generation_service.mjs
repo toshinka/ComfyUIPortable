@@ -226,7 +226,7 @@ export class GenerationService {
                 clean_positive: result.positive_clean, clean_negative: result.negative_clean,
                 resolved_loras: result.resolved_loras, capability_revision: body.settings.capability_revision,
                 graph_digest: body.expected_graph_digest, submitted_graph_digest: null,
-                backend_identity: identity, prompt_id: jobId, save_node_id: saveNodeId,
+                backend_identity: identity, prompt_id: null, save_node_id: saveNodeId,
                 created_at: now(), submitted_at: null, started_at: null, finished_at: null,
                 state: "VALIDATING", error: null, output_locator: null, ownership_token: token
             };
@@ -237,7 +237,7 @@ export class GenerationService {
             record.state = "SUBMITTING";
             await this.journal.put(record);
             const payload = {
-                prompt_id: jobId, prompt: graph,
+                prompt: graph,
                 extra_data: { tegaki_manga: {
                     job_id: jobId, request_id: requestId, graph_digest: body.expected_graph_digest,
                     submitted_graph_digest: record.submitted_graph_digest, ownership_token: token
@@ -252,7 +252,10 @@ export class GenerationService {
             } catch (error) {
                 return this._reconcileUnknown(record, error.code || "SUBMIT_UNCONFIRMED");
             }
-            if (reply.ok && reply.data.prompt_id === jobId) {
+            if (reply.ok && typeof reply.data.prompt_id === "string" && JOB_ID.test(reply.data.prompt_id) &&
+                typeof reply.data.number === "number" && Number.isFinite(reply.data.number) &&
+                isObject(reply.data.node_errors)) {
+                record.prompt_id = reply.data.prompt_id;
                 record.state = "QUEUED";
                 record.submitted_at = now();
                 await this.journal.put(record);
@@ -269,13 +272,36 @@ export class GenerationService {
         });
     }
 
-    _owned(item, record) {
+    _owned(item, record, promptId = record.prompt_id) {
         const meta = item?.[3]?.tegaki_manga;
-        return Array.isArray(item) && isObject(item[2]) && item[1] === record.prompt_id && isObject(meta) &&
+        return JOB_ID.test(promptId) && Array.isArray(item) && isObject(item[2]) &&
+            item[1] === promptId && isObject(meta) &&
             meta.job_id === record.job_id && meta.request_id === record.request_id &&
             meta.ownership_token === record.ownership_token && meta.graph_digest === record.graph_digest &&
             meta.submitted_graph_digest === record.submitted_graph_digest &&
             hash(stable(item[2])) === record.submitted_graph_digest;
+    }
+
+    async _recoverPromptId(record) {
+        // Installed ComfyUI preserves extra_data in both queue tuples and history prompt tuples.
+        // Read both complete views; an unavailable or oversized view leaves the job UNKNOWN.
+        const queue = await this._queue();
+        const response = await this._json("/history");
+        if (!response.ok) fail("HISTORY_UNKNOWN", "Backend history is unavailable", 503);
+        const candidates = new Set();
+        for (const item of [...queue.running, ...queue.pending]) {
+            if (this._owned(item, record, item[1])) candidates.add(item[1]);
+        }
+        for (const [promptId, entry] of Object.entries(response.data)) {
+            if (isObject(entry) && this._owned(entry.prompt, record, promptId)) candidates.add(promptId);
+        }
+        if (candidates.size !== 1) {
+            fail("JOB_UNRESOLVED", "A unique backend prompt ID could not be established", 503);
+        }
+        record.prompt_id = [...candidates][0];
+        record.state = "UNKNOWN";
+        record.submitted_at ??= now();
+        await this.journal.put(record);
     }
 
     async _history(record) {
@@ -290,6 +316,7 @@ export class GenerationService {
     }
 
     async _observe(record) {
+        if (record.prompt_id === null) await this._recoverPromptId(record);
         const history = await this._history(record);
         if (history) {
             const status = history.status;
