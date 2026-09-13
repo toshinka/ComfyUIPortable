@@ -1,14 +1,14 @@
 ComfyUIPortable — External AI Router / Compatibility Entry
 Updated: 2026-09-09 JST
-Repository: ComfyUIPortable local extracted repository
+Repository: https://github.com/toshinka/ComfyUIPortable
 Branch: codex/manga-playable
-Remote: pending publication
+Remote: https://github.com/toshinka/ComfyUIPortable.git
 Lineage:
 Extracted from `toshinka/tegaki` into the standalone `ComfyUIPortable` repository.
 Historical publication SHAs, pinned URLs, and evidence may refer to the former
 Tegaki repository and remain unchanged. “PUBLISHED ON MAIN” in historical
 sections refers to legacy Tegaki publication unless superseded.
-New ComfyUIPortable remote publication: pending.
+Standalone ComfyUIPortable publication: PUBLISHED
 Canonical router path: GITHUB_ComfyUI.txt
 Router/namespace publication: ef7daa502f501211cd6b06f378e9024dbff6f284
 Docs domain consolidation: LOCAL PENDING OWNER COMMIT/PUSH
