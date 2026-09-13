@@ -8,10 +8,10 @@
 監修し、ローカルのLUNAチャットへ安全な限定Cardを発行するための引き継ぎ正本である。
 この文書自体は実装Cardではない。
 
-Repository: `ComfyUIPortable local extracted repository`
+Repository: `https://github.com/toshinka/ComfyUIPortable`
 
 - Branch: `h3-play1-longrun`
-- Remote: `pending publication`
+- Remote: `https://github.com/toshinka/ComfyUIPortable.git`
 - Manga project root: repository root
 - Manga external entry: `GITHUB_MANGA.txt`
 - Manga entry path: `GITHUB_MANGA.txt`
@@ -166,8 +166,8 @@ GitHub上のComfyUIPortable Manga Authoring改修の設計監修者として進�
 
 Source lineage repository (historical):
 https://github.com/toshinka/tegaki
-Current repository: ComfyUIPortable local extracted repository
-Remote: pending publication
+Current repository: https://github.com/toshinka/ComfyUIPortable
+Remote: https://github.com/toshinka/ComfyUIPortable.git
 
 最初に以下を順番に読んでください。
 1. GITHUB_MANGA.txt
