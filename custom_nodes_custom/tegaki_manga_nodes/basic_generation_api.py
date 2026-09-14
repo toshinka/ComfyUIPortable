@@ -8,7 +8,10 @@ import os
 
 from aiohttp import web
 
-from .basic_generation import CORE_NODES, NODE_IDENTITY, GenerationContractError, build_catalog, compile_basic
+from .basic_generation import (
+    CORE_NODES, NODE_IDENTITY, WILDCARD_ENV, GenerationContractError,
+    _digest, _dynamic_prompt_api, _wildcard_root, build_catalog, compile_basic,
+)
 
 MAX_REQUEST_BYTES = 256 * 1024
 
@@ -37,7 +40,21 @@ def _live_catalog():
         resolved = folder_paths.get_full_path(kind, name)
         return resolved is not None and os.path.isfile(resolved)
 
-    return build_catalog(checkpoints, loras, inputs, is_available)
+    catalog = build_catalog(checkpoints, loras, inputs, is_available)
+    # Dynamic Prompt capability is part of Manga's backend contract.  The
+    # package/root are checked here as well as at compile time so a missing
+    # runtime asset cannot present a misleading READY catalog.
+    _dynamic, _command, _wildcard_command, _generator, _parse, _manager, version = _dynamic_prompt_api()
+    root = _wildcard_root()
+    catalog["dynamic_prompts"] = {
+        "available": True,
+        "version": version,
+        "wildcard_root": str(root),
+        "override_env": WILDCARD_ENV,
+        "supported_syntax": ["__wildcard__", "{a|b}", "nested", "weighted", "escaped_braces"],
+    }
+    catalog["revision"] = _digest(catalog)
+    return catalog
 
 
 def _error(code, message, status, request_value=None):

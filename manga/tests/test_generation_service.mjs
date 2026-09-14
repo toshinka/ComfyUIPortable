@@ -74,6 +74,8 @@ class FakeBackend {
             json(res, 200, {
                 ok: true, normalized_request: request, graph: compiled, graph_digest: DIGEST,
                 capability_revision: "r1", effective_seed: Number(request.seed_requested),
+                positive_raw: request.positive_raw, negative_raw: request.negative_raw,
+                positive_expanded: request.positive_raw, negative_expanded: request.negative_raw,
                 positive_clean: request.positive_raw, negative_clean: request.negative_raw,
                 resolved_loras: []
             });
@@ -189,7 +191,11 @@ test("accepted submit follows QUEUED, RUNNING, completed history, verified PNG",
     assert.notEqual(queued.prompt_id, queued.job_id);
     assert.equal(queued.prompt_id, backend.lastPayload.prompt_id);
     assert.equal(Object.hasOwn(backend.lastSubmittedPayload, "prompt_id"), false);
-    assert.equal((await journal.get(queued.job_id)).prompt_id, backend.lastPayload.prompt_id);
+    const recorded = await journal.get(queued.job_id);
+    assert.equal(recorded.prompt_id, backend.lastPayload.prompt_id);
+    assert.equal(recorded.positive_raw, "draw");
+    assert.equal(recorded.positive_expanded, "draw");
+    assert.equal(recorded.positive_clean, "draw");
     assert.equal(backend.promptCalls, 1);
     assert.equal(backend.lastPayload.prompt["7"].inputs.filename_prefix, `Manga/Playable/${queued.job_id}`);
     assert.equal(backend.lastPayload.extra_data.tegaki_manga.request_id, queued.request_id);

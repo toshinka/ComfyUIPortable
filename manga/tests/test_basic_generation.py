@@ -1,7 +1,9 @@
 """Targeted PLAY1a tests of the production pure catalog and compiler."""
 
 import importlib.util
+import os
 import pathlib
+import tempfile
 import unittest
 
 MODULE = pathlib.Path(__file__).resolve().parents[1] / ".." / "custom_nodes_custom" / "tegaki_manga_nodes" / "basic_generation.py"
@@ -166,6 +168,138 @@ class BasicGenerationTests(unittest.TestCase):
         with self.assertRaises(basic.GenerationContractError) as raised:
             basic.compile_basic({**self.valid, "positive_raw": "<lora:styles/B:1>", "capability_revision": lora_offline["revision"]}, lora_offline)
         self.assertEqual(raised.exception.code, "LORA_UNAVAILABLE")
+
+
+class DynamicPromptTests(unittest.TestCase):
+    """PLAY4 bounded dynamic-prompt contract tests over project fixtures."""
+
+    @classmethod
+    def setUpClass(cls):
+        try:
+            import dynamicprompts  # noqa: F401
+        except Exception:
+            raise unittest.SkipTest("embedded dynamicprompts is unavailable")
+
+    def setUp(self):
+        self.catalog = basic.build_catalog(
+            ["Illustrious.safetensors"],
+            ["styles/A.safetensors", "styles/B.safetensors", "other/A.safetensors"],
+            fake_inputs(), lambda kind, name: True,
+        )
+
+    def _request(self, positive, negative="", seed="123"):
+        return {
+            "request_id": "play4_dynamic",
+            "mode": "txt2img",
+            "checkpoint_id": "Illustrious.safetensors",
+            "positive_raw": positive,
+            "negative_raw": negative,
+            "sampler_id": "euler",
+            "scheduler_id": "normal",
+            "steps": 20,
+            "cfg": 7.0,
+            "width": 832,
+            "height": 1216,
+            "seed_requested": seed,
+            "capability_revision": self.catalog["revision"],
+        }
+
+    def _compile(self, files, positive, negative="", seed="123"):
+        with tempfile.TemporaryDirectory(prefix="tegaki-play4-wildcards-") as directory:
+            root = pathlib.Path(directory)
+            for name, contents in files.items():
+                target = root / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(contents, encoding="utf-8")
+            previous = os.environ.get(basic.WILDCARD_ENV)
+            os.environ[basic.WILDCARD_ENV] = str(root)
+            try:
+                return basic.compile_basic(self._request(positive, negative, seed), self.catalog)
+            finally:
+                if previous is None:
+                    os.environ.pop(basic.WILDCARD_ENV, None)
+                else:
+                    os.environ[basic.WILDCARD_ENV] = previous
+
+    def _expect_error(self, files, positive, code, negative=""):
+        with self.assertRaises(basic.GenerationContractError) as raised:
+            self._compile(files, positive, negative)
+        self.assertEqual(raised.exception.code, code)
+
+    def test_wildcard_and_choice_expansion(self):
+        wildcard = self._compile({"color.txt": "red\nblue\n"}, "hero __color__")
+        self.assertIn(wildcard["positive_expanded"], ("hero red", "hero blue"))
+        choice = self._compile({}, "hero {smile|serious expression}")
+        self.assertIn(choice["positive_expanded"], ("hero smile", "hero serious expression"))
+
+    def test_same_seed_is_deterministic(self):
+        files = {"color.txt": "red\nblue\n", "nested/pose.txt": "__color__ {front|profile}\n"}
+        first = self._compile(files, "hero __nested/pose__", "bad {soft|hard}", seed="77")
+        second = self._compile(files, "hero __nested/pose__", "bad {soft|hard}", seed="77")
+        self.assertEqual(first["positive_expanded"], second["positive_expanded"])
+        self.assertEqual(first["negative_expanded"], second["negative_expanded"])
+        self.assertEqual(first["graph_digest"], second["graph_digest"])
+
+    def test_positive_and_negative_rng_domains_are_independent(self):
+        first = self._compile({}, "hero {a|b}", "bad {red|blue}", seed="8")
+        second = self._compile({}, "hero {a|b|c}", "bad {red|blue}", seed="8")
+        self.assertEqual(first["negative_expanded"], second["negative_expanded"])
+
+    def test_nested_wildcard_choice_and_weighted_choice(self):
+        nested = self._compile({"outer.txt": "__inner__\n", "inner.txt": "inside\n"}, "__outer__")
+        self.assertEqual(nested["positive_expanded"], "inside")
+        choice = self._compile({}, "{left|{middle|right}}")
+        self.assertIn(choice["positive_expanded"], ("left", "middle", "right"))
+        weighted = self._compile({}, "{1::rare|9::common}")
+        self.assertIn(weighted["positive_expanded"], ("rare", "common"))
+
+    def test_escaped_braces_are_literal(self):
+        result = self._compile({}, r"literal \{a|b\}")
+        self.assertEqual(result["positive_expanded"], "literal {a|b}")
+
+    def test_missing_and_malformed_fail_closed(self):
+        self._expect_error({}, "hero __does_not_exist__", "WILDCARD_NOT_FOUND")
+        self._expect_error({}, "hero {red|blue", "INVALID_PROMPT_SYNTAX")
+
+    def test_wildcard_path_safety(self):
+        for prompt in ("__../secret__", "__foo/../../secret__", "__C:/secret__", "__/secret__", "__\\\\secret__", "__bad\x00name__"):
+            with self.subTest(prompt=prompt):
+                self._expect_error({}, prompt, "INVALID_WILDCARD_PATH")
+
+    def test_wildcard_emitted_lora_uses_strict_resolver(self):
+        valid = self._compile({"with_lora.txt": "hero <lora:styles/B:0.7>\n"}, "__with_lora__")
+        self.assertEqual(valid["resolved_loras"][0]["id"], "styles/B.safetensors")
+        self.assertEqual(valid["positive_clean"], "hero ")
+        self._expect_error({"bad_lora.txt": "hero <lora:missing:0.7>\n"}, "__bad_lora__", "LORA_UNAVAILABLE")
+        self._expect_error({"dup.txt": "<lora:styles/A:0.5> <lora:styles/A.safetensors:0.6>\n"}, "__dup__", "LORA_DUPLICATE")
+
+    def test_prompt_audit_trail_and_root_override(self):
+        raw = "hero __with_lora__"
+        result = self._compile({"with_lora.txt": "style <lora:styles/B:0.7>\n"}, raw)
+        self.assertEqual(result["positive_raw"], raw)
+        self.assertEqual(result["positive_expanded"], "hero style <lora:styles/B:0.7>")
+        self.assertEqual(result["positive_clean"], "hero style ")
+        self.assertEqual(result["wildcard_root"].split("\\")[-1], pathlib.Path(result["wildcard_root"]).name)
+        self.assertEqual(result["dynamicprompts_version"], "0.31.0")
+
+    def test_wildcard_changes_are_seen_on_later_compile(self):
+        with tempfile.TemporaryDirectory(prefix="tegaki-play4-refresh-") as directory:
+            root = pathlib.Path(directory)
+            file = root / "changing.txt"
+            file.write_text("first\n", encoding="utf-8")
+            previous = os.environ.get(basic.WILDCARD_ENV)
+            os.environ[basic.WILDCARD_ENV] = str(root)
+            try:
+                first = basic.compile_basic(self._request("__changing__"), self.catalog)
+                file.write_text("second\n", encoding="utf-8")
+                second = basic.compile_basic(self._request("__changing__"), self.catalog)
+            finally:
+                if previous is None:
+                    os.environ.pop(basic.WILDCARD_ENV, None)
+                else:
+                    os.environ[basic.WILDCARD_ENV] = previous
+        self.assertEqual(first["positive_expanded"], "first")
+        self.assertEqual(second["positive_expanded"], "second")
 
 
 

@@ -157,6 +157,9 @@ export class GenerationService {
             fail("DIGEST_MISMATCH", "Reviewed graph digest or capability revision differs", 409);
         }
         if (!isDeepStrictEqual(result.normalized_request, compileRequest) || !isObject(result.graph) ||
+            typeof result.positive_raw !== "string" || result.positive_raw !== settings.positive_raw ||
+            typeof result.negative_raw !== "string" || result.negative_raw !== settings.negative_raw ||
+            typeof result.positive_expanded !== "string" || typeof result.negative_expanded !== "string" ||
             typeof result.positive_clean !== "string" || typeof result.negative_clean !== "string" ||
             !Array.isArray(result.resolved_loras) || result.effective_seed !== Number(seed)) {
             fail("COMPILE_INVALID", "Backend compile result does not match request", 502);
@@ -222,8 +225,16 @@ export class GenerationService {
                 job_id: jobId, request_id: requestId, idempotency_key: body.idempotency_key,
                 requested_settings: structuredClone(body.settings),
                 effective_settings: { ...result.normalized_request, seed_requested: String(result.effective_seed) },
-                raw_positive: body.settings.positive_raw, raw_negative: body.settings.negative_raw,
+                raw_positive: result.positive_raw, raw_negative: result.negative_raw,
+                positive_raw: result.positive_raw, negative_raw: result.negative_raw,
+                expanded_positive: result.positive_expanded, expanded_negative: result.negative_expanded,
+                positive_expanded: result.positive_expanded, negative_expanded: result.negative_expanded,
                 clean_positive: result.positive_clean, clean_negative: result.negative_clean,
+                positive_clean: result.positive_clean, negative_clean: result.negative_clean,
+                wildcard_root: typeof result.wildcard_root === "string" ? result.wildcard_root : null,
+                dynamicprompts_version: typeof result.dynamicprompts_version === "string" ? result.dynamicprompts_version : null,
+                dynamic_seed_domains: isObject(result.dynamic_seed_domains)
+                    ? structuredClone(result.dynamic_seed_domains) : null,
                 resolved_loras: result.resolved_loras, capability_revision: body.settings.capability_revision,
                 graph_digest: body.expected_graph_digest, submitted_graph_digest: null,
                 backend_identity: identity, prompt_id: null, save_node_id: saveNodeId,

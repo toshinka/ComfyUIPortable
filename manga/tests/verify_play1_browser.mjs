@@ -82,6 +82,8 @@ class FakeBackend {
             return json(res, 200, { ok: true, graph: graph(input), graph_digest: DIGEST,
                 capability_revision: catalog.revision, normalized_request: input,
                 effective_seed: input.seed_requested === "-1" ? 42 : Number(input.seed_requested),
+                positive_raw: input.positive_raw, negative_raw: input.negative_raw,
+                positive_expanded: input.positive_raw, negative_expanded: input.negative_raw,
                 positive_clean: input.positive_raw, negative_clean: input.negative_raw, resolved_loras: [] });
         }
         if (req.method === "POST" && target.pathname === "/prompt") {

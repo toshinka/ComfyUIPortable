@@ -1,0 +1,1 @@
+clean illustration, soft lighting, {simple background|quiet background}, <lora:!!!Ani/Ani0H/2000s_anime_style.safetensors:0.7>

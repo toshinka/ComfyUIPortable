@@ -5,9 +5,12 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
 import re
 import secrets
-from pathlib import PurePosixPath
+from dataclasses import fields, is_dataclass
+from importlib import metadata
+from pathlib import Path, PurePosixPath
 from typing import Any, Callable
 
 SCHEMA_VERSION = "1"
@@ -33,6 +36,14 @@ TAG_RE = re.compile(r"<[^<>]*>")
 LORA_RE = re.compile(r"<lora:([^:<>]+):([+-]?(?:\d+(?:\.\d*)?|\.\d+))>")
 REQUEST_ID_RE = re.compile(r"[A-Za-z0-9_-]{1,64}")
 SEED_RE = re.compile(r"(?:0|[1-9][0-9]*)")
+WILDCARD_ENV = "TEGAKI_MANGA_WILDCARDS_DIR"
+WILDCARD_TOKEN_RE = re.compile(r"__(.+?)__")
+# dynamicprompts 0.31.0 does not consume backslash escapes itself.  Protect
+# the two brace escapes before handing the template to its parser, then restore
+# them in the effective prompt.  This is a compatibility shim, not a second
+# dynamic-prompt parser.
+ESCAPED_OPEN = "\ue000"
+ESCAPED_CLOSE = "\ue001"
 
 
 class GenerationContractError(ValueError):
@@ -185,6 +196,133 @@ def _resolve_lora(name: str, catalog: dict) -> str:
     _fail("LORA_UNAVAILABLE", f"LoRA '{name}' is unavailable")
 
 
+def _wildcard_root() -> Path:
+    """Resolve Manga's owned wildcard root without coupling it to Forge."""
+    configured = os.environ.get(WILDCARD_ENV, "").strip()
+    root = Path(configured) if configured else Path(__file__).resolve().parents[2] / "manga" / "wildcards"
+    try:
+        root = root.expanduser().resolve()
+    except (OSError, RuntimeError, ValueError) as exc:
+        _fail("WILDCARD_ROOT_UNAVAILABLE", f"Manga wildcard root cannot be resolved: {exc}")
+    if not root.is_dir():
+        _fail("WILDCARD_ROOT_UNAVAILABLE", f"Manga wildcard root is unavailable: {root}")
+    return root
+
+
+def _dynamic_prompt_api():
+    """Load the installed dynamicprompts API lazily and fail capability-closed."""
+    try:
+        import dynamicprompts
+        from dynamicprompts.commands import Command, WildcardCommand
+        from dynamicprompts.generators import RandomPromptGenerator
+        from dynamicprompts.parser.parse import parse
+        from dynamicprompts.wildcards import WildcardManager
+    except Exception as exc:
+        _fail("DYNAMIC_PROMPTS_UNAVAILABLE", f"Installed dynamicprompts is unavailable: {exc}")
+    try:
+        version = metadata.version("dynamicprompts")
+    except metadata.PackageNotFoundError:
+        version = str(getattr(dynamicprompts, "__version__", "unknown"))
+    return dynamicprompts, Command, WildcardCommand, RandomPromptGenerator, parse, WildcardManager, version
+
+
+def _iter_dataclass_values(value: Any):
+    if is_dataclass(value) and not isinstance(value, type):
+        for field in fields(value):
+            yield getattr(value, field.name)
+    elif isinstance(value, dict):
+        yield from value.values()
+    elif isinstance(value, (list, tuple, set, frozenset)):
+        yield from value
+
+
+def _iter_wildcard_commands(command: Any, wildcard_type: type):
+    if isinstance(command, wildcard_type):
+        yield command
+    for child in _iter_dataclass_values(command):
+        if isinstance(child, str) or child is None:
+            continue
+        yield from _iter_wildcard_commands(child, wildcard_type)
+
+
+def _safe_wildcard_name(value: Any) -> str:
+    if not isinstance(value, str) or not value:
+        _fail("INVALID_WILDCARD_PATH", "Wildcard identifier must be a non-empty relative name")
+    if "\x00" in value or any(ord(char) < 32 or ord(char) == 127 for char in value):
+        _fail("INVALID_WILDCARD_PATH", "Wildcard identifier contains a control character")
+    normalized = value.replace("\\", "/")
+    if value.startswith(("/", "\\")) or normalized.startswith("//") or re.match(r"^[A-Za-z]:", normalized):
+        _fail("INVALID_WILDCARD_PATH", "Wildcard identifier must remain relative to the Manga wildcard root")
+    parts = normalized.split("/")
+    if any(part in ("", ".", "..") for part in parts) or ".." in normalized:
+        _fail("INVALID_WILDCARD_PATH", "Wildcard identifier contains an unsafe path segment")
+    if any(char in normalized for char in ("<", ">", "#", "$", ":", "*", "?", "[", "]")):
+        _fail("INVALID_WILDCARD_PATH", "Wildcard identifier contains unsupported syntax")
+    return normalized
+
+
+def _protect_escaped_braces(raw: str) -> str:
+    if ESCAPED_OPEN in raw or ESCAPED_CLOSE in raw:
+        _fail("INVALID_PROMPT_SYNTAX", "Prompt contains reserved dynamic-prompt escape markers")
+    return raw.replace(r"\{", ESCAPED_OPEN).replace(r"\}", ESCAPED_CLOSE)
+
+
+def _restore_escaped_braces(value: str) -> str:
+    return value.replace(ESCAPED_OPEN, "{").replace(ESCAPED_CLOSE, "}")
+
+
+def _derive_dynamic_seed(seed: int, domain: str) -> int:
+    """Derive independent, stable RNG domains from the effective image seed."""
+    digest = hashlib.sha256(f"tegaki-manga-play4:{domain}:{seed}".encode("utf-8")).digest()
+    return int.from_bytes(digest[:8], "big", signed=False)
+
+
+def _expand_dynamic_prompt(raw: str, effective_seed: int, domain: str) -> tuple[str, str, str]:
+    """Expand one basic/global prompt through installed dynamicprompts only."""
+    _dynamic, _Command, wildcard_type, generator_type, parse, manager_type, version = _dynamic_prompt_api()
+    root = _wildcard_root()
+    manager = manager_type(root)
+    protected = _protect_escaped_braces(raw)
+    try:
+        parsed = parse(protected)
+    except Exception as exc:
+        _fail("INVALID_PROMPT_SYNTAX", f"Dynamic prompt syntax is invalid: {exc}")
+
+    def validate_commands(command):
+        for wildcard in _iter_wildcard_commands(command, wildcard_type):
+            name = wildcard.wildcard
+            if isinstance(name, str):
+                name = _safe_wildcard_name(name)
+                if name not in manager.get_collection_names() or not manager.get_values(name):
+                    _fail("WILDCARD_NOT_FOUND", f"Wildcard '{name}' was not found in the Manga wildcard root")
+
+    validate_commands(parsed)
+    dynamic_seed = _derive_dynamic_seed(effective_seed, domain)
+    if protected == "":
+        return "", str(root), version
+    try:
+        expanded_protected = generator_type(wildcard_manager=manager, seed=dynamic_seed).generate(
+            protected, num_images=1
+        )[0]
+    except GenerationContractError:
+        raise
+    except Exception as exc:
+        # Parser failures in wildcard contents are syntax failures; all other
+        # missing/invalid wildcard cases are reported without leaking literals.
+        message = str(exc)
+        code = "INVALID_PROMPT_SYNTAX" if "parse" in message.lower() or "expected" in message.lower() else "WILDCARD_NOT_FOUND"
+        _fail(code, f"Dynamic prompt expansion failed: {exc}")
+
+    try:
+        expanded_parsed = parse(expanded_protected)
+    except Exception as exc:
+        _fail("INVALID_PROMPT_SYNTAX", f"Expanded dynamic prompt is invalid: {exc}")
+    validate_commands(expanded_parsed)
+    if WILDCARD_TOKEN_RE.search(expanded_protected):
+        _fail("WILDCARD_NOT_FOUND", "Expanded prompt still contains an unresolved wildcard")
+    return _restore_escaped_braces(expanded_protected), str(root), version
+
+
 def _compile_prompt(raw: str, catalog: dict) -> tuple[str, list[dict]]:
     output = []
     resolved = []
@@ -255,11 +393,6 @@ def compile_basic(request: dict, catalog: dict, random_seed: Callable[[], int] |
     seed_text = request["seed_requested"]
     if seed_text != "-1" and (not SEED_RE.fullmatch(seed_text) or int(seed_text) > PRODUCT_BOUNDS["seed"]["max"]):
         _fail("INVALID_SEED", "seed_requested must be '-1' or a decimal string 0..4294967295")
-    positive, pos_loras = _compile_prompt(request["positive_raw"], catalog)
-    negative, neg_loras = _compile_prompt(request["negative_raw"], catalog)
-    loras = pos_loras + neg_loras
-    if len({item["id"] for item in loras}) != len(loras):
-        _fail("LORA_DUPLICATE", "The same resolved LoRA appears more than once")
     if seed_text == "-1":
         seed = (random_seed or (lambda: secrets.randbelow(1 << 32)))()
         _check_int(seed, "resolved seed", 0, PRODUCT_BOUNDS["seed"]["max"])
@@ -267,6 +400,24 @@ def compile_basic(request: dict, catalog: dict, random_seed: Callable[[], int] |
         seed = int(seed_text)
     if seed > int(bounds["seed"]["max"]) or seed < bounds["seed"]["min"]:
         _fail("INVALID_SEED", "Seed is outside backend bounds")
+
+    # Dynamic Prompt expansion is deliberately before strict LoRA extraction.
+    # Each side receives an independent deterministic RNG domain derived from
+    # the one effective image seed, so positive choices cannot perturb
+    # negative choices.
+    positive_expanded, wildcard_root, dynamic_version = _expand_dynamic_prompt(
+        request["positive_raw"], seed, "positive"
+    )
+    negative_expanded, negative_root, _ = _expand_dynamic_prompt(
+        request["negative_raw"], seed, "negative"
+    )
+    if wildcard_root != negative_root:
+        _fail("WILDCARD_ROOT_UNAVAILABLE", "Positive and negative prompts resolved different wildcard roots")
+    positive, pos_loras = _compile_prompt(positive_expanded, catalog)
+    negative, neg_loras = _compile_prompt(negative_expanded, catalog)
+    loras = pos_loras + neg_loras
+    if len({item["id"] for item in loras}) != len(loras):
+        _fail("LORA_DUPLICATE", "The same resolved LoRA appears more than once")
 
     graph = {"1": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": selected}}}
     model, clip = ["1", 0], ["1", 1]
@@ -297,7 +448,13 @@ def compile_basic(request: dict, catalog: dict, random_seed: Callable[[], int] |
         "ok": True, "schema_version": SCHEMA_VERSION,
         "normalized_request": dict(request), "requested_seed": seed_text, "effective_seed": seed,
         "positive_raw": request["positive_raw"], "negative_raw": request["negative_raw"],
+        "positive_expanded": positive_expanded, "negative_expanded": negative_expanded,
         "positive_clean": positive, "negative_clean": negative,
         "resolved_loras": loras, "capability_revision": catalog["revision"],
+        "wildcard_root": wildcard_root, "dynamicprompts_version": dynamic_version,
+        "dynamic_seed_domains": {
+            "positive": _derive_dynamic_seed(seed, "positive"),
+            "negative": _derive_dynamic_seed(seed, "negative"),
+        },
         "graph": graph, "graph_digest": _digest(graph),
     }
