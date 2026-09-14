@@ -361,35 +361,84 @@ export function openDefaultBrowser(url) {
     });
 }
 
-async function main() {
-    const supervisor = new TegakiShellSupervisor({ portableRoot: path.resolve(__dirname, "..", "..") });
-    const input = createInterface({ input: process.stdin, output: process.stdout });
+/**
+ * Run the owner-facing CLI wait state around an already constructed supervisor.
+ * Keeping the input/signal sources injectable makes the STARTING -> READY gate
+ * testable without launching any services.
+ */
+export async function runSupervisorCli({
+    supervisor,
+    input,
+    signalSource = process,
+    log = message => console.log(message),
+    error = message => console.error(message),
+} = {}) {
+    if (!supervisor) throw new TypeError("supervisor is required");
+    if (!input) throw new TypeError("input is required");
     let starting = true;
     let requested = false;
     let finished = false;
+    let waitResolve = null;
+    let shutdownInFlight = null;
+
+    const cleanupListeners = () => {
+        signalSource.removeListener?.("SIGINT", requestShutdown);
+        signalSource.removeListener?.("SIGTERM", requestShutdown);
+        input.removeListener?.("SIGINT", requestShutdown);
+        input.removeListener?.("line", requestShutdown);
+        input.removeListener?.("close", onInputClose);
+    };
+    const finish = () => {
+        if (finished) return;
+        finished = true;
+        cleanupListeners();
+        input.close?.();
+        waitResolve?.(0);
+    };
     const shutdown = async () => {
         requested = true;
         if (starting || finished) return;
-        const stopped = await supervisor.shutdown();
-        if (stopped) { finished = true; input.close(); process.exitCode = 0; }
+        if (shutdownInFlight) return shutdownInFlight;
+        shutdownInFlight = (async () => {
+            const stopped = await supervisor.shutdown();
+            if (stopped) finish();
+            return stopped;
+        })().finally(() => { shutdownInFlight = null; });
+        return shutdownInFlight;
     };
-    process.on("SIGINT", shutdown);
-    process.on("SIGTERM", shutdown);
-    input.on("SIGINT", shutdown);
-    input.on("line", shutdown);
-    input.on("close", () => { if (!finished) void shutdown(); });
-    console.log("Press Enter or Ctrl+C for safe shutdown.");
+    const requestShutdown = () => { void shutdown(); };
+    const onInputClose = () => { if (!finished) requestShutdown(); };
+    signalSource.on?.("SIGINT", requestShutdown);
+    signalSource.on?.("SIGTERM", requestShutdown);
+    input.on?.("SIGINT", requestShutdown);
+    input.on?.("line", requestShutdown);
+    input.on?.("close", onInputClose);
+    log("Press Enter or Ctrl+C for safe shutdown.");
     try {
         await supervisor.start();
-        await new Promise(() => {});
-    } catch (_) {
-        finished = true;
-        input.close();
-        process.exitCode = 1;
+        // The start promise is the only STARTING boundary.  Once it resolves,
+        // input is live and a queued request can be serviced immediately.
+        starting = false;
+        if (requested) await shutdown();
+        if (!finished) await new Promise(resolve => { waitResolve = resolve; });
+        return 0;
+    } catch (startupError) {
+        starting = false;
+        error(`State: FAILED — ${startupError.message}`);
+        finish();
+        return 1;
     } finally {
         starting = false;
         if (requested && !finished) await shutdown();
+        if (finished) cleanupListeners();
     }
+}
+
+async function main() {
+    const supervisor = new TegakiShellSupervisor({ portableRoot: path.resolve(__dirname, "..", "..") });
+    const input = createInterface({ input: process.stdin, output: process.stdout });
+    const exitCode = await runSupervisorCli({ supervisor, input });
+    process.exitCode = exitCode;
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === __filename) await main();

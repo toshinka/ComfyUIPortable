@@ -8,6 +8,7 @@ import {
     TegakiShellSupervisor,
     formatOccupiedPort,
     readShellConfig,
+    runSupervisorCli,
 } from "../tools/tegaki_shell_supervisor.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -33,6 +34,28 @@ class FakeChild extends EventEmitter {
         });
         return true;
     }
+}
+
+class FakeInput extends EventEmitter {
+    constructor() {
+        super();
+        this.closed = false;
+    }
+
+    close() {
+        this.closed = true;
+        this.emit("close");
+    }
+}
+
+function deferred() {
+    let resolve;
+    const promise = new Promise(value => { resolve = value; });
+    return { promise, resolve };
+}
+
+async function flush() {
+    await new Promise(resolve => setImmediate(resolve));
 }
 
 test("shell config keeps Manga endpoint and documented port overrides explicit", () => {
@@ -65,6 +88,152 @@ test("occupied H3 port fails closed before any process or Manga runtime starts",
     await assert.rejects(() => supervisor.start(), /8188.*occupied.*PID/);
     assert.equal(spawnCalls, 0);
     assert.equal(runtimeCalls, 0);
+});
+
+test("CLI clears STARTING after successful start and Enter reaches shutdown", async () => {
+    const input = new FakeInput();
+    const signals = new EventEmitter();
+    let startCalls = 0;
+    let shutdownCalls = 0;
+    const supervisor = {
+        async start() { startCalls += 1; },
+        async shutdown() { shutdownCalls += 1; return true; },
+    };
+    const run = runSupervisorCli({ supervisor, input, signalSource: signals, log: () => {}, error: () => {} });
+    await flush();
+    assert.equal(startCalls, 1);
+    assert.equal(shutdownCalls, 0);
+    input.emit("line");
+    assert.equal(await run, 0);
+    assert.equal(shutdownCalls, 1);
+    assert.equal(input.closed, true);
+});
+
+test("CLI invokes shutdown for Ctrl+C after READY", async () => {
+    const input = new FakeInput();
+    const signals = new EventEmitter();
+    let shutdownCalls = 0;
+    const supervisor = { async start() {}, async shutdown() { shutdownCalls += 1; return true; } };
+    const run = runSupervisorCli({ supervisor, input, signalSource: signals, log: () => {}, error: () => {} });
+    await flush();
+    signals.emit("SIGINT");
+    assert.equal(await run, 0);
+    assert.equal(shutdownCalls, 1);
+});
+
+test("CLI remembers a shutdown request received during STARTING", async () => {
+    const input = new FakeInput();
+    const signals = new EventEmitter();
+    const started = deferred();
+    let shutdownCalls = 0;
+    const supervisor = {
+        start: () => started.promise,
+        async shutdown() { shutdownCalls += 1; return true; },
+    };
+    const run = runSupervisorCli({ supervisor, input, signalSource: signals, log: () => {}, error: () => {} });
+    await flush();
+    input.emit("line");
+    await flush();
+    assert.equal(shutdownCalls, 0, "startup request must not race partial startup");
+    started.resolve();
+    assert.equal(await run, 0);
+    assert.equal(shutdownCalls, 1);
+});
+
+test("CLI runs a remembered request immediately when startup becomes READY", async () => {
+    const input = new FakeInput();
+    const signals = new EventEmitter();
+    const started = deferred();
+    let shutdownStarted = false;
+    let shutdownCalls = 0;
+    const supervisor = {
+        start: () => started.promise,
+        async shutdown() { shutdownCalls += 1; shutdownStarted = true; return true; },
+    };
+    const run = runSupervisorCli({ supervisor, input, signalSource: signals, log: () => {}, error: () => {} });
+    signals.emit("SIGINT");
+    started.resolve();
+    assert.equal(await run, 0);
+    assert.equal(shutdownCalls, 1);
+    assert.equal(shutdownStarted, true);
+});
+
+test("CLI successful shutdown closes its wait path", async () => {
+    const input = new FakeInput();
+    const signals = new EventEmitter();
+    let release;
+    const supervisor = {
+        async start() {},
+        shutdown: () => new Promise(resolve => { release = resolve; }),
+    };
+    const run = runSupervisorCli({ supervisor, input, signalSource: signals, log: () => {}, error: () => {} });
+    await flush();
+    input.emit("line");
+    await flush();
+    assert.equal(input.closed, false);
+    release(true);
+    assert.equal(await run, 0);
+    assert.equal(input.closed, true);
+});
+
+test("CLI does not report STOPPED when shutdown is refused", async () => {
+    const input = new FakeInput();
+    const signals = new EventEmitter();
+    let shutdownCalls = 0;
+    const supervisor = {
+        async start() {},
+        async shutdown() { shutdownCalls += 1; return shutdownCalls > 1; },
+    };
+    const run = runSupervisorCli({ supervisor, input, signalSource: signals, log: () => {}, error: () => {} });
+    await flush();
+    input.emit("line");
+    await flush();
+    assert.equal(shutdownCalls, 1);
+    assert.equal(input.closed, false);
+    input.emit("line");
+    assert.equal(await run, 0);
+    assert.equal(shutdownCalls, 2);
+});
+
+test("CLI coalesces repeated shutdown requests while one stop is in flight", async () => {
+    const input = new FakeInput();
+    const signals = new EventEmitter();
+    const stopping = deferred();
+    let shutdownCalls = 0;
+    const supervisor = {
+        async start() {},
+        shutdown: () => { shutdownCalls += 1; return stopping.promise; },
+    };
+    const run = runSupervisorCli({ supervisor, input, signalSource: signals, log: () => {}, error: () => {} });
+    await flush();
+    input.emit("line");
+    signals.emit("SIGINT");
+    signals.emit("SIGTERM");
+    await flush();
+    assert.equal(shutdownCalls, 1);
+    stopping.resolve(true);
+    assert.equal(await run, 0);
+    assert.equal(input.closed, true);
+});
+
+test("startup failure keeps existing owned-child cleanup semantics", async () => {
+    const children = [];
+    const supervisor = new TegakiShellSupervisor({
+        portableRoot: ROOT,
+        portInspector: async port => ({ port, host: "127.0.0.1", state: "free", detail: "ECONNREFUSED" }),
+        spawn: (_command, args) => {
+            const child = new FakeChild(args[0] || "h3");
+            children.push(child);
+            return child;
+        },
+        waitFor: async () => { throw new Error("controlled startup failure"); },
+        runtimeFactory: () => { throw new Error("Manga runtime must not start"); },
+        browserLauncher: async () => {},
+        log: () => {}, error: () => {},
+    });
+    await assert.rejects(() => supervisor.start(), /controlled startup failure/);
+    assert.equal(children.length, 1);
+    assert.ok(children.every(child => child.killed), "known partial children are cleaned");
 });
 
 test("Owner shutdown stops owned H3 children and delegates Manga stopAll", async () => {
