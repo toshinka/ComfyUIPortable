@@ -182,6 +182,20 @@ export function resolveH3OutputRoot(portableRoot, env = process.env) {
     return { outputRoot, overridden: true };
 }
 
+export function ensureH3RuntimeDirectories(outputRoot) {
+    const effectiveRoot = path.resolve(outputRoot);
+    const userDirectory = path.resolve(effectiveRoot, "h3_native_user");
+    const tempDirectory = path.resolve(effectiveRoot, "h3_native_temp");
+    try {
+        mkdirSync(effectiveRoot, { recursive: true });
+        mkdirSync(userDirectory, { recursive: true });
+        mkdirSync(tempDirectory, { recursive: true });
+    } catch (error) {
+        throw new Error(`H3 runtime directories could not be created beneath ${effectiveRoot}: ${error.message}`);
+    }
+    return { outputRoot: effectiveRoot, userDirectory, tempDirectory };
+}
+
 export class TegakiShellSupervisor {
     constructor(options = {}) {
         this.portableRoot = path.resolve(options.portableRoot || path.resolve(__dirname, "..", ".."));
@@ -246,7 +260,8 @@ export class TegakiShellSupervisor {
         verifyExecutable(h3NativeMain, "H3 Native launcher");
         verifyExecutable(h3Skin, "H3 shell server");
         const { outputRoot, overridden } = resolveH3OutputRoot(this.portableRoot, this.environment);
-        this.h3OutputRoot = outputRoot;
+        const namespaces = ensureH3RuntimeDirectories(outputRoot);
+        this.h3OutputRoot = namespaces.outputRoot;
         const nativeArgs = [
             h3NativeMain,
             "--listen", this.config.host,
@@ -255,8 +270,8 @@ export class TegakiShellSupervisor {
             "--extra-model-paths-config", this.modelPathsConfig,
             "--output-directory", outputRoot,
             "--input-directory", outputRoot,
-            "--user-directory", path.resolve(outputRoot, "h3_native_user"),
-            "--temp-directory", path.resolve(outputRoot, "h3_native_temp"),
+            "--user-directory", namespaces.userDirectory,
+            "--temp-directory", namespaces.tempDirectory,
             "--database-url", "sqlite:///:memory:", "--log-stdout",
         ];
         this.log(`Starting H3 Native backend: ${this.config.h3BackendUrl}/`);

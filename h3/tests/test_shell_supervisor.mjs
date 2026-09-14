@@ -7,6 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
     TegakiShellSupervisor,
+    ensureH3RuntimeDirectories,
     formatOccupiedPort,
     readShellConfig,
     resolveH3OutputRoot,
@@ -89,6 +90,19 @@ test("H3 output root defaults to the canonical namespace and rejects invalid ove
     );
 });
 
+test("H3 runtime directories are created before Native spawn for a fresh default root", async () => {
+    const portableRoot = await fs.mkdtemp(path.join(os.tmpdir(), "tegaki-h3-default-"));
+    try {
+        const { outputRoot } = resolveH3OutputRoot(portableRoot, {});
+        const namespaces = ensureH3RuntimeDirectories(outputRoot);
+        assert.equal(namespaces.outputRoot, path.resolve(portableRoot, "output", "h3"));
+        assert.equal((await fs.stat(namespaces.userDirectory)).isDirectory(), true);
+        assert.equal((await fs.stat(namespaces.tempDirectory)).isDirectory(), true);
+    } finally {
+        await fs.rm(portableRoot, { recursive: true, force: true });
+    }
+});
+
 test("H3 output override is writable and reaches Native and skin argv", async () => {
     const outputRoot = await fs.mkdtemp(path.join(os.tmpdir(), "tegaki-h3-output-"));
     const calls = [];
@@ -122,7 +136,13 @@ test("H3 output override is writable and reaches Native and skin argv", async ()
         const skinArgs = calls[1].args;
         const skinOutput = skinArgs.indexOf("--output-dir");
         assert.equal(skinArgs[skinOutput + 1], path.resolve(outputRoot));
-        assert.deepEqual(await fs.readdir(outputRoot), [], "writability probe is removed");
+        assert.deepEqual(
+            (await fs.readdir(outputRoot)).sort(),
+            ["h3_native_temp", "h3_native_user"],
+            "writability probe is removed and runtime namespaces exist",
+        );
+        assert.equal((await fs.stat(path.join(outputRoot, "h3_native_user"))).isDirectory(), true);
+        assert.equal((await fs.stat(path.join(outputRoot, "h3_native_temp"))).isDirectory(), true);
         assert.equal(await supervisor.shutdown(), true);
         assert.ok(children.every(child => child.killed));
     } finally {
