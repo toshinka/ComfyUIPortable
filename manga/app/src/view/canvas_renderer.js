@@ -226,13 +226,25 @@ export function renderMangaCanvas(canvas, document, sessionState, pageIndex = 0,
         ctx.fillStyle = "#ffffff";
         ctx.fillText(label, rx + 4, ry + 13);
 
-        // Handle for selected scene
+        // Four corner handles for the selected scene. The Scene Composer uses
+        // these anchors for direct resize while the Store remains the mutation
+        // boundary.
         if (isSelected) {
+            const handleSize = 9;
+            const half = handleSize / 2;
+            const corners = [
+                { x: rx, y: ry },
+                { x: rx + rw, y: ry },
+                { x: rx + rw, y: ry + rh },
+                { x: rx, y: ry + rh }
+            ];
             ctx.fillStyle = col.hex;
-            ctx.fillRect(rx + rw - 10, ry + rh - 10, 10, 10);
             ctx.strokeStyle = "#ffffff";
             ctx.lineWidth = 1.5;
-            ctx.strokeRect(rx + rw - 10, ry + rh - 10, 10, 10);
+            corners.forEach(corner => {
+                ctx.fillRect(corner.x - half, corner.y - half, handleSize, handleSize);
+                ctx.strokeRect(corner.x - half, corner.y - half, handleSize, handleSize);
+            });
         }
     });
 
@@ -416,10 +428,22 @@ export function hitTestCanvas(cw, ch, page, normX, normY, sessionState) {
     if (sessionState?.selectedSceneId) {
         const sc = (page.scenes || []).find(s => s.scene_id === sessionState.selectedSceneId);
         if (sc) {
-            const hx = (sc.area.x + sc.area.w) * cw;
-            const hy = (sc.area.y + sc.area.h) * ch;
-            if (Math.abs(pxX - hx) <= 14 && Math.abs(pxY - hy) <= 14) {
-                return { type: "handle_scene", item: sc };
+            const area = sc.area || { x: 0, y: 0, w: 1, h: 1 };
+            const rx = area.x * cw;
+            const ry = area.y * ch;
+            const rw = area.w * cw;
+            const rh = area.h * ch;
+            const hitDist = 14;
+            const corners = [
+                { x: rx, y: ry, handle: "nw" },
+                { x: rx + rw, y: ry, handle: "ne" },
+                { x: rx + rw, y: ry + rh, handle: "se" },
+                { x: rx, y: ry + rh, handle: "sw" }
+            ];
+            for (const corner of corners) {
+                if (Math.abs(pxX - corner.x) <= hitDist && Math.abs(pxY - corner.y) <= hitDist) {
+                    return { type: "handle_scene", handle: corner.handle, item: sc };
+                }
             }
         }
     }

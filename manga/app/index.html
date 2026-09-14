@@ -53,6 +53,13 @@
                 <button id="tab-guides" class="tab-btn" data-tab="guides">Rough Guides Layer</button>
                 <button id="tab-cast" class="tab-btn" data-tab="cast">CAST & Characters Layer</button>
             </div>
+            <div id="scene-composer-toolbar" role="toolbar" aria-label="Scene tools">
+                <span class="scene-tool-eyebrow">SCENE</span>
+                <button id="scene-tool-select" type="button" class="scene-tool-btn active" aria-pressed="true">Select</button>
+                <button id="scene-tool-add" type="button" class="scene-tool-btn" aria-pressed="false">+ Scene</button>
+                <button id="scene-tool-delete" type="button" class="scene-tool-btn scene-tool-danger" aria-pressed="false">Delete Scene</button>
+                <span id="scene-tool-status" role="status" aria-live="polite">Select a scene to edit, or draw a new one.</span>
+            </div>
             <div id="canvas-viewport">
                 <canvas id="manga-canvas" width="416" height="608"></canvas>
             </div>
@@ -60,6 +67,35 @@
 
         <!-- Right Inspector / Readout -->
         <div id="inspector-panel">
+            <section id="scene-composer-panel" class="panel-section" aria-labelledby="scene-composer-title">
+                <div class="scene-composer-head">
+                    <div>
+                        <span class="scene-composer-eyebrow">MANGA AUTHORING</span>
+                        <h2 id="scene-composer-title">Scene Composer</h2>
+                    </div>
+                    <button id="composer-advanced-toggle" type="button" class="scene-composer-advanced" aria-expanded="false">Advanced Authoring</button>
+                </div>
+                <p class="scene-composer-note">Compose page regions and prompts here. Basic Generate remains a separate single-prompt flow.</p>
+                <div id="scene-composer-selection" class="scene-composer-selection" role="status" aria-live="polite">Global page style</div>
+                <div id="scene-prompt-tabs" class="scene-prompt-tabs" role="tablist" aria-label="Scene prompts">
+                    <button id="scene-prompt-tab-global" type="button" role="tab" aria-selected="true" aria-controls="scene-composer-editor" data-prompt-target="global">Global</button>
+                </div>
+                <div id="scene-composer-error" class="scene-composer-error" role="alert" aria-live="polite"></div>
+                <div id="scene-composer-editor" class="scene-composer-editor" role="tabpanel" aria-labelledby="scene-prompt-tab-global">
+                    <div id="scene-composer-name-wrap" class="scene-composer-field" hidden>
+                        <label for="scene-composer-name">Scene name</label>
+                        <input id="scene-composer-name" type="text" autocomplete="off" placeholder="Scene name">
+                    </div>
+                    <div class="scene-composer-field">
+                        <label for="scene-composer-prompt">Prompt</label>
+                        <textarea id="scene-composer-prompt" rows="5" placeholder="Describe the page or scene…"></textarea>
+                    </div>
+                    <div class="scene-composer-field">
+                        <label for="scene-composer-negative">Negative Prompt</label>
+                        <textarea id="scene-composer-negative" rows="3" placeholder="What should be excluded…"></textarea>
+                    </div>
+                </div>
+            </section>
             <!-- Global / Summary -->
             <div class="panel-section">
                 <div class="section-title">Document Summary</div>
@@ -404,6 +440,29 @@
         const instanceErrorMsg = document.getElementById("instance-error-msg");
         const guideErrorMsg = document.getElementById("guide-error-banner");
         const guideUploadStatus = document.getElementById("guide-upload-status");
+        const inspectorPanel = document.getElementById("inspector-panel");
+        const sceneToolSelect = document.getElementById("scene-tool-select");
+        const sceneToolAdd = document.getElementById("scene-tool-add");
+        const sceneToolDelete = document.getElementById("scene-tool-delete");
+        const sceneToolStatus = document.getElementById("scene-tool-status");
+        const composerAdvancedToggle = document.getElementById("composer-advanced-toggle");
+        const composerSelection = document.getElementById("scene-composer-selection");
+        const composerPromptTabs = document.getElementById("scene-prompt-tabs");
+        const composerEditor = document.getElementById("scene-composer-editor");
+        const composerError = document.getElementById("scene-composer-error");
+        const composerNameWrap = document.getElementById("scene-composer-name-wrap");
+        const composerName = document.getElementById("scene-composer-name");
+        const composerPrompt = document.getElementById("scene-composer-prompt");
+        const composerNegative = document.getElementById("scene-composer-negative");
+
+        // Composer selection and drawing state are ephemeral UI state. They never
+        // enter the TEGAKI_AUTHORING_DOCUMENT; SessionState remains the selection
+        // authority for durable scene operations.
+        let composerPromptTarget = "global";
+        let lastComposerSelectedSceneId = session.selectedSceneId;
+        let sceneToolMode = "select";
+        let sceneDraftStart = null;
+        let sceneDraftArea = null;
 
         function setGuideUploadStatus(status) {
             if (!guideUploadStatus) return;
@@ -430,6 +489,10 @@
             sceneErrorMsg.textContent = "";
             instanceErrorMsg.className = "alert-error";
             instanceErrorMsg.textContent = "";
+            if (composerError) {
+                composerError.classList.remove("visible");
+                composerError.textContent = "";
+            }
             if (guideErrorMsg) {
                 guideErrorMsg.style.display = "none";
                 guideErrorMsg.textContent = "";
@@ -452,6 +515,238 @@
         function showSceneError(msg) {
             sceneErrorMsg.textContent = msg;
             sceneErrorMsg.className = "alert-error visible";
+        }
+
+        function showComposerError(msg) {
+            if (!composerError) return;
+            composerError.textContent = msg || "";
+            composerError.classList.toggle("visible", Boolean(msg));
+        }
+
+        function clampUnit(value) {
+            return Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
+        }
+
+        function roundUnit(value) {
+            return parseFloat(clampUnit(value).toFixed(4));
+        }
+
+        function normalizedCanvasPoint(event) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: clampUnit((event.clientX - rect.left) / Math.max(rect.width, 1)),
+                y: clampUnit((event.clientY - rect.top) / Math.max(rect.height, 1))
+            };
+        }
+
+        function sortedScenes(page = store.getPage()) {
+            return [...(page?.scenes || [])].sort((a, b) =>
+                (Number(a.order) || 0) - (Number(b.order) || 0));
+        }
+
+        function sceneDisplayName(scene, index = 0) {
+            const name = String(scene?.name || "").trim();
+            return name || `Scene ${Number(scene?.order) || index + 1}`;
+        }
+
+        function noteComposerSelection() {
+            const current = session.selectedSceneId;
+            if (current !== lastComposerSelectedSceneId && current) {
+                composerPromptTarget = current;
+            }
+            lastComposerSelectedSceneId = current;
+        }
+
+        function syncLayerTabClasses() {
+            document.querySelectorAll(".tab-btn").forEach(btn => {
+                btn.classList.toggle("active", btn.dataset.tab === session.activeTab);
+            });
+        }
+
+        function setComposerStatus(message) {
+            if (sceneToolStatus) sceneToolStatus.textContent = message;
+        }
+
+        function renderSceneComposer() {
+            const page = store.getPage();
+            if (!page || !composerPromptTabs) return;
+            const scenes = sortedScenes(page);
+            const sceneIds = new Set(scenes.map(scene => scene.scene_id));
+            if (composerPromptTarget !== "global" && !sceneIds.has(composerPromptTarget)) {
+                composerPromptTarget = sceneIds.has(session.selectedSceneId)
+                    ? session.selectedSceneId
+                    : (scenes[0]?.scene_id || "global");
+            }
+
+            composerPromptTabs.replaceChildren();
+            const targets = [{ id: "global", label: "Global" }, ...scenes.map((scene, index) => ({
+                id: scene.scene_id,
+                label: sceneDisplayName(scene, index)
+            }))];
+            for (const target of targets) {
+                const tab = document.createElement("button");
+                tab.type = "button";
+                tab.role = "tab";
+                tab.id = target.id === "global" ? "scene-prompt-tab-global" : `scene-prompt-tab-${target.id}`;
+                tab.dataset.promptTarget = target.id;
+                tab.setAttribute("aria-controls", "scene-composer-editor");
+                tab.setAttribute("aria-selected", String(composerPromptTarget === target.id));
+                tab.textContent = target.label;
+                tab.addEventListener("click", () => selectComposerTarget(target.id));
+                composerPromptTabs.appendChild(tab);
+            }
+
+            const isGlobal = composerPromptTarget === "global";
+            const selectedScene = scenes.find(scene => scene.scene_id === composerPromptTarget);
+            const activeTarget = isGlobal ? null : selectedScene;
+            composerNameWrap.hidden = isGlobal || !activeTarget;
+            if (activeTarget) {
+                composerSelection.textContent = `Editing ${sceneDisplayName(activeTarget, scenes.indexOf(activeTarget))}`;
+                composerEditor.setAttribute("aria-labelledby", `scene-prompt-tab-${activeTarget.scene_id}`);
+                if (document.activeElement !== composerName) composerName.value = activeTarget.name || "";
+                if (document.activeElement !== composerPrompt) composerPrompt.value = activeTarget.prompt || "";
+                if (document.activeElement !== composerNegative) composerNegative.value = activeTarget.negative_prompt || "";
+            } else {
+                composerSelection.textContent = "Global page style";
+                composerEditor.setAttribute("aria-labelledby", "scene-prompt-tab-global");
+                if (document.activeElement !== composerPrompt) composerPrompt.value = page.style_prompt || "";
+                if (document.activeElement !== composerNegative) composerNegative.value = page.style_negative_prompt || "";
+            }
+
+            sceneToolDelete.disabled = false;
+            sceneToolDelete.title = scenes.length <= 1
+                ? "At least one scene must remain"
+                : "Delete the selected scene";
+            if (sceneToolMode === "select") {
+                setComposerStatus(activeTarget
+                    ? `${sceneDisplayName(activeTarget, scenes.indexOf(activeTarget))} selected · drag to move or use a corner handle to resize`
+                    : "Select a scene to edit, or draw a new one.");
+            }
+        }
+
+        function selectComposerTarget(target) {
+            clearErrors();
+            if (target === "global") {
+                composerPromptTarget = "global";
+                session.setActiveTab("scenes");
+                renderSceneComposer();
+                return;
+            }
+            const scene = sortedScenes().find(item => item.scene_id === target);
+            if (!scene) return;
+            composerPromptTarget = target;
+            session.selectScene(target);
+            session.setActiveTab("scenes");
+        }
+
+        function setSceneTool(mode) {
+            const nextMode = mode === "add" ? "add" : "select";
+            const scenes = sortedScenes();
+            if (nextMode === "add" && scenes.length >= 6) {
+                sceneToolMode = "select";
+                sceneDraftStart = null;
+                sceneDraftArea = null;
+                setComposerStatus("Maximum 6 scenes allowed per page.");
+            } else {
+                sceneToolMode = nextMode;
+                sceneDraftStart = null;
+                sceneDraftArea = null;
+                setComposerStatus(nextMode === "add"
+                    ? "Drag on the page to create a Scene · Escape cancels"
+                    : "Select a scene to edit, or draw a new one.");
+            }
+            sceneToolSelect.classList.toggle("active", sceneToolMode === "select");
+            sceneToolAdd.classList.toggle("active", sceneToolMode === "add");
+            sceneToolSelect.setAttribute("aria-pressed", String(sceneToolMode === "select"));
+            sceneToolAdd.setAttribute("aria-pressed", String(sceneToolMode === "add"));
+            canvas.classList.toggle("scene-add-mode", sceneToolMode === "add");
+            if (sceneToolMode !== "add") updateCanvas();
+        }
+
+        function normalizeSceneArea(area, minW = 0.04, minH = 0.04) {
+            const x = clampUnit(area?.x);
+            const y = clampUnit(area?.y);
+            const w = Math.max(minW, Math.min(1 - x, Number(area?.w) || minW));
+            const h = Math.max(minH, Math.min(1 - y, Number(area?.h) || minH));
+            return {
+                shape_type: "rect",
+                x: roundUnit(x), y: roundUnit(y), w: roundUnit(w), h: roundUnit(h)
+            };
+        }
+
+        function resizeSceneAreaFromHandle(startArea, handle, dx, dy) {
+            const start = normalizeSceneArea(startArea);
+            const left = start.x;
+            const top = start.y;
+            const right = start.x + start.w;
+            const bottom = start.y + start.h;
+            const minW = 0.04;
+            const minH = 0.04;
+            let next;
+            if (handle === "nw") {
+                const nx = Math.max(0, Math.min(right - minW, left + dx));
+                const ny = Math.max(0, Math.min(bottom - minH, top + dy));
+                next = { x: nx, y: ny, w: right - nx, h: bottom - ny };
+            } else if (handle === "ne") {
+                const nr = Math.max(left + minW, Math.min(1, right + dx));
+                const ny = Math.max(0, Math.min(bottom - minH, top + dy));
+                next = { x: left, y: ny, w: nr - left, h: bottom - ny };
+            } else if (handle === "sw") {
+                const nx = Math.max(0, Math.min(right - minW, left + dx));
+                const nb = Math.max(top + minH, Math.min(1, bottom + dy));
+                next = { x: nx, y: top, w: right - nx, h: nb - top };
+            } else {
+                const nr = Math.max(left + minW, Math.min(1, right + dx));
+                const nb = Math.max(top + minH, Math.min(1, bottom + dy));
+                next = { x: left, y: top, w: nr - left, h: nb - top };
+            }
+            return normalizeSceneArea(next, minW, minH);
+        }
+
+        function finishSceneDraft() {
+            const draft = sceneDraftArea;
+            sceneDraftStart = null;
+            sceneDraftArea = null;
+            if (!draft) return;
+            if (draft.w < 0.04 || draft.h < 0.04) {
+                setSceneTool("select");
+                showComposerError("Scene rectangle is too small. Drag a larger area.");
+                updateCanvas();
+                return;
+            }
+            const area = normalizeSceneArea(draft);
+            setSceneTool("select");
+            try {
+                const scene = store.addScene({ area });
+                composerPromptTarget = scene.scene_id;
+                session.selectScene(scene.scene_id);
+                session.setActiveTab("scenes");
+                clearErrors();
+            } catch (err) {
+                showComposerError(err.message);
+            }
+            updateCanvas();
+        }
+
+        function deleteSelectedScene() {
+            clearErrors();
+            const selectedId = session.selectedSceneId;
+            if (!selectedId) return;
+            const before = sortedScenes();
+            const index = before.findIndex(scene => scene.scene_id === selectedId);
+            try {
+                store.deleteScene(selectedId);
+            } catch (err) {
+                showSceneError(err.message);
+                showComposerError(err.message);
+                return;
+            }
+            const remaining = sortedScenes();
+            const next = remaining[Math.min(Math.max(index, 0), remaining.length - 1)] || remaining[0] || null;
+            composerPromptTarget = next?.scene_id || "global";
+            session.selectScene(next?.scene_id || null);
+            session.setActiveTab("scenes");
+            setSceneTool("select");
         }
 
         // Guide Image Asset Cache (M1C2B)
@@ -490,6 +785,26 @@
                 cacheObj[k] = v;
             }
             renderMangaCanvas(canvas, doc, session, 0, cacheObj);
+            if (sceneDraftArea) {
+                const ctx = canvas.getContext("2d");
+                if (ctx) {
+                    const area = sceneDraftArea;
+                    ctx.save();
+                    ctx.setLineDash([7, 4]);
+                    ctx.fillStyle = "rgba(168, 105, 188, 0.16)";
+                    ctx.strokeStyle = "#a968bc";
+                    ctx.lineWidth = 2;
+                    ctx.fillRect(area.x * canvas.width, area.y * canvas.height,
+                        area.w * canvas.width, area.h * canvas.height);
+                    ctx.strokeRect(area.x * canvas.width, area.y * canvas.height,
+                        area.w * canvas.width, area.h * canvas.height);
+                    ctx.setLineDash([]);
+                    ctx.font = "bold 11px system-ui, sans-serif";
+                    ctx.fillStyle = "#75438b";
+                    ctx.fillText("New Scene", area.x * canvas.width + 5, area.y * canvas.height + 14);
+                    ctx.restore();
+                }
+            }
         }
 
         function updateInspector() {
@@ -742,6 +1057,9 @@
         }
 
         function updateAll() {
+            noteComposerSelection();
+            syncLayerTabClasses();
+            renderSceneComposer();
             updateCanvas();
             updateInspector();
         }
@@ -761,17 +1079,74 @@
                 document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
                 session.setActiveTab(btn.dataset.tab);
+                if (btn.dataset.tab !== "scenes") {
+                    inspectorPanel.classList.add("advanced-open");
+                    composerAdvancedToggle.setAttribute("aria-expanded", "true");
+                }
             };
         });
+
+        composerAdvancedToggle.onclick = () => {
+            const open = !inspectorPanel.classList.contains("advanced-open");
+            inspectorPanel.classList.toggle("advanced-open", open);
+            composerAdvancedToggle.setAttribute("aria-expanded", String(open));
+        };
+
+        sceneToolSelect.onclick = () => {
+            session.setActiveTab("scenes");
+            setSceneTool("select");
+        };
+        sceneToolAdd.onclick = () => {
+            session.setActiveTab("scenes");
+            setSceneTool("add");
+        };
+        sceneToolDelete.onclick = deleteSelectedScene;
+
+        composerName.oninput = (event) => {
+            if (composerPromptTarget === "global" || !session.selectedSceneId) return;
+            try {
+                store.updateScene(session.selectedSceneId, { name: event.target.value });
+            } catch (err) {
+                showComposerError(err.message);
+            }
+        };
+        composerPrompt.oninput = (event) => {
+            try {
+                if (composerPromptTarget === "global") {
+                    store.setStyleMetadata({ stylePrompt: event.target.value });
+                } else if (session.selectedSceneId) {
+                    store.updateScene(session.selectedSceneId, { prompt: event.target.value });
+                }
+            } catch (err) {
+                showComposerError(err.message);
+            }
+        };
+        composerNegative.oninput = (event) => {
+            try {
+                if (composerPromptTarget === "global") {
+                    store.setStyleMetadata({ styleNegativePrompt: event.target.value });
+                } else if (session.selectedSceneId) {
+                    store.updateScene(session.selectedSceneId, { negative_prompt: event.target.value });
+                }
+            } catch (err) {
+                showComposerError(err.message);
+            }
+        };
 
         // -----------------------------------------------------------------
         // Scene Mutations & Editing
         // -----------------------------------------------------------------
         document.getElementById("btn-add-scene").onclick = () => {
             clearErrors();
-            const sc = store.addScene({ name: `Scene ${store.getPage().scenes.length + 1}`, prompt: "" });
-            session.selectScene(sc.scene_id);
-            session.setActiveTab("scenes");
+            try {
+                const sc = store.addScene({ name: `Scene ${store.getPage().scenes.length + 1}`, prompt: "" });
+                composerPromptTarget = sc.scene_id;
+                session.selectScene(sc.scene_id);
+                session.setActiveTab("scenes");
+            } catch (err) {
+                showSceneError(err.message);
+                showComposerError(err.message);
+            }
         };
 
         document.getElementById("input-scene-name").oninput = (e) => {
@@ -830,22 +1205,7 @@
             }
         };
 
-        document.getElementById("btn-delete-scene").onclick = () => {
-            clearErrors();
-            if (!session.selectedSceneId) return;
-            try {
-                const delId = session.selectedSceneId;
-                store.deleteScene(delId);
-                const remaining = store.getPage().scenes;
-                if (remaining.length > 0) {
-                    session.selectScene(remaining[0].scene_id);
-                } else {
-                    session.selectScene(null);
-                }
-            } catch (err) {
-                showSceneError(err.message);
-            }
-        };
+        document.getElementById("btn-delete-scene").onclick = deleteSelectedScene;
 
         // -----------------------------------------------------------------
         // CAST Mutations & Rejection Handling (Step J)
@@ -1237,10 +1597,16 @@
 
         canvas.addEventListener("mousedown", (e) => {
             clearErrors();
-            const rect = canvas.getBoundingClientRect();
-            const normX = (e.clientX - rect.left) / canvas.width;
-            const normY = (e.clientY - rect.top) / canvas.height;
+            const { x: normX, y: normY } = normalizedCanvasPoint(e);
             const page = store.getPage();
+
+            if (sceneToolMode === "add") {
+                sceneDraftStart = { x: normX, y: normY };
+                sceneDraftArea = { x: normX, y: normY, w: 0, h: 0 };
+                updateCanvas();
+                e.preventDefault();
+                return;
+            }
 
             const hit = hitTestCanvas(canvas.width, canvas.height, page, normX, normY, session);
             if (!hit) return;
@@ -1290,6 +1656,7 @@
                 startArea = { ...hit.item.area };
             } else if (hit.type === "handle_scene") {
                 dragMode = "resize_scene";
+                dragHandle = hit.handle;
                 dragTargetId = hit.item.scene_id;
                 startArea = { ...hit.item.area };
             } else if (hit.type === "scene") {
@@ -1302,10 +1669,19 @@
         });
 
         window.addEventListener("mousemove", (e) => {
+            if (sceneToolMode === "add" && sceneDraftStart) {
+                const { x: normX, y: normY } = normalizedCanvasPoint(e);
+                sceneDraftArea = {
+                    x: Math.min(sceneDraftStart.x, normX),
+                    y: Math.min(sceneDraftStart.y, normY),
+                    w: Math.abs(normX - sceneDraftStart.x),
+                    h: Math.abs(normY - sceneDraftStart.y)
+                };
+                updateCanvas();
+                return;
+            }
             if (!dragMode || !dragTargetId) return;
-            const rect = canvas.getBoundingClientRect();
-            const normX = (e.clientX - rect.left) / canvas.width;
-            const normY = (e.clientY - rect.top) / canvas.height;
+            const { x: normX, y: normY } = normalizedCanvasPoint(e);
             const dx = normX - startNorm.x;
             const dy = normY - startNorm.y;
 
@@ -1314,12 +1690,7 @@
                 startNorm = { x: normX, y: normY };
             } else if (dragMode === "resize_scene") {
                 if (startArea) {
-                    store.resizeScene(dragTargetId, {
-                        x: startArea.x,
-                        y: startArea.y,
-                        w: Math.max(0.1, startArea.w + dx),
-                        h: Math.max(0.1, startArea.h + dy)
-                    });
+                    store.resizeScene(dragTargetId, resizeSceneAreaFromHandle(startArea, dragHandle, dx, dy));
                 }
             } else if (dragMode === "move_char") {
                 store.moveCharacter(dragTargetId, dx, dy);
@@ -1360,11 +1731,31 @@
         });
 
         window.addEventListener("mouseup", () => {
+            if (sceneToolMode === "add" && sceneDraftStart) {
+                finishSceneDraft();
+                return;
+            }
             dragMode = null;
             dragHandle = null;
             dragTargetId = null;
             dragGuideId = null;
             startArea = null;
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && sceneToolMode === "add") {
+                sceneDraftStart = null;
+                sceneDraftArea = null;
+                setSceneTool("select");
+                updateCanvas();
+                return;
+            }
+            const active = document.activeElement;
+            const isEditable = active && (active.matches("input, textarea, select") || active.isContentEditable);
+            if (event.key === "Backspace" && !isEditable && sceneToolMode === "select" && session.selectedSceneId) {
+                event.preventDefault();
+                deleteSelectedScene();
+            }
         });
 
         // -----------------------------------------------------------------

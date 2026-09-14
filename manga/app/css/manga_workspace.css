@@ -393,6 +393,42 @@ body {
     display: block;
 }
 
+/* PLAY2 — Scene Composer. The legacy layer editors stay available through
+   Advanced Authoring while the simplified composer is the default surface. */
+#inspector-panel > .panel-section:not(#scene-composer-panel) { display: none; }
+#inspector-panel.advanced-open > .panel-section:not(#scene-composer-panel) { display: block; }
+#scene-composer-panel { background: #21182a; border-bottom-color: #624569; }
+.scene-composer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.scene-composer-eyebrow, .scene-tool-eyebrow { color: #d4a1e1; font-size: 10px; font-weight: 800; letter-spacing: .12em; }
+.scene-composer-head h2 { margin-top: 3px; color: #f4d8f3; font-size: 19px; line-height: 1.1; }
+.scene-composer-advanced { flex: 0 0 auto; background: #38283f; border: 1px solid #795782; border-radius: 6px; color: #eedbf2; padding: 6px 8px; font-size: 10px; font-weight: 700; cursor: pointer; }
+.scene-composer-advanced:hover, .scene-composer-advanced[aria-expanded="true"] { background: #503457; }
+.scene-composer-note { margin-top: 9px; color: #cbb6ce; font-size: 11px; line-height: 1.45; }
+.scene-composer-selection { margin-top: 11px; padding: 7px 8px; border: 1px solid #624569; border-radius: 6px; background: #17111d; color: #f1d9f1; font-size: 11px; font-weight: 700; }
+.scene-prompt-tabs { display: flex; gap: 5px; margin-top: 10px; overflow-x: auto; padding-bottom: 3px; scrollbar-color: #76537e transparent; }
+.scene-prompt-tabs button { flex: 0 0 auto; border: 1px solid #694b70; border-radius: 999px; background: #2c2033; color: #ccb7cf; padding: 6px 10px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.scene-prompt-tabs button:hover { background: #49304f; color: #fff; }
+.scene-prompt-tabs button[aria-selected="true"] { background: #75438b; border-color: #c99bd2; color: #fff; }
+.scene-prompt-tabs button:focus-visible, .scene-composer-advanced:focus-visible, #scene-composer-panel input:focus-visible, #scene-composer-panel textarea:focus-visible,
+#scene-composer-toolbar button:focus-visible, .tab-btn:focus-visible { outline: 2px solid #f5c98b; outline-offset: 2px; }
+.scene-composer-error { display: none; margin-top: 9px; padding: 7px 8px; border: 1px solid #a6586c; border-radius: 6px; background: #44212d; color: #ffd2d7; font-size: 11px; line-height: 1.35; }
+.scene-composer-error.visible { display: block; }
+.scene-composer-editor { display: flex; flex-direction: column; gap: 9px; margin-top: 12px; }
+.scene-composer-field { display: flex; flex-direction: column; gap: 4px; }
+.scene-composer-field label { color: #eee1ef; font-size: 11px; font-weight: 700; }
+.scene-composer-field input, .scene-composer-field textarea { width: 100%; border: 1px solid #725574; border-radius: 7px; background: #17111d; color: #fff7ff; padding: 9px 10px; font: inherit; font-size: 12px; line-height: 1.45; }
+.scene-composer-field textarea { resize: vertical; min-height: 52px; }
+
+#scene-composer-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 6px 12px; border-bottom: 1px solid #4e3357; background: #17111d; }
+#scene-composer-toolbar .scene-tool-eyebrow { margin-right: 3px; }
+.scene-tool-btn { border: 1px solid #604265; border-radius: 6px; background: #2c2033; color: #d9c5dd; padding: 5px 9px; font-size: 11px; font-weight: 700; cursor: pointer; }
+.scene-tool-btn:hover, .scene-tool-btn.active { background: #75438b; border-color: #c99bd2; color: #fff; }
+.scene-tool-btn.scene-tool-danger { color: #f3b5bc; border-color: #7b4755; }
+.scene-tool-btn.scene-tool-danger:hover:not(:disabled) { background: #7f3047; border-color: #d47a8e; color: #fff; }
+.scene-tool-btn:disabled { cursor: not-allowed; opacity: .45; }
+#scene-tool-status { min-width: 180px; margin-left: auto; color: #bda8c0; font-size: 10px; line-height: 1.3; }
+#manga-canvas.scene-add-mode { cursor: crosshair; }
+
 
 /* PLAY1c — Manga Generate. Authoring remains mounted and retains its own layout. */
 [hidden] { display: none !important; }
@@ -469,6 +505,12 @@ body.manga-embedded #workspace-header .header-brand { display: none; }
 body.manga-embedded .mg-page-heading { display: none; }
 body.manga-embedded #generate-view { padding-top: 12px; }
 @media (max-width: 850px) {
+    #workspace-main { flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+    #canvas-container { flex: 0 0 auto; min-height: min(70vh, 680px); }
+    #canvas-viewport { flex: 0 0 auto; min-height: min(62vh, 620px); }
+    #inspector-panel { width: 100%; flex: 0 0 auto; max-height: none; overflow: visible; border-left: 0; border-top: 1px solid var(--border-color); }
+    #scene-composer-toolbar { align-items: flex-start; }
+    #scene-tool-status { flex: 1 1 100%; margin-left: 0; }
     #generate-view { padding: 16px 14px 40px; }
     .mg-main { grid-template-columns: minmax(0, 1fr); gap: 17px; }
     .mg-stage-column { position: static; }
