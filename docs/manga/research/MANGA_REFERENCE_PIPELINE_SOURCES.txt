@@ -1,0 +1,32 @@
+================================================================================
+MANGA REFERENCE PIPELINE - SOURCES & REPOSITORIES
+================================================================================
+
+1. LOCAL REPOSITORIES & SPECIFICATIONS
+--------------------------------------------------------------------------------
+LOCAL-REPO[tegaki]:
+関連ツール/EasyReforgeExtension/計画書/MRP_v3.8_Reference_Cast_IPAdapter_基本設計書.md
+  - Primary design document for the legacy ReForge Reference Cast and IP-Adapter pipeline.
+  - Documents reference card concepts, identity preservation workflows, and parameter bounds.
+
+LOCAL-REPO[ComfyUIPortable]:
+manga/app/src/domain/authoring_document.js
+  - Canonical schema and state authority for TEGAKI_AUTHORING_DOCUMENT 1.0.0.
+  - Defines existing page.cast[], page.character_instances[], and page.guides[] structures.
+
+LOCAL-REPO[ComfyUIPortable]:
+manga/service/manga_scene_generation_service.mjs
+  - Scene prompt compilation, LoRA extraction, regional conditioning, and multi-scene execution.
+  - Groundwork for regional mask and conditioning injection.
+
+
+2. UPSTREAM & EXTERNAL REFERENCES
+--------------------------------------------------------------------------------
+ComfyUI_IPAdapter_plus (Cubiq):
+https://github.com/cubiq/ComfyUI_IPAdapter_plus
+  - Reference implementation for IP-Adapter, FaceID, and ClipVision loading in ComfyUI.
+  - Key primitive candidate for ComfyUI-side regional image conditioning.
+
+IP-Adapter Research (Tencent AI Lab):
+https://github.com/tencent-ailab/IP-Adapter
+  - Upstream architecture and pretrained image prompt adapter models.
