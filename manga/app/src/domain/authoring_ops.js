@@ -553,6 +553,56 @@ export function isCanonicalGuideAssetReference(ref) {
     return validateCanonicalGuideAssetReference(ref).valid;
 }
 
+export const SUPPORTED_REFERENCE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp"];
+export const REFERENCE_ASSET_PREFIX = "tegaki_manga_references/";
+
+/**
+ * Validate whether a CAST reference_asset adheres strictly to the canonical relative namespace:
+ * tegaki_manga_references/<safe-basename>.<ext>
+ *
+ * Rejects URLs, absolute paths, backslashes, path traversal, subdirectories, empty names, and control characters.
+ *
+ * @param {any} ref
+ * @returns {{ valid: boolean, reason?: string }}
+ */
+export function validateCanonicalReferenceAssetReference(ref) {
+    if (typeof ref !== "string" || !ref) {
+        return { valid: false, reason: "Reference must be a non-empty string" };
+    }
+    if (!ref.startsWith(REFERENCE_ASSET_PREFIX)) {
+        return { valid: false, reason: `Reference must start with canonical namespace '${REFERENCE_ASSET_PREFIX}'` };
+    }
+    const basename = ref.slice(REFERENCE_ASSET_PREFIX.length);
+    if (!basename) {
+        return { valid: false, reason: "Basename cannot be empty" };
+    }
+    if (
+        basename.includes("/") ||
+        basename.includes("\\") ||
+        basename.includes("..") ||
+        /[\x00-\x1f\x7f]/.test(basename) ||
+        basename.length > 255
+    ) {
+        return { valid: false, reason: "Basename must be a safe, single-level filename without traversal or control characters" };
+    }
+    const lower = basename.toLowerCase();
+    if (!SUPPORTED_REFERENCE_EXTENSIONS.some(ext => lower.endsWith(ext))) {
+        return { valid: false, reason: `Reference extension must be one of ${SUPPORTED_REFERENCE_EXTENSIONS.join(", ")}` };
+    }
+    return { valid: true };
+}
+
+/**
+ * Convenience boolean predicate for canonical CAST reference asset reference.
+ *
+ * @param {any} ref
+ * @returns {boolean}
+ */
+export function isCanonicalReferenceAssetReference(ref) {
+    return validateCanonicalReferenceAssetReference(ref).valid;
+}
+
+
 /**
  * Generate next unique guide id within one page.
  *

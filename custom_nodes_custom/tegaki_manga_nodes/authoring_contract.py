@@ -48,6 +48,8 @@ VALID_INPUT_MODES = frozenset({"simple", "cast"})
 VALID_SHAPE_TYPES = frozenset({"rect"})  # polygon, freeform: future
 SUPPORTED_GUIDE_TYPES = frozenset({"frame_guide", "rough_manga"})
 SUPPORTED_GUIDE_EXTENSIONS = frozenset({".png", ".jpg", ".jpeg", ".webp"})
+SUPPORTED_REFERENCE_EXTENSIONS = frozenset({".png", ".jpg", ".jpeg", ".webp"})
+REFERENCE_ASSET_PREFIX = "tegaki_manga_references/"
 
 
 # ===================================================================
@@ -235,6 +237,7 @@ def create_cast_entry(display_name: str = "",
                       negative_prompt: str = "",
                       loras: Optional[List[Dict]] = None,
                       cast_id: Optional[str] = None,
+                      reference_asset: Optional[str] = None,
                       metadata: Optional[Dict] = None) -> Dict[str, Any]:
     """Create a new CAST master entry."""
     return {
@@ -243,6 +246,7 @@ def create_cast_entry(display_name: str = "",
         "identity_prompt": identity_prompt,
         "negative_prompt": negative_prompt,
         "loras": loras or [],
+        "reference_asset": reference_asset,
         "metadata": metadata or {},
     }
 
@@ -309,6 +313,27 @@ def validate_asset_reference(asset_reference: Any, context: str = "") -> List[st
         errors.append(f"asset_reference contains an invalid path segment{ctx}")
     if posixpath.normpath(value) != value:
         errors.append(f"asset_reference is not normalized{ctx}")
+    return errors
+
+
+def validate_reference_asset_reference(asset_reference: Any, context: str = "") -> List[str]:
+    """Validate a canonical relative CAST reference asset reference (tegaki_manga_references/<safe-name>.<ext>)."""
+    errors = validate_asset_reference(asset_reference, context)
+    if errors:
+        return errors
+    ctx = f" ({context})" if context else ""
+    value = str(asset_reference).strip()
+    if not value.startswith(REFERENCE_ASSET_PREFIX):
+        errors.append(f"reference_asset must start with '{REFERENCE_ASSET_PREFIX}'{ctx}")
+        return errors
+    basename = value[len(REFERENCE_ASSET_PREFIX):]
+    if not basename or "/" in basename:
+        errors.append(f"reference_asset must be a single-level file directly under '{REFERENCE_ASSET_PREFIX}'{ctx}")
+        return errors
+    if not any(basename.lower().endswith(ext) for ext in SUPPORTED_REFERENCE_EXTENSIONS):
+        errors.append(
+            f"reference_asset extension must be one of {sorted(SUPPORTED_REFERENCE_EXTENSIONS)}{ctx}"
+        )
     return errors
 
 
@@ -614,6 +639,14 @@ def _validate_page(page: Dict[str, Any], page_index: int) -> Tuple[List[str], Li
             errors.append(f"{c_ctx}: duplicate cast_id '{cid}'")
         else:
             cast_ids.add(cid)
+
+        ref_asset = cast_entry.get("reference_asset")
+        if ref_asset is not None:
+            if not isinstance(ref_asset, str) or not ref_asset.strip():
+                errors.append(f"{c_ctx}: reference_asset must be a non-empty string or null")
+            else:
+                ref_errs = validate_reference_asset_reference(ref_asset, f"{c_ctx}.reference_asset")
+                errors.extend(ref_errs)
 
     # --- Character instances ---
     instances = page.get("character_instances", [])

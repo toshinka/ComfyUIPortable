@@ -48,7 +48,8 @@ import {
     unassignGuideInstance,
     getNextGuideId,
     calculateContainPlacement,
-    validateCanonicalGuideAssetReference
+    validateCanonicalGuideAssetReference,
+    validateCanonicalReferenceAssetReference
 } from "../domain/authoring_ops.js";
 
 const DEFAULT_CAST_PALETTE = [
@@ -262,11 +263,18 @@ export class AuthoringStore {
     // CAST MUTATIONS (Card Section 6.C, 10)
     // ==========================================
 
-    addCast({ display_name = "", identity_prompt = "", negative_prompt = "", color = null, loras = [] } = {}, pageIndex = 0) {
+    addCast({ display_name = "", identity_prompt = "", negative_prompt = "", color = null, loras = [], reference_asset = null } = {}, pageIndex = 0) {
         const draft = cloneDocument(this.document);
         const page = draft.pages[pageIndex];
         if (!page) throw new Error("Page not found");
         if (!Array.isArray(page.cast)) page.cast = [];
+
+        if (reference_asset) {
+            const val = validateCanonicalReferenceAssetReference(reference_asset);
+            if (!val.valid) {
+                throw new Error(`Invalid reference_asset: ${val.reason}`);
+            }
+        }
 
         const castId = getNextCastId(page.cast);
         const paletteIdx = page.cast.length % DEFAULT_CAST_PALETTE.length;
@@ -279,6 +287,7 @@ export class AuthoringStore {
             negative_prompt: negative_prompt || "",
             color: castColor,
             loras: Array.isArray(loras) ? loras : [],
+            reference_asset: reference_asset || null,
             metadata: {}
         };
 
@@ -298,9 +307,32 @@ export class AuthoringStore {
         if (updates.identity_prompt !== undefined) castEntry.identity_prompt = updates.identity_prompt;
         if (updates.negative_prompt !== undefined) castEntry.negative_prompt = updates.negative_prompt;
         if (updates.color !== undefined) castEntry.color = updates.color;
+        if (updates.reference_asset !== undefined) {
+            if (updates.reference_asset) {
+                const val = validateCanonicalReferenceAssetReference(updates.reference_asset);
+                if (!val.valid) {
+                    throw new Error(`Invalid reference_asset: ${val.reason}`);
+                }
+                castEntry.reference_asset = updates.reference_asset;
+            } else {
+                castEntry.reference_asset = null;
+            }
+        }
 
         this.setDocument(draft);
         return castEntry;
+    }
+
+    setCastReference(castId, referenceAsset, pageIndex = 0) {
+        return this.updateCast(castId, { reference_asset: referenceAsset }, pageIndex);
+    }
+
+    assignCastReference(castId, referenceAsset, pageIndex = 0) {
+        return this.setCastReference(castId, referenceAsset, pageIndex);
+    }
+
+    clearCastReference(castId, pageIndex = 0) {
+        return this.setCastReference(castId, null, pageIndex);
     }
 
     deleteCast(castId, pageIndex = 0) {

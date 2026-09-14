@@ -137,6 +137,21 @@
                         <label class="form-label">Negative Prompt</label>
                         <textarea id="input-cast-negative" class="form-textarea" rows="1"></textarea>
                     </div>
+                    <div class="form-group" style="margin-top: 6px;">
+                        <label class="form-label">Reference Asset</label>
+                        <input type="file" id="file-cast-reference" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" style="display: none;" />
+                        <div id="cast-reference-status" style="font-size: 11px; font-weight: 600; margin-bottom: 2px; display: none;"></div>
+                        <div id="cast-reference-error" class="alert-error" style="display: none; margin-bottom: 4px; font-size: 11px;"></div>
+                        <div id="cast-reference-readout" style="font-family: monospace; font-size: 10px; color: #94a3b8; word-break: break-all; margin-bottom: 4px;">(none)</div>
+                        <div id="cast-reference-preview-wrap" style="margin-bottom: 6px; display: none;">
+                            <img id="cast-reference-thumbnail" style="max-width: 100%; max-height: 80px; border-radius: 4px; border: 1px solid #334155; display: block; object-fit: contain; background: #000;" />
+                            <div id="cast-reference-missing-badge" style="display: none; font-size: 11px; color: #f59e0b; background: #451a03; border: 1px solid #b45309; padding: 2px 6px; border-radius: 3px; margin-top: 4px;">⚠️ Reference image missing</div>
+                        </div>
+                        <div class="form-actions" style="display: flex; gap: 4px;">
+                            <button id="btn-add-cast-reference" class="btn btn-sm" type="button">+ Reference</button>
+                            <button id="btn-clear-cast-reference" class="btn btn-sm btn-danger" type="button" style="display: none;">Clear</button>
+                        </div>
+                    </div>
                     <div class="form-actions" style="margin-top: 6px; border-top: 1px solid #334155; padding-top: 6px;">
                         <button id="btn-place-character" class="btn btn-sm" style="background:#0284c7;color:white;">Place in Scene</button>
                         <button id="btn-delete-cast" class="btn btn-sm btn-danger">Delete CAST</button>
@@ -448,6 +463,8 @@
 
         // Error banners
         const castErrorMsg = document.getElementById("cast-error-msg");
+        const castReferenceError = document.getElementById("cast-reference-error");
+        const castReferenceStatus = document.getElementById("cast-reference-status");
         const sceneErrorMsg = document.getElementById("scene-error-msg");
         const instanceErrorMsg = document.getElementById("instance-error-msg");
         const guideErrorMsg = document.getElementById("guide-error-banner");
@@ -477,6 +494,36 @@
         let sceneDraftStart = null;
         let sceneDraftArea = null;
 
+        function setCastReferenceStatus(status) {
+            if (!castReferenceStatus) return;
+            if (!status) {
+                castReferenceStatus.style.display = "none";
+                castReferenceStatus.textContent = "";
+                return;
+            }
+            castReferenceStatus.style.display = "block";
+            castReferenceStatus.textContent = status;
+            if (status === "Uploading...") {
+                castReferenceStatus.style.color = "#38bdf8";
+            } else if (status === "Ready") {
+                castReferenceStatus.style.color = "#4ade80";
+            } else if (status === "Upload failed") {
+                castReferenceStatus.style.color = "#f87171";
+            }
+        }
+
+        function showCastReferenceError(msg) {
+            if (!castReferenceError) return;
+            if (!msg) {
+                castReferenceError.style.display = "none";
+                castReferenceError.textContent = "";
+            } else {
+                setCastReferenceStatus("Upload failed");
+                castReferenceError.style.display = "block";
+                castReferenceError.textContent = msg;
+            }
+        }
+
         function setGuideUploadStatus(status) {
             if (!guideUploadStatus) return;
             if (!status) {
@@ -498,6 +545,14 @@
         function clearErrors() {
             castErrorMsg.className = "alert-error";
             castErrorMsg.textContent = "";
+            if (castReferenceError) {
+                castReferenceError.style.display = "none";
+                castReferenceError.textContent = "";
+            }
+            if (castReferenceStatus) {
+                castReferenceStatus.style.display = "none";
+                castReferenceStatus.textContent = "";
+            }
             sceneErrorMsg.className = "alert-error";
             sceneErrorMsg.textContent = "";
             instanceErrorMsg.className = "alert-error";
@@ -897,6 +952,43 @@
                 if (document.activeElement !== nameInput) nameInput.value = selCast.display_name || "";
                 if (document.activeElement !== promptInput) promptInput.value = selCast.identity_prompt || "";
                 if (document.activeElement !== negInput) negInput.value = selCast.negative_prompt || "";
+
+                const refReadout = document.getElementById("cast-reference-readout");
+                const refPreviewWrap = document.getElementById("cast-reference-preview-wrap");
+                const refThumb = document.getElementById("cast-reference-thumbnail");
+                const refMissing = document.getElementById("cast-reference-missing-badge");
+                const btnAddRef = document.getElementById("btn-add-cast-reference");
+                const btnClearRef = document.getElementById("btn-clear-cast-reference");
+
+                if (selCast.reference_asset) {
+                    if (refReadout) refReadout.textContent = selCast.reference_asset;
+                    if (refPreviewWrap) refPreviewWrap.style.display = "block";
+                    if (refThumb) {
+                        refThumb.style.display = "block";
+                        if (refMissing) refMissing.style.display = "none";
+                        refThumb.onload = () => {
+                            refThumb.style.display = "block";
+                            if (refMissing) refMissing.style.display = "none";
+                        };
+                        refThumb.onerror = () => {
+                            refThumb.style.display = "none";
+                            if (refMissing) refMissing.style.display = "block";
+                        };
+                        refThumb.src = `/api/reference-assets/view?ref=${encodeURIComponent(selCast.reference_asset)}`;
+                    }
+                    if (btnAddRef) btnAddRef.textContent = "Replace";
+                    if (btnClearRef) btnClearRef.style.display = "inline-block";
+                } else {
+                    if (refReadout) refReadout.textContent = "(none)";
+                    if (refPreviewWrap) refPreviewWrap.style.display = "none";
+                    if (refThumb) {
+                        refThumb.src = "";
+                        refThumb.style.display = "none";
+                    }
+                    if (refMissing) refMissing.style.display = "none";
+                    if (btnAddRef) btnAddRef.textContent = "+ Reference";
+                    if (btnClearRef) btnClearRef.style.display = "none";
+                }
             } else {
                 castEditor.style.display = "none";
             }
@@ -1277,6 +1369,73 @@
                 showCastError(err.message);
             }
         };
+
+        const fileCastReference = document.getElementById("file-cast-reference");
+        const btnAddCastReference = document.getElementById("btn-add-cast-reference");
+        const btnClearCastReference = document.getElementById("btn-clear-cast-reference");
+
+        if (btnAddCastReference) {
+            btnAddCastReference.onclick = () => {
+                showCastReferenceError("");
+                setCastReferenceStatus("");
+                if (!session.selectedCastId) return;
+                if (fileCastReference) {
+                    fileCastReference.value = "";
+                    fileCastReference.click();
+                }
+            };
+        }
+
+        if (btnClearCastReference) {
+            btnClearCastReference.onclick = () => {
+                showCastReferenceError("");
+                setCastReferenceStatus("");
+                if (!session.selectedCastId) return;
+                try {
+                    store.clearCastReference(session.selectedCastId);
+                    renderSceneComposer();
+                } catch (err) {
+                    showCastReferenceError(err.message);
+                }
+            };
+        }
+
+        if (fileCastReference) {
+            fileCastReference.onchange = async (e) => {
+                showCastReferenceError("");
+                const file = e.target.files?.[0];
+                if (!file || !session.selectedCastId) return;
+                const targetCastId = session.selectedCastId;
+
+                setCastReferenceStatus("Uploading...");
+                try {
+                    let mimeType = file.type;
+                    const lowerName = file.name.toLowerCase();
+                    if (!mimeType || mimeType === "application/octet-stream") {
+                        if (lowerName.endsWith(".png")) mimeType = "image/png";
+                        else if (lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg")) mimeType = "image/jpeg";
+                        else if (lowerName.endsWith(".webp")) mimeType = "image/webp";
+                    }
+
+                    const uploadUrl = `/api/reference-assets/upload?filename=${encodeURIComponent(file.name)}`;
+                    const res = await fetch(uploadUrl, {
+                        method: "POST",
+                        body: file,
+                        headers: { "Content-Type": mimeType || "application/octet-stream" }
+                    });
+                    const data = await res.json();
+                    if (!res.ok || !data.ok) {
+                        throw new Error(data.error || "Failed to upload reference asset.");
+                    }
+
+                    store.assignCastReference(targetCastId, data.asset_reference);
+                    setCastReferenceStatus("Ready");
+                    renderSceneComposer();
+                } catch (err) {
+                    showCastReferenceError(err.message);
+                }
+            };
+        }
 
         // -----------------------------------------------------------------
         // Character Placement & Manipulation (Steps G, H, I)

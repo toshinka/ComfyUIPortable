@@ -13,6 +13,7 @@
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { GenerationService, GenerationServiceError } from "./generation_service.mjs";
 import { GenerationJournal, JournalError } from "./generation_journal.mjs";
@@ -381,8 +382,11 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 2. Dedicated Guide Asset Ingestion Endpoint (Card M1C2B Section 3, 5, 7, 8, 9, 10, 11, 14)
-    if (pathname === "/api/guide-assets/upload") {
+    // 2. Dedicated Asset Ingestion Endpoints (Guides & References)
+    if (pathname === "/api/guide-assets/upload" || pathname === "/api/reference-assets/upload") {
+        const isReference = (pathname === "/api/reference-assets/upload");
+        const targetSubfolder = isReference ? "tegaki_manga_references" : "tegaki_manga_guides";
+
         // Enforce POST method
         if (req.method !== "POST") {
             res.writeHead(405, { "Content-Type": "application/json" });
@@ -513,13 +517,20 @@ const server = http.createServer(async (req, res) => {
             return;
         }
 
+        // Stable asset naming for references (Card MANGA-CAST-REFERENCE-DATA1 Section 7)
+        let uploadFilename = filename;
+        if (isReference) {
+            const hash = crypto.createHash("sha256").update(body).digest("hex").slice(0, 16);
+            uploadFilename = `ref_${hash}${ext}`;
+        }
+
         // Backend multipart forwarding (Card Section 10, 11)
         const backendUploadUrl = `${parsedBackend.origin}/upload/image`;
         try {
             const formData = new FormData();
             const blob = new Blob([body], { type: detectedType });
-            formData.append("image", blob, filename);
-            formData.append("subfolder", "tegaki_manga_guides");
+            formData.append("image", blob, uploadFilename);
+            formData.append("subfolder", targetSubfolder);
 
             const backendRes = await fetch(backendUploadUrl, {
                 method: "POST",
@@ -546,14 +557,14 @@ const server = http.createServer(async (req, res) => {
                 returnedName.includes("..") ||
                 /[\x00-\x1f\x7f]/.test(returnedName) ||
                 returnedName.length > 255 ||
-                returnedSubfolder !== "tegaki_manga_guides"
+                returnedSubfolder !== targetSubfolder
             ) {
                 res.writeHead(502, { "Content-Type": "application/json" });
                 res.end(JSON.stringify({ ok: false, error: "Backend response validation failed: unexpected subfolder or unsafe filename" }));
                 return;
             }
 
-            const canonicalRef = `tegaki_manga_guides/${returnedName}`;
+            const canonicalRef = `${targetSubfolder}/${returnedName}`;
             res.writeHead(200, { "Content-Type": "application/json" });
             res.end(JSON.stringify({
                 ok: true,
@@ -566,8 +577,11 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 3. Dedicated Guide Asset Preview Endpoint (Card M1C2B Section 12, 13 & M1C2B1 Section 14, 15)
-    if (pathname === "/api/guide-assets/view") {
+    // 3. Dedicated Asset Preview Endpoints (Guides & References)
+    if (pathname === "/api/guide-assets/view" || pathname === "/api/reference-assets/view") {
+        const isReference = (pathname === "/api/reference-assets/view");
+        const targetSubfolder = isReference ? "tegaki_manga_references" : "tegaki_manga_guides";
+
         if (req.method !== "GET") {
             res.writeHead(405, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ ok: false, error: "Method Not Allowed" }));
@@ -582,14 +596,14 @@ const server = http.createServer(async (req, res) => {
         }
 
         const ref = url.searchParams.get("ref") || "";
-        // Must start with canonical tegaki_manga_guides/
-        if (!ref.startsWith("tegaki_manga_guides/")) {
+        const expectedPrefix = `${targetSubfolder}/`;
+        if (!ref.startsWith(expectedPrefix)) {
             res.writeHead(400, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ ok: false, error: "Invalid ref: must start with 'tegaki_manga_guides/'" }));
+            res.end(JSON.stringify({ ok: false, error: `Invalid ref: must start with '${expectedPrefix}'` }));
             return;
         }
 
-        const relativeName = ref.slice("tegaki_manga_guides/".length);
+        const relativeName = ref.slice(expectedPrefix.length);
         const basename = path.basename(relativeName);
         if (
             !basename ||
@@ -606,7 +620,7 @@ const server = http.createServer(async (req, res) => {
 
         const backendViewUrl = new URL(`${parsedBackend.origin}/view`);
         backendViewUrl.searchParams.set("filename", basename);
-        backendViewUrl.searchParams.set("subfolder", "tegaki_manga_guides");
+        backendViewUrl.searchParams.set("subfolder", targetSubfolder);
         backendViewUrl.searchParams.set("type", "input");
 
         try {
