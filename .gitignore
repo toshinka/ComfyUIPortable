@@ -79,3 +79,6 @@ custom_nodes_custom/**/*.pyc
 *.so
 *.dylib
 *.node
+
+# Manga local data catalogs (large / third-party datasets)
+manga/app/data/danbooru_tags.json
