@@ -8,27 +8,22 @@
 </head>
 <body>
     <nav id="manga-mode-nav" aria-label="Manga workspace modes">
-        <div class="manga-identity"><span class="manga-mark">T</span><span>TEGAKI</span><span class="manga-slash">/</span><strong>MANGA</strong></div>
-        <div class="manga-mode-tabs" role="tablist" aria-label="Manga mode">
-            <button id="manga-tab-generate" type="button" role="tab" aria-selected="false" aria-controls="generate-view">Generate</button>
-            <button id="manga-tab-authoring" type="button" role="tab" aria-selected="true" aria-controls="authoring-workspace">Authoring</button>
+        <div class="manga-nav-left">
+            <div class="manga-identity"><span class="manga-mark">T</span><span>TEGAKI</span><span class="manga-slash">/</span><strong>MANGA</strong></div>
+            <div class="manga-mode-tabs" role="tablist" aria-label="Manga mode">
+                <button id="manga-tab-generate" type="button" role="tab" aria-selected="false" aria-controls="generate-view">Generate</button>
+                <button id="manga-tab-authoring" type="button" role="tab" aria-selected="true" aria-controls="authoring-workspace">Authoring</button>
+            </div>
         </div>
-    </nav>
-    <div id="authoring-workspace" role="tabpanel" aria-labelledby="manga-tab-authoring">
-    <!-- Top Header -->
-    <header id="workspace-header">
-        <div class="header-brand">
-            <span class="brand-title">TEGAKI Manga</span>
-            <span class="brand-badge">M1B Standalone</span>
-            <span id="doc-schema-label" style="font-size: 11px; color: #94a3b8;">TEGAKI_AUTHORING_DOCUMENT 1.0.0</span>
-        </div>
-        <div class="header-actions">
+        <header id="workspace-header" class="header-actions">
+            <span id="doc-schema-label" style="font-size: 11px; color: #94a3b8; margin-right: 4px;">TEGAKI_AUTHORING_DOCUMENT 1.0.0</span>
             <button id="btn-reset-default" class="btn" title="Reset to default document">Reset Default</button>
             <button id="btn-load-fixture" class="btn" title="Load rich authoring fixture with all layers">Load Rich Fixture</button>
             <button id="btn-load-json" class="btn" title="Import document JSON">Import JSON</button>
             <button id="btn-export-json" class="btn btn-primary" title="Export / View document JSON">Export JSON</button>
-        </div>
-    </header>
+        </header>
+    </nav>
+    <div id="authoring-workspace" role="tabpanel" aria-labelledby="manga-tab-authoring">
 
     <!-- Backend Integration Bar -->
     <div id="backend-bar">
@@ -58,7 +53,7 @@
                 <button id="scene-tool-select" type="button" class="scene-tool-btn active" aria-pressed="true">Select</button>
                 <button id="scene-tool-add" type="button" class="scene-tool-btn" aria-pressed="false">+ Scene</button>
                 <button id="scene-tool-delete" type="button" class="scene-tool-btn scene-tool-danger" aria-pressed="false">Delete Scene</button>
-                <span id="scene-tool-status" role="status" aria-live="polite">Select a scene to edit, or draw a new one.</span>
+                <span id="scene-tool-status" role="status" aria-live="polite">Select a scene to edit, or click + Scene to create one.</span>
             </div>
             <div id="canvas-viewport">
                 <canvas id="manga-canvas" width="416" height="608"></canvas>
@@ -188,7 +183,7 @@
             <div id="section-raw-scenes" class="panel-section panel-section-advanced">
                 <div class="section-title">
                     <span>Scenes (<span id="count-scenes">2</span>)</span>
-                    <button id="btn-add-scene" class="btn btn-sm btn-primary">+ Add Scene</button>
+                    <button id="btn-add-scene" class="btn btn-sm btn-primary" style="display: none;" aria-hidden="true">+ Add Scene</button>
                 </div>
                 <div id="scene-error-msg" class="alert-error"></div>
                 <div id="list-scenes"></div>
@@ -638,7 +633,7 @@
             if (sceneToolMode === "select") {
                 setComposerStatus(activeTarget
                     ? `${sceneDisplayName(activeTarget, scenes.indexOf(activeTarget))} selected · drag to move or use a corner handle to resize`
-                    : "Select a scene to edit, or draw a new one.");
+                    : "Select a scene to edit, or click + Scene to create one.");
             }
         }
 
@@ -671,7 +666,7 @@
                 sceneDraftArea = null;
                 setComposerStatus(nextMode === "add"
                     ? "Drag on the page to create a Scene · Escape cancels"
-                    : "Select a scene to edit, or draw a new one.");
+                    : "Select a scene to edit, or click + Scene to create one.");
             }
             sceneToolSelect.classList.toggle("active", sceneToolMode === "select");
             sceneToolAdd.classList.toggle("active", sceneToolMode === "add");
@@ -1110,14 +1105,42 @@
             composerAdvancedToggle.setAttribute("aria-expanded", String(open));
         };
 
+        function handleCreateScene() {
+            clearErrors();
+            const page = store.getPage();
+            if ((page?.scenes || []).length >= 6) {
+                const msg = "Maximum 6 scenes allowed per page.";
+                showComposerError(msg);
+                showSceneError(msg);
+                setComposerStatus(msg);
+                return;
+            }
+            try {
+                const sc = store.addScene({ name: `Scene ${(page?.scenes?.length || 0) + 1}`, prompt: "" });
+                sceneToolMode = "select";
+                sceneDraftStart = null;
+                sceneDraftArea = null;
+                sceneToolSelect.classList.add("active");
+                sceneToolAdd.classList.remove("active");
+                sceneToolSelect.setAttribute("aria-pressed", "true");
+                sceneToolAdd.setAttribute("aria-pressed", "false");
+                canvas.classList.remove("scene-add-mode");
+                composerPromptTarget = sc.scene_id;
+                session.selectScene(sc.scene_id);
+                session.setActiveTab("scenes");
+                clearErrors();
+            } catch (err) {
+                showSceneError(err.message);
+                showComposerError(err.message);
+                setComposerStatus(err.message);
+            }
+        }
+
         sceneToolSelect.onclick = () => {
             session.setActiveTab("scenes");
             setSceneTool("select");
         };
-        sceneToolAdd.onclick = () => {
-            session.setActiveTab("scenes");
-            setSceneTool("add");
-        };
+        sceneToolAdd.onclick = handleCreateScene;
         sceneToolDelete.onclick = deleteSelectedScene;
 
         composerName.oninput = (event) => {
@@ -1154,18 +1177,8 @@
         // -----------------------------------------------------------------
         // Scene Mutations & Editing
         // -----------------------------------------------------------------
-        document.getElementById("btn-add-scene").onclick = () => {
-            clearErrors();
-            try {
-                const sc = store.addScene({ name: `Scene ${store.getPage().scenes.length + 1}`, prompt: "" });
-                composerPromptTarget = sc.scene_id;
-                session.selectScene(sc.scene_id);
-                session.setActiveTab("scenes");
-            } catch (err) {
-                showSceneError(err.message);
-                showComposerError(err.message);
-            }
-        };
+        const btnAddScene = document.getElementById("btn-add-scene");
+        if (btnAddScene) btnAddScene.onclick = handleCreateScene;
 
         document.getElementById("input-scene-name").oninput = (e) => {
             if (session.selectedSceneId) {
@@ -1888,6 +1901,8 @@
             const isGenerate = mode === "generate";
             document.getElementById("generate-view").hidden = !isGenerate;
             document.getElementById("authoring-workspace").hidden = isGenerate;
+            const wsHeader = document.getElementById("workspace-header");
+            if (wsHeader) wsHeader.hidden = isGenerate;
             document.getElementById("manga-tab-generate").setAttribute("aria-selected", String(isGenerate));
             document.getElementById("manga-tab-authoring").setAttribute("aria-selected", String(!isGenerate));
             document.body.classList.toggle("manga-generate-active", isGenerate);

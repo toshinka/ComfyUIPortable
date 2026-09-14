@@ -121,12 +121,6 @@ try {
         "Canvas scene click selects the matching prompt tab");
 
     await page.click("#scene-tool-add");
-    const addStart = { x: canvasBox.x + 0.18 * canvasBox.width, y: canvasBox.y + 0.44 * canvasBox.height };
-    const addEnd = { x: canvasBox.x + 0.55 * canvasBox.width, y: canvasBox.y + 0.51 * canvasBox.height };
-    await page.mouse.move(addStart.x, addStart.y);
-    await page.mouse.down();
-    await page.mouse.move(addEnd.x, addEnd.y, { steps: 4 });
-    await page.mouse.up();
     await page.waitForTimeout(100);
     const afterAdd = await page.evaluate(() => ({
         scenes: window.__tegakiManga.store.getPage().scenes.map(scene => ({ id: scene.scene_id, area: { ...scene.area } })),
@@ -134,8 +128,10 @@ try {
     }));
     check(afterAdd.scenes.length === 3 && afterAdd.selected === "scene_3" &&
         afterAdd.scenes[2].area.w > 0.3 && afterAdd.scenes[2].area.h > 0.05,
-        "+ Scene creates a bounded normalized rectangle and selects it");
+        "+ Scene immediately creates a bounded normalized rectangle and selects it");
     check(await page.locator("#scene-prompt-tabs [role=tab]").count() === 4, "New Scene receives a dynamic prompt tab");
+    check(await page.getAttribute("#scene-prompt-tab-scene_3", "aria-selected") === "true",
+        "New Scene tab is selected immediately");
 
     const addedBeforeMove = afterAdd.scenes[2].area;
     const addedCenter = { x: canvasBox.x + (addedBeforeMove.x + addedBeforeMove.w / 2) * canvasBox.width,

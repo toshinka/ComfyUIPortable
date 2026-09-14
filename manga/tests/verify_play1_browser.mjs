@@ -240,7 +240,7 @@ try {
         "Authoring prepare action is explicitly prepare-only");
     const beforeAuthoring = await page.evaluate(() => ({ json: window.__tegakiManga.store.exportJson(true),
         session: window.__tegakiManga.session.getSnapshot() }));
-    await page.click("#btn-add-scene");
+    await page.click("#scene-tool-add");
     const afterAuthoring = await page.evaluate(() => ({ json: window.__tegakiManga.store.exportJson(true),
         session: window.__tegakiManga.session.getSnapshot() }));
     check(beforeAuthoring.json !== afterAuthoring.json, "authoring interaction still works");
