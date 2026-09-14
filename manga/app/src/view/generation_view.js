@@ -1,6 +1,7 @@
 /** PLAY1c Manga Generate view. Owns no ComfyUI routes and no authoring document data. */
 import { GenerationState, ACTIVE_JOB_STATES } from "../state/generation_state.js";
 import { MangaGenerationClient } from "../adapters/manga_generation_client.js";
+import { createTagAutocomplete } from "./tag_autocomplete.js";
 
 const FIELDS = ["checkpoint_id", "positive_raw", "negative_raw", "sampler_id", "scheduler_id",
     "steps", "cfg", "width", "height", "seed_requested"];
@@ -109,6 +110,7 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
     pollMs = 1500 } = {}) {
     const byId = id => root.querySelector(`#${id}`);
     const controls = Object.fromEntries(FIELDS.map(field => [field, byId(`mg-${field}`)]));
+    const positiveTagAutocomplete = createTagAutocomplete(controls.positive_raw);
     const generate = byId("mg-generate");
     const generateLabel = byId("mg-generate-label");
     const generateReason = byId("mg-generate-reason");
@@ -333,8 +335,9 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
     renderStatus();
     renderHistory();
     const ready = start();
-    return { state, client, ready, generateOne, refresh: renderStatus, dispose() {
+    return { state, client, ready, generateOne, refresh: renderStatus, tagAutocomplete: positiveTagAutocomplete, dispose() {
         if (pollTimer) clearTimeout(pollTimer);
         if (state.preview.url) URL.revokeObjectURL(state.preview.url);
+        positiveTagAutocomplete.dispose();
     } };
 }

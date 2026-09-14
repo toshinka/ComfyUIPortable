@@ -414,6 +414,7 @@
         import { renderMangaCanvas, hitTestCanvas } from "./src/view/canvas_renderer.js";
         import { MangaBackendClient, BACKEND_STATUS } from "./src/adapters/manga_backend_client.js";
         import { mountGenerationView } from "./src/view/generation_view.js";
+        import { createTagAutocomplete } from "./src/view/tag_autocomplete.js";
 
         const store = new AuthoringStore();
         const session = new SessionState();
@@ -454,6 +455,7 @@
         const composerName = document.getElementById("scene-composer-name");
         const composerPrompt = document.getElementById("scene-composer-prompt");
         const composerNegative = document.getElementById("scene-composer-negative");
+        const composerTagAutocomplete = createTagAutocomplete(composerPrompt);
 
         // Composer selection and drawing state are ephemeral UI state. They never
         // enter the TEGAKI_AUTHORING_DOCUMENT; SessionState remains the selection
@@ -1884,6 +1886,7 @@
             session,
             client,
             generation,
+            composerTagAutocomplete,
             setMangaMode,
             checkBackend,
             updateAll

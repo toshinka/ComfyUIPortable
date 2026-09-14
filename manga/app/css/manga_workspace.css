@@ -429,6 +429,17 @@ body {
 #scene-tool-status { min-width: 180px; margin-left: auto; color: #bda8c0; font-size: 10px; line-height: 1.3; }
 #manga-canvas.scene-add-mode { cursor: crosshair; }
 
+/* PLAY3 — offline tag autocomplete. The catalog is optional; a missing
+   catalog leaves the prompt fields fully usable and simply keeps this popup
+   closed. */
+.tag-autocomplete-host { position: relative; }
+.tag-autocomplete-popup { position: absolute; z-index: 40; top: calc(100% + 4px); left: 0; right: 0; max-height: 246px; overflow-y: auto; padding: 4px; border: 1px solid #795782; border-radius: 8px; background: #1d1522; box-shadow: 0 14px 30px #09070caa; }
+.tag-autocomplete-option { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 9px; border: 0; border-radius: 5px; background: transparent; color: #f5e8f5; padding: 7px 8px; text-align: left; font: inherit; font-size: 12px; cursor: pointer; }
+.tag-autocomplete-option:hover, .tag-autocomplete-option[aria-selected="true"] { background: #503457; }
+.tag-autocomplete-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tag-autocomplete-category { flex: 0 0 auto; color: #c9a8d0; font-size: 9px; letter-spacing: .04em; text-transform: uppercase; }
+.tag-autocomplete-option:focus-visible { outline: 2px solid #f5c98b; outline-offset: -2px; }
+
 
 /* PLAY1c — Manga Generate. Authoring remains mounted and retains its own layout. */
 [hidden] { display: none !important; }
