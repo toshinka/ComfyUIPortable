@@ -67,19 +67,37 @@
 
         <!-- Right Inspector / Readout -->
         <div id="inspector-panel">
+            <!-- Global / Document Summary -->
+            <div class="panel-section document-summary-compact">
+                <div class="section-title">Document Summary</div>
+                <div class="info-grid">
+                    <div class="info-label">Resolution:</div>
+                    <div class="info-value" id="summary-resolution">832 x 1216</div>
+                    <div class="info-label">Seed:</div>
+                    <div class="info-value">
+                        <input type="number" id="input-seed" class="form-input" style="width: 80px;" value="42">
+                        <button id="btn-apply-seed" class="btn btn-sm">Set</button>
+                    </div>
+                    <div class="info-label">Style:</div>
+                    <div class="info-value" id="summary-style">Manga Monochrome</div>
+                    <div class="info-label">Pages:</div>
+                    <div class="info-value" id="summary-pages">1</div>
+                </div>
+            </div>
+
+            <!-- Scene Composer (Primary Workflow) -->
             <section id="scene-composer-panel" class="panel-section" aria-labelledby="scene-composer-title">
                 <div class="scene-composer-head">
                     <div>
                         <span class="scene-composer-eyebrow">MANGA AUTHORING</span>
                         <h2 id="scene-composer-title">Scene Composer</h2>
                     </div>
-                    <button id="composer-advanced-toggle" type="button" class="scene-composer-advanced" aria-expanded="false">Advanced Authoring</button>
+                    <button id="composer-advanced-toggle" type="button" class="scene-composer-advanced" aria-expanded="false">Advanced Layers</button>
                 </div>
-                <p class="scene-composer-note">Compose page regions and prompts here. Basic Generate remains a separate single-prompt flow.</p>
-                <div id="scene-composer-selection" class="scene-composer-selection" role="status" aria-live="polite">Global page style</div>
                 <div id="scene-prompt-tabs" class="scene-prompt-tabs" role="tablist" aria-label="Scene prompts">
                     <button id="scene-prompt-tab-global" type="button" role="tab" aria-selected="true" aria-controls="scene-composer-editor" data-prompt-target="global">Global</button>
                 </div>
+                <div id="scene-composer-selection" class="scene-composer-selection" role="status" aria-live="polite">Global page style</div>
                 <div id="scene-composer-error" class="scene-composer-error" role="alert" aria-live="polite"></div>
                 <div id="scene-composer-editor" class="scene-composer-editor" role="tabpanel" aria-labelledby="scene-prompt-tab-global">
                     <div id="scene-composer-name-wrap" class="scene-composer-field" hidden>
@@ -88,91 +106,17 @@
                     </div>
                     <div class="scene-composer-field">
                         <label for="scene-composer-prompt">Prompt</label>
-                        <textarea id="scene-composer-prompt" rows="5" placeholder="Describe the page or scene…"></textarea>
+                        <textarea id="scene-composer-prompt" rows="4" placeholder="Describe the page or scene…"></textarea>
                     </div>
                     <div class="scene-composer-field">
                         <label for="scene-composer-negative">Negative Prompt</label>
-                        <textarea id="scene-composer-negative" rows="3" placeholder="What should be excluded…"></textarea>
+                        <textarea id="scene-composer-negative" rows="2" placeholder="What should be excluded…"></textarea>
                     </div>
                 </div>
             </section>
-            <!-- Global / Summary -->
-            <div class="panel-section">
-                <div class="section-title">Document Summary</div>
-                <div class="info-grid">
-                    <div class="info-label">Resolution:</div>
-                    <div class="info-value" id="summary-resolution">832 x 1216</div>
-                    <div class="info-label">Seed:</div>
-                    <div class="info-value">
-                        <input type="number" id="input-seed" class="form-input" style="width: 110px;" value="42">
-                        <button id="btn-apply-seed" class="btn btn-sm">Set</button>
-                    </div>
-                    <div class="info-label">Style:</div>
-                    <div class="info-value" id="summary-style">Manga Monochrome</div>
-                    <div class="info-label">Page Count:</div>
-                    <div class="info-value" id="summary-pages">1</div>
-                </div>
-            </div>
-
-            <!-- Ephemeral Session Info -->
-            <div class="panel-section">
-                <div class="section-title">Session State (Ephemeral)</div>
-                <div class="info-grid">
-                    <div class="info-label">Active Layer:</div>
-                    <div class="info-value" id="session-active-layer">scenes</div>
-                    <div class="info-label">Selected Item:</div>
-                    <div class="info-value" id="session-selected-item">scene_top</div>
-                </div>
-            </div>
-
-            <!-- Scenes Section -->
-            <div class="panel-section">
-                <div class="section-title">
-                    <span>Scenes (<span id="count-scenes">2</span>)</span>
-                    <button id="btn-add-scene" class="btn btn-sm btn-primary">+ Add Scene</button>
-                </div>
-                <div id="scene-error-msg" class="alert-error"></div>
-                <div id="list-scenes"></div>
-
-                <!-- Scene Editor Form -->
-                <div id="scene-editor-container" class="editor-form" style="display: none;">
-                    <div style="font-weight: 700; font-size: 11px; color: #38bdf8; margin-bottom: 2px;">
-                        Edit Scene: <span id="scene-edit-id-label"></span>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Name</label>
-                        <input type="text" id="input-scene-name" class="form-input">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Prompt</label>
-                        <textarea id="input-scene-prompt" class="form-textarea" rows="2"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Negative Prompt</label>
-                        <textarea id="input-scene-negative" class="form-textarea" rows="1"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Move / Resize</label>
-                        <div class="form-actions">
-                            <button id="btn-scene-move-left" class="btn btn-sm" title="Move Left">←</button>
-                            <button id="btn-scene-move-right" class="btn btn-sm" title="Move Right">→</button>
-                            <button id="btn-scene-move-up" class="btn btn-sm" title="Move Up">↑</button>
-                            <button id="btn-scene-move-down" class="btn btn-sm" title="Move Down">↓</button>
-                            <button id="btn-scene-grow-w" class="btn btn-sm" title="Increase Width">+W</button>
-                            <button id="btn-scene-shrink-w" class="btn btn-sm" title="Decrease Width">-W</button>
-                            <button id="btn-scene-grow-h" class="btn btn-sm" title="Increase Height">+H</button>
-                            <button id="btn-scene-shrink-h" class="btn btn-sm" title="Decrease Height">-H</button>
-                        </div>
-                    </div>
-                    <div class="form-actions" style="margin-top: 6px; border-top: 1px solid #334155; padding-top: 6px;">
-                        <button id="btn-place-character-in-scene" class="btn btn-sm" style="background:#0284c7;color:white;">+ Place Character</button>
-                        <button id="btn-delete-scene" class="btn btn-sm btn-danger">Delete Scene</button>
-                    </div>
-                </div>
-            </div>
 
             <!-- CAST Section -->
-            <div class="panel-section">
+            <div id="cast-section" class="panel-section">
                 <div class="section-title">
                     <span>CAST (<span id="count-cast">0</span>)</span>
                     <button id="btn-add-cast" class="btn btn-sm btn-primary">+ Add CAST</button>
@@ -206,7 +150,7 @@
             </div>
 
             <!-- Character Instances Section -->
-            <div class="panel-section">
+            <div id="instances-section" class="panel-section">
                 <div class="section-title">
                     <span>Character Instances (<span id="count-instances">0</span>)</span>
                 </div>
@@ -222,9 +166,9 @@
                         <label class="form-label">Acting Prompt</label>
                         <textarea id="input-instance-acting-prompt" class="form-textarea" rows="2"></textarea>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Move / Resize</label>
-                        <div class="form-actions">
+                    <details class="fine-adjust-details" open>
+                        <summary class="fine-adjust-summary">Position & Size</summary>
+                        <div class="form-actions" style="margin-top: 4px;">
                             <button id="btn-char-move-left" class="btn btn-sm" title="Move Left">←</button>
                             <button id="btn-char-move-right" class="btn btn-sm" title="Move Right">→</button>
                             <button id="btn-char-move-up" class="btn btn-sm" title="Move Up">↑</button>
@@ -232,15 +176,62 @@
                             <button id="btn-char-grow" class="btn btn-sm" title="Grow">+ Size</button>
                             <button id="btn-char-shrink" class="btn btn-sm" title="Shrink">- Size</button>
                         </div>
-                    </div>
+                    </details>
                     <div class="form-actions" style="margin-top: 6px; border-top: 1px solid #334155; padding-top: 6px;">
                         <button id="btn-remove-instance" class="btn btn-sm btn-danger">Remove Instance</button>
                     </div>
                 </div>
             </div>
 
+            <!-- Advanced / Secondary Layers -->
+            <!-- Scenes Section -->
+            <div id="section-raw-scenes" class="panel-section panel-section-advanced">
+                <div class="section-title">
+                    <span>Scenes (<span id="count-scenes">2</span>)</span>
+                    <button id="btn-add-scene" class="btn btn-sm btn-primary">+ Add Scene</button>
+                </div>
+                <div id="scene-error-msg" class="alert-error"></div>
+                <div id="list-scenes"></div>
+
+                <!-- Scene Editor Form -->
+                <div id="scene-editor-container" class="editor-form" style="display: none;">
+                    <div style="font-weight: 700; font-size: 11px; color: #38bdf8; margin-bottom: 2px;">
+                        Edit Scene: <span id="scene-edit-id-label"></span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Name</label>
+                        <input type="text" id="input-scene-name" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Prompt</label>
+                        <textarea id="input-scene-prompt" class="form-textarea" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Negative Prompt</label>
+                        <textarea id="input-scene-negative" class="form-textarea" rows="1"></textarea>
+                    </div>
+                    <details class="fine-adjust-details" open>
+                        <summary class="fine-adjust-summary">Move / Resize Nudge</summary>
+                        <div class="form-actions" style="margin-top: 4px;">
+                            <button id="btn-scene-move-left" class="btn btn-sm" title="Move Left">←</button>
+                            <button id="btn-scene-move-right" class="btn btn-sm" title="Move Right">→</button>
+                            <button id="btn-scene-move-up" class="btn btn-sm" title="Move Up">↑</button>
+                            <button id="btn-scene-move-down" class="btn btn-sm" title="Move Down">↓</button>
+                            <button id="btn-scene-grow-w" class="btn btn-sm" title="Increase Width">+W</button>
+                            <button id="btn-scene-shrink-w" class="btn btn-sm" title="Decrease Width">-W</button>
+                            <button id="btn-scene-grow-h" class="btn btn-sm" title="Increase Height">+H</button>
+                            <button id="btn-scene-shrink-h" class="btn btn-sm" title="Decrease Height">-H</button>
+                        </div>
+                    </details>
+                    <div class="form-actions" style="margin-top: 6px; border-top: 1px solid #334155; padding-top: 6px;">
+                        <button id="btn-place-character-in-scene" class="btn btn-sm" style="background:#0284c7;color:white;">+ Place Character</button>
+                        <button id="btn-delete-scene" class="btn btn-sm btn-danger">Delete Scene</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Visual Frames Section (M1C1 Authorable) -->
-            <div class="panel-section">
+            <div id="section-visual-frames" class="panel-section panel-section-advanced">
                 <div class="section-title">
                     <span>Visual Frames (<span id="count-frames">0</span>)</span>
                     <div style="display: flex; gap: 4px;">
@@ -282,7 +273,7 @@
             </div>
 
             <!-- Guides Section (M1C2B Authorable) -->
-            <div class="panel-section">
+            <div id="section-guides" class="panel-section panel-section-advanced">
                 <div class="section-title">
                     <span>Guides (<span id="count-guides">0</span>)</span>
                     <button id="btn-add-guide" class="btn btn-sm btn-primary">+ Add Guide</button>
@@ -348,9 +339,21 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Ephemeral Session Info (Diagnostics) -->
+            <div id="section-session-state" class="panel-section panel-section-advanced">
+                <details class="session-state-details">
+                    <summary class="section-title" style="cursor: pointer; user-select: none;">Session State (Diagnostics)</summary>
+                    <div class="info-grid" style="margin-top: 6px;">
+                        <div class="info-label">Active Layer:</div>
+                        <div class="info-value" id="session-active-layer">scenes</div>
+                        <div class="info-label">Selected Item:</div>
+                        <div class="info-value" id="session-selected-item">scene_top</div>
+                    </div>
+                </details>
+            </div>
         </div>
     </div>
-
     </div>
 
     <section id="generate-view" role="tabpanel" aria-labelledby="manga-tab-generate" hidden>

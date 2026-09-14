@@ -393,19 +393,26 @@ body {
     display: block;
 }
 
-/* PLAY2 — Scene Composer. The legacy layer editors stay available through
-   Advanced Authoring while the simplified composer is the default surface. */
-#inspector-panel > .panel-section:not(#scene-composer-panel) { display: none; }
-#inspector-panel.advanced-open > .panel-section:not(#scene-composer-panel) { display: block; }
+/* Inspector Panel Sections & Progressive Disclosure */
+#inspector-panel > .panel-section.panel-section-advanced { display: none; }
+#inspector-panel.advanced-open > .panel-section.panel-section-advanced { display: block; }
 #scene-composer-panel { background: #21182a; border-bottom-color: #624569; }
 .scene-composer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .scene-composer-eyebrow, .scene-tool-eyebrow { color: #d4a1e1; font-size: 10px; font-weight: 800; letter-spacing: .12em; }
-.scene-composer-head h2 { margin-top: 3px; color: #f4d8f3; font-size: 19px; line-height: 1.1; }
-.scene-composer-advanced { flex: 0 0 auto; background: #38283f; border: 1px solid #795782; border-radius: 6px; color: #eedbf2; padding: 6px 8px; font-size: 10px; font-weight: 700; cursor: pointer; }
+.scene-composer-head h2 { margin-top: 3px; color: #f4d8f3; font-size: 16px; line-height: 1.1; }
+.scene-composer-advanced { flex: 0 0 auto; background: #38283f; border: 1px solid #795782; border-radius: 6px; color: #eedbf2; padding: 5px 8px; font-size: 10px; font-weight: 700; cursor: pointer; }
 .scene-composer-advanced:hover, .scene-composer-advanced[aria-expanded="true"] { background: #503457; }
-.scene-composer-note { margin-top: 9px; color: #cbb6ce; font-size: 11px; line-height: 1.45; }
-.scene-composer-selection { margin-top: 11px; padding: 7px 8px; border: 1px solid #624569; border-radius: 6px; background: #17111d; color: #f1d9f1; font-size: 11px; font-weight: 700; }
-.scene-prompt-tabs { display: flex; gap: 5px; margin-top: 10px; overflow-x: auto; padding-bottom: 3px; scrollbar-color: #76537e transparent; }
+.scene-composer-note { margin-top: 6px; color: #cbb6ce; font-size: 11px; line-height: 1.4; }
+.scene-composer-selection { margin-top: 8px; padding: 6px 8px; border: 1px solid #624569; border-radius: 6px; background: #17111d; color: #f1d9f1; font-size: 11px; font-weight: 700; }
+.scene-prompt-tabs { display: flex; gap: 5px; margin-top: 8px; overflow-x: auto; padding-bottom: 3px; scrollbar-color: #76537e transparent; }
+
+.document-summary-compact { background: #141b2d; border-bottom: 1px solid #334155; padding: 8px 12px; }
+.document-summary-compact .section-title { font-size: 10px; margin-bottom: 4px; color: #94a3b8; }
+.fine-adjust-details { margin-top: 6px; border-top: 1px solid #334155; padding-top: 4px; }
+.fine-adjust-summary { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #94a3b8; cursor: pointer; user-select: none; margin-bottom: 4px; }
+.fine-adjust-summary:hover { color: #cbd5e1; }
+.session-state-details { width: 100%; }
+.session-state-details summary { cursor: pointer; user-select: none; }
 .scene-prompt-tabs button { flex: 0 0 auto; border: 1px solid #694b70; border-radius: 999px; background: #2c2033; color: #ccb7cf; padding: 6px 10px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 .scene-prompt-tabs button:hover { background: #49304f; color: #fff; }
 .scene-prompt-tabs button[aria-selected="true"] { background: #75438b; border-color: #c99bd2; color: #fff; }
