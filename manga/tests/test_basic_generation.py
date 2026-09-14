@@ -339,10 +339,11 @@ class BasicApiTests(unittest.TestCase):
             fake_inputs(), lambda kind, name: True,
         )
 
-    def test_only_two_backend_routes_registered(self):
+    def test_basic_and_scene_backend_routes_registered(self):
         self.assertEqual([(method, path) for method, path, _ in self.routes.registered], [
             ("GET", "/tegaki/manga/generation/capabilities"),
             ("POST", "/tegaki/manga/generation/compile-basic"),
+            ("POST", "/tegaki/manga/generation/compile-scene"),
         ])
 
     def test_api_compile_and_malformed_json_fail_closed(self):

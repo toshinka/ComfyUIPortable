@@ -19,6 +19,7 @@ from .minimum_hand_scene_editor import TegakiMinimumHandSceneEditor
 from .frame_overlay import TegakiMangaFrameOverlay
 from .rough_guide_bridge import TegakiMangaRoughGuideBridge
 from .generation_guide_bridge import TegakiMangaGenerationGuideBridge
+from .page_plan_adapter import TegakiMangaPagePlanFromJSON
 from . import panel_layout_api
 from . import product_generation_api
 from . import basic_generation_api
@@ -48,6 +49,7 @@ NODE_CLASS_MAPPINGS = {
     "TegakiMangaFrameOverlay": TegakiMangaFrameOverlay,
     "TegakiMangaRoughGuideBridge": TegakiMangaRoughGuideBridge,
     "TegakiMangaGenerationGuideBridge": TegakiMangaGenerationGuideBridge,
+    "TegakiMangaPagePlanFromJSON": TegakiMangaPagePlanFromJSON,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
@@ -75,6 +77,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "TegakiMangaFrameOverlay": "Tegaki Manga Frame Overlay (Deterministic)",
     "TegakiMangaRoughGuideBridge": "Tegaki Manga Rough Guide Bridge (Preview / Mask)",
     "TegakiMangaGenerationGuideBridge": "Tegaki Manga Generation Guide Bridge (Clean)",
+    "TegakiMangaPagePlanFromJSON": "Tegaki Manga PAGE_COMPILE_PLAN Adapter (JSON)",
 }
 
 WEB_DIRECTORY = "./web"

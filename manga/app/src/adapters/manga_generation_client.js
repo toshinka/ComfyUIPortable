@@ -29,6 +29,12 @@ export class MangaGenerationClient {
             body: JSON.stringify({ ...settings, request_id: crypto.randomUUID() })
         });
     }
+    compileScene(settings) {
+        return this._json("/api/manga/generation/compile-scene", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...settings, request_id: crypto.randomUUID() })
+        });
+    }
     createJob(settings, compiled) {
         if (typeof compiled?.graph_digest !== "string" || !/^[0-9a-f]{64}$/.test(compiled.graph_digest)) {
             throw new MangaGenerationClientError("COMPILE_INVALID", "Compiler did not return a graph digest");

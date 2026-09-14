@@ -118,6 +118,10 @@ export class MangaDomainRuntime {
         // manga/service/ -> manga/ -> ComfyUIPortable/
         const portableRoot = config.portableRoot || path.resolve(__dirname, "..", "..");
         this.portableRoot = portableRoot;
+        const configuredOutputDir = process.env.TEGAKI_MANGA_OUTPUT_DIR?.trim();
+        this.mangaOutputDir = path.resolve(
+            configuredOutputDir || path.join(portableRoot, "output", "Tegaki")
+        );
 
         this.backendHost = config.backendHost || "127.0.0.1";
         this.backendPort = parseInt(config.backendPort || "8189", 10);
@@ -507,7 +511,7 @@ export class MangaDomainRuntime {
             "--listen", this.backendHost,
             "--port", String(this.backendPort),
             "--disable-auto-launch",
-            "--output-directory", "output/Tegaki"
+            "--output-directory", this.mangaOutputDir
         ];
 
         let child;

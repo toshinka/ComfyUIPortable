@@ -2,6 +2,7 @@
 import { GenerationState, ACTIVE_JOB_STATES } from "../state/generation_state.js";
 import { MangaGenerationClient } from "../adapters/manga_generation_client.js";
 import { createTagAutocomplete } from "./tag_autocomplete.js";
+import { validateAuthoringDocument } from "../domain/authoring_document.js";
 
 const FIELDS = ["checkpoint_id", "positive_raw", "negative_raw", "sampler_id", "scheduler_id",
     "steps", "cfg", "width", "height", "seed_requested"];
@@ -11,6 +12,7 @@ const JOB_ID = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/;
 const own = (obj, key) => Object.hasOwn(obj, key);
 const LORA_TAG = /^<lora:([^:<>]+):([+-]?(?:\d+(?:\.\d*)?|\.\d+))>$/;
 const ANGLE_TAG = /<[^<>]*>/g;
+const SCENE_LORA_TAG = /<lora:/i;
 
 function numericBound(catalog, field) {
     const product = catalog.product_bounds?.[field];
@@ -49,7 +51,7 @@ function loraBlockReason(catalog, positive, negative) {
     return "";
 }
 
-export function generationBlockReason(state) {
+export function generationBlockReason(state, authoringStore = state.authoringStore) {
     if (state.historyLoading) return "Checking recorded Manga jobs…";
     if (state.submitUnconfirmed) return "Job outcome is UNKNOWN; automatic retry is disabled.";
     if (state.localBusy) return "Submission is in progress…";
@@ -58,9 +60,19 @@ export function generationBlockReason(state) {
         ? `Capability catalog unavailable — ${state.catalogError}`
         : "Manga workspace unavailable; capability catalog unavailable.";
     try {
-        buildGenerationSettings(state);
+        if (state.mode === "scene") buildSceneGenerationSettings(state, authoringStore);
+        else buildGenerationSettings(state);
     } catch (cause) {
         return cause.message;
+    }
+    if (state.mode === "scene") {
+        const document = authoringStore?.getDocument?.();
+        const scenes = document?.pages?.[0]?.scenes || [];
+        if (scenes.some(scene => SCENE_LORA_TAG.test(String(scene?.prompt || "")) ||
+            SCENE_LORA_TAG.test(String(scene?.negative_prompt || "")))) {
+            return "Scene LoRA prompt notation is unavailable in PLAY5; remove it from the Scene document.";
+        }
+        return "";
     }
     return loraBlockReason(state.catalog, state.draft.positive_raw, state.draft.negative_raw);
 }
@@ -107,7 +119,8 @@ export function buildGenerationSettings(state) {
 }
 
 export function mountGenerationView(root, { state = new GenerationState(), client = new MangaGenerationClient(),
-    pollMs = 1500 } = {}) {
+    authoringStore = null, onEditScenes = null, pollMs = 1500 } = {}) {
+    state.authoringStore = authoringStore;
     const byId = id => root.querySelector(`#${id}`);
     const controls = Object.fromEntries(FIELDS.map(field => [field, byId(`mg-${field}`)]));
     const positiveTagAutocomplete = createTagAutocomplete(controls.positive_raw);
@@ -121,6 +134,13 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
     const previewLabel = byId("mg-preview-label");
     const history = byId("mg-history");
     const catalogNote = byId("mg-catalog-note");
+    const basicModeButton = byId("mg-mode-basic");
+    const sceneModeButton = byId("mg-mode-scene");
+    const basicOnly = [...root.querySelectorAll("[data-mg-basic-only]")];
+    const sceneOnly = [...root.querySelectorAll("[data-mg-scene-only]")];
+    const sceneSummary = byId("mg-scene-summary");
+    const sceneResolution = byId("mg-scene-resolution");
+    const editScenes = byId("mg-edit-scenes");
     let pollTimer = null;
     let polling = false;
 
@@ -143,6 +163,38 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
         select.value = current;
     }
 
+    function renderMode() {
+        const scene = state.mode === "scene";
+        basicModeButton?.setAttribute("aria-selected", String(!scene));
+        sceneModeButton?.setAttribute("aria-selected", String(scene));
+        for (const element of basicOnly) element.hidden = scene;
+        for (const element of sceneOnly) element.hidden = !scene;
+        // Scene resolution is read-only and comes from the canonical page.
+        controls.width.readOnly = scene;
+        controls.height.readOnly = scene;
+        controls.width.disabled = false;
+        controls.height.disabled = false;
+        if (scene && authoringStore) {
+            const page = authoringStore.getPage?.(0);
+            if (page) {
+                controls.width.value = String(page.width_px);
+                controls.height.value = String(page.height_px);
+            }
+        }
+        if (sceneSummary) {
+            const page = authoringStore?.getPage?.(0);
+            const scenes = [...(page?.scenes || [])].sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+            if (!page) sceneSummary.textContent = "Authoring document unavailable.";
+            else if (!scenes.length) sceneSummary.textContent = "No scenes in the Authoring document.";
+            else sceneSummary.textContent = `${scenes.length} simple Scene${scenes.length === 1 ? "" : "s"} · ${page.width_px} × ${page.height_px} · ` +
+                scenes.map((item, index) => `${item.name || `Scene ${index + 1}`}: ${String(item.prompt || "").trim() || "(empty prompt)"}`).join(" · ");
+        }
+        if (sceneResolution) {
+            const page = authoringStore?.getPage?.(0);
+            sceneResolution.textContent = page ? `Resolution · ${page.width_px} × ${page.height_px} (Authoring page)` : "Resolution · unavailable";
+        }
+    }
+
     function renderForm() {
         for (const field of FIELDS) {
             if (SELECTS.has(field)) continue;
@@ -161,6 +213,7 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
         } else {
             catalogNote.textContent = state.catalogError || "Loading Manga capabilities…";
         }
+        renderMode();
     }
 
     function renderStatus() {
@@ -172,14 +225,15 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
             state.localBusy ? "SUBMITTING · Validating settings and creating Manga job…" :
             job ? `${stateName} · Manga job ${job.job_id}` :
                 state.error ? "FAILED · Manga generation could not start" :
-                    state.catalog ? "READY · Ready to generate one image" : "FAILED · Capabilities unavailable";
+                    state.catalog ? `READY · Ready to generate one ${state.mode === "scene" ? "Scene Layout" : "image"}` : "FAILED · Capabilities unavailable";
         status.dataset.state = state.submitUnconfirmed ? "UNKNOWN" :
             state.localBusy ? "SUBMITTING" : (stateName || (state.error ? "FAILED" : "READY"));
-        const reason = generationBlockReason(state);
+        const reason = generationBlockReason(state, authoringStore);
         generate.disabled = Boolean(reason);
         generateReason.textContent = reason;
         generateReason.hidden = !reason;
-        generateLabel.textContent = state.localBusy || ["VALIDATING", "SUBMITTING"].includes(job?.state)
+        generateLabel.textContent = state.mode === "scene" && !state.localBusy && !["VALIDATING", "SUBMITTING", "QUEUED", "RUNNING"].includes(job?.state)
+            ? "Generate with Scenes" : state.localBusy || ["VALIDATING", "SUBMITTING"].includes(job?.state)
             ? "Submitting…" : ["QUEUED", "RUNNING"].includes(job?.state) ? "Generating…" : "Generate";
         const message = state.error || (job?.state === "FAILED" || job?.state === "UNKNOWN" ?
             `${job.state}: ${job.error?.message || "Backend outcome is not confirmed"}` : "");
@@ -211,7 +265,9 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
             heading.textContent = job.state;
             const summary = document.createElement("span");
             const s = job.requested_settings || {};
-            summary.textContent = ` ${s.checkpoint_id || "Unknown checkpoint"} · ${s.width || "?"} × ${s.height || "?"} · seed ${s.seed_requested ?? "?"}`;
+            const page = s.authoring_document?.pages?.[s.page_index || 0];
+            const dimensions = s.mode === "scene" ? `${page?.width_px || "?"} × ${page?.height_px || "?"}` : `${s.width || "?"} × ${s.height || "?"}`;
+            summary.textContent = ` ${s.mode === "scene" ? "Scene Layout · " : ""}${s.checkpoint_id || "Unknown checkpoint"} · ${dimensions} · seed ${s.seed_requested ?? "?"}`;
             facts.append(heading, summary);
             const restore = document.createElement("button");
             restore.type = "button";
@@ -276,8 +332,12 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
         let submitStarted = false;
         renderStatus();
         try {
-            const settings = buildGenerationSettings(state);
-            const compiled = await client.compile(settings);
+            const settings = state.mode === "scene"
+                ? buildSceneGenerationSettings(state, authoringStore)
+                : buildGenerationSettings(state);
+            const compiled = state.mode === "scene"
+                ? await client.compileScene(settings)
+                : await client.compile(settings);
             if (compiled.capability_revision !== settings.capability_revision ||
                 !own(compiled, "effective_seed")) throw new Error("Compiled capability or seed is unavailable");
             submitStarted = true;
@@ -307,6 +367,25 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
         });
     }
     generate.addEventListener("click", generateOne);
+    basicModeButton?.addEventListener("click", () => {
+        state.setMode("basic");
+        renderForm();
+        renderStatus();
+    });
+    sceneModeButton?.addEventListener("click", () => {
+        state.setMode("scene");
+        renderForm();
+        renderStatus();
+    });
+    editScenes?.addEventListener("click", () => {
+        if (typeof onEditScenes === "function") onEditScenes();
+    });
+    authoringStore?.subscribe?.(() => {
+        if (state.mode === "scene") {
+            renderForm();
+            renderStatus();
+        }
+    });
     byId("mg-refresh-catalog").addEventListener("click", async () => {
         try { state.setCatalog(await client.capabilities()); renderForm(); renderStatus(); }
         catch (cause) { state.catalog = null; state.catalogError = cause.message; renderForm(); renderStatus(); }
@@ -340,4 +419,61 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
         if (state.preview.url) URL.revokeObjectURL(state.preview.url);
         positiveTagAutocomplete.dispose();
     } };
+}
+
+export function buildSceneGenerationSettings(state, authoringStore = state.authoringStore) {
+    const catalog = state.catalog;
+    if (!catalog) throw new Error("Manga capabilities are unavailable");
+    const document = authoringStore?.getDocument?.();
+    const validation = validateAuthoringDocument(document);
+    if (!validation.valid) throw new Error(`Authoring document unavailable: ${validation.errors.join("; ")}`);
+    const page = document.pages[0];
+    if (!Array.isArray(page.scenes) || page.scenes.length < 1 || page.scenes.length > 6) {
+        throw new Error("Scene Layout requires 1–6 authoring scenes");
+    }
+    if ((page.cast || []).length || (page.character_instances || []).length ||
+        page.scenes.some(scene => scene.input_mode && scene.input_mode !== "simple")) {
+        throw new Error("Scene Layout currently supports simple Scenes only; CAST is unavailable");
+    }
+    if (!catalog.scene_generation?.available) throw new Error("Scene generation capability is unavailable");
+    if (!catalog.checkpoints.some(entry => entry.id === state.draft.checkpoint_id && entry.available === true)) {
+        throw new Error(`Checkpoint unavailable: ${state.draft.checkpoint_id || "none selected"}`);
+    }
+    if (!catalog.samplers.includes(state.draft.sampler_id) || !catalog.schedulers.includes(state.draft.scheduler_id)) {
+        throw new Error("Selected sampler or scheduler is unavailable");
+    }
+    if (!INTEGER.test(state.draft.steps)) throw new Error("steps must be a whole number");
+    const steps = Number(state.draft.steps);
+    const stepBound = numericBound(catalog, "steps");
+    if (!Number.isSafeInteger(steps) || steps < stepBound.min || steps > stepBound.max) {
+        throw new Error("steps is outside the available bounds");
+    }
+    const cfg = Number(state.draft.cfg);
+    const cfgBound = numericBound(catalog, "cfg");
+    if (state.draft.cfg.trim() === "" || !Number.isFinite(cfg) || cfg < cfgBound.min || cfg > cfgBound.max) {
+        throw new Error("CFG is outside the available bounds");
+    }
+    const width = page.width_px;
+    const height = page.height_px;
+    const widthBound = numericBound(catalog, "width");
+    const heightBound = numericBound(catalog, "height");
+    if (!Number.isInteger(width) || !Number.isInteger(height) || width < widthBound.min || width > widthBound.max ||
+        height < heightBound.min || height > heightBound.max || width % 8 || height % 8) {
+        throw new Error("Authoring page resolution is outside the available bounds");
+    }
+    if (width * height > Number(catalog.product_bounds.max_pixels)) {
+        throw new Error("Authoring page resolution exceeds the Manga pixel limit");
+    }
+    const seed = state.draft.seed_requested;
+    if (seed !== "-1" && (!INTEGER.test(seed) || Number(seed) > 4294967295)) {
+        throw new Error("Seed must be -1 or 0..4294967295");
+    }
+    return {
+        mode: "scene", checkpoint_id: state.draft.checkpoint_id,
+        authoring_document: document, page_index: 0,
+        sampler_id: state.draft.sampler_id, scheduler_id: state.draft.scheduler_id,
+        steps, cfg, seed_requested: seed, capability_revision: catalog.revision,
+        mask_feather: Number(state.sceneDraft?.mask_feather ?? 16),
+        panel_strength: Number(state.sceneDraft?.panel_strength ?? 1)
+    };
 }

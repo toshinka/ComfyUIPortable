@@ -54,6 +54,7 @@ export const ALLOWED_PROXY_PATHS = new Set([
     "/queue",
     "/object_info/TegakiMinimumHandSceneEditor",
     "/tegaki/manga/generation/prepare",
+    "/tegaki/manga/generation/compile-scene",
     "/extensions/tegaki_manga_nodes/js/minimum_hand_scene_editor.js"
 ]);
 
@@ -88,10 +89,13 @@ const server = http.createServer(async (req, res) => {
     let pathname = url.pathname;
     if (pathname === "/") pathname = "/index.html";
 
-    // PLAY1a: two fixed read/compile routes. No browser graph submission or general proxy expansion.
-    if (pathname === "/api/manga/generation/capabilities" || pathname === "/api/manga/generation/compile") {
+    // PLAY1a/PLAY5: fixed read/compile routes. No browser graph submission or general proxy expansion.
+    if (pathname === "/api/manga/generation/capabilities" ||
+        pathname === "/api/manga/generation/compile" ||
+        pathname === "/api/manga/generation/compile-scene") {
         const isCompile = pathname === "/api/manga/generation/compile";
-        const expectedMethod = isCompile ? "POST" : "GET";
+        const isSceneCompile = pathname === "/api/manga/generation/compile-scene";
+        const expectedMethod = isCompile || isSceneCompile ? "POST" : "GET";
         const reply = (status, error_code, error) => {
             res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
             res.end(JSON.stringify({ ok: false, error_code, error }));
@@ -106,7 +110,7 @@ const server = http.createServer(async (req, res) => {
             return;
         }
         let body;
-        if (isCompile) {
+        if (isCompile || isSceneCompile) {
             if ((req.headers["content-type"] || "").split(";")[0].trim().toLowerCase() !== "application/json") {
                 reply(415, "INVALID_CONTENT_TYPE", "Content-Type must be application/json");
                 return;
@@ -138,11 +142,13 @@ const server = http.createServer(async (req, res) => {
         }
         const backendPath = isCompile
             ? "/tegaki/manga/generation/compile-basic"
-            : "/tegaki/manga/generation/capabilities";
+            : isSceneCompile
+                ? "/tegaki/manga/generation/compile-scene"
+                : "/tegaki/manga/generation/capabilities";
         try {
             const backendRes = await fetch(`${parsedBackend.origin}${backendPath}`, {
                 method: expectedMethod,
-                headers: isCompile ? { "Content-Type": "application/json" } : undefined,
+                headers: (isCompile || isSceneCompile) ? { "Content-Type": "application/json" } : undefined,
                 body,
                 signal: AbortSignal.timeout(5000)
             });
@@ -165,7 +171,7 @@ const server = http.createServer(async (req, res) => {
             }
             if (!data || typeof data !== "object" || Array.isArray(data) ||
                 (backendRes.ok && (data.ok !== true ||
-                    (isCompile ? !data.graph || typeof data.graph_digest !== "string"
+                    ((isCompile || isSceneCompile) ? !data.graph || typeof data.graph_digest !== "string"
                                : !Array.isArray(data.checkpoints) || !Array.isArray(data.samplers) || typeof data.revision !== "string"))) ||
                 (!backendRes.ok && (data.ok !== false || typeof data.error !== "string"))) {
                 reply(502, "BACKEND_INVALID_RESPONSE", "Backend response is missing required fields");
@@ -237,7 +243,9 @@ const server = http.createServer(async (req, res) => {
                     reply(400, "INVALID_JSON", "Manga job request is not valid JSON");
                     return;
                 }
-                const job = await generationService.createJob(body);
+                const job = body?.settings?.mode === "scene"
+                    ? await generationService.createSceneJob(body)
+                    : await generationService.createJob(body);
                 res.writeHead(202, { "Content-Type": "application/json; charset=utf-8" });
                 res.end(JSON.stringify({ ok: true, job }));
             } else if (result) {
@@ -253,6 +261,7 @@ const server = http.createServer(async (req, res) => {
             if (error instanceof GenerationServiceError || error instanceof JournalError) {
                 reply(error.status || 503, error.code, error.message);
             } else {
+                console.error(`[MangaWorkspaceServer] Manga job internal error: ${error?.stack || error}`);
                 reply(500, "MANGA_JOB_INTERNAL_ERROR", "Manga job service failed");
             }
         }

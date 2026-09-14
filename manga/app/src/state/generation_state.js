@@ -13,6 +13,8 @@ export class GenerationState {
             checkpoint_id: "", positive_raw: "", negative_raw: "", sampler_id: "", scheduler_id: "",
             steps: "20", cfg: "7", width: "832", height: "1216", seed_requested: "0"
         };
+        this.mode = "basic";
+        this.sceneDraft = { mask_feather: "16", panel_strength: "1" };
         this.touched = new Set();
         this.jobs = [];
         this.jobIds = this._savedIds();
@@ -37,6 +39,12 @@ export class GenerationState {
         this.draft[field] = String(value);
         this.touched.add(field);
         if (!this.submitUnconfirmed) this.error = "";
+    }
+
+    setMode(mode) {
+        if (mode !== "basic" && mode !== "scene") throw new Error(`Unknown Manga generation mode: ${mode}`);
+        this.mode = mode;
+        this.error = "";
     }
 
     setCatalog(catalog) {
@@ -92,10 +100,24 @@ export class GenerationState {
     restore(job) {
         const settings = job?.requested_settings;
         if (!settings || typeof settings !== "object") throw new Error("This job has no restorable settings");
-        for (const field of FIELDS) {
-            if (!Object.hasOwn(settings, field)) throw new Error(`Recorded job lacks ${field}`);
-            this.draft[field] = String(settings[field]);
-            this.touched.add(field);
+        if (settings.mode === "scene") {
+            for (const field of ["checkpoint_id", "sampler_id", "scheduler_id", "steps", "cfg", "seed_requested"]) {
+                if (!Object.hasOwn(settings, field)) throw new Error(`Recorded Scene job lacks ${field}`);
+                this.draft[field] = String(settings[field]);
+                this.touched.add(field);
+            }
+            for (const field of ["mask_feather", "panel_strength"]) {
+                if (!Object.hasOwn(settings, field)) throw new Error(`Recorded Scene job lacks ${field}`);
+                this.sceneDraft[field] = String(settings[field]);
+            }
+            this.mode = "scene";
+        } else {
+            for (const field of FIELDS) {
+                if (!Object.hasOwn(settings, field)) throw new Error(`Recorded job lacks ${field}`);
+                this.draft[field] = String(settings[field]);
+                this.touched.add(field);
+            }
+            this.mode = "basic";
         }
         this.error = "";
     }

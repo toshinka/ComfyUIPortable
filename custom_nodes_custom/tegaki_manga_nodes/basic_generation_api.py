@@ -12,6 +12,7 @@ from .basic_generation import (
     CORE_NODES, NODE_IDENTITY, WILDCARD_ENV, GenerationContractError,
     _digest, _dynamic_prompt_api, _wildcard_root, build_catalog, compile_basic,
 )
+from .scene_generation import SCENE_REQUIRED_NODES, compile_scene
 
 MAX_REQUEST_BYTES = 256 * 1024
 
@@ -52,6 +53,16 @@ def _live_catalog():
         "wildcard_root": str(root),
         "override_env": WILDCARD_ENV,
         "supported_syntax": ["__wildcard__", "{a|b}", "nested", "weighted", "escaped_braces"],
+    }
+    scene_available = all(name in registry for name in SCENE_REQUIRED_NODES)
+    catalog["scene_generation"] = {
+        "available": scene_available,
+        "required_nodes": list(SCENE_REQUIRED_NODES),
+        "conditioning": "TegakiMangaConditioningBuilder",
+        "page_plan_adapter": "TegakiMangaPagePlanFromJSON",
+        "supported_scene_count": {"min": 1, "max": 6},
+        "mask_feather": {"default": 16, "min": 0, "max": 64},
+        "panel_strength": {"default": 1.0, "min": 0.0, "max": 2.0},
     }
     catalog["revision"] = _digest(catalog)
     return catalog
@@ -109,6 +120,43 @@ async def api_manga_basic_compile(request: web.Request) -> web.Response:
         return _error("BACKEND_CAPABILITY_UNAVAILABLE", "Backend compile capability failed", 503, candidate)
 
 
+async def api_manga_scene_compile(request: web.Request) -> web.Response:
+    """PLAY5 compile-only Scene Layout endpoint; no queue or model execution."""
+    if request.content_length is not None and request.content_length > MAX_REQUEST_BYTES:
+        return _error("REQUEST_TOO_LARGE", "Request exceeds 256 KiB", 413)
+    raw = bytearray()
+    async for chunk in request.content.iter_chunked(16384):
+        raw.extend(chunk)
+        if len(raw) > MAX_REQUEST_BYTES:
+            return _error("REQUEST_TOO_LARGE", "Request exceeds 256 KiB", 413)
+    if request.content_type != "application/json":
+        return _error("INVALID_CONTENT_TYPE", "Content-Type must be application/json", 415)
+    try:
+        def no_duplicate_keys(pairs):
+            value = {}
+            for key, item in pairs:
+                if key in value:
+                    raise ValueError(f"Duplicate JSON field: {key}")
+                value[key] = item
+            return value
+
+        def no_nonfinite(value):
+            raise ValueError(f"Non-finite JSON value: {value}")
+
+        candidate = json.loads(raw.decode("utf-8"), object_pairs_hook=no_duplicate_keys, parse_constant=no_nonfinite)
+    except (UnicodeDecodeError, ValueError) as exc:
+        return _error("INVALID_JSON", str(exc), 400)
+    try:
+        catalog = _live_catalog()
+        return web.json_response(compile_scene(candidate, catalog))
+    except GenerationContractError as exc:
+        return _error(exc.code, str(exc), 422 if exc.code != "BACKEND_CAPABILITY_UNAVAILABLE" else 503, candidate)
+    except Exception:
+        logging.exception("[MangaBasicGenerationAPI] Scene compile failed")
+        return _error("BACKEND_CAPABILITY_UNAVAILABLE", "Scene compile capability failed", 503, candidate)
+
+
 if routes is not None:
     routes.get("/tegaki/manga/generation/capabilities")(api_manga_basic_capabilities)
     routes.post("/tegaki/manga/generation/compile-basic")(api_manga_basic_compile)
+    routes.post("/tegaki/manga/generation/compile-scene")(api_manga_scene_compile)

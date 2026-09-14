@@ -7,9 +7,21 @@ const SETTINGS = new Set([
     "mode", "checkpoint_id", "positive_raw", "negative_raw", "sampler_id", "scheduler_id",
     "steps", "cfg", "width", "height", "seed_requested", "capability_revision"
 ]);
+const SCENE_SETTINGS = new Set([
+    "mode", "checkpoint_id", "authoring_document", "page_index", "sampler_id", "scheduler_id",
+    "steps", "cfg", "seed_requested", "capability_revision", "mask_feather", "panel_strength"
+]);
+const SCENE_REQUIRED_SETTINGS = new Set([
+    "mode", "checkpoint_id", "authoring_document", "page_index", "sampler_id", "scheduler_id",
+    "steps", "cfg", "seed_requested", "capability_revision"
+]);
 const GRAPH_CLASSES = new Set([
     "CheckpointLoaderSimple", "LoraLoader", "CLIPTextEncode", "EmptyLatentImage",
     "KSampler", "VAEDecode", "SaveImage"
+]);
+const SCENE_GRAPH_CLASSES = new Set([
+    "CheckpointLoaderSimple", "LoraLoader", "TegakiMangaPagePlanFromJSON",
+    "TegakiMangaConditioningBuilder", "EmptyLatentImage", "KSampler", "VAEDecode", "SaveImage"
 ]);
 const SHA256 = /^[0-9a-f]{64}$/;
 const PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
@@ -175,12 +187,91 @@ export class GenerationService {
         return { result, saveNodeId: saves[0][0] };
     }
 
+    async _compileScene(settings, requestId, expectedDigest, effectiveSeed) {
+        let seed = settings.seed_requested;
+        if (seed === "-1") {
+            if (typeof effectiveSeed !== "string" || !/^(0|[1-9][0-9]*)$/.test(effectiveSeed) ||
+                BigInt(effectiveSeed) > 4294967295n) {
+                fail("EFFECTIVE_SEED_REQUIRED", "Reviewed random seed must be supplied as decimal text", 400);
+            }
+            seed = effectiveSeed;
+        } else if (effectiveSeed !== undefined && effectiveSeed !== seed) {
+            fail("EFFECTIVE_SEED_MISMATCH", "Effective seed differs from requested seed", 400);
+        }
+        const compileRequest = { ...settings, request_id: requestId, seed_requested: seed };
+        const response = await this._json("/tegaki/manga/generation/compile-scene", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(compileRequest)
+        });
+        if (!response.ok || response.data.ok !== true) {
+            fail(response.data.error_code || "COMPILE_REJECTED", response.data.error || "Backend Scene compile rejected", response.status);
+        }
+        const result = response.data;
+        if (result.graph_digest !== expectedDigest || result.capability_revision !== settings.capability_revision) {
+            fail("DIGEST_MISMATCH", "Reviewed Scene graph digest or capability revision differs", 409);
+        }
+        if (!isDeepStrictEqual(result.normalized_request, compileRequest) || !isObject(result.graph) ||
+            typeof result.page_compile_plan_digest !== "string" || !isObject(result.audit_trail) ||
+            !Array.isArray(result.resolved_loras) || !isObject(result.effective_authoring_document) ||
+            !isObject(result.page_compile_plan) || !Array.isArray(result.scene_ids) || result.effective_seed !== Number(seed) ||
+            !isObject(result.resolution) || !Number.isInteger(result.resolution.width) ||
+            !Number.isInteger(result.resolution.height)) {
+            fail("COMPILE_INVALID", "Backend Scene compile result does not match request", 502);
+        }
+        const page = result.effective_authoring_document.pages?.[settings.page_index];
+        if (!isObject(page) || page.width_px !== result.resolution.width || page.height_px !== result.resolution.height) {
+            fail("COMPILE_INVALID", "Scene resolution does not match the effective Authoring page", 502);
+        }
+        const nodes = Object.entries(result.graph);
+        if (!nodes.length || nodes.some(([, node]) => !isObject(node) || !SCENE_GRAPH_CLASSES.has(node.class_type))) {
+            fail("COMPILE_INVALID", "Backend compiled an unsupported Scene graph", 502);
+        }
+        const saves = nodes.filter(([, node]) => node.class_type === "SaveImage");
+        const adapters = nodes.filter(([, node]) => node.class_type === "TegakiMangaPagePlanFromJSON");
+        const builders = nodes.filter(([, node]) => node.class_type === "TegakiMangaConditioningBuilder");
+        if (saves.length !== 1 || adapters.length !== 1 || builders.length !== 1 ||
+            saves[0][1].inputs?.filename_prefix !== "Manga/Playable/compiled") {
+            fail("COMPILE_INVALID", "Backend Scene graph lacks the single page-plan conditioning path", 502);
+        }
+        const latent = nodes.filter(([, node]) => node.class_type === "EmptyLatentImage");
+        if (latent.length !== 1 || latent[0][1].inputs?.width !== result.resolution.width ||
+            latent[0][1].inputs?.height !== result.resolution.height || latent[0][1].inputs?.batch_size !== 1) {
+            fail("COMPILE_INVALID", "Scene graph resolution is not the authoring page resolution", 502);
+        }
+        return { result, saveNodeId: saves[0][0] };
+    }
+
     _validateSubmission(body) {
         if (!isObject(body) || !isObject(body.settings) ||
             Object.keys(body).some(key => !["settings", "idempotency_key", "expected_graph_digest", "effective_seed"].includes(key)) ||
             Object.keys(body.settings).length !== SETTINGS.size ||
             Object.keys(body.settings).some(key => !SETTINGS.has(key))) {
             fail("INVALID_REQUEST", "Provide only PLAY1a settings and reviewed digest", 400);
+        }
+        if (typeof body.idempotency_key !== "string" || !/^[A-Za-z0-9_-]{1,64}$/.test(body.idempotency_key) ||
+            typeof body.expected_graph_digest !== "string" || !SHA256.test(body.expected_graph_digest) ||
+            (body.effective_seed !== undefined && typeof body.effective_seed !== "string")) {
+            fail("INVALID_REQUEST", "Invalid idempotency key, digest, or seed", 400);
+        }
+        return body;
+    }
+
+    _validateSceneSubmission(body) {
+        if (!isObject(body) || !isObject(body.settings) ||
+            Object.keys(body).some(key => !["settings", "idempotency_key", "expected_graph_digest", "effective_seed"].includes(key)) ||
+            Object.keys(body.settings).length < SCENE_REQUIRED_SETTINGS.size ||
+            Object.keys(body.settings).some(key => !SCENE_SETTINGS.has(key))) {
+            fail("INVALID_REQUEST", "Provide only PLAY5 Scene settings and reviewed digest", 400);
+        }
+        const settings = body.settings;
+        if (settings.mode !== "scene" || !isObject(settings.authoring_document) ||
+            !Number.isInteger(settings.page_index) || settings.page_index < 0 ||
+            typeof settings.checkpoint_id !== "string" || typeof settings.sampler_id !== "string" ||
+            typeof settings.scheduler_id !== "string" || typeof settings.seed_requested !== "string" ||
+            !Number.isInteger(settings.steps) || typeof settings.cfg !== "number" ||
+            (Object.hasOwn(settings, "mask_feather") && !Number.isInteger(settings.mask_feather)) ||
+            (Object.hasOwn(settings, "panel_strength") && typeof settings.panel_strength !== "number")) {
+            fail("INVALID_REQUEST", "Invalid PLAY5 Scene settings", 400);
         }
         if (typeof body.idempotency_key !== "string" || !/^[A-Za-z0-9_-]{1,64}$/.test(body.idempotency_key) ||
             typeof body.expected_graph_digest !== "string" || !SHA256.test(body.expected_graph_digest) ||
@@ -276,6 +367,114 @@ export class GenerationService {
                 record.state = "FAILED";
                 record.finished_at = now();
                 record.error = { code: "BACKEND_REJECTED", message: reply.data.error?.message || "Backend rejected the graph" };
+                await this.journal.put(record);
+                return this.publicJob(record);
+            }
+            return this._reconcileUnknown(record, "SUBMIT_UNCONFIRMED");
+        });
+    }
+
+    async createSceneJob(input) {
+        return this._exclusive(async () => {
+            const body = this._validateSceneSubmission(input);
+            let records;
+            try {
+                records = await this.journal.list();
+            } catch (error) {
+                if (error instanceof JournalError) fail(error.code, error.message, 503);
+                throw error;
+            }
+            if (records.some(record => record.idempotency_key === body.idempotency_key)) {
+                fail("DUPLICATE_REQUEST", "Manga request was already recorded", 409);
+            }
+            if (records.some(record => ACTIVE.has(record.state) && record.graph_digest === body.expected_graph_digest)) {
+                fail("DUPLICATE_GRAPH", "Identical reviewed graph already has an unresolved job", 409);
+            }
+            if (records.some(record => ACTIVE.has(record.state))) {
+                fail("OWNED_JOB_BUSY", "A Manga-owned job is still unresolved", 409);
+            }
+            const identity = await this._identity();
+            const queue = await this._queue();
+            if (queue.running.length || queue.pending.length) {
+                fail("FOREIGN_QUEUE_BUSY", "Backend queue contains an existing job", 409);
+            }
+            await this._capabilities(body.settings.capability_revision);
+            const jobId = randomUUID();
+            const requestId = randomUUID();
+            const { result, saveNodeId } = await this._compileScene(
+                body.settings, requestId, body.expected_graph_digest, body.effective_seed
+            );
+            const token = randomBytes(32).toString("hex");
+            const audit = isObject(result.audit_trail) ? structuredClone(result.audit_trail) : {};
+            const globalPositive = audit.global?.positive || {};
+            const globalNegative = audit.global?.negative || {};
+            const record = {
+                job_id: jobId, request_id: requestId, idempotency_key: body.idempotency_key,
+                requested_settings: structuredClone(body.settings),
+                effective_settings: { ...result.normalized_request, seed_requested: String(result.effective_seed) },
+                raw_positive: typeof globalPositive.raw === "string" ? globalPositive.raw : "",
+                raw_negative: typeof globalNegative.raw === "string" ? globalNegative.raw : "",
+                positive_raw: typeof globalPositive.raw === "string" ? globalPositive.raw : "",
+                negative_raw: typeof globalNegative.raw === "string" ? globalNegative.raw : "",
+                expanded_positive: typeof globalPositive.expanded === "string" ? globalPositive.expanded : "",
+                expanded_negative: typeof globalNegative.expanded === "string" ? globalNegative.expanded : "",
+                positive_expanded: typeof globalPositive.expanded === "string" ? globalPositive.expanded : "",
+                negative_expanded: typeof globalNegative.expanded === "string" ? globalNegative.expanded : "",
+                clean_positive: typeof globalPositive.clean === "string" ? globalPositive.clean : "",
+                clean_negative: typeof globalNegative.clean === "string" ? globalNegative.clean : "",
+                positive_clean: typeof globalPositive.clean === "string" ? globalPositive.clean : "",
+                negative_clean: typeof globalNegative.clean === "string" ? globalNegative.clean : "",
+                wildcard_root: typeof result.wildcard_root === "string" ? result.wildcard_root : null,
+                dynamicprompts_version: typeof result.dynamicprompts_version === "string" ? result.dynamicprompts_version : null,
+                dynamic_seed_domains: isObject(result.dynamic_seed_domains) ? structuredClone(result.dynamic_seed_domains) : null,
+                resolved_loras: structuredClone(result.resolved_loras || []),
+                effective_authoring_document: structuredClone(result.effective_authoring_document),
+                page_compile_plan: structuredClone(result.page_compile_plan),
+                page_compile_plan_digest: result.page_compile_plan_digest,
+                audit_trail: audit,
+                scene_ids: Array.isArray(result.scene_ids) ? [...result.scene_ids] : [],
+                resolution: structuredClone(result.resolution),
+                capability_revision: body.settings.capability_revision,
+                graph_digest: body.expected_graph_digest, submitted_graph_digest: null,
+                backend_identity: identity, prompt_id: null, save_node_id: saveNodeId,
+                created_at: now(), submitted_at: null, started_at: null, finished_at: null,
+                state: "VALIDATING", error: null, output_locator: null, ownership_token: token
+            };
+            await this.journal.put(record);
+            const graph = structuredClone(result.graph);
+            graph[saveNodeId].inputs.filename_prefix = `Manga/Playable/${jobId}`;
+            record.submitted_graph_digest = hash(stable(graph));
+            record.state = "SUBMITTING";
+            await this.journal.put(record);
+            const payload = {
+                prompt: graph,
+                extra_data: { tegaki_manga: {
+                    job_id: jobId, request_id: requestId, graph_digest: body.expected_graph_digest,
+                    submitted_graph_digest: record.submitted_graph_digest, ownership_token: token
+                }}
+            };
+            let reply;
+            try {
+                reply = await this._json("/prompt", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+            } catch (error) {
+                return this._reconcileUnknown(record, error.code || "SUBMIT_UNCONFIRMED");
+            }
+            if (reply.ok && typeof reply.data.prompt_id === "string" && JOB_ID.test(reply.data.prompt_id) &&
+                typeof reply.data.number === "number" && Number.isFinite(reply.data.number) &&
+                isObject(reply.data.node_errors)) {
+                record.prompt_id = reply.data.prompt_id;
+                record.state = "QUEUED";
+                record.submitted_at = now();
+                await this.journal.put(record);
+                return this.publicJob(record);
+            }
+            if ([400, 422].includes(reply.status) && !reply.data.prompt_id) {
+                record.state = "FAILED";
+                record.finished_at = now();
+                record.error = { code: "BACKEND_REJECTED", message: reply.data.error?.message || "Backend rejected the Scene graph" };
                 await this.journal.put(record);
                 return this.publicJob(record);
             }

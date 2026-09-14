@@ -488,6 +488,13 @@ body.manga-generate-active { min-height: 100vh; height: auto; overflow-x: hidden
 .mg-create-head { display: flex; align-items: center; justify-content: space-between; }
 .mg-create-head button, .mg-restore { background: #38283f; border: 1px solid #795782; border-radius: 6px; color: #eedbf2; padding: 5px 8px; font-size: 11px; cursor: pointer; }
 .mg-create-head button:hover, .mg-restore:hover { background: #503457; }
+.mg-mode-switch { display: flex; gap: 4px; margin-top: 8px; padding: 3px; border: 1px solid #604265; border-radius: 8px; background: #1b1420; }
+.mg-mode-switch button { flex: 1; border: 1px solid transparent; border-radius: 5px; padding: 7px 8px; background: transparent; color: #c4adcb; font-size: 11px; font-weight: 700; cursor: pointer; }
+.mg-mode-switch button[aria-selected="true"] { background: #75438b; color: #fff; border-color: #c99bd2; }
+.mg-scene-summary-label { margin-top: 10px; color: #d4a1e1; font-size: 10px; font-weight: 800; letter-spacing: .1em; }
+.mg-scene-resolution { margin-top: 7px; color: #f0dff2; font-size: 11px; font-weight: 700; }
+.mg-inline-action { align-self: flex-start; border: 1px solid #795782; border-radius: 6px; padding: 5px 8px; background: #38283f; color: #eedbf2; font-size: 11px; font-weight: 700; cursor: pointer; }
+.mg-inline-action:hover { background: #503457; }
 .mg-note, .mg-hint { color: #b8a4ba; font-size: 10px; line-height: 1.4; }
 .mg-section-label { margin-top: 14px; padding-top: 12px; border-top: 1px solid #543d59; color: #d4a1e1; font-size: 10px; font-weight: 800; letter-spacing: .11em; }
 #mg-create label { margin-top: 7px; color: #eee1ef; font-size: 11px; font-weight: 700; }

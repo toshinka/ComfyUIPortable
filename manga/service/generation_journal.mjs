@@ -44,8 +44,9 @@ function validate(record, expectedId) {
 }
 
 export class GenerationJournal {
-    constructor(directory = DEFAULT_JOURNAL_DIR) {
+    constructor(directory = DEFAULT_JOURNAL_DIR, fsApi = fs) {
         this.directory = path.resolve(directory);
+        this.fs = fsApi;
     }
 
     _file(jobId) {
@@ -57,7 +58,7 @@ export class GenerationJournal {
         const file = this._file(jobId);
         let raw;
         try {
-            raw = await fs.readFile(file, "utf8");
+            raw = await this.fs.readFile(file, "utf8");
         } catch (error) {
             if (error.code === "ENOENT") return null;
             throw error;
@@ -71,8 +72,8 @@ export class GenerationJournal {
     }
 
     async list() {
-        await fs.mkdir(this.directory, { recursive: true });
-        const files = await fs.readdir(this.directory);
+        await this.fs.mkdir(this.directory, { recursive: true });
+        const files = await this.fs.readdir(this.directory);
         const records = [];
         for (const name of files) {
             if (!/^[0-9a-f-]+\.json$/.test(name)) {
@@ -88,20 +89,40 @@ export class GenerationJournal {
 
     async put(record) {
         validate(record, record?.job_id);
-        await fs.mkdir(this.directory, { recursive: true });
         const target = this._file(record.job_id);
         const temporary = path.join(this.directory, `${record.job_id}.${randomUUID()}.tmp`);
-        const handle = await fs.open(temporary, "wx");
+        let serialized;
         try {
-            await handle.writeFile(JSON.stringify(record, null, 2) + "\n", "utf8");
+            serialized = JSON.stringify(record, null, 2) + "\n";
+            await this.fs.mkdir(this.directory, { recursive: true });
+        } catch (error) {
+            throw new JournalError("JOURNAL_WRITE_FAILED", `Manga journal preparation failed: ${error.message}`);
+        }
+        let handle = null;
+        let writeError = null;
+        try {
+            handle = await this.fs.open(temporary, "wx");
+            await handle.writeFile(serialized, "utf8");
             await handle.sync();
-        } finally {
-            await handle.close();
+        } catch (error) {
+            writeError = error;
+        }
+        if (handle) {
+            try {
+                await handle.close();
+            } catch (error) {
+                writeError ??= error;
+            }
+        }
+        if (writeError) {
+            try { await this.fs.rm(temporary, { force: true }); } catch {}
+            throw new JournalError("JOURNAL_WRITE_FAILED", `Manga journal write failed: ${writeError.message}`);
         }
         try {
-            await fs.rename(temporary, target);
+            await this.fs.rename(temporary, target);
         } catch (error) {
             // A remaining temporary file blocks future operations instead of becoming success.
+            try { await this.fs.rm(temporary, { force: true }); } catch {}
             throw new JournalError("JOURNAL_WRITE_FAILED", `Atomic Manga journal replace failed: ${error.message}`);
         }
         return record;

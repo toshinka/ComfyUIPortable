@@ -372,17 +372,29 @@
             <aside id="mg-create" aria-label="Create settings">
                 <div class="mg-create-head"><span class="mg-eyebrow">CREATE</span><button id="mg-refresh-catalog" type="button">Refresh models</button></div>
                 <p id="mg-catalog-note" class="mg-note">Loading Manga capabilities…</p>
+                <div class="mg-mode-switch" role="tablist" aria-label="Manga generation mode">
+                    <button id="mg-mode-basic" type="button" role="tab" aria-selected="true">Basic Draft</button>
+                    <button id="mg-mode-scene" type="button" role="tab" aria-selected="false">Scene Layout</button>
+                </div>
+                <div id="mg-scene-layout" data-mg-scene-only hidden>
+                    <div class="mg-scene-summary-label">AUTHORING SCENES</div>
+                    <p id="mg-scene-summary" class="mg-note">Scene Layout uses the current simple Scene document.</p>
+                    <p id="mg-scene-resolution" class="mg-scene-resolution" aria-readonly="true">Resolution · Authoring page</p>
+                    <button id="mg-edit-scenes" type="button" class="mg-inline-action">Edit Scenes</button>
+                </div>
                 <div class="mg-section-label">BASIC</div>
                 <label for="mg-checkpoint_id">Checkpoint</label>
                 <select id="mg-checkpoint_id"></select>
                 <p class="mg-hint">Select an available Illustrious-compatible checkpoint. Missing selections stay visible.</p>
-                <label for="mg-positive_raw">Prompt</label>
-                <textarea id="mg-positive_raw" rows="6" placeholder="Describe the image…"></textarea>
-                <p id="mg-dynamic-prompt-hint" class="mg-hint">Wildcards: __name__ · choices: {a|b}</p>
-                <label for="mg-negative_raw">Negative Prompt</label>
-                <textarea id="mg-negative_raw" rows="3" placeholder="What should be excluded…"></textarea>
-                <div class="mg-section-label">RESOLUTION</div>
-                <div class="mg-pair"><div><label for="mg-width">Width</label><input id="mg-width" type="number" step="8" value="832"></div><div><label for="mg-height">Height</label><input id="mg-height" type="number" step="8" value="1216"></div></div>
+                <div data-mg-basic-only>
+                    <label for="mg-positive_raw">Prompt</label>
+                    <textarea id="mg-positive_raw" rows="6" placeholder="Describe the image…"></textarea>
+                    <p id="mg-dynamic-prompt-hint" class="mg-hint">Wildcards: __name__ · choices: {a|b}</p>
+                    <label for="mg-negative_raw">Negative Prompt</label>
+                    <textarea id="mg-negative_raw" rows="3" placeholder="What should be excluded…"></textarea>
+                    <div class="mg-section-label">RESOLUTION</div>
+                    <div class="mg-pair"><div><label for="mg-width">Width</label><input id="mg-width" type="number" step="8" value="832"></div><div><label for="mg-height">Height</label><input id="mg-height" type="number" step="8" value="1216"></div></div>
+                </div>
                 <div class="mg-section-label">GENERATION</div>
                 <label for="mg-sampler_id">Sampler</label><select id="mg-sampler_id"></select>
                 <label for="mg-scheduler_id">Scheduler</label><select id="mg-scheduler_id"></select>
@@ -1865,7 +1877,10 @@
 
         // Initialize both domain views once; hiding one never resets its state.
         updateAll();
-        const generation = mountGenerationView(document.getElementById("generate-view"));
+        const generation = mountGenerationView(document.getElementById("generate-view"), {
+            authoringStore: store,
+            onEditScenes: () => setMangaMode("authoring")
+        });
         function setMangaMode(mode) {
             const isGenerate = mode === "generate";
             document.getElementById("generate-view").hidden = !isGenerate;
