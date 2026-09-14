@@ -499,7 +499,9 @@ function configureMangaWorkspace() {
         || !/^\/$/.test(parsed.pathname)) throw new Error("endpoint is not a local HTTP workspace");
     state.mangaWorkspaceUrl = parsed.href;
     mangaShellStatus.textContent = `Workspace ${parsed.host}`;
-    if (!mangaWorkspaceFrame.src || mangaWorkspaceFrame.src !== parsed.href) mangaWorkspaceFrame.src = parsed.href;
+    const embedded = new URL(parsed.href);
+    embedded.searchParams.set("embedded", "1");
+    if (!mangaWorkspaceFrame.src || mangaWorkspaceFrame.src !== embedded.href) mangaWorkspaceFrame.src = embedded.href;
   } catch (error) {
     state.mangaWorkspaceUrl = null;
     mangaShellStatus.textContent = `Manga workspace unavailable: ${error.message}`;

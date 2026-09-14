@@ -8,12 +8,60 @@ const SELECTS = new Set(["checkpoint_id", "sampler_id", "scheduler_id"]);
 const INTEGER = /^(0|[1-9][0-9]*)$/;
 const JOB_ID = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/;
 const own = (obj, key) => Object.hasOwn(obj, key);
+const LORA_TAG = /^<lora:([^:<>]+):([+-]?(?:\d+(?:\.\d*)?|\.\d+))>$/;
+const ANGLE_TAG = /<[^<>]*>/g;
 
 function numericBound(catalog, field) {
     const product = catalog.product_bounds?.[field];
     const backend = catalog.backend_bounds?.[field];
     return { min: Math.max(Number(product?.min), Number(backend?.min)),
         max: Math.min(Number(product?.max), Number(backend?.max)) };
+}
+
+function loraBlockReason(catalog, positive, negative) {
+    if (!Array.isArray(catalog?.loras)) return "";
+    const seen = new Set();
+    for (const raw of [positive, negative]) {
+        for (const match of String(raw || "").matchAll(ANGLE_TAG)) {
+            const token = match[0];
+            const tag = LORA_TAG.exec(token);
+            if (!tag) return "Prompt contains malformed or unsupported LoRA syntax.";
+            const name = tag[1];
+            if (name.trim() !== name) return "LoRA name must not contain surrounding whitespace.";
+            const available = catalog.loras.filter(entry => entry?.available === true && typeof entry.id === "string");
+            const normalized = name.replaceAll("\\", "/");
+            const exact = available.filter(entry => entry.id === name);
+            const pathMatches = exact.length ? exact : available.filter(entry => entry.id.replaceAll("\\", "/") === normalized);
+            const filename = normalized.split("/").pop();
+            const stem = filename?.replace(/\.[^.]+$/, "");
+            const matches = pathMatches.length ? pathMatches : available.filter(entry => {
+                const item = entry.id.replaceAll("\\", "/");
+                const itemName = item.split("/").pop();
+                return itemName === filename || (!normalized.includes("/") && itemName?.replace(/\.[^.]+$/, "") === stem);
+            });
+            if (matches.length === 0) return `LoRA unavailable: ${name}`;
+            if (matches.length > 1) return `LoRA name is ambiguous: ${name}`;
+            if (seen.has(matches[0].id)) return `LoRA appears more than once: ${matches[0].id}`;
+            seen.add(matches[0].id);
+        }
+    }
+    return "";
+}
+
+export function generationBlockReason(state) {
+    if (state.historyLoading) return "Checking recorded Manga jobs…";
+    if (state.submitUnconfirmed) return "Job outcome is UNKNOWN; automatic retry is disabled.";
+    if (state.localBusy) return "Submission is in progress…";
+    if (state.activeJob && ACTIVE_JOB_STATES.has(state.activeJob.state)) return "Job already active.";
+    if (!state.catalog) return state.catalogError
+        ? `Capability catalog unavailable — ${state.catalogError}`
+        : "Manga workspace unavailable; capability catalog unavailable.";
+    try {
+        buildGenerationSettings(state);
+    } catch (cause) {
+        return cause.message;
+    }
+    return loraBlockReason(state.catalog, state.draft.positive_raw, state.draft.negative_raw);
 }
 
 export function buildGenerationSettings(state) {
@@ -62,6 +110,8 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
     const byId = id => root.querySelector(`#${id}`);
     const controls = Object.fromEntries(FIELDS.map(field => [field, byId(`mg-${field}`)]));
     const generate = byId("mg-generate");
+    const generateLabel = byId("mg-generate-label");
+    const generateReason = byId("mg-generate-reason");
     const status = byId("mg-status");
     const error = byId("mg-error");
     const preview = byId("mg-preview-image");
@@ -113,14 +163,22 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
 
     function renderStatus() {
         const job = state.activeJob;
+        const stateName = job?.state === "RUNNING" ? "GENERATING" :
+            ["VALIDATING", "SUBMITTING"].includes(job?.state) ? "SUBMITTING" : job?.state;
         status.textContent = state.historyLoading ? "Checking recorded Manga jobs…" :
             state.submitUnconfirmed ? "UNKNOWN · Job creation response unavailable" :
-            state.localBusy ? "Checking settings and creating Manga job…" :
-            job ? `${job.state} · Manga job ${job.job_id}` :
-                state.catalog ? "Ready to generate one image" : "Capabilities unavailable";
+            state.localBusy ? "SUBMITTING · Validating settings and creating Manga job…" :
+            job ? `${stateName} · Manga job ${job.job_id}` :
+                state.error ? "FAILED · Manga generation could not start" :
+                    state.catalog ? "READY · Ready to generate one image" : "FAILED · Capabilities unavailable";
         status.dataset.state = state.submitUnconfirmed ? "UNKNOWN" :
-            state.localBusy ? "VALIDATING" : (job?.state || "READY");
-        generate.disabled = state.isBusy() || !state.catalog;
+            state.localBusy ? "SUBMITTING" : (stateName || (state.error ? "FAILED" : "READY"));
+        const reason = generationBlockReason(state);
+        generate.disabled = Boolean(reason);
+        generateReason.textContent = reason;
+        generateReason.hidden = !reason;
+        generateLabel.textContent = state.localBusy || ["VALIDATING", "SUBMITTING"].includes(job?.state)
+            ? "Submitting…" : ["QUEUED", "RUNNING"].includes(job?.state) ? "Generating…" : "Generate";
         const message = state.error || (job?.state === "FAILED" || job?.state === "UNKNOWN" ?
             `${job.state}: ${job.error?.message || "Backend outcome is not confirmed"}` : "");
         error.textContent = message;

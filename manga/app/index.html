@@ -39,8 +39,8 @@
         <label style="color: #94a3b8; font-size: 11px;">Backend:</label>
         <input type="text" id="backend-url-input" class="backend-input" value="http://127.0.0.1:8189">
         <button id="btn-check-backend" class="btn">Check Backend</button>
-        <button id="btn-prepare-draft" class="btn" style="background: #0284c7; color: white; border-color: #38bdf8;">✨ Prepare Standard Draft</button>
-        <div id="prepare-feedback">Ready</div>
+        <button id="btn-prepare-draft" class="btn" title="Prepare authoring data only; this never generates an image" style="background: #0284c7; color: white; border-color: #38bdf8;">✨ Prepare Draft (authoring only)</button>
+        <div id="prepare-feedback">Ready · prepare-only, no image generation</div>
     </div>
 
     <!-- Main Workspace -->
@@ -323,8 +323,9 @@
             <div class="mg-stage-column">
                 <div class="mg-action-bar">
                     <div><span class="mg-eyebrow">STATUS</span><div id="mg-status" role="status" aria-live="polite">Loading Manga capabilities…</div></div>
-                    <button id="mg-generate" type="button" class="mg-generate-button" disabled>Generate →</button>
+                    <button id="mg-generate" type="button" class="mg-generate-button" aria-describedby="mg-generate-reason" disabled><span id="mg-generate-label">Generate</span><span aria-hidden="true"> →</span></button>
                 </div>
+                <div id="mg-generate-reason" class="mg-disabled-reason" role="note" aria-live="polite"></div>
                 <div id="mg-error" class="mg-error" role="alert" hidden></div>
                 <div class="mg-preview-head"><span class="mg-eyebrow">RESULT PREVIEW</span><span id="mg-preview-label">No verified result yet</span></div>
                 <div class="mg-stage">
@@ -1482,6 +1483,9 @@
         }
         document.getElementById("manga-tab-generate").onclick = () => setMangaMode("generate");
         document.getElementById("manga-tab-authoring").onclick = () => setMangaMode("authoring");
+        const embedded = new URLSearchParams(window.location.search).get("embedded") === "1";
+        document.body.classList.toggle("manga-embedded", embedded);
+        setMangaMode(embedded ? "generate" : "authoring");
 
         // Expose to window for automated testing
         window.__tegakiManga = {

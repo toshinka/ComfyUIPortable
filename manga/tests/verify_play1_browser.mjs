@@ -137,6 +137,9 @@ try {
     page.on("pageerror", error => pageErrors.push(error.message));
     page.on("request", request => browserRequests.push(request.url()));
     await page.goto(origin, { waitUntil: "networkidle" });
+    check(await page.getAttribute("#manga-tab-authoring", "aria-selected") === "true" &&
+        await page.isVisible("#authoring-workspace") && await page.isHidden("#generate-view"),
+        "standalone mode keeps the authoring default");
     await page.click("#manga-tab-generate");
     await page.waitForFunction(() => Boolean(window.__tegakiManga?.generation?.state.catalog));
     check(await page.locator("#mg-checkpoint_id option").count() === 2, "catalog checkpoints populate");
@@ -163,12 +166,14 @@ try {
     check(await page.inputValue("#mg-checkpoint_id") === "missing.safetensors" &&
         (await page.textContent("#mg-checkpoint_id")).includes("Unavailable · missing.safetensors"),
         "stale checkpoint remains visible after catalog refresh");
-    await page.click("#mg-generate");
-    check(backend.promptCalls === 0, "stale checkpoint has no fallback submit");
+    check(await page.isDisabled("#mg-generate") &&
+        (await page.textContent("#mg-generate-reason")).includes("Checkpoint unavailable") &&
+        backend.promptCalls === 0, "stale checkpoint explains disabled Generate without fallback submit");
     await page.selectOption("#mg-checkpoint_id", "Gone.safetensors");
-    await page.click("#mg-generate");
-    check((await page.textContent("#mg-error")).includes("Checkpoint unavailable"), "missing checkpoint blocks Generate");
-    check(await page.inputValue("#mg-checkpoint_id") === "Gone.safetensors" && backend.promptCalls === 0, "unavailable choice retained without submit");
+    check(await page.isDisabled("#mg-generate") &&
+        (await page.textContent("#mg-generate-reason")).includes("Checkpoint unavailable") &&
+        await page.inputValue("#mg-checkpoint_id") === "Gone.safetensors" && backend.promptCalls === 0,
+        "unavailable choice remains visible with an explicit disabled reason");
     await page.selectOption("#mg-checkpoint_id", "Illustrious.safetensors");
     await page.fill("#mg-positive_raw", "hero <lora:broken>");
     await page.click("#mg-generate");
@@ -178,15 +183,23 @@ try {
     await page.fill("#mg-positive_raw", "hero at sunrise <lora:ink:0.8>");
     await page.fill("#mg-negative_raw", "blur");
     await page.fill("#mg-seed_requested", "0");
-    await page.evaluate(() => { document.querySelector("#mg-generate").click(); document.querySelector("#mg-generate").click(); });
+    await page.evaluate(() => document.querySelector("#mg-generate").click());
+    check((await page.textContent("#mg-status")).includes("SUBMITTING") && await page.isDisabled("#mg-generate"),
+        "Generate immediately shows SUBMITTING and disables repeat clicks");
+    await page.evaluate(() => document.querySelector("#mg-generate").click());
     await page.waitForFunction(() => window.__tegakiManga?.generation?.state.activeJob?.state === "QUEUED");
+    check((await page.textContent("#mg-status")).includes("QUEUED") &&
+        (await page.textContent("#mg-generate-label")) === "Generating…", "QUEUED state and active button label are visible");
     check(backend.promptCalls === 1, "double click creates one Manga job");
     check(backend.lastCompile.seed_requested === "0" && backend.lastPrompt.prompt["5"].inputs.seed === 0, "seed 0 survives compile and submit");
     check(backend.lastCompile.positive_raw === "hero at sunrise <lora:ink:0.8>", "manual LoRA notation reaches compiler as raw text");
-    check(await page.isDisabled("#mg-generate"), "Generate disabled while owned job active");
+    check(await page.isDisabled("#mg-generate") &&
+        (await page.textContent("#mg-generate-reason")).includes("Job already active"),
+        "Generate disabled with an owned-job reason");
     backend.finish();
     await page.waitForFunction(() => window.__tegakiManga?.generation?.state.activeJob?.state === "SUCCEEDED", { timeout: 10000 });
     await page.waitForFunction(() => document.querySelector("#mg-preview-image")?.naturalWidth > 0, { timeout: 10000 });
+    check((await page.textContent("#mg-status")).includes("SUCCEEDED"), "SUCCEEDED state is visible");
     const firstPreview = await page.getAttribute("#mg-preview-image", "src");
     check(firstPreview.startsWith("blob:") && await page.isVisible("#mg-preview-image"), "validated PLAY1b PNG enters Preview");
     check(browserRequests.every(url => !url.startsWith(backend.origin)), "Browser never calls backend directly");
@@ -197,6 +210,7 @@ try {
     await page.click("#mg-generate");
     await page.waitForFunction(() => window.__tegakiManga?.generation?.state.activeJob?.state === "FAILED");
     const failed = await page.evaluate(() => window.__tegakiManga.generation.state.activeJob);
+    check((await page.textContent("#mg-status")).includes("FAILED"), "FAILED state is visible");
     check(failed.requested_settings.seed_requested === "-1" && failed.effective_settings.seed_requested === "42", "random seed requested/effective truth");
     check(await page.inputValue("#mg-seed_requested") === "-1", "draft seed -1 retained");
     check(await page.getAttribute("#mg-preview-image", "src") === firstPreview &&
@@ -219,6 +233,9 @@ try {
     check(backend.promptCalls === unknownPromptCount, "UNKNOWN polling never resubmits");
 
     await page.click("#manga-tab-authoring");
+    check((await page.getAttribute("#btn-prepare-draft", "title")).includes("never generates") &&
+        (await page.textContent("#prepare-feedback")).includes("prepare-only"),
+        "Authoring prepare action is explicitly prepare-only");
     const beforeAuthoring = await page.evaluate(() => ({ json: window.__tegakiManga.store.exportJson(true),
         session: window.__tegakiManga.session.getSnapshot() }));
     await page.click("#btn-add-scene");
@@ -239,6 +256,16 @@ try {
     const narrowHistory = await page.locator(".mg-history-section").boundingBox();
     check(narrowCreate.y > narrowPreview.y && narrowHistory.y > narrowCreate.y, "narrow Preview/Create/History order");
     await page.screenshot({ path: path.join(os.tmpdir(), "manga-play1c-narrow.png"), fullPage: true });
+
+    const embeddedPage = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    await embeddedPage.goto(`${origin}/?embedded=1`, { waitUntil: "networkidle" });
+    await embeddedPage.waitForFunction(() => Boolean(window.__tegakiManga?.generation?.state.catalog));
+    check(await embeddedPage.getAttribute("#manga-tab-generate", "aria-selected") === "true" &&
+        await embeddedPage.isVisible("#generate-view") && await embeddedPage.isHidden("#authoring-workspace"),
+        "embedded mode defaults to Generate");
+    check(!await embeddedPage.isVisible(".manga-identity") && !await embeddedPage.isVisible(".mg-page-heading"),
+        "embedded mode hides duplicate Manga chrome and heading");
+    await embeddedPage.close();
     const beforeReload = backend.promptCalls;
     await page.reload({ waitUntil: "networkidle" });
     await page.click("#manga-tab-generate");

@@ -109,16 +109,20 @@ test("Owner shutdown stops owned H3 children and delegates Manga stopAll", async
 });
 
 test("H3 shell statically exposes top-level MANGA navigation and config-driven iframe", async () => {
-    const [html, app, server] = await Promise.all([
+    const [html, app, server, styles] = await Promise.all([
         fs.readFile(path.join(ROOT, "h3", "app", "static", "index.html"), "utf8"),
         fs.readFile(path.join(ROOT, "h3", "app", "static", "app.js"), "utf8"),
         fs.readFile(path.join(ROOT, "h3", "app", "server.py"), "utf8"),
+        fs.readFile(path.join(ROOT, "h3", "app", "static", "styles.css"), "utf8"),
     ]);
     assert.match(html, /id="product-h3"/);
     assert.match(html, /id="product-manga"/);
     assert.match(html, /id="manga-workspace-frame"/);
     assert.match(app, /manga_workspace_url/);
     assert.match(app, /setProduct\("manga"\)/);
+    assert.match(app, /searchParams\.set\("embedded", "1"\)/);
     assert.match(server, /--manga-workspace-url/);
     assert.match(server, /"manga_workspace_url"/);
+    assert.match(styles, /body\[data-product="manga"\] \.mode-switch/);
+    assert.match(styles, /body\[data-product="manga"\] \.backend-pill/);
 });

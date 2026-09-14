@@ -424,9 +424,11 @@ body.manga-generate-active { min-height: 100vh; height: auto; overflow-x: hidden
 #mg-status[data-state="UNKNOWN"] { color: #f2c785; }
 #mg-status[data-state="FAILED"] { color: #f3a7a7; }
 #mg-status[data-state="SUCCEEDED"] { color: #a8e0b5; }
+#mg-status[data-state="QUEUED"], #mg-status[data-state="RUNNING"], #mg-status[data-state="GENERATING"], #mg-status[data-state="SUBMITTING"] { color: #f5c98b; }
 .mg-generate-button { border: 1px solid #c99bd2; background: #a968bc; color: #fff; border-radius: 8px; padding: 11px 21px; font-size: 14px; font-weight: 800; cursor: pointer; white-space: nowrap; }
 .mg-generate-button:hover:not(:disabled) { background: #bd80cf; }
 .mg-generate-button:disabled { opacity: .48; cursor: not-allowed; }
+.mg-disabled-reason { min-height: 16px; color: #d8b7d7; font-size: 11px; line-height: 1.35; }
 .mg-error { padding: 10px 12px; margin-top: 10px; background: #44212d; border: 1px solid #a6586c; border-radius: 8px; color: #ffd2d7; font-size: 12px; overflow-wrap: anywhere; }
 .mg-preview-head { display: flex; justify-content: space-between; gap: 10px; padding: 15px 2px 8px; font-size: 11px; color: #b8aab8; }
 .mg-stage { min-height: min(68vh, 760px); border-radius: 14px; border: 1px solid #634767; background: radial-gradient(circle at 50% 42%, #3a2940, #211725 70%); display: grid; place-items: center; padding: 18px; overflow: hidden; }
@@ -459,6 +461,13 @@ body.manga-generate-active { min-height: 100vh; height: auto; overflow-x: hidden
 .mg-history-row span { color: #bfaec2; overflow-wrap: anywhere; }
 .mg-history-row strong { color: #f4d4f4; }
 .mg-restore:disabled { opacity: .5; cursor: not-allowed; }
+body.manga-embedded { background: #17111d; }
+body.manga-embedded #manga-mode-nav { min-height: 0; padding: 7px 18px 0; background: transparent; border-bottom: 0; justify-content: flex-end; }
+body.manga-embedded .manga-identity { display: none; }
+body.manga-embedded #workspace-header { padding: 7px 14px; border-bottom: 0; background: transparent; }
+body.manga-embedded #workspace-header .header-brand { display: none; }
+body.manga-embedded .mg-page-heading { display: none; }
+body.manga-embedded #generate-view { padding-top: 12px; }
 @media (max-width: 850px) {
     #generate-view { padding: 16px 14px 40px; }
     .mg-main { grid-template-columns: minmax(0, 1fr); gap: 17px; }

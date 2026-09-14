@@ -692,7 +692,8 @@ body[data-product="manga"] .history-section,
 body[data-product="manga"] .footer-note { display: none; }
 body[data-product="manga"] #manga-shell-panel { display: block; }
 body[data-product="manga"] .topbar { position: sticky; top: 0; z-index: 5; }
-body[data-product="manga"] .mode-switch { opacity: .45; pointer-events: none; }
+body[data-product="manga"] .mode-switch,
+body[data-product="manga"] .backend-pill { display: none; }
 @media (max-width: 820px) {
   .product-button { min-height: 28px; padding: 0 9px; }
   #manga-shell-panel { width: min(100% - 28px, 600px); margin-top: 16px; }
