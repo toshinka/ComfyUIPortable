@@ -191,6 +191,54 @@ const server = http.createServer(async (req, res) => {
         }
         return;
     }
+    // Manga Wildcard Discovery
+    if (pathname === "/api/manga/wildcards") {
+        if (req.method !== "GET") {
+            res.writeHead(405, { "Content-Type": "application/json; charset=utf-8" });
+            res.end(JSON.stringify({ ok: false, error_code: "METHOD_NOT_ALLOWED", error: "Use GET" }));
+            return;
+        }
+        if ((requestOrigin && !allowedLocalOrigins.has(requestOrigin)) ||
+            (req.headers["sec-fetch-site"] && !["same-origin", "none"].includes(req.headers["sec-fetch-site"]))) {
+            res.writeHead(403, { "Content-Type": "application/json; charset=utf-8" });
+            res.end(JSON.stringify({ ok: false, error_code: "ORIGIN_FORBIDDEN", error: "Request origin is not the Manga workspace" }));
+            return;
+        }
+        try {
+            const configured = (process.env.TEGAKI_MANGA_WILDCARDS_DIR || "").trim();
+            const root = configured ? path.resolve(configured) : path.resolve(__dirname, "..", "wildcards");
+            if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) {
+                res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+                res.end(JSON.stringify({ ok: true, wildcards: [], root_available: false }));
+                return;
+            }
+            const wildcards = [];
+            const walk = dir => {
+                const entries = fs.readdirSync(dir, { withFileTypes: true });
+                for (const entry of entries) {
+                    const fullPath = path.join(dir, entry.name);
+                    if (entry.isDirectory()) {
+                        walk(fullPath);
+                    } else if (entry.isFile() && entry.name.toLowerCase().endsWith(".txt")) {
+                        const rel = path.relative(root, fullPath).replaceAll("\\", "/");
+                        const name = rel.slice(0, -4);
+                        if (!name || name.includes("..") || /[\x00-\x1f\x7f<>#$:*?\[\]]/.test(name)) {
+                            continue;
+                        }
+                        wildcards.push(name);
+                    }
+                }
+            };
+            walk(root);
+            wildcards.sort();
+            res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+            res.end(JSON.stringify({ ok: true, wildcards, root_available: true }));
+        } catch (err) {
+            res.writeHead(500, { "Content-Type": "application/json; charset=utf-8" });
+            res.end(JSON.stringify({ ok: false, error_code: "WILDCARD_ENUMERATION_FAILED", error: "Failed to list wildcards: " + err.message }));
+        }
+        return;
+    }
     // PLAY1b: Manga-owned job API; graph, backend URL, and output paths are never client inputs.
     if (/^\/api\/manga\/generation\/jobs(?:\/|$)/.test(pathname)) {
         const pieces = pathname.split("/").filter(Boolean);
