@@ -44,6 +44,7 @@ class H2AStillAdapterTests(unittest.TestCase):
         self.assertEqual(graph["132"]["inputs"]["batch_index"], SELECTED_FRAME_INDEX)
         self.assertEqual(graph["132"]["inputs"]["length"], 1)
         self.assertEqual(graph["92"]["class_type"], "SaveImage")
+        self.assertEqual(graph["92"]["inputs"]["filename_prefix"], "still/h2a_native_still")
         self.assertNotIn("SaveVideo", {node["class_type"] for node in graph.values()})
         self.assertNotIn("CreateVideo", {node["class_type"] for node in graph.values()})
         roles = {

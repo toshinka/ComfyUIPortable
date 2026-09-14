@@ -2,12 +2,14 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
 import fs from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
     TegakiShellSupervisor,
     formatOccupiedPort,
     readShellConfig,
+    resolveH3OutputRoot,
     runSupervisorCli,
 } from "../tools/tegaki_shell_supervisor.mjs";
 
@@ -71,6 +73,61 @@ test("shell config keeps Manga endpoint and documented port overrides explicit",
     assert.equal(config.mangaWorkspacePort, 8291);
     assert.match(formatOccupiedPort({ port: 8190, host: "127.0.0.1", detail: "listener" }), /8190/);
     assert.match(formatOccupiedPort({ port: 8190, host: "127.0.0.1", detail: "listener" }), /PID/);
+});
+
+test("H3 output root defaults to the canonical namespace and rejects invalid overrides", () => {
+    const defaultRoot = resolveH3OutputRoot(ROOT, {});
+    assert.equal(defaultRoot.outputRoot, path.resolve(ROOT, "output", "h3"));
+    assert.equal(defaultRoot.overridden, false);
+    assert.throws(
+        () => resolveH3OutputRoot(ROOT, { TEGAKI_H3_OUTPUT_DIR: "   " }),
+        /non-empty absolute path/,
+    );
+    assert.throws(
+        () => resolveH3OutputRoot(ROOT, { TEGAKI_H3_OUTPUT_DIR: "relative/output" }),
+        /absolute path/,
+    );
+});
+
+test("H3 output override is writable and reaches Native and skin argv", async () => {
+    const outputRoot = await fs.mkdtemp(path.join(os.tmpdir(), "tegaki-h3-output-"));
+    const calls = [];
+    const children = [];
+    const supervisor = new TegakiShellSupervisor({
+        portableRoot: ROOT,
+        env: { TEGAKI_H3_OUTPUT_DIR: outputRoot },
+        spawn: (command, args, options) => {
+            const child = new FakeChild(args[0] || "h3");
+            calls.push({ command, args: [...args], options });
+            children.push(child);
+            return child;
+        },
+        waitFor: async () => ({
+            status: 200,
+            json: { queue_running: [], queue_pending: [], playable: {}, still: {}, prep: {}, state: "READY" },
+        }),
+        log: () => {},
+        error: () => {},
+    });
+    supervisor.h3SafeToStop = async () => true;
+    try {
+        await supervisor.startH3Processes();
+        assert.equal(supervisor.h3OutputRoot, path.resolve(outputRoot));
+        assert.equal(calls.length, 2);
+        const nativeArgs = calls[0].args;
+        const nativeOutput = nativeArgs.indexOf("--output-directory");
+        const nativeInput = nativeArgs.indexOf("--input-directory");
+        assert.equal(nativeArgs[nativeOutput + 1], path.resolve(outputRoot));
+        assert.equal(nativeArgs[nativeInput + 1], path.resolve(outputRoot));
+        const skinArgs = calls[1].args;
+        const skinOutput = skinArgs.indexOf("--output-dir");
+        assert.equal(skinArgs[skinOutput + 1], path.resolve(outputRoot));
+        assert.deepEqual(await fs.readdir(outputRoot), [], "writability probe is removed");
+        assert.equal(await supervisor.shutdown(), true);
+        assert.ok(children.every(child => child.killed));
+    } finally {
+        await fs.rm(outputRoot, { recursive: true, force: true });
+    }
 });
 
 test("occupied H3 port fails closed before any process or Manga runtime starts", async () => {

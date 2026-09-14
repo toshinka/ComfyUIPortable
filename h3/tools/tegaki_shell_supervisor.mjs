@@ -8,7 +8,13 @@
 import http from "node:http";
 import net from "node:net";
 import path from "node:path";
-import { accessSync, constants as fsConstants } from "node:fs";
+import {
+    accessSync,
+    constants as fsConstants,
+    mkdirSync,
+    unlinkSync,
+    writeFileSync,
+} from "node:fs";
 import { spawn as nodeSpawn } from "node:child_process";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
@@ -134,10 +140,53 @@ function verifyExecutable(file, label) {
     catch { throw new Error(`${label} is missing: ${file}`); }
 }
 
+function verifyWritableOutputRoot(outputRoot) {
+    const probe = path.join(
+        outputRoot,
+        `.tegaki-h3-write-probe-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    );
+    let failure = null;
+    let created = false;
+    try {
+        mkdirSync(outputRoot, { recursive: true });
+        writeFileSync(probe, "", { flag: "wx" });
+        created = true;
+    } catch (error) {
+        failure = error;
+    }
+    if (created) {
+        try { unlinkSync(probe); }
+        catch (error) { failure = failure || error; }
+    }
+    if (failure) {
+        throw new Error(`H3 output directory is not writable: ${outputRoot} (${failure.message})`);
+    }
+}
+
+export function resolveH3OutputRoot(portableRoot, env = process.env) {
+    const root = path.resolve(portableRoot);
+    const hasOverride = Object.prototype.hasOwnProperty.call(env, "TEGAKI_H3_OUTPUT_DIR");
+    if (!hasOverride) {
+        return { outputRoot: path.resolve(root, "output", "h3"), overridden: false };
+    }
+    const raw = env.TEGAKI_H3_OUTPUT_DIR;
+    const configured = typeof raw === "string" ? raw.trim() : "";
+    if (!configured) {
+        throw new Error("TEGAKI_H3_OUTPUT_DIR must be a non-empty absolute path when configured.");
+    }
+    if (!path.isAbsolute(configured)) {
+        throw new Error(`TEGAKI_H3_OUTPUT_DIR must be an absolute path: ${configured}`);
+    }
+    const outputRoot = path.resolve(configured);
+    verifyWritableOutputRoot(outputRoot);
+    return { outputRoot, overridden: true };
+}
+
 export class TegakiShellSupervisor {
     constructor(options = {}) {
         this.portableRoot = path.resolve(options.portableRoot || path.resolve(__dirname, "..", ".."));
-        this.config = expectedH3Config({ ...readShellConfig(process.env), ...(options.config || {}) });
+        this.environment = options.env || process.env;
+        this.config = expectedH3Config({ ...readShellConfig(this.environment), ...(options.config || {}) });
         this.spawn = options.spawn || nodeSpawn;
         this.portInspector = options.portInspector || inspectPort;
         this.runtimeFactory = options.runtimeFactory || ((runtimeConfig) => new MangaDomainRuntime(runtimeConfig));
@@ -146,6 +195,7 @@ export class TegakiShellSupervisor {
         this.log = options.log || ((message) => console.log(message));
         this.error = options.error || ((message) => console.error(message));
         this.h3Processes = [];
+        this.h3OutputRoot = null;
         this.mangaRuntime = null;
         this.started = false;
         this.shutdownInFlight = null;
@@ -195,7 +245,8 @@ export class TegakiShellSupervisor {
         const h3Skin = path.resolve(this.portableRoot, "h3", "app", "server.py");
         verifyExecutable(h3NativeMain, "H3 Native launcher");
         verifyExecutable(h3Skin, "H3 shell server");
-        const outputRoot = path.resolve(this.portableRoot, "output", "h3");
+        const { outputRoot, overridden } = resolveH3OutputRoot(this.portableRoot, this.environment);
+        this.h3OutputRoot = outputRoot;
         const nativeArgs = [
             h3NativeMain,
             "--listen", this.config.host,
@@ -221,7 +272,7 @@ export class TegakiShellSupervisor {
             "--host", this.config.host,
             "--port", String(this.config.h3SkinPort),
             "--comfy-url", this.config.h3BackendUrl,
-            "--output-dir", "output/h3",
+            "--output-dir", overridden ? outputRoot : "output/h3",
             "--manga-workspace-url", this.config.mangaWorkspaceUrl,
         ];
         this.log(`Starting H3 shell: ${this.config.h3ShellUrl}`);

@@ -124,6 +124,20 @@ class H3ProfileGuardTests(unittest.TestCase):
             CANONICAL_H3,
         )
 
+    def test_k_override_root_is_accepted_and_session_uses_it(self):
+        override = Path(self.directory.name) / "override"
+        expected = build_h3_profile_expectation(
+            "http://127.0.0.1:8188",
+            self.directory.name,
+            output_root=override,
+        )
+        self.assertEqual(
+            validate_h3_native_profile(system_stats(canonical_argv(expected)), expected)["classification"],
+            CANONICAL_H3,
+        )
+        session = H1ASession("http://127.0.0.1:9", override)
+        self.assertEqual(session.backend.expected_profile.output_directory, expected.output_directory)
+
     def test_j_windows_path_variation_is_normalized(self):
         argv = canonical_argv(self.expected)
         for option in (

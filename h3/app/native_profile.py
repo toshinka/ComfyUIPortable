@@ -32,12 +32,16 @@ def _normalize_path(value: str | os.PathLike[str]) -> str:
     return os.path.normcase(os.path.normpath(os.path.abspath(os.fspath(value))))
 
 
-def build_h3_profile_expectation(base_url: str, portable_root: str | os.PathLike[str]) -> H3ProfileExpectation:
+def build_h3_profile_expectation(
+    base_url: str,
+    portable_root: str | os.PathLike[str],
+    output_root: str | os.PathLike[str] | None = None,
+) -> H3ProfileExpectation:
     parsed = urlparse(base_url)
     if not parsed.hostname or parsed.port is None:
         raise ValueError("H3 Native URL must include a hostname and port.")
     root = Path(portable_root).resolve()
-    output = root / "output" / "h3"
+    output = Path(output_root).resolve() if output_root is not None else root / "output" / "h3"
     return H3ProfileExpectation(
         native_main=_normalize_path(root / "ComfyUI" / "main.py"),
         native_host=parsed.hostname.lower(),

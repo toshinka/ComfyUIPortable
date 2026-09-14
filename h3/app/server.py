@@ -431,10 +431,19 @@ class ReferenceVideoRequest:
 
 
 class BackendClient:
-    def __init__(self, base_url: str, timeout: float = 8.0):
+    def __init__(
+        self,
+        base_url: str,
+        timeout: float = 8.0,
+        output_root: str | os.PathLike[str] | None = None,
+    ):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
-        self.expected_profile = build_h3_profile_expectation(self.base_url, PORTABLE_ROOT)
+        self.expected_profile = build_h3_profile_expectation(
+            self.base_url,
+            PORTABLE_ROOT,
+            output_root=output_root,
+        )
 
     def _request(
         self,
@@ -861,9 +870,9 @@ class Job:
 
 class H1ASession:
     def __init__(self, backend_url: str, output_root: Path):
-        self.backend = BackendClient(backend_url)
         self.output_root = output_root.resolve()
         self.input_root = (self.output_root / "inputs").resolve()
+        self.backend = BackendClient(backend_url, output_root=self.output_root)
         self.input_root.mkdir(parents=True, exist_ok=True)
         self.client_id = f"tegaki-h1a-{os.getpid()}-{uuid_token()}"
         self.jobs: OrderedDict[str, Job] = OrderedDict()
