@@ -4,6 +4,10 @@ NOT AUTHORIZED FOR UI OR RUNTIME INTEGRATION
 SAFE TO LEAVE INCOMPLETE
 IMPLEMENT ONLY UNDER A FUTURE EXPLICIT CARD
 
+HEADLESS CORE IMPLEMENTED
+STILL LOW-PRIORITY / UNCONNECTED
+UI/APPLY NOT AUTHORIZED
+
 # Prompt / Settings Import Proposal
 
 ## USER VALUE
@@ -18,12 +22,15 @@ facts, raw metadata, parsed prompt/workflow, and conservative normalized hints.
 The strict Manga catalog remains the authority for checkpoint, LoRA, sampler,
 and scheduler identity.
 
-## SMALLEST FUTURE CORE
+## IMPLEMENTED HEADLESS CORE
 
 Transform recovered metadata into a reviewable proposal containing candidate
 values, source provenance, ambiguity, and availability. The proposal is a
 read-only value object; a separate explicit user action would decide whether
 to apply individual safe fields.
+
+Implementation: `manga/service/result_settings_import.mjs`.
+Targeted coverage: `manga/tests/test_result_settings_import.mjs`.
 
 ## INPUT
 
