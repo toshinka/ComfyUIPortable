@@ -29,7 +29,7 @@ The project operates on an **Architecture Lead / Commander vs. Worker Card** mod
 - **Ports (8188, 8189, 8190, 8191)**: Free when idle; managed via supervisor `h3\run_h3.bat`.
 - **Runtime Dependencies**: `ComfyUI_IPAdapter_plus` pinned locally at commit `a0f451a5113cf9becb0847b92884cb10cbdec0ef`.
 - **Model Directory State**: SDXL IP-Adapter Plus (`ip-adapter-plus_sdxl_vit-h.safetensors`) and CLIP Vision (`CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors`) are present in local untracked `ComfyUI/models/`.
-- **Current Active Card**: `PORTABLE-AGENT-ENTRY-AND-HANDOFF1` (Document Architecture & Handoff).
+- **Current Active Card**: NONE.
 
 ## Manga — Current State
 
@@ -40,18 +40,19 @@ Accepted technical milestones:
 - **CAST Reference Data**: Authoring document contract extended (`reference_asset: "tegaki_manga_references/<name>.<ext>"`), hardened workspace upload/view endpoints (`/api/reference-assets/*`), and inspector thumbnail preview (`MANGA-CAST-REFERENCE-DATA1`).
 - **IPAdapter Pinned Runtime**: `ComfyUI_IPAdapter_plus` pinned at commit `a0f451a5113cf9becb0847b92884cb10cbdec0ef`; `CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors` and `ip-adapter-plus_sdxl_vit-h.safetensors` placed under `ComfyUI/models/` (`REFERENCE_RUNTIME_SETUP1`).
 - **Global GPU Proof**: 1-generation GPU proof confirmed Illustrious + IPAdapter Plus SDXL successfully imparts character appearance (hair, face, costume motif) globally (`REFERENCE_GLOBAL_GPU_PROOF1`).
-- **Regional Identity Proof**: 1-generation GPU proof tested regional reference isolation using Manga's normalized mask (`TegakiTwoRegionCoreConditioner.mask_A`) into `IPAdapterAdvanced.attn_mask` (`REGIONAL_IDENTITY_PROOF1`).
-  - *Setup*: Checkpoint `waiIllustriousSDXL_v170.safetensors`, resolution `1024x768`, seed `20260915`, IPAdapter weight `0.70`, step count `16`, CFG `5.0`.
-  - *Reference*: Reused `tegaki_manga_references/ref_c789751db904319d.png` (originating from H3 Manga Tone comparison Route C Illustrious finish).
-  - *Geometry*: Left Region A (`x=0.05, y=0.08, w=0.42, h=0.84`) vs. Right Region B (`x=0.53, y=0.08, w=0.42, h=0.84`).
-  - *Result*: **B — PARTIAL**. Reference signal visibly concentrated in target Region A (sailor uniform, dark flowing hair, large-eyed face); control Region B remained blonde/casual without material reference bleed. Overlapping figure observed on left; structural architecture is verified **VIABLE**.
+- **Regional Identity Proof**: 1-generation GPU proof tested regional reference isolation using Manga's normalized mask (`TegakiTwoRegionCoreConditioner.mask_A`) into `IPAdapterAdvanced.attn_mask` (`REGIONAL_IDENTITY_PROOF1`, portable code baseline `483f71604cb32c08ab4a5c5b0c4b5888731b8604`).
+  - *Status*: **ACCEPTED TECHNICAL ARCHITECTURE PROOF** (Commander accepted).
+  - *Technical Result*: Illustrious + IPAdapter regional path PASS; mask path `TegakiTwoRegionCoreConditioner.mask_A` -> `IPAdapterAdvanced.attn_mask`; 1 GPU generation, 1 `/prompt`, peak dedicated GPU memory 11,687 MiB, product source modification NONE.
+  - *Regional Isolation*: **B — PARTIAL** (reference signal visibly concentrated in target Region A; control Region B remained blonde/casual without material reference bleed; overlapping figure observed on left; identity is NOT solved and isolation is not clear/final).
+  - *Reference Appearance*: **EXPERIMENTAL** (useful appearance carryover without production-quality claim).
+  - *Regional Reference Architecture*: **VIABLE** (proves spatial reference conditioning feasibility via Manga's existing mask primitives).
 
 ## H3 — Current State
 
 Accepted technical milestones:
 - **H1A–H1C**: Verified local Native and browser UI generation for Text-to-Video (T2V), Image-to-Video (I2V Start-only, Start+End, End-only), and Frame-Bridged Continuation.
 - **H2A Still Studio**: Short temporal packet to selected frame feasibility verified on local GPU.
-- **Manga Tone Comparison (Exp1 Retry2)**: 3-route comparison verified Route A (Normal), Route B (Manga Tone), and Route C (Illustrious Finish). Screentone categorized as flat line/tone rather than fine halftone dots.
+- **Manga Tone Comparison (Exp1 Retry2)**: 3-route technical experiment passed across Route A (Normal), Route B (Manga Tone), and Route C (Illustrious Finish). manga-like line / flat-tone rendering observed; clear regular screentone-dot evidence NOT established.
 - **Boundary**: Shared shell integration and H3 Manga unification remain deferred.
 
 ## Current Architecture Boundaries
@@ -93,8 +94,9 @@ Stabilize repository-level agent orientation and handoff (`PORTABLE-AGENT-ENTRY-
 
 ## Active Card / Last Completed Card
 
-- **Active Card**: `PORTABLE-AGENT-ENTRY-AND-HANDOFF1`
-- **Last Completed GPU Card**: `MANGA-REGIONAL-IDENTITY-PROOF1` (Outcome: Partial regional isolation, architecture viable).
+- **Active Card**: NONE
+- **Last Completed Operational Card**: `PORTABLE-AGENT-ENTRY-AND-HANDOFF1` (Commander-accepted agent entry and handoff architecture).
+- **Last Completed GPU Card**: `MANGA-REGIONAL-IDENTITY-PROOF1` (Commander-accepted technical architecture proof: Illustrious + IPAdapter regional path PASS; mask path `TegakiTwoRegionCoreConditioner.mask_A` -> `IPAdapterAdvanced.attn_mask`; regional isolation B — PARTIAL; reference appearance EXPERIMENTAL; regional reference architecture VIABLE; GPU generation 1, /prompt 1, peak VRAM 11,687 MiB; product source modification NONE).
 
 ## Do Not Auto-Start
 

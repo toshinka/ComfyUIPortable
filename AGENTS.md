@@ -114,4 +114,5 @@ H3 and Manga share the physical Portable installation, supervisor tools, and OS 
 - Always start with `git status --short`. Preserve existing unrelated user changes; never revert or reset them.
 - Never force-push, rebase, or rewrite Git history unless an explicit Card commands it.
 - Push to remote only when explicitly commanded by the Card.
-- Never inspect credential values, request pasted tokens/passwords, execute `git credential` fill/get, or include secrets in reports or commits.
+- Never run `git credential fill` or `git credential get`.
+- Never inspect credential values, request pasted tokens/passwords, or include secrets in reports or commits.
