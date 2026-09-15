@@ -1,10 +1,10 @@
 # ComfyUIPortable — Current Status
 
-Updated: 2026-09-15 JST  
+Updated: 2026-09-16 JST
 Repository: https://github.com/toshinka/ComfyUIPortable  
 Branch: codex/tegaki-shell-manga-play1  
-Public baseline: 3b98a499e1e652254644064ecd3ac0513000f8fb
-Local HEAD: 3b98a499e1e652254644064ecd3ac0513000f8fb
+Public baseline before capability-bank closeout: f68599c56da548f7223a1d07a097aa5d328461bd
+Local capability-series HEAD before this status commit: ce8af1d7a582223c696b601f1658e395e580249a
 
 ## New Chat — Read This First
 
@@ -30,6 +30,13 @@ The project operates on an **Architecture Lead / Commander vs. Worker Card** mod
 - **Runtime Dependencies**: `ComfyUI_IPAdapter_plus` pinned locally at commit `a0f451a5113cf9becb0847b92884cb10cbdec0ef`.
 - **Model Directory State**: SDXL IP-Adapter Plus (`ip-adapter-plus_sdxl_vit-h.safetensors`) and CLIP Vision (`CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors`) are present in local untracked `ComfyUI/models/`.
 - **Current Active Card**: NONE.
+
+## Pre-Astra Capability Bank
+
+- **Phase 1**: COMPLETE. Bank size: **4**.
+- **BANKED_STABLE**: Result metadata recovery (Manga service; headless/read-only; future sharing `DOMAIN_NEUTRAL_CANDIDATE`; product connection `UNCONNECTED_BY_DESIGN`). Wildcard core (existing Manga generation authority; headless catalog/validation/expansion/trace; syntax preserved; no new Wildcard UI). Catalog/strict resource resolution (existing Manga backend authority; kinds CHECKPOINT, LORA, SAMPLER, SCHEDULER; exact canonical IDs; no silent substitution or H3 catalog merge).
+- **BANKED_EXPERIMENTAL**: Manga regional compile core (`scene_spec.py`, `compile_regional_spec(...)`); stable regional records, canonical area, positive/negative scope, strength, ordering, and overlap diagnostics. Overlap precedence, feather policy, UI canvas, and mask/runtime graph integration remain unresolved and unproductized.
+- No banked capability is authorized for new UI or runtime integration. Detailed contracts and existing targeted coverage remain in [TEGAKI_CAPABILITY_BANK_CHECKPOINT.md](architecture/TEGAKI_CAPABILITY_BANK_CHECKPOINT.md).
 
 ## Manga — Current State
 
@@ -71,7 +78,7 @@ Accepted technical milestones:
 
 ## Current Priority
 
-Return to Manga controllability / production-flow planning. Immediate design space is Scene / Region, CAST / Reference, Guide / ControlNet, and LoRA. Keep H3 separate.
+Next major UI step: run the bounded Astra review using [TEGAKI_ASTRA_UI_REVIEW_BRIEF.md](ui/TEGAKI_ASTRA_UI_REVIEW_BRIEF.md) against the rendered Manga/H3 wide and narrow layouts, established UI principles, Create workspace model, and component contracts. Astra may recommend composition, density, hierarchy, Preview/Create balance, focus, motion, and narrow behavior; it does not silently redefine product semantics. Keep H3 and Manga separate.
 
 ## UI Planning State
 
