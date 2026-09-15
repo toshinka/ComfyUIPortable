@@ -1,8 +1,10 @@
+import copy
 import json
 import re
 import math
 import logging
 from typing import Dict, Any, List, Optional, Set, Tuple
+from .authoring_contract import validate_area
 from .interaction_resolver import normalize_interaction, generate_stable_instance_id
 from .subscene_contract import validate_panel_subscenes
 
@@ -22,6 +24,7 @@ SUPPORTED_SCENE_SPEC_VERSION = 1
 SUPPORTED_COMPILE_PLAN_VERSION = 1
 SUPPORTED_PAGE_COMPILE_PLAN_VERSION = 1
 MIN_RECT_SIZE = 0.001
+SUPPORTED_REGIONAL_COMPILE_VERSION = 1
 
 # <lora:name:weight:clip_weight> タグ検出用正規表現
 LORA_TAG_FULL_REGEX = re.compile(r"<lora:([^>]+)>", re.IGNORECASE)
@@ -56,6 +59,349 @@ def normalize_rect(x: float, y: float, w: float, h: float, min_size: float = MIN
         "w": round(w, 4),
         "h": round(h, 4)
     }
+
+
+class RegionalCompileError(ValueError):
+    """Machine-readable validation failure for the pure regional compiler."""
+
+    def __init__(self, code: str, message: str, details: Optional[Dict[str, Any]] = None):
+        self.code = code
+        self.details = dict(details or {})
+        super().__init__(f"[{code}] {message}")
+
+
+_REGIONAL_RECORD_FIELDS = frozenset({
+    "id", "region_id", "name", "enabled", "area", "prompt",
+    "negative_prompt", "strength", "weight", "metadata",
+})
+_REGIONAL_AREA_FIELDS = frozenset({"shape_type", "x", "y", "w", "h"})
+
+
+def _regional_error(code: str, message: str, **details: Any) -> None:
+    raise RegionalCompileError(code, message, details)
+
+
+def _regional_optional_prompt(
+    mapping: Dict[str, Any],
+    keys: Tuple[str, ...],
+    context_name: str,
+) -> Tuple[Optional[str], bool]:
+    """Read one prompt scope without inventing an absent empty string."""
+    for key in keys:
+        if key not in mapping:
+            continue
+        value = mapping[key]
+        if value is None:
+            return None, False
+        if not isinstance(value, str):
+            _regional_error(
+                "INVALID_PROMPT_SCOPE",
+                f"{context_name} '{key}' must be a string",
+                field=key,
+            )
+        return value, True
+    return None, False
+
+
+def _regional_source_value(
+    mapping: Dict[str, Any],
+    nested: Optional[Dict[str, Any]],
+    keys: Tuple[str, ...],
+    field_name: str,
+) -> Optional[str]:
+    value = None
+    found = False
+    for candidate in (mapping, nested or {}):
+        for key in keys:
+            if key in candidate:
+                value = candidate[key]
+                found = True
+                break
+        if found:
+            break
+    if not found or value is None:
+        return None
+    if not isinstance(value, str) or not value.strip():
+        _regional_error(
+            "INVALID_SOURCE_ID",
+            f"{field_name} must be a non-empty string",
+            field=field_name,
+        )
+    return value
+
+
+def _regional_canvas(context: Dict[str, Any], page: Dict[str, Any]) -> Optional[Dict[str, int]]:
+    raw_canvas = context.get("canvas")
+    if raw_canvas is None:
+        raw_canvas = page.get("canvas")
+    if raw_canvas is None:
+        width = context.get("width_px", page.get("width_px"))
+        height = context.get("height_px", page.get("height_px"))
+        if width is None and height is None:
+            return None
+        raw_canvas = {"width": width, "height": height}
+    if not isinstance(raw_canvas, dict):
+        _regional_error("INVALID_CANVAS", "canvas must be a dictionary")
+    width = raw_canvas.get("width")
+    height = raw_canvas.get("height")
+    if type(width) is not int or width <= 0:
+        _regional_error("INVALID_CANVAS", "canvas.width must be a positive integer", value=width)
+    if type(height) is not int or height <= 0:
+        _regional_error("INVALID_CANVAS", "canvas.height must be a positive integer", value=height)
+    return {"width": width, "height": height}
+
+
+def _regional_overlap(first: Dict[str, Any], second: Dict[str, Any]) -> bool:
+    a = first["area"]
+    b = second["area"]
+    return (
+        max(a["x"], b["x"]) < min(a["x"] + a["w"], b["x"] + b["w"])
+        and max(a["y"], b["y"]) < min(a["y"] + a["h"], b["y"] + b["h"])
+    )
+
+
+def compile_regional_spec(
+    context: Optional[Dict[str, Any]] = None,
+    regions: Optional[List[Dict[str, Any]]] = None,
+    *,
+    context_name: str = "MangaRegionalCompile",
+) -> Dict[str, Any]:
+    """Compile bounded MRP region records into a deterministic pure representation.
+
+    ``context`` may be a page/Scene context containing ``page_id`` and
+    ``scene_id`` plus existing ``style_prompt``/``prompt`` scope fields.  A
+    nested ``page``/``scene`` mapping is also accepted.  ``regions`` is an
+    ordered list of records using the existing ``area`` rectangle convention.
+    This function deliberately stops before masks, conditioning, graph, or
+    runtime work and never mutates either argument.
+    """
+    if regions is None and isinstance(context, list):
+        regions = context
+        context = {}
+    elif regions is None and isinstance(context, dict) and "regions" in context:
+        regions = context.get("regions")
+        context = {key: value for key, value in context.items() if key != "regions"}
+
+    if context is None:
+        context = {}
+    if not isinstance(context, dict):
+        _regional_error("INVALID_CONTEXT", f"{context_name} context must be a dictionary")
+    if not isinstance(regions, list):
+        _regional_error("INVALID_REGIONS", f"{context_name} regions must be a list")
+
+    page_context = context.get("page") if isinstance(context.get("page"), dict) else {}
+    scene_context = context.get("scene") if isinstance(context.get("scene"), dict) else {}
+    page_id = _regional_source_value(context, page_context, ("page_id", "source_page_id"), "page_id")
+    scene_id = _regional_source_value(context, scene_context, ("scene_id", "source_scene_id"), "scene_id")
+
+    global_positive, global_positive_present = _regional_optional_prompt(
+        context, ("global_prompt", "style_prompt"), "global prompt"
+    )
+    if not global_positive_present:
+        global_positive, global_positive_present = _regional_optional_prompt(
+            page_context, ("global_prompt", "style_prompt"), "global prompt"
+        )
+    global_negative, global_negative_present = _regional_optional_prompt(
+        context, ("global_negative_prompt", "style_negative_prompt"), "global negative prompt"
+    )
+    if not global_negative_present:
+        global_negative, global_negative_present = _regional_optional_prompt(
+            page_context, ("global_negative_prompt", "style_negative_prompt"), "global negative prompt"
+        )
+    scene_positive, scene_positive_present = _regional_optional_prompt(
+        context, ("scene_prompt", "prompt"), "Scene prompt"
+    )
+    if not scene_positive_present:
+        scene_positive, scene_positive_present = _regional_optional_prompt(
+            scene_context, ("scene_prompt", "prompt"), "Scene prompt"
+        )
+    scene_negative, scene_negative_present = _regional_optional_prompt(
+        context, ("scene_negative_prompt", "negative_prompt"), "Scene negative prompt"
+    )
+    if not scene_negative_present:
+        scene_negative, scene_negative_present = _regional_optional_prompt(
+            scene_context, ("scene_negative_prompt", "negative_prompt"), "Scene negative prompt"
+        )
+
+    source = {"page_id": page_id, "scene_id": scene_id}
+    compiled_regions: List[Dict[str, Any]] = []
+    seen_ids: Set[str] = set()
+
+    for source_order, raw_region in enumerate(regions):
+        region_context = f"{context_name}.regions[{source_order}]"
+        if not isinstance(raw_region, dict):
+            _regional_error("INVALID_REGION", f"{region_context} must be a dictionary")
+
+        unsupported = sorted(set(raw_region) - _REGIONAL_RECORD_FIELDS, key=str)
+        if unsupported:
+            _regional_error(
+                "UNSUPPORTED_REGION_FIELD",
+                f"{region_context} contains unsupported fields: {', '.join(map(str, unsupported))}",
+                fields=[str(field) for field in unsupported],
+            )
+
+        id_fields = [field for field in ("id", "region_id") if field in raw_region]
+        if not id_fields:
+            _regional_error("INVALID_REGION_ID", f"{region_context} requires an explicit id")
+        region_id = raw_region[id_fields[0]]
+        if len(id_fields) == 2 and raw_region["id"] != raw_region["region_id"]:
+            _regional_error("INVALID_REGION_ID", f"{region_context} id and region_id disagree")
+        if not isinstance(region_id, str) or not region_id.strip():
+            _regional_error("INVALID_REGION_ID", f"{region_context} id must be a non-empty string")
+        if region_id in seen_ids:
+            _regional_error(
+                "DUPLICATE_REGION_ID",
+                f"{region_context} duplicates region id '{region_id}'",
+                region_id=region_id,
+            )
+        seen_ids.add(region_id)
+
+        enabled = raw_region.get("enabled", True)
+        if not isinstance(enabled, bool):
+            _regional_error("INVALID_REGION_FIELD", f"{region_context} enabled must be a boolean")
+
+        raw_prompt = raw_region.get("prompt", "")
+        if raw_prompt is None:
+            raw_prompt = ""
+        if not isinstance(raw_prompt, str):
+            _regional_error("INVALID_REGION_PROMPT", f"{region_context} prompt must be a string")
+        if enabled and not raw_prompt.strip():
+            _regional_error(
+                "EMPTY_REGION_PROMPT",
+                f"{region_context} enabled region requires a non-empty prompt",
+                region_id=region_id,
+            )
+
+        negative_present = "negative_prompt" in raw_region and raw_region.get("negative_prompt") is not None
+        negative_prompt = raw_region.get("negative_prompt") if negative_present else None
+        if negative_present and not isinstance(negative_prompt, str):
+            _regional_error("INVALID_REGION_NEGATIVE_PROMPT", f"{region_context} negative_prompt must be a string")
+
+        area = raw_region.get("area")
+        if not isinstance(area, dict):
+            _regional_error("INVALID_GEOMETRY", f"{region_context} area must be a dictionary")
+        area_unsupported = sorted(set(area) - _REGIONAL_AREA_FIELDS, key=str)
+        if area_unsupported:
+            _regional_error(
+                "INVALID_GEOMETRY",
+                f"{region_context} area contains unsupported fields: {', '.join(map(str, area_unsupported))}",
+                fields=[str(field) for field in area_unsupported],
+            )
+        if area.get("shape_type", "rect") != "rect":
+            _regional_error(
+                "INVALID_GEOMETRY",
+                f"{region_context} area shape_type must be 'rect'",
+                region_id=region_id,
+            )
+        try:
+            area_errors = validate_area(area, region_context)
+        except (TypeError, ValueError, OverflowError) as exc:
+            _regional_error("INVALID_GEOMETRY", str(exc), region_id=region_id)
+        if area_errors:
+            code = "OUT_OF_BOUNDS" if any(
+                "out of" in error or "exceeds" in error for error in area_errors
+            ) else "INVALID_GEOMETRY"
+            _regional_error(code, "; ".join(area_errors), region_id=region_id)
+        normalized_area = normalize_rect(area["x"], area["y"], area["w"], area["h"])
+
+        strength_fields = [field for field in ("strength", "weight") if field in raw_region]
+        strength = None
+        strength_source = None
+        if strength_fields:
+            parsed_strength = []
+            for field in strength_fields:
+                try:
+                    value = _check_strict_numeric(raw_region[field], field, region_context)
+                except (TypeError, ValueError, OverflowError) as exc:
+                    _regional_error("INVALID_STRENGTH", str(exc), region_id=region_id, field=field)
+                if not 0.0 <= value <= 2.0:
+                    _regional_error(
+                        "INVALID_STRENGTH",
+                        f"{region_context} {field} must be in the existing 0..2 range",
+                        region_id=region_id,
+                        field=field,
+                        value=value,
+                    )
+                parsed_strength.append(value)
+            if len(parsed_strength) == 2 and round(parsed_strength[0], 4) != round(parsed_strength[1], 4):
+                _regional_error(
+                    "INVALID_STRENGTH",
+                    f"{region_context} strength and weight disagree",
+                    region_id=region_id,
+                )
+            strength = round(parsed_strength[0], 4)
+            strength_source = strength_fields[0]
+
+        compiled_region: Dict[str, Any] = {
+            "id": region_id,
+            "scope": "region",
+            "source": dict(source),
+            "source_order": source_order,
+            "enabled": enabled,
+            "area": normalized_area,
+            "prompt": raw_prompt,
+            "negative_prompt": negative_prompt,
+            "negative_prompt_present": negative_present,
+            "strength": strength,
+            "strength_present": strength is not None,
+            "strength_source": strength_source,
+        }
+        if "name" in raw_region:
+            name = raw_region["name"]
+            if name is None:
+                name = region_id
+            if not isinstance(name, str):
+                _regional_error("INVALID_REGION_FIELD", f"{region_context} name must be a string")
+            compiled_region["name"] = name
+        if "metadata" in raw_region:
+            metadata = raw_region["metadata"]
+            if metadata is None:
+                metadata = {}
+            if not isinstance(metadata, dict):
+                _regional_error("INVALID_REGION_FIELD", f"{region_context} metadata must be a dictionary")
+            compiled_region["metadata"] = copy.deepcopy(metadata)
+        compiled_regions.append(compiled_region)
+
+    diagnostics: List[Dict[str, Any]] = []
+    for first_index, first in enumerate(compiled_regions):
+        if not first["enabled"]:
+            continue
+        for second in compiled_regions[first_index + 1:]:
+            if not second["enabled"] or not _regional_overlap(first, second):
+                continue
+            diagnostics.append({
+                "severity": "WARNING",
+                "code": "OVERLAP_PRESENT",
+                "message": "Regional rectangles overlap; no precedence policy was selected.",
+                "region_ids": [first["id"], second["id"]],
+                "source_order": [first["source_order"], second["source_order"]],
+            })
+
+    result: Dict[str, Any] = {
+        "version": SUPPORTED_REGIONAL_COMPILE_VERSION,
+        "scope": "regional",
+        "source": source,
+        "prompt_scopes": {
+            "global": {
+                "positive": global_positive,
+                "positive_present": global_positive_present,
+                "negative": global_negative,
+                "negative_present": global_negative_present,
+            },
+            "scene": {
+                "positive": scene_positive,
+                "positive_present": scene_positive_present,
+                "negative": scene_negative,
+                "negative_present": scene_negative_present,
+            },
+        },
+        "regions": compiled_regions,
+        "diagnostics": diagnostics,
+    }
+    canvas = _regional_canvas(context, page_context)
+    if canvas is not None:
+        result["canvas"] = canvas
+    return result
 
 
 def _check_strict_numeric(val: Any, name: str, context_name: str = "LoRA") -> float:
