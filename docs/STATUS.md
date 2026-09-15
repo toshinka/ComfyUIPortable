@@ -73,6 +73,15 @@ Accepted technical milestones:
 
 Return to Manga controllability / production-flow planning. Immediate design space is Scene / Region, CAST / Reference, Guide / ControlNet, and LoRA. Keep H3 separate.
 
+## UI Planning State
+
+- **TEGAKI Production UI pre-Astra specification phase**: **COMPLETE**.
+- **Authoritative UI design documents**: `docs/ui/TEGAKI_PRODUCTION_UI_PRINCIPLES.md`, `docs/ui/TEGAKI_CREATE_WORKSPACE_MODEL.md`, `docs/ui/TEGAKI_ASTRA_UI_REVIEW_BRIEF.md`, and `docs/ui/TEGAKI_UI_COMPONENT_CONTRACTS.md`.
+- **Current design state**: Manga/H3 Production sibling cognitive model, Create workspace state flow, GLANCE/FOCUS principles, truthful `GenerationStatus`, component behavioral contracts, and the Astra review contract are defined.
+- **Implementation state**: major Create redesign **NOT implemented**; `PreviewFocus` **NOT implemented**; `MediaPreviewShell` redesign **NOT implemented**; `CompactContext` **NOT implemented**.
+- **Prototype-safe contracts identified**: `GenerationStatus`, `ProgressProjection / ProgressOverlay`, and `AttachmentCard` grammar. **No prototype is currently authorized.**
+- **Next UI action**: bounded Astra review of the current rendered Manga/H3 UI against the prepared specifications. Astra review performed: **NO**.
+
 ## Evidence Locations
 
 ### Tracked Evidence & Indices
