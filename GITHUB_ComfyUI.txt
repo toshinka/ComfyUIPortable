@@ -1,7 +1,7 @@
 ComfyUIPortable — External AI Router / Compatibility Entry
-Updated: 2026-09-09 JST
+Updated: 2026-09-15 JST
 Repository: https://github.com/toshinka/ComfyUIPortable
-Branch: h3-play1-longrun
+Branch: codex/tegaki-shell-manga-play1
 Remote: https://github.com/toshinka/ComfyUIPortable.git
 Lineage:
 Extracted from `toshinka/tegaki` into the standalone `ComfyUIPortable` repository.
@@ -11,10 +11,13 @@ sections refers to legacy Tegaki publication unless superseded.
 Standalone ComfyUIPortable publication: PUBLISHED
 Canonical router path: GITHUB_ComfyUI.txt
 Router/namespace publication: ef7daa502f501211cd6b06f378e9024dbff6f284
-Docs domain consolidation: LOCAL PENDING OWNER COMMIT/PUSH
+Agent operating layer: AGENTS.md
+Current operational status: docs/STATUS.md
 
 This file routes external AI readers to the domain-specific canonical entry.
 Do not maintain detailed project status, Review Target SHA, plans, or evidence here.
+For stable agent operating rules, read AGENTS.md.
+For current operational facts and handoff, read docs/STATUS.md.
 
 Manga Authoring
 ---------------

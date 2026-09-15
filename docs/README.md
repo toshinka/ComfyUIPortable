@@ -1,6 +1,15 @@
 # ComfyUIPortable Documentation Router
 
-更新: 2026-09-09 JST。
+更新: 2026-09-15 JST。
+
+## 全体入口
+
+新規エージェント・新規チャットの最優先ルート:
+1. [`../AGENTS.md`](../AGENTS.md) — 安定動作契約・読み順・エージェント役割規則
+2. [`STATUS.md`](STATUS.md) — 現在地・受入済み成果・最新ハンドオフ (単一の真実)
+3. 対象ドメインのHub / 概要
+
+## Domain Hubs
 
 `docs/`はproject別に分離する。現在地、計画、報告、検証資料を探す時は対象domainのHubから入る。
 

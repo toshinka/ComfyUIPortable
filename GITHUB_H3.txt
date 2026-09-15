@@ -1,6 +1,7 @@
 ComfyUIPortable — MiniMax H3 External AI Entry
 Repository: https://github.com/toshinka/ComfyUIPortable
-Branch: h3-play1-longrun
+Branch: codex/tegaki-shell-manga-play1
+Notice: Current cross-project operational status is docs/STATUS.md. This domain entry preserves historical/domain detail and may include older branch/phase references.
 Remote: https://github.com/toshinka/ComfyUIPortable.git
 Lineage:
 Extracted from `toshinka/tegaki` into the standalone `ComfyUIPortable` repository.
