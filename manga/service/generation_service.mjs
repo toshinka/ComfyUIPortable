@@ -21,7 +21,9 @@ const GRAPH_CLASSES = new Set([
 ]);
 const SCENE_GRAPH_CLASSES = new Set([
     "CheckpointLoaderSimple", "LoraLoader", "TegakiMangaPagePlanFromJSON",
-    "TegakiMangaConditioningBuilder", "EmptyLatentImage", "KSampler", "VAEDecode", "SaveImage"
+    "TegakiMangaConditioningBuilder", "LoadImage", "CLIPVisionLoader",
+    "IPAdapterModelLoader", "IPAdapterAdvanced", "EmptyLatentImage", "KSampler",
+    "VAEDecode", "SaveImage"
 ]);
 const SHA256 = /^[0-9a-f]{64}$/;
 const PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
@@ -198,7 +200,13 @@ export class GenerationService {
         } else if (effectiveSeed !== undefined && effectiveSeed !== seed) {
             fail("EFFECTIVE_SEED_MISMATCH", "Effective seed differs from requested seed", 400);
         }
-        const compileRequest = { ...settings, request_id: requestId, seed_requested: seed };
+        const compileRequest = {
+            mask_feather: 16,
+            panel_strength: 1.0,
+            ...settings,
+            request_id: requestId,
+            seed_requested: seed
+        };
         const response = await this._json("/tegaki/manga/generation/compile-scene", {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify(compileRequest)

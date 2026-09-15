@@ -14,9 +14,22 @@ if str(ROOT) not in __import__("sys").path:
     __import__("sys").path.insert(0, str(ROOT))
 
 from custom_nodes_custom.tegaki_manga_nodes.basic_generation import build_catalog
+from custom_nodes_custom.tegaki_manga_nodes.authoring_contract import create_cast_entry, create_character_instance
 from custom_nodes_custom.tegaki_manga_nodes.minimum_hand_scene_editor import create_default_m1_document
 from custom_nodes_custom.tegaki_manga_nodes.page_plan_adapter import TegakiMangaPagePlanFromJSON
-from custom_nodes_custom.tegaki_manga_nodes.scene_generation import compile_scene
+from custom_nodes_custom.tegaki_manga_nodes.scene_generation import (
+    REFERENCE_CLIP_VISION,
+    REFERENCE_COMBINE_EMBEDS,
+    REFERENCE_EMBEDS_SCALING,
+    REFERENCE_END_AT,
+    REFERENCE_IPADAPTER,
+    REFERENCE_START_AT,
+    REFERENCE_WEIGHT,
+    REFERENCE_WEIGHT_TYPE,
+    SCENE_REFERENCE_REQUIRED_NODES,
+    compile_scene,
+    _reference_character,
+)
 
 
 def fake_inputs():
@@ -73,6 +86,39 @@ class SceneGenerationTests(unittest.TestCase):
         }
         value.update(changes)
         return value
+
+    def add_reference_capability(self, asset="tegaki_manga_references/ref_c789751db904319d.png"):
+        self.catalog["scene_generation"]["reference"] = {
+            "available": True,
+            "required_nodes": list(SCENE_REFERENCE_REQUIRED_NODES),
+            "clip_vision": REFERENCE_CLIP_VISION,
+            "ipadapter": REFERENCE_IPADAPTER,
+            "weight": REFERENCE_WEIGHT,
+            "weight_type": REFERENCE_WEIGHT_TYPE,
+            "combine_embeds": REFERENCE_COMBINE_EMBEDS,
+            "start_at": REFERENCE_START_AT,
+            "end_at": REFERENCE_END_AT,
+            "embeds_scaling": REFERENCE_EMBEDS_SCALING,
+            "reference_assets": [asset],
+        }
+        self.catalog["revision"] = __import__("hashlib").sha256(
+            __import__("json").dumps(self.catalog, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+
+    def reference_document(self, reference_asset="tegaki_manga_references/ref_c789751db904319d.png"):
+        document = copy.deepcopy(self.document)
+        page = document["pages"][0]
+        page["scenes"] = page["scenes"][:1]
+        page["scenes"][0]["input_mode"] = "cast"
+        page["cast"] = [create_cast_entry(
+            display_name="A", identity_prompt="dark-haired manga heroine", cast_id="cast_a",
+            reference_asset=reference_asset,
+        )]
+        page["character_instances"] = [create_character_instance(
+            "cast_a", "scene_top", area={"shape_type": "rect", "x": 0.05, "y": 0.08, "w": 0.42, "h": 0.84},
+            acting_prompt="standing in a classroom", instance_id="inst_a",
+        )]
+        return document
 
     def expect_code(self, code, request=None, **changes):
         with self.assertRaises(Exception) as raised:
@@ -233,6 +279,91 @@ class SceneGenerationTests(unittest.TestCase):
         self.assertEqual(adapted, plan)
         with self.assertRaises(ValueError):
             TegakiMangaPagePlanFromJSON().parse_page_compile_plan("{bad")
+
+    def test_one_reference_compiles_the_product_ipadapter_path(self):
+        self.add_reference_capability()
+        result = compile_scene(self.request(self.reference_document()), self.catalog)
+        graph = result["graph"]
+        classes = [node["class_type"] for node in graph.values()]
+        for class_name in ("LoadImage", "CLIPVisionLoader", "IPAdapterModelLoader", "IPAdapterAdvanced"):
+            self.assertEqual(classes.count(class_name), 1)
+        ref_node = next(node for node in graph.values() if node["class_type"] == "IPAdapterAdvanced")
+        self.assertEqual(ref_node["inputs"]["weight"], REFERENCE_WEIGHT)
+        self.assertEqual(ref_node["inputs"]["weight_type"], REFERENCE_WEIGHT_TYPE)
+        self.assertEqual(ref_node["inputs"]["combine_embeds"], REFERENCE_COMBINE_EMBEDS)
+        self.assertEqual(ref_node["inputs"]["start_at"], REFERENCE_START_AT)
+        self.assertEqual(ref_node["inputs"]["end_at"], REFERENCE_END_AT)
+        self.assertEqual(ref_node["inputs"]["embeds_scaling"], REFERENCE_EMBEDS_SCALING)
+        self.assertEqual(ref_node["inputs"]["attn_mask"][1], 3)
+        self.assertEqual(next(node for node in graph.values() if node["class_type"] == "LoadImage")["inputs"]["image"],
+                         "tegaki_manga_references/ref_c789751db904319d.png [input]")
+        character = result["page_compile_plan"]["panels"][0]["characters"][0]
+        self.assertEqual(character["reference_asset"], "tegaki_manga_references/ref_c789751db904319d.png")
+        self.assertEqual(character["area"]["x"], 0.05)
+        self.assertTrue(result["audit_trail"]["reference"]["enabled"])
+
+    def test_reference_execution_uses_top_level_asset_without_metadata(self):
+        plan = {"panels": [{"characters": [{"reference_asset": "tegaki_manga_references/ref.png", "metadata": {}}]}]}
+        self.assertIsNotNone(_reference_character(plan))
+        metadata_only = {"panels": [{"characters": [{"metadata": {"reference_asset": "tegaki_manga_references/ref.png"}}]}]}
+        self.assertIsNone(_reference_character(metadata_only))
+
+    def test_cast_without_reference_keeps_text_conditioning_and_no_ipadapter(self):
+        document = self.reference_document(reference_asset=None)
+        result = compile_scene(self.request(document), self.catalog)
+        self.assertFalse(any(node["class_type"] == "IPAdapterAdvanced" for node in result["graph"].values()))
+        self.assertFalse(result["audit_trail"]["reference"]["enabled"])
+
+    def test_multiple_referenced_instances_fail_closed(self):
+        self.add_reference_capability()
+        document = self.reference_document()
+        page = document["pages"][0]
+        page["character_instances"].append(create_character_instance(
+            "cast_a", "scene_top", area={"shape_type": "rect", "x": 0.53, "y": 0.08, "w": 0.42, "h": 0.84},
+            instance_id="inst_b",
+        ))
+        self.expect_code("REFERENCE_MULTI_INSTANCE_UNSUPPORTED", self.request(document))
+
+    def test_reference_prerequisite_missing_fails_before_graph(self):
+        document = self.reference_document()
+        self.expect_code("REFERENCE_RUNTIME_UNAVAILABLE", self.request(document))
+
+    def test_reference_area_is_required_for_the_mask_path(self):
+        self.add_reference_capability()
+        document = self.reference_document()
+        document["pages"][0]["character_instances"][0]["area"] = None
+        self.expect_code("REFERENCE_MASK_UNAVAILABLE", self.request(document))
+
+    def test_digest_determinism_across_numeric_representations(self):
+        self.add_reference_capability()
+        doc = self.reference_document()
+        # Test int vs float cfg and panel_strength
+        req_int = self.request(doc, cfg=5, panel_strength=1)
+        req_float = self.request(doc, cfg=5.0, panel_strength=1.0)
+        res_int = compile_scene(req_int, self.catalog)
+        res_float = compile_scene(req_float, self.catalog)
+        self.assertEqual(res_int["graph_digest"], res_float["graph_digest"])
+        self.assertEqual(res_int["audit_trail"]["graph_digest"], res_float["audit_trail"]["graph_digest"])
+
+        # Multiple compilations of the exact same request produce identical digests
+        res_float_2 = compile_scene(self.request(doc, cfg=5.0, panel_strength=1.0), self.catalog)
+        self.assertEqual(res_float["graph_digest"], res_float_2["graph_digest"])
+
+        # Non-reference scene compile is also deterministic
+        doc_no_ref = self.reference_document(reference_asset=None)
+        res_noref_1 = compile_scene(self.request(doc_no_ref, cfg=5), self.catalog)
+        res_noref_2 = compile_scene(self.request(doc_no_ref, cfg=5.0), self.catalog)
+        self.assertEqual(res_noref_1["graph_digest"], res_noref_2["graph_digest"])
+
+        # Deliberately changed semantic setting (cfg) produces a different digest
+        res_diff_cfg = compile_scene(self.request(doc, cfg=6.0), self.catalog)
+        self.assertNotEqual(res_float["graph_digest"], res_diff_cfg["graph_digest"])
+
+        # Deliberately changed reference asset produces a different digest
+        self.add_reference_capability("tegaki_manga_references/other.png")
+        doc_other = self.reference_document("tegaki_manga_references/other.png")
+        res_diff_ref = compile_scene(self.request(doc_other, cfg=5.0), self.catalog)
+        self.assertNotEqual(res_float["graph_digest"], res_diff_ref["graph_digest"])
 
 
 if __name__ == "__main__":

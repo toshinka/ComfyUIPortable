@@ -12,7 +12,19 @@ from .basic_generation import (
     CORE_NODES, NODE_IDENTITY, WILDCARD_ENV, GenerationContractError,
     _digest, _dynamic_prompt_api, _wildcard_root, build_catalog, compile_basic,
 )
-from .scene_generation import SCENE_REQUIRED_NODES, compile_scene
+from .scene_generation import (
+    REFERENCE_CLIP_VISION,
+    REFERENCE_COMBINE_EMBEDS,
+    REFERENCE_EMBEDS_SCALING,
+    REFERENCE_END_AT,
+    REFERENCE_IPADAPTER,
+    REFERENCE_START_AT,
+    REFERENCE_WEIGHT,
+    REFERENCE_WEIGHT_TYPE,
+    SCENE_REFERENCE_REQUIRED_NODES,
+    SCENE_REQUIRED_NODES,
+    compile_scene,
+)
 
 MAX_REQUEST_BYTES = 256 * 1024
 
@@ -55,6 +67,22 @@ def _live_catalog():
         "supported_syntax": ["__wildcard__", "{a|b}", "nested", "weighted", "escaped_braces"],
     }
     scene_available = all(name in registry for name in SCENE_REQUIRED_NODES)
+    reference_nodes_available = all(name in registry for name in SCENE_REFERENCE_REQUIRED_NODES)
+
+    def model_available(kind, name):
+        try:
+            resolved = folder_paths.get_full_path(kind, name)
+        except Exception:
+            return False
+        return resolved is not None and os.path.isfile(resolved)
+
+    reference_assets = []
+    reference_root = os.path.join(folder_paths.get_input_directory(), "tegaki_manga_references")
+    if os.path.isdir(reference_root):
+        for name in sorted(os.listdir(reference_root)):
+            path = os.path.join(reference_root, name)
+            if os.path.isfile(path) and os.path.splitext(name)[1].lower() in {".png", ".jpg", ".jpeg", ".webp"}:
+                reference_assets.append(f"tegaki_manga_references/{name}")
     catalog["scene_generation"] = {
         "available": scene_available,
         "required_nodes": list(SCENE_REQUIRED_NODES),
@@ -63,6 +91,21 @@ def _live_catalog():
         "supported_scene_count": {"min": 1, "max": 6},
         "mask_feather": {"default": 16, "min": 0, "max": 64},
         "panel_strength": {"default": 1.0, "min": 0.0, "max": 2.0},
+        "reference": {
+            "available": reference_nodes_available and
+                model_available("clip_vision", REFERENCE_CLIP_VISION) and
+                model_available("ipadapter", REFERENCE_IPADAPTER),
+            "required_nodes": list(SCENE_REFERENCE_REQUIRED_NODES),
+            "clip_vision": REFERENCE_CLIP_VISION,
+            "ipadapter": REFERENCE_IPADAPTER,
+            "weight": REFERENCE_WEIGHT,
+            "weight_type": REFERENCE_WEIGHT_TYPE,
+            "combine_embeds": REFERENCE_COMBINE_EMBEDS,
+            "start_at": REFERENCE_START_AT,
+            "end_at": REFERENCE_END_AT,
+            "embeds_scaling": REFERENCE_EMBEDS_SCALING,
+            "reference_assets": reference_assets,
+        },
     }
     catalog["revision"] = _digest(catalog)
     return catalog

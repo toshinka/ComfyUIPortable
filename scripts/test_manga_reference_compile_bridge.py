@@ -11,7 +11,7 @@ D. Two different CAST members -> references remain isolated by cast_id
 E. Area remains unchanged
 F. acting_prompt / negative override / LoRA behavior unchanged
 G. Invalid persistent reference still fails at authoritative document validation boundary
-H. SCENE_CAST_UNSUPPORTED remains unchanged in product generation
+H. Scene CAST gate is narrowed to the one-reference slice
 I. Debug info serialization includes reference_asset
 """
 
@@ -333,12 +333,10 @@ class TestMangaReferenceCompileBridge(unittest.TestCase):
             with self.assertRaises(ValueError, msg=f"Bridge did not fail for bad ref: {bad_ref!r}"):
                 compile_document_to_page_plan(doc)
 
-    # H. SCENE_CAST_UNSUPPORTED remains unchanged in product generation
-    def test_h_scene_cast_unsupported_remains_in_force(self):
-        # We test that _validate_scene_document strictly raises GenerationContractError('SCENE_CAST_UNSUPPORTED')
+    # H. The product gate accepts exactly the bounded one-reference slice.
+    def test_h_scene_cast_gate_accepts_bounded_reference_slice(self):
         _sg = _import_submodule("scene_generation", "scene_generation.py")
         _validate_scene_document = _sg._validate_scene_document
-        GenerationContractError = _sg.GenerationContractError
 
         doc = self._make_base_doc()
         page = doc["pages"][0]
@@ -353,11 +351,11 @@ class TestMangaReferenceCompileBridge(unittest.TestCase):
             instance_id="inst_alice",
         ))
 
-        with self.assertRaises(GenerationContractError) as ctx:
-            _validate_scene_document(doc, page_index=0)
-
-        self.assertEqual(ctx.exception.code, "SCENE_CAST_UNSUPPORTED")
-        self.assertIn("CAST and character execution are unavailable in PLAY5 Scene mode", str(ctx.exception))
+        page, cast_slice = _validate_scene_document(doc, page_index=0)
+        self.assertEqual(page["scenes"][0]["input_mode"], "cast")
+        self.assertEqual(cast_slice["cast_id"], "cast_alice")
+        self.assertEqual(cast_slice["instance_id"], "inst_alice")
+        self.assertEqual(cast_slice["reference_asset"], "tegaki_manga_references/ref_alice.png")
 
     # I. Debug serialization visibility
     def test_i_debug_serialization_includes_reference_asset(self):

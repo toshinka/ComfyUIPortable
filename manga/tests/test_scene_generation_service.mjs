@@ -54,6 +54,17 @@ class SceneBackend {
                 "6": { class_type: "VAEDecode", inputs: { samples: ["5", 0], vae: ["1", 2] } },
                 "7": { class_type: "SaveImage", inputs: { images: ["6", 0], filename_prefix: "Manga/Playable/compiled" } }
             };
+            const refAsset = request.authoring_document?.pages?.[0]?.cast?.[0]?.reference_asset;
+            if (refAsset) {
+                graph["8"] = { class_type: "CLIPVisionLoader", inputs: { clip_name: "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors" } };
+                graph["9"] = { class_type: "IPAdapterModelLoader", inputs: { ipadapter_file: "ip-adapter-plus_sdxl_vit-h.safetensors" } };
+                graph["10"] = { class_type: "LoadImage", inputs: { image: `${refAsset} [input]` } };
+                graph["11"] = { class_type: "IPAdapterAdvanced", inputs: {
+                    model: ["1", 0], ipadapter: ["9", 0], image: ["10", 0], clip_vision: ["8", 0], attn_mask: ["3", 3],
+                    weight: 0.7, weight_type: "linear", combine_embeds: "concat", start_at: 0.0, end_at: 1.0, embeds_scaling: "V only"
+                }};
+                graph["5"].inputs.model = ["11", 0];
+            }
             return json(res, 200, { ok: true, normalized_request: request, effective_seed: Number(request.seed_requested),
                 capability_revision: "scene-r1", graph, graph_digest: DIGEST, page_compile_plan_digest: "b".repeat(64),
                 audit_trail: { global: {}, scenes: [], scene_ids: ["scene_one"] }, resolved_loras: [],
@@ -116,4 +127,44 @@ test("Scene journal EPERM is a structured write failure before prompt submission
         error => error instanceof Error && error.code === "JOURNAL_WRITE_FAILED" && /journal write failed/i.test(error.message)
     );
     assert.equal(backend.promptCalls, 0);
+});
+
+test("Scene submission rejects stale or mismatched expected_graph_digest with DIGEST_MISMATCH (409)", async t => {
+    const directory = await fs.mkdtemp(path.join(os.tmpdir(), "manga-play5-service-digest-"));
+    const backend = new SceneBackend();
+    await backend.start();
+    const service = new GenerationService({ backendUrl: backend.origin, journal: new GenerationJournal(directory) });
+    t.after(async () => { await close(backend.server); await fs.rm(directory, { recursive: true, force: true }); });
+
+    // Negative control: wrong / stale digest must fail closed before /prompt
+    const staleDigest = "b".repeat(64);
+    await assert.rejects(
+        () => service.createSceneJob({ settings: settings(), idempotency_key: "scene-stale-digest", expected_graph_digest: staleDigest }),
+        error => error.code === "DIGEST_MISMATCH" && error.status === 409
+    );
+    assert.equal(backend.promptCalls, 0);
+});
+
+test("Reference Scene job passes compile validation with identical digest and submits reviewed graph", async t => {
+    const directory = await fs.mkdtemp(path.join(os.tmpdir(), "manga-play5-service-ref-"));
+    const backend = new SceneBackend();
+    await backend.start();
+    const service = new GenerationService({ backendUrl: backend.origin, journal: new GenerationJournal(directory) });
+    t.after(async () => { await close(backend.server); await fs.rm(directory, { recursive: true, force: true }); });
+
+    const refDoc = structuredClone(documentValue);
+    refDoc.pages[0].cast = [{ cast_id: "heroine", identity_prompt: "heroine", reference_asset: "tegaki_manga_references/ref_test.png" }];
+    refDoc.pages[0].character_instances = [{
+        instance_id: "inst_1", cast_id: "heroine", scene_id: "scene_one",
+        area: { shape_type: "rect", x: 0.1, y: 0.1, w: 0.8, h: 0.35 }
+    }];
+    const refSettings = { ...settings(), authoring_document: refDoc };
+
+    const job = await service.createSceneJob({ settings: refSettings, idempotency_key: "scene-ref-pass", expected_graph_digest: DIGEST });
+    assert.equal(backend.promptCalls, 1);
+    assert.equal(job.state, "QUEUED");
+    assert.equal(job.prompt_id, backend.promptId);
+    assert.equal(backend.payload.prompt["10"].class_type, "LoadImage");
+    assert.equal(backend.payload.prompt["11"].class_type, "IPAdapterAdvanced");
+    assert.equal(backend.payload.prompt["5"].inputs.model[0], "11");
 });
