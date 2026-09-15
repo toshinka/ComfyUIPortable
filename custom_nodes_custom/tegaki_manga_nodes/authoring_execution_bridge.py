@@ -261,10 +261,13 @@ def compile_document_to_page_plan(
                 combined_c_neg = ", ".join(c_neg_parts)
 
                 inst_area = inst.get("area")
+                ref_asset = cast_master.get("reference_asset")
                 compiled_c = {
                     "instance_id": inst.get("instance_id"),
+                    "cast_id": inst.get("cast_id"),
                     "character_id": inst.get("cast_id"),
                     "name": c_display_name,
+                    "reference_asset": ref_asset,
                     "base_prompt": c_id_prompt,
                     "override_prompt": c_act_prompt,
                     "combined_prompt": effective_c_prompt,
@@ -283,6 +286,7 @@ def compile_document_to_page_plan(
                     "metadata": {
                         "instance_id": inst.get("instance_id"),
                         "cast_id": inst.get("cast_id"),
+                        "reference_asset": ref_asset,
                         "scene_id": scene_id,
                         "order": inst.get("order", 0),
                         "display_name": c_display_name,
@@ -507,7 +511,9 @@ def get_execution_debug_info(
         for c in p.get("characters", []):
             compiled_characters_debug.append({
                 "instance_id": c.get("instance_id"),
+                "cast_id": c.get("cast_id"),
                 "character_id": c.get("character_id"),
+                "reference_asset": c.get("reference_asset"),
                 "raw_identity_prompt": c.get("raw_identity_prompt"),
                 "raw_acting_prompt": c.get("raw_acting_prompt"),
                 "derived_spatial_hint": c.get("derived_spatial_hint"),
@@ -549,6 +555,7 @@ def get_execution_debug_info(
                 "cast_id": c.get("cast_id"),
                 "display_name": c.get("display_name"),
                 "identity_prompt": c.get("identity_prompt"),
+                "reference_asset": c.get("reference_asset"),
             }
             for c in cast_list
         ],

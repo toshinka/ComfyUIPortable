@@ -105,6 +105,8 @@ class TestM2ACastExecutionBridge(unittest.TestCase):
         c = p1["characters"][0]
 
         self.assertEqual(c["character_id"], "cast_alice")
+        self.assertEqual(c["cast_id"], "cast_alice")
+        self.assertIsNone(c["reference_asset"])
         self.assertEqual(c["instance_id"], "inst_alice_1")
         self.assertEqual(c["name"], "Alice")
         self.assertEqual(c["base_prompt"], "blonde twin tails, blue eyes, school uniform")
