@@ -196,9 +196,11 @@ def _resolve_lora(name: str, catalog: dict) -> str:
     _fail("LORA_UNAVAILABLE", f"LoRA '{name}' is unavailable")
 
 
-def _wildcard_root() -> Path:
+def _wildcard_root(override: Path | str | None = None) -> Path:
     """Resolve Manga's owned wildcard root without coupling it to Forge."""
-    configured = os.environ.get(WILDCARD_ENV, "").strip()
+    configured = str(override).strip() if override is not None else os.environ.get(WILDCARD_ENV, "").strip()
+    if override is not None and not configured:
+        _fail("WILDCARD_ROOT_UNAVAILABLE", "Manga wildcard root override is empty")
     root = Path(configured) if configured else Path(__file__).resolve().parents[2] / "manga" / "wildcards"
     try:
         root = root.expanduser().resolve()
@@ -269,6 +271,327 @@ def _protect_escaped_braces(raw: str) -> str:
 
 def _restore_escaped_braces(value: str) -> str:
     return value.replace(ESCAPED_OPEN, "{").replace(ESCAPED_CLOSE, "}")
+
+
+WILDCARD_SYNTAX = ("__wildcard__", "{a|b}", "nested", "weighted", "escaped_braces")
+
+
+def _wildcard_source_path(collection: Any) -> Path | None:
+    """Return a collection's backing path when dynamicprompts exposes one."""
+    source = getattr(collection, "_path", None)
+    if source is None:
+        source = getattr(collection, "source", None)
+    if isinstance(source, (tuple, list)):
+        source = source[0] if source else None
+    return Path(source) if isinstance(source, (Path, str)) else None
+
+
+def _bounded_source_label(collection: Any, root: Path) -> str | None:
+    source = _wildcard_source_path(collection)
+    if source is None:
+        return None
+    try:
+        resolved = source.expanduser().resolve()
+        relative = resolved.relative_to(root)
+    except (OSError, RuntimeError, ValueError):
+        _fail("WILDCARD_PATH_ESCAPE", "Wildcard source escapes the Manga wildcard root")
+    return relative.as_posix()
+
+
+def _assert_bounded_collections(manager: Any, root: Path) -> None:
+    """Reject symlinked or otherwise resolved collections outside the owned root."""
+    for collection in manager.tree.map.values():
+        _bounded_source_label(collection, root)
+
+
+def _catalog_entry(manager: Any, root: Path, name: str, collection: Any) -> dict:
+    source = _bounded_source_label(collection, root)
+    try:
+        values = list(collection.get_values())
+    except Exception as exc:
+        return {
+            "name": name,
+            "source": source,
+            "entry_count": 0,
+            "state": "ERROR",
+            "error": str(exc),
+        }
+    return {
+        "name": name,
+        "source": source,
+        "entry_count": len(values),
+        "state": "READY" if values else "EMPTY",
+    }
+
+
+def list_wildcard_catalog(root: Path | str | None = None) -> dict:
+    """Discover the current Manga wildcard catalog without creating an index."""
+    _dynamic, _Command, _wildcard_type, _generator_type, _parse, manager_type, version = _dynamic_prompt_api()
+    resolved_root = _wildcard_root(root)
+    manager = manager_type(resolved_root)
+    _assert_bounded_collections(manager, resolved_root)
+    entries = [
+        _catalog_entry(manager, resolved_root, name, manager.tree.map[name])
+        for name in sorted(manager.tree.map)
+    ]
+    catalog = {
+        "ok": True,
+        "root": str(resolved_root),
+        "dynamicprompts_version": version,
+        "supported_syntax": list(WILDCARD_SYNTAX),
+        "entries": entries,
+    }
+    catalog["revision"] = _digest(catalog)
+    return catalog
+
+
+def _headless_error(exc: Exception) -> dict:
+    code = getattr(exc, "code", "INVALID_PROMPT_SYNTAX")
+    return {"code": code, "message": str(exc)}
+
+
+def _validate_wildcard_commands(parsed: Any, wildcard_type: type, manager: Any, root: Path) -> list[dict]:
+    references = []
+    seen = set()
+    for wildcard in _iter_wildcard_commands(parsed, wildcard_type):
+        name = wildcard.wildcard
+        if not isinstance(name, str):
+            continue
+        name = _safe_wildcard_name(name)
+        if name in seen:
+            continue
+        seen.add(name)
+        if name not in manager.get_collection_names():
+            _fail("WILDCARD_NOT_FOUND", f"Wildcard '{name}' was not found in the Manga wildcard root")
+        collection = manager.tree.map.get(name)
+        values = list(manager.get_values(name))
+        if not values:
+            _fail("WILDCARD_EMPTY", f"Wildcard '{name}' has no usable entries")
+        references.append({
+            "name": name,
+            "source": _bounded_source_label(collection, root) if collection is not None else None,
+            "entry_count": len(values),
+        })
+    return references
+
+
+def validate_wildcard_text(
+    text: str,
+    catalog: dict | None = None,
+    root: Path | str | None = None,
+) -> dict:
+    """Validate dynamic-prompt syntax and references without expanding or writing."""
+    result = {
+        "ok": False,
+        "text": text,
+        "wildcards": [],
+        "warnings": [],
+        "errors": [],
+        "trace": [],
+    }
+    try:
+        if not isinstance(text, str):
+            _fail("INVALID_PROMPT_SYNTAX", "Wildcard text must be a string")
+        _dynamic, _Command, wildcard_type, _generator_type, parse, manager_type, version = _dynamic_prompt_api()
+        catalog_root = catalog.get("root") if isinstance(catalog, dict) else None
+        resolved_root = _wildcard_root(root if root is not None else catalog_root)
+        manager = manager_type(resolved_root)
+        _assert_bounded_collections(manager, resolved_root)
+        parsed = parse(_protect_escaped_braces(text))
+        result["wildcards"] = _validate_wildcard_commands(parsed, wildcard_type, manager, resolved_root)
+        result["dynamicprompts_version"] = version
+        result["wildcard_root"] = str(resolved_root)
+        result["ok"] = True
+    except Exception as exc:
+        result["errors"].append(_headless_error(exc))
+    return result
+
+
+def _trace_command_text(command: Any) -> str:
+    literal = getattr(command, "literal", None)
+    if isinstance(literal, str):
+        return literal
+    return str(command)
+
+
+def _trace_expand(
+    protected: str,
+    manager: Any,
+    root: Path,
+    dynamic_seed: int,
+    trace: list[dict],
+    max_depth: int = 32,
+) -> str:
+    """Run the installed random sampler with a bounded, informational trace."""
+    from random import Random
+
+    from dynamicprompts.enums import SamplingMethod
+    from dynamicprompts.samplers.combinatorial import CombinatorialSampler
+    from dynamicprompts.samplers.cycle import CyclicalSampler
+    from dynamicprompts.samplers.random import RandomSampler
+    from dynamicprompts.sampling_context import SamplingContext
+
+    class TraceWildcardMixin:
+        def _get_wildcard(self, command, context):
+            wildcard_path = next(iter(context.sample_prompts(command.wildcard, 1))).text
+            wildcard_path = _safe_wildcard_name(wildcard_path)
+            context = context.with_variables(command.variables)
+            if wildcard_path not in context.wildcard_manager.get_collection_names():
+                _fail("WILDCARD_NOT_FOUND", f"Wildcard '{wildcard_path}' was not found in the Manga wildcard root")
+            values = context.wildcard_manager.get_values(wildcard_path)
+            if not values:
+                _fail("WILDCARD_EMPTY", f"Wildcard '{wildcard_path}' has no usable entries")
+            if wildcard_path in self._wildcard_stack:
+                _fail("WILDCARD_CYCLE", f"Wildcard '{wildcard_path}' references itself recursively")
+            if len(self._wildcard_stack) >= self._max_wildcard_depth:
+                _fail("WILDCARD_RECURSION_LIMIT", "Wildcard expansion exceeded the bounded depth")
+            source = None
+            collection = context.wildcard_manager.tree.map.get(wildcard_path)
+            if collection is not None:
+                source = _bounded_source_label(collection, self._wildcard_root)
+            chooser = getattr(self, "_get_wildcard_choice_generator", None)
+            generator = chooser(context, values) if chooser else iter(values.iterate_string_values_weighted())
+            self._wildcard_stack.append(wildcard_path)
+            try:
+                while True:
+                    selected = next(generator)
+                    self._trace.append({
+                        "kind": "wildcard",
+                        "name": wildcard_path,
+                        "selected": selected,
+                        "source": source,
+                    })
+                    yield from context.sample_prompts(selected, 1)
+            finally:
+                self._wildcard_stack.pop()
+
+    class TraceRandomSampler(TraceWildcardMixin, RandomSampler):
+        def _get_variant_choices(self, values, weights, num_choices, rand):
+            selected = super()._get_variant_choices(values, weights, num_choices, rand)
+            selected_items = []
+            for item in selected:
+                index = next((i for i, candidate in enumerate(values) if candidate is item), None)
+                selected_items.append({"index": index, "value": _trace_command_text(item)})
+            self._trace.append({
+                "kind": "choice",
+                "alternatives_count": len(values),
+                "selected": selected_items,
+            })
+            return selected
+
+    class TraceCombinatorialSampler(TraceWildcardMixin, CombinatorialSampler):
+        pass
+
+    class TraceCyclicalSampler(TraceWildcardMixin, CyclicalSampler):
+        pass
+
+    samplers = {
+        SamplingMethod.RANDOM: TraceRandomSampler(),
+        SamplingMethod.COMBINATORIAL: TraceCombinatorialSampler(),
+        SamplingMethod.CYCLICAL: TraceCyclicalSampler(),
+    }
+    wildcard_stack = []
+    for sampler in samplers.values():
+        sampler._trace = trace
+        sampler._wildcard_root = root
+        sampler._wildcard_stack = wildcard_stack
+        sampler._max_wildcard_depth = max_depth
+    context = SamplingContext(
+        default_sampling_method=SamplingMethod.RANDOM,
+        wildcard_manager=manager,
+        rand=Random(dynamic_seed),
+        samplers=samplers,
+    )
+    result = next(iter(context.sample_prompts(protected, 1)), None)
+    if result is None:
+        return ""
+    return result.text
+
+
+def _resolve_headless_seed(options: dict) -> tuple[int | None, int]:
+    requested = options.get("seed")
+    random_source = options.get("random_source", options.get("random"))
+    if requested is None or requested == -1:
+        if random_source is None:
+            effective = secrets.randbelow(1 << 32)
+        else:
+            if not callable(random_source):
+                _fail("INVALID_SEED", "random_source must be callable")
+            effective = random_source()
+        _check_int(effective, "wildcard seed", 0, PRODUCT_BOUNDS["seed"]["max"])
+        return requested, effective
+    _check_int(requested, "wildcard seed", 0, PRODUCT_BOUNDS["seed"]["max"])
+    return requested, requested
+
+
+def expand_wildcard_text(
+    text: str,
+    options: dict | None = None,
+    *,
+    root: Path | str | None = None,
+    seed: int | None = None,
+    domain: str = "wildcard",
+) -> dict:
+    """Expand a bounded wildcard expression through the existing TEGAKI owner."""
+    supplied = dict(options or {})
+    if seed is not None:
+        supplied["seed"] = seed
+    if root is not None:
+        supplied["root"] = root
+    if "root" not in supplied and isinstance(supplied.get("catalog"), dict):
+        supplied["root"] = supplied["catalog"].get("root")
+    supplied.setdefault("domain", domain)
+    trace: list[dict] = []
+    result = {
+        "ok": False,
+        "input_text": text,
+        "expanded_text": None,
+        "expanded": False,
+        "used_wildcards": [],
+        "choice_selections": [],
+        "warnings": [],
+        "errors": [],
+        "trace": trace,
+    }
+    try:
+        if not isinstance(text, str):
+            _fail("INVALID_PROMPT_SYNTAX", "Wildcard text must be a string")
+        _dynamic, _Command, wildcard_type, _generator_type, parse, manager_type, version = _dynamic_prompt_api()
+        resolved_root = _wildcard_root(supplied.get("root"))
+        manager = manager_type(resolved_root)
+        _assert_bounded_collections(manager, resolved_root)
+        protected = _protect_escaped_braces(text)
+        try:
+            parsed = parse(protected)
+        except Exception as exc:
+            _fail("INVALID_PROMPT_SYNTAX", f"Dynamic prompt syntax is invalid: {exc}")
+        _validate_wildcard_commands(parsed, wildcard_type, manager, resolved_root)
+        requested_seed, effective_seed = _resolve_headless_seed(supplied)
+        dynamic_seed = _derive_dynamic_seed(effective_seed, f"headless:{supplied['domain']}")
+        expanded_protected = _trace_expand(protected, manager, resolved_root, dynamic_seed, trace)
+        try:
+            expanded_parsed = parse(expanded_protected)
+        except Exception as exc:
+            _fail("INVALID_PROMPT_SYNTAX", f"Expanded dynamic prompt is invalid: {exc}")
+        _validate_wildcard_commands(expanded_parsed, wildcard_type, manager, resolved_root)
+        if WILDCARD_TOKEN_RE.search(expanded_protected):
+            _fail("WILDCARD_NOT_FOUND", "Expanded prompt still contains an unresolved wildcard")
+        expanded_text = _restore_escaped_braces(expanded_protected)
+        result.update({
+            "ok": True,
+            "expanded_text": expanded_text,
+            "expanded": bool(trace),
+            "used_wildcards": [entry["name"] for entry in trace if entry["kind"] == "wildcard"],
+            "choice_selections": [entry for entry in trace if entry["kind"] == "choice"],
+            "requested_seed": requested_seed,
+            "effective_seed": effective_seed,
+            "dynamic_seed": dynamic_seed,
+            "dynamicprompts_version": version,
+            "wildcard_root": str(resolved_root),
+        })
+    except Exception as exc:
+        result["errors"].append(_headless_error(exc))
+    return result
 
 
 def _derive_dynamic_seed(seed: int, domain: str) -> int:

@@ -302,6 +302,121 @@ class DynamicPromptTests(unittest.TestCase):
         self.assertEqual(second["positive_expanded"], "second")
 
 
+class HeadlessWildcardTests(unittest.TestCase):
+    """PLAY1 headless discovery, validation, expansion, and trace checks."""
+
+    @classmethod
+    def setUpClass(cls):
+        try:
+            import dynamicprompts  # noqa: F401
+        except Exception:
+            raise unittest.SkipTest("embedded dynamicprompts is unavailable")
+
+    def _with_root(self, files, callback):
+        with tempfile.TemporaryDirectory(prefix="tegaki-play1-wildcards-") as directory:
+            root = pathlib.Path(directory)
+            for name, contents in files.items():
+                target = root / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(contents, encoding="utf-8")
+            return callback(root)
+
+    def test_catalog_and_ordinary_text_are_headless_and_unchanged(self):
+        def check(root):
+            catalog = basic.list_wildcard_catalog(root)
+            self.assertEqual(catalog["entries"][0]["name"], "color")
+            self.assertEqual(catalog["entries"][0]["source"], "color.txt")
+            self.assertEqual(catalog["entries"][0]["entry_count"], 2)
+            validation = basic.validate_wildcard_text("ordinary prompt", catalog=catalog)
+            self.assertTrue(validation["ok"])
+            expanded = basic.expand_wildcard_text("ordinary prompt", catalog, root=root, seed=0)
+            self.assertTrue(expanded["ok"])
+            self.assertEqual(expanded["expanded_text"], "ordinary prompt")
+            self.assertFalse(expanded["expanded"])
+            self.assertEqual(expanded["used_wildcards"], [])
+        self._with_root({"color.txt": "red\nblue\n"}, check)
+
+    def test_known_seed_is_repeatable_and_trace_matches_wildcard_value(self):
+        def check(root):
+            first = basic.expand_wildcard_text("hero __color__", root=root, seed=77)
+            second = basic.expand_wildcard_text("hero __color__", root=root, seed=77)
+            self.assertEqual(first["expanded_text"], second["expanded_text"])
+            self.assertEqual(first["trace"], second["trace"])
+            self.assertEqual(first["used_wildcards"], ["color"])
+            event = first["trace"][0]
+            self.assertEqual(event["kind"], "wildcard")
+            self.assertEqual(event["name"], "color")
+            self.assertIn(event["selected"], ("red", "blue"))
+            self.assertEqual(event["source"], "color.txt")
+            self.assertTrue(first["expanded_text"].endswith(event["selected"]))
+        self._with_root({"color.txt": "red\nblue\n"}, check)
+
+    def test_choice_nested_wildcard_and_trace_selection(self):
+        def check(root):
+            result = basic.expand_wildcard_text("__outer__ {left|right}", root=root, seed=123)
+            self.assertTrue(result["ok"])
+            self.assertIn(result["expanded_text"], ("inside left", "inside right"))
+            choices = [entry for entry in result["trace"] if entry["kind"] == "choice"]
+            self.assertEqual(len(choices), 1)
+            self.assertEqual(choices[0]["alternatives_count"], 2)
+            selection = choices[0]["selected"][0]
+            self.assertIn(selection["index"], (0, 1))
+            self.assertIn(selection["value"], ("left", "right"))
+            self.assertIn(selection["value"], result["expanded_text"])
+            self.assertEqual([entry["name"] for entry in result["trace"] if entry["kind"] == "wildcard"], ["outer", "inner"])
+        self._with_root({"outer.txt": "__inner__\n", "inner.txt": "inside\n"}, check)
+
+    def test_unknown_and_empty_sources_are_distinguished_fail_closed(self):
+        def check(root):
+            missing = basic.validate_wildcard_text("__missing__", root=root)
+            empty = basic.validate_wildcard_text("__empty__", root=root)
+            self.assertEqual(missing["errors"][0]["code"], "WILDCARD_NOT_FOUND")
+            self.assertEqual(empty["errors"][0]["code"], "WILDCARD_EMPTY")
+            self.assertEqual(basic.expand_wildcard_text("__missing__", root=root, seed=0)["errors"][0]["code"], "WILDCARD_NOT_FOUND")
+            self.assertEqual(basic.expand_wildcard_text("__empty__", root=root, seed=0)["errors"][0]["code"], "WILDCARD_EMPTY")
+        self._with_root({"empty.txt": ""}, check)
+
+    def test_malformed_and_traversal_inputs_return_diagnostics_without_crash(self):
+        def check(root):
+            for text, code in (
+                ("hero {red|blue", "INVALID_PROMPT_SYNTAX"),
+                ("__../secret__", "INVALID_WILDCARD_PATH"),
+                ("__C:/secret__", "INVALID_WILDCARD_PATH"),
+            ):
+                with self.subTest(text=text):
+                    validation = basic.validate_wildcard_text(text, root=root)
+                    expansion = basic.expand_wildcard_text(text, root=root, seed=0)
+                    self.assertFalse(validation["ok"])
+                    self.assertFalse(expansion["ok"])
+                    self.assertEqual(validation["errors"][0]["code"], code)
+                    self.assertEqual(expansion["errors"][0]["code"], code)
+        self._with_root({}, check)
+
+    def test_validation_and_expansion_do_not_write_and_seed_zero_is_preserved(self):
+        def check(root):
+            before = {path.relative_to(root).as_posix(): path.read_bytes() for path in root.rglob("*") if path.is_file()}
+            validation = basic.validate_wildcard_text("hero __color__", root=root)
+            expansion = basic.expand_wildcard_text("hero __color__", root=root, seed=0)
+            after = {path.relative_to(root).as_posix(): path.read_bytes() for path in root.rglob("*") if path.is_file()}
+            self.assertTrue(validation["ok"] and expansion["ok"])
+            self.assertEqual(expansion["effective_seed"], 0)
+            self.assertEqual(before, after)
+        self._with_root({"color.txt": "red\n"}, check)
+
+    def test_random_source_is_resolved_once_without_generation_seed_coupling(self):
+        calls = []
+        def source():
+            calls.append(1)
+            return 0
+        def check(root):
+            result = basic.expand_wildcard_text("hero __color__", root=root, options={"seed": -1, "random_source": source})
+            self.assertTrue(result["ok"])
+            self.assertEqual(result["requested_seed"], -1)
+            self.assertEqual(result["effective_seed"], 0)
+            self.assertEqual(len(calls), 1)
+        self._with_root({"color.txt": "red\n"}, check)
+
+
 
 class BasicApiTests(unittest.TestCase):
     @classmethod
