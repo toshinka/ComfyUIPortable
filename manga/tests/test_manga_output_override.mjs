@@ -46,6 +46,7 @@ async function captureBackendArgs(configuredOutputDir) {
         const runtime = new MangaDomainRuntime({
             portableRoot: ROOT,
             startupWaitTimeoutMs: 100,
+            log: () => {},
             customSpawnBackend: spec => {
                 spawnSpec = spec;
                 return new FakeChild();
@@ -64,6 +65,13 @@ async function captureBackendArgs(configuredOutputDir) {
         else process.env.TEGAKI_MANGA_OUTPUT_DIR = previous;
     }
 }
+
+test("Manga backend receives exactly one DynamicVRAM headroom flag", async () => {
+    const { args } = await captureBackendArgs(null);
+    const indexes = args.reduce((found, value, index) => value === "--vram-headroom" ? [...found, index] : found, []);
+    assert.equal(indexes.length, 1);
+    assert.equal(args[indexes[0] + 1], "2.0");
+});
 
 test("Manga backend receives the default absolute output/Tegaki root", async () => {
     const { runtime, args } = await captureBackendArgs(null);
@@ -114,6 +122,7 @@ test("Manga output override does not alter H3 launch arguments", async () => {
 
     assert.equal(calls.length, 2);
     const nativeArgs = calls[0].args;
+    assert.equal(nativeArgs.includes("--vram-headroom"), false);
     const nativeOutput = nativeArgs.indexOf("--output-directory");
     assert.equal(nativeArgs[nativeOutput + 1], path.resolve(ROOT, "output", "h3"));
     const skinArgs = calls[1].args;

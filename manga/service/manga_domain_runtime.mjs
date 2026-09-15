@@ -20,6 +20,7 @@ import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const MANGA_VRAM_HEADROOM_GB = "2.0";
 
 // Public lifecycle states (Card Section 12)
 export const LifecycleState = Object.freeze({
@@ -131,6 +132,7 @@ export class MangaDomainRuntime {
         this.pythonExe = config.pythonExe || path.resolve(portableRoot, "python_embeded", "python.exe");
         this.comfyMain = config.comfyMain || path.resolve(portableRoot, "ComfyUI", "main.py");
         this.workspaceScript = config.workspaceScript || path.resolve(__dirname, "manga_workspace_server.mjs");
+        this.log = typeof config.log === "function" ? config.log : (message) => console.log(message);
 
         // Custom override for spawning backend / workspace (used by fake tests)
         this.customSpawnBackend = config.customSpawnBackend || null;
@@ -511,8 +513,11 @@ export class MangaDomainRuntime {
             "--listen", this.backendHost,
             "--port", String(this.backendPort),
             "--disable-auto-launch",
+            "--vram-headroom", MANGA_VRAM_HEADROOM_GB,
             "--output-directory", this.mangaOutputDir
         ];
+
+        this.log(`Manga backend launch argv: ${JSON.stringify([this.pythonExe, ...argv])}`);
 
         let child;
         if (this.customSpawnBackend) {
