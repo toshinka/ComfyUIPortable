@@ -170,6 +170,143 @@ class BasicGenerationTests(unittest.TestCase):
         self.assertEqual(raised.exception.code, "LORA_UNAVAILABLE")
 
 
+class CatalogResolutionTests(unittest.TestCase):
+    """Headless exact-resource resolution over the existing Manga catalog."""
+
+    def _catalog(self, checkpoints=None, loras=None, unavailable=()):
+        checkpoints = checkpoints or ["Illustrious.safetensors"]
+        loras = loras or ["styles/A.safetensors"]
+        inputs = fake_inputs()
+        inputs["CheckpointLoaderSimple"]["required"]["ckpt_name"] = (list(checkpoints), {})
+        inputs["LoraLoader"]["required"]["lora_name"] = (list(loras), {})
+        unavailable = set(unavailable)
+        return basic.build_catalog(
+            list(checkpoints), list(loras), inputs,
+            lambda kind, name: name not in unavailable,
+        )
+
+    def test_exact_checkpoint_lora_subdirectory_and_unicode_ids(self):
+        catalog = self._catalog(
+            ["Illustrious.safetensors", "models/少女 模型.safetensors"],
+            ["styles/線画 accent.safetensors"],
+        )
+        checkpoint = basic.resolve_catalog_resource("CHECKPOINT", "models/少女 模型.safetensors", catalog)
+        lora = basic.resolve_catalog_resource("LORA", "styles/線画 accent.safetensors", catalog)
+        self.assertEqual(checkpoint["state"], "AVAILABLE")
+        self.assertEqual(checkpoint["canonical_id"], "models/少女 模型.safetensors")
+        self.assertEqual(lora["state"], "AVAILABLE")
+        self.assertEqual(lora["canonical_id"], "styles/線画 accent.safetensors")
+
+    def test_missing_id_never_guesses_a_basename(self):
+        catalog = self._catalog(
+            checkpoints=["models/Illustrious.safetensors"],
+            loras=["styles/A.safetensors", "other/A.safetensors"],
+        )
+        for kind, requested in (("CHECKPOINT", "Illustrious.safetensors"), ("LORA", "A.safetensors")):
+            with self.subTest(kind=kind):
+                result = basic.resolve_catalog_resource(kind, requested, catalog)
+                self.assertEqual(result["state"], "MISSING")
+                self.assertEqual(result["reason"], "NOT_FOUND")
+                self.assertIsNone(result["canonical_id"])
+                self.assertEqual(result["requested_id"], requested)
+
+    def test_stale_resources_are_preserved_without_fallback(self):
+        catalog = self._catalog(
+            checkpoints=["old/Illustrious.safetensors", "new/Illustrious.safetensors"],
+            loras=["old/style.safetensors", "new/style.safetensors"],
+            unavailable=["old/Illustrious.safetensors", "old/style.safetensors"],
+        )
+        checkpoint = basic.resolve_catalog_resource("CHECKPOINT", "old/Illustrious.safetensors", catalog)
+        lora = basic.resolve_catalog_resource("LORA", "old/style.safetensors", catalog)
+        self.assertEqual(checkpoint["state"], "MISSING")
+        self.assertEqual(checkpoint["reason"], "STALE_SELECTION")
+        self.assertEqual(checkpoint["requested_id"], "old/Illustrious.safetensors")
+        self.assertEqual(lora["state"], "MISSING")
+        self.assertEqual(lora["reason"], "STALE_SELECTION")
+        self.assertIsNone(lora["canonical_id"])
+
+    def test_empty_unknown_and_unsafe_requests_fail_closed(self):
+        catalog = self._catalog()
+        self.assertEqual(
+            basic.resolve_catalog_resource("CHECKPOINT", "", catalog)["reason"],
+            "EMPTY_REQUEST",
+        )
+        self.assertEqual(
+            basic.resolve_catalog_resource("VAE", "vae.safetensors", catalog)["reason"],
+            "INVALID_KIND",
+        )
+        self.assertEqual(
+            basic.resolve_catalog_resource("CHECKPOINT", "C:/model.safetensors", catalog)["reason"],
+            "INVALID_ID",
+        )
+
+    def test_sampler_scheduler_known_and_unknown_are_exact(self):
+        catalog = self._catalog()
+        known = basic.resolve_catalog_resource("SAMPLER", "euler", catalog)
+        unknown = basic.resolve_catalog_resource("SCHEDULER", "ays", catalog)
+        self.assertEqual(known["state"], "AVAILABLE")
+        self.assertEqual(known["canonical_id"], "euler")
+        self.assertEqual(unknown["state"], "MISSING")
+        self.assertEqual(unknown["reason"], "NOT_FOUND")
+
+    def test_snapshot_is_detached_and_contains_available_resources_only(self):
+        catalog = self._catalog(
+            checkpoints=["old.safetensors", "new.safetensors"],
+            unavailable=["old.safetensors"],
+        )
+        snapshot = basic.get_catalog_snapshot(catalog)
+        self.assertEqual([item["canonical_id"] for item in snapshot["resources"]["CHECKPOINT"]], ["new.safetensors"])
+        snapshot["resources"]["CHECKPOINT"][0]["canonical_id"] = "mutated"
+        self.assertEqual(sorted(item["id"] for item in catalog["checkpoints"]), ["new.safetensors", "old.safetensors"])
+
+    def test_recovered_checkpoint_and_lora_hints_use_same_strict_shape(self):
+        catalog = self._catalog(
+            checkpoints=["models/少女.safetensors"],
+            loras=["styles/線画.safetensors"],
+        )
+        resolved = basic.resolve_recovered_resources({
+            "checkpoint": "models/少女.safetensors",
+            "lora_references": [
+                {"name": "styles/線画.safetensors", "strength_model": 0.7},
+                {"name": "missing.safetensors", "strength_model": 0.5},
+            ],
+        }, catalog)
+        self.assertFalse(resolved["ok"])
+        self.assertEqual(resolved["checkpoint"]["state"], "AVAILABLE")
+        self.assertEqual(resolved["loras"][0]["resolution"]["canonical_id"], "styles/線画.safetensors")
+        self.assertEqual(resolved["loras"][1]["resolution"]["state"], "MISSING")
+        self.assertEqual(resolved["loras"][1]["resolution"]["requested_id"], "missing.safetensors")
+        prompt_only = basic.resolve_recovered_resources({
+            "prompt_lora_references": [{"name": "styles/線画.safetensors", "weight": 0.4}],
+        }, catalog)
+        self.assertTrue(prompt_only["ok"])
+        self.assertEqual(prompt_only["loras"][0]["resolution"]["state"], "AVAILABLE")
+
+    def test_duplicate_exact_entries_are_ambiguous(self):
+        snapshot = {
+            "ok": True,
+            "resources": {"LORA": [
+                {"canonical_id": "styles/a.safetensors", "display_name": "a", "available": True},
+                {"canonical_id": "styles/a.safetensors", "display_name": "a", "available": True},
+            ]},
+        }
+        result = basic.resolve_catalog_resource("LORA", "styles/a.safetensors", snapshot)
+        self.assertEqual(result["state"], "AMBIGUOUS")
+        self.assertEqual(result["reason"], "AMBIGUOUS")
+
+    def test_snapshot_and_resolution_have_no_filesystem_or_generation_side_effect(self):
+        catalog = self._catalog()
+        with tempfile.TemporaryDirectory(prefix="tegaki-catalog-resolution-") as directory:
+            marker = pathlib.Path(directory) / "marker.txt"
+            marker.write_text("unchanged", encoding="utf-8")
+            before = marker.read_bytes()
+            snapshot = basic.get_catalog_snapshot(catalog)
+            result = basic.resolve_catalog_resource("CHECKPOINT", "Illustrious.safetensors", snapshot)
+            after = marker.read_bytes()
+        self.assertEqual(result["state"], "AVAILABLE")
+        self.assertEqual(before, after)
+
+
 class DynamicPromptTests(unittest.TestCase):
     """PLAY4 bounded dynamic-prompt contract tests over project fixtures."""
 

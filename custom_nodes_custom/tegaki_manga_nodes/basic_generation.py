@@ -8,6 +8,7 @@ import math
 import os
 import re
 import secrets
+from copy import deepcopy
 from dataclasses import fields, is_dataclass
 from importlib import metadata
 from pathlib import Path, PurePosixPath
@@ -343,6 +344,167 @@ def list_wildcard_catalog(root: Path | str | None = None) -> dict:
     }
     catalog["revision"] = _digest(catalog)
     return catalog
+
+
+CATALOG_RESOURCE_KINDS = {
+    "CHECKPOINT": "checkpoints",
+    "CHECKPOINTS": "checkpoints",
+    "LORA": "loras",
+    "LORAS": "loras",
+    "SAMPLER": "samplers",
+    "SAMPLERS": "samplers",
+    "SCHEDULER": "schedulers",
+    "SCHEDULERS": "schedulers",
+}
+
+
+def _resource_kind(kind: Any) -> tuple[str, str] | None:
+    if not isinstance(kind, str):
+        return None
+    field = CATALOG_RESOURCE_KINDS.get(kind.upper())
+    if field is None:
+        return None
+    return kind.upper().rstrip("S"), field
+
+
+def _catalog_resource_entries(catalog: Any, canonical_kind: str, field: str) -> list[dict] | None:
+    """Read resource entries from either a live catalog or its plain snapshot."""
+    if not isinstance(catalog, dict):
+        return None
+    if isinstance(catalog.get("resources"), dict):
+        raw = catalog["resources"].get(canonical_kind)
+    else:
+        raw = catalog.get(field)
+    if not isinstance(raw, list):
+        return None
+    entries = []
+    for item in raw:
+        if field in ("samplers", "schedulers") and isinstance(item, str) and item:
+            entries.append({"canonical_id": item, "display_name": item, "available": True})
+            continue
+        if not isinstance(item, dict) or not isinstance(item.get("id", item.get("canonical_id")), str):
+            return None
+        identifier = item.get("id", item.get("canonical_id"))
+        available = item.get("available", True)
+        display_name = item.get("display_name", identifier)
+        if type(available) is not bool or not isinstance(display_name, str):
+            return None
+        if canonical_kind in ("CHECKPOINT", "LORA"):
+            try:
+                _safe_catalog_id(identifier)
+            except GenerationContractError:
+                return None
+        entries.append({
+            "canonical_id": identifier,
+            "display_name": display_name,
+            "available": available,
+        })
+    return entries
+
+
+def get_catalog_snapshot(catalog: dict) -> dict:
+    """Return a detached snapshot of currently available Manga resources."""
+    if not isinstance(catalog, dict) or catalog.get("ok") is not True or not isinstance(catalog.get("revision"), str):
+        _fail("CATALOG_UNAVAILABLE", "Backend catalog is unavailable")
+    resources = {}
+    for kind, field in (("CHECKPOINT", "checkpoints"), ("LORA", "loras"),
+                        ("SAMPLER", "samplers"), ("SCHEDULER", "schedulers")):
+        entries = _catalog_resource_entries(catalog, kind, field)
+        if entries is None:
+            _fail("CATALOG_UNAVAILABLE", f"Catalog resource list '{field}' is unavailable")
+        resources[kind] = [
+            {
+                "canonical_id": entry["canonical_id"],
+                "display_name": entry["display_name"],
+                "available": True,
+            }
+            for entry in entries
+            if entry["available"]
+        ]
+    snapshot = {
+        "ok": True,
+        "schema_version": SCHEMA_VERSION,
+        "source_revision": catalog["revision"],
+        "resources": deepcopy(resources),
+    }
+    snapshot["revision"] = _digest(snapshot)
+    return snapshot
+
+
+def _resolution_result(kind: Any, requested_id: Any, state: str, reason: str,
+                      canonical_id: str | None = None, display_name: str | None = None) -> dict:
+    return {
+        "ok": state == "AVAILABLE",
+        "kind": kind,
+        "requested_id": requested_id,
+        "canonical_id": canonical_id,
+        "display_name": display_name,
+        "state": state,
+        "reason": reason,
+    }
+
+
+def resolve_catalog_resource(kind: Any, requested_id: Any, catalog: dict) -> dict:
+    """Resolve one resource by exact canonical ID, without fallback or filesystem access."""
+    parsed_kind = _resource_kind(kind)
+    if parsed_kind is None:
+        return _resolution_result(kind, requested_id, "INVALID_REQUEST", "INVALID_KIND")
+    canonical_kind, field = parsed_kind
+    if not isinstance(requested_id, str) or not requested_id:
+        return _resolution_result(canonical_kind, requested_id, "INVALID_REQUEST", "EMPTY_REQUEST")
+    if canonical_kind in ("CHECKPOINT", "LORA"):
+        try:
+            _safe_catalog_id(requested_id)
+        except GenerationContractError:
+            return _resolution_result(canonical_kind, requested_id, "INVALID_REQUEST", "INVALID_ID")
+    entries = _catalog_resource_entries(catalog, canonical_kind, field)
+    if entries is None:
+        return _resolution_result(canonical_kind, requested_id, "INVALID_REQUEST", "CATALOG_UNAVAILABLE")
+    exact = [entry for entry in entries if entry["canonical_id"] == requested_id]
+    available = [entry for entry in exact if entry["available"]]
+    if len(exact) > 1 or len(available) > 1:
+        return _resolution_result(canonical_kind, requested_id, "AMBIGUOUS", "AMBIGUOUS")
+    if len(available) == 1:
+        entry = available[0]
+        return _resolution_result(canonical_kind, requested_id, "AVAILABLE", "EXACT_MATCH",
+                                  entry["canonical_id"], entry["display_name"])
+    return _resolution_result(
+        canonical_kind,
+        requested_id,
+        "MISSING",
+        "STALE_SELECTION" if exact else "NOT_FOUND",
+    )
+
+
+def resolve_recovered_resources(hints: Any, catalog: dict) -> dict:
+    """Resolve metadata-recovery hints without applying them to authoring or generation."""
+    if not isinstance(hints, dict):
+        return {"ok": False, "checkpoint": None, "loras": [],
+                "errors": [{"reason": "INVALID_HINTS"}]}
+    checkpoint_hint = hints.get("checkpoint")
+    checkpoint = None if checkpoint_hint is None else resolve_catalog_resource(
+        "CHECKPOINT", checkpoint_hint, catalog,
+    )
+    raw_loras = hints.get("lora_references")
+    if raw_loras is None:
+        raw_loras = hints.get("prompt_lora_references", [])
+    if raw_loras is None:
+        raw_loras = []
+    if not isinstance(raw_loras, list):
+        return {"ok": False, "checkpoint": checkpoint, "loras": [],
+                "errors": [{"reason": "INVALID_LORA_HINTS"}]}
+    loras = []
+    for hint in raw_loras:
+        requested = hint.get("name") if isinstance(hint, dict) else hint
+        resolution = resolve_catalog_resource("LORA", requested, catalog)
+        loras.append({"hint": deepcopy(hint), "resolution": resolution})
+    resolutions = ([checkpoint] if checkpoint is not None else []) + [item["resolution"] for item in loras]
+    errors = [
+        {"kind": item["kind"], "requested_id": item["requested_id"],
+         "state": item["state"], "reason": item["reason"]}
+        for item in resolutions if not item["ok"]
+    ]
+    return {"ok": not errors, "checkpoint": checkpoint, "loras": loras, "errors": errors}
 
 
 def _headless_error(exc: Exception) -> dict:
