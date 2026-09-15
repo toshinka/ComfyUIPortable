@@ -3,8 +3,8 @@
 Updated: 2026-09-15 JST  
 Repository: https://github.com/toshinka/ComfyUIPortable  
 Branch: codex/tegaki-shell-manga-play1  
-Public baseline: 483f71604cb32c08ab4a5c5b0c4b5888731b8604  
-Local HEAD: 483f71604cb32c08ab4a5c5b0c4b5888731b8604  
+Public baseline: 3b98a499e1e652254644064ecd3ac0513000f8fb
+Local HEAD: 3b98a499e1e652254644064ecd3ac0513000f8fb
 
 ## New Chat — Read This First
 
@@ -25,7 +25,7 @@ The project operates on an **Architecture Lead / Commander vs. Worker Card** mod
 ## Current Operational State
 
 - **Worktree**: Clean on branch `codex/tegaki-shell-manga-play1`.
-- **Public Remote**: In sync with local HEAD (`483f71604cb32c08ab4a5c5b0c4b5888731b8604`).
+- **Public Remote**: In sync with local HEAD (`3b98a499e1e652254644064ecd3ac0513000f8fb`).
 - **Ports (8188, 8189, 8190, 8191)**: Free when idle; managed via supervisor `h3\run_h3.bat`.
 - **Runtime Dependencies**: `ComfyUI_IPAdapter_plus` pinned locally at commit `a0f451a5113cf9becb0847b92884cb10cbdec0ef`.
 - **Model Directory State**: SDXL IP-Adapter Plus (`ip-adapter-plus_sdxl_vit-h.safetensors`) and CLIP Vision (`CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors`) are present in local untracked `ComfyUI/models/`.
@@ -47,6 +47,10 @@ Accepted technical milestones:
   - *Reference Appearance*: **EXPERIMENTAL** (useful appearance carryover without production-quality claim).
   - *Regional Reference Architecture*: **VIABLE** (proves spatial reference conditioning feasibility via Manga's existing mask primitives).
 
+- **Reference product path**: Public accepted commit `17dabbec31d710180deb45d7fe5f8e42cf6b9927` records one CAST, one `character_instance`, and one `reference_asset` through the regional IPAdapter path. The existing character area feeds the regional `attn_mask`; the real product route and SaveImage output passed, with visible reference effect. Identity solved remains **NO**; multi-reference and multi-referenced-character remain unsupported, and ControlNet coexistence is not yet verified.
+- **Manga runtime VRAM policy**: Accepted in commit `3b98a499e1e652254644064ecd3ac0513000f8fb`. Manga alone launches `--vram-headroom 2.0`; H3 is unaffected. The existing DynamicVRAM/AIMDO mechanism remains in use. The accepted Reference product passed with observed peak `10222 MiB`, no obvious host thrash, and normal product output authority.
+- **Optimization branch**: **CLOSED for now**. Reference pre-encoding and `VAEDecodeTiled` were low-value at 768x1024 and were not productized. Current attention remains PyTorch SDPA; no safe installed alternative was selected. The `--vram-headroom 2.0` Manga policy is the accepted runtime choice.
+
 ## H3 — Current State
 
 Accepted technical milestones:
@@ -67,7 +71,7 @@ Accepted technical milestones:
 
 ## Current Priority
 
-Stabilize repository-level agent orientation and handoff (`PORTABLE-AGENT-ENTRY-AND-HANDOFF1`). Establish clear boundaries between stable rules (`AGENTS.md`) and operational status (`docs/STATUS.md`) before undertaking subsequent character reference conditioning or UI horizontalization cards.
+Return to Manga controllability / production-flow planning. Immediate design space is Scene / Region, CAST / Reference, Guide / ControlNet, and LoRA. Keep H3 separate.
 
 ## Evidence Locations
 
@@ -95,8 +99,8 @@ Stabilize repository-level agent orientation and handoff (`PORTABLE-AGENT-ENTRY-
 ## Active Card / Last Completed Card
 
 - **Active Card**: NONE
-- **Last Completed Operational Card**: `PORTABLE-AGENT-ENTRY-AND-HANDOFF1` (Commander-accepted agent entry and handoff architecture).
-- **Last Completed GPU Card**: `MANGA-REGIONAL-IDENTITY-PROOF1` (Commander-accepted technical architecture proof: Illustrious + IPAdapter regional path PASS; mask path `TegakiTwoRegionCoreConditioner.mask_A` -> `IPAdapterAdvanced.attn_mask`; regional isolation B — PARTIAL; reference appearance EXPERIMENTAL; regional reference architecture VIABLE; GPU generation 1, /prompt 1, peak VRAM 11,687 MiB; product source modification NONE).
+- **Last Completed Operational Card**: `MANGA-VRAM-HEADROOM-CLOSEOUT1` (Manga reference and runtime policy status recorded; optimization branch closed).
+- **Last Completed GPU Card**: `MANGA-VRAM-HEADROOM-PRODUCT1` (Manga-only `--vram-headroom 2.0`; accepted Reference product route, SaveImage, and normal output authority; observed peak 10,222 MiB; no obvious host thrash; identity solved remains NO).
 
 ## Do Not Auto-Start
 
