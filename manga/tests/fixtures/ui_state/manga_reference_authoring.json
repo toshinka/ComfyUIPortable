@@ -1,0 +1,55 @@
+{
+  "schema_id": "TEGAKI_AUTHORING_DOCUMENT",
+  "schema_version": "1.0.0",
+  "document_id": "doc_ui_fixture_reference",
+  "pages": [
+    {
+      "page_id": "page_1",
+      "order": 1,
+      "width_px": 832,
+      "height_px": 1216,
+      "style_prompt": "manga page, monochrome, expressive linework",
+      "style_negative_prompt": "blurry, watermark",
+      "generation": { "seed": 42 },
+      "metadata": { "style_template": "Manga Monochrome" },
+      "scenes": [
+        {
+          "scene_id": "scene_reference",
+          "order": 1,
+          "name": "Reference scene",
+          "prompt": "character by a window",
+          "negative_prompt": "",
+          "input_mode": "simple",
+          "area": { "shape_type": "rect", "x": 0.08, "y": 0.08, "w": 0.84, "h": 0.84 },
+          "metadata": {}
+        }
+      ],
+      "visual_frames": [],
+      "cast": [
+        {
+          "cast_id": "cast_reference",
+          "display_name": "Aoi",
+          "identity_prompt": "young woman, short dark hair",
+          "negative_prompt": "",
+          "color": "#06b6d4",
+          "loras": [],
+          "reference_asset": "tegaki_manga_references/ref_ui_fixture.png",
+          "metadata": {}
+        }
+      ],
+      "character_instances": [],
+      "guides": [
+        {
+          "guide_id": "guide_reference",
+          "guide_type": "rough_manga",
+          "asset_reference": "tegaki_manga_guides/rough_ui_fixture.png",
+          "enabled": true,
+          "placement": { "shape_type": "rect", "x": 0, "y": 0, "w": 1, "h": 1 },
+          "figure_regions": [],
+          "metadata": {}
+        }
+      ]
+    }
+  ],
+  "metadata": {}
+}

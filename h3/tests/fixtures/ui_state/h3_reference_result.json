@@ -1,0 +1,63 @@
+{
+  "job_id": "33333333333333333333333333333333",
+  "prompt_id": "34343434343434343434343434343434",
+  "state": "COMPLETED",
+  "label": "Completed",
+  "route": "native_t2v",
+  "media_kind": "video",
+  "video_type": "standard",
+  "route_label": "Start + End",
+  "reference_used": true,
+  "reference": { "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "role": "start_frame" },
+  "references": {
+    "start_frame": {
+      "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "role": "start_frame",
+      "filename": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.png",
+      "content_type": "image/png",
+      "width": 608,
+      "height": 352,
+      "preview_url": "/api/references/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "end_frame": {
+      "id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "role": "end_frame",
+      "filename": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.png",
+      "content_type": "image/png",
+      "width": 608,
+      "height": 352,
+      "preview_url": "/api/references/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    }
+  },
+  "reference_video": null,
+  "has_start_frame": true,
+  "has_end_frame": true,
+  "source": null,
+  "prep_source": null,
+  "prep_donor": null,
+  "request": {
+    "prompt": "A character looks from one platform to another",
+    "width": 608,
+    "height": 352,
+    "duration": 5,
+    "seed": "13579",
+    "steps": 20,
+    "reference": { "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "role": "start_frame" },
+    "references": {
+      "start_frame": { "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "role": "start_frame" },
+      "end_frame": { "id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "role": "end_frame" }
+    },
+    "model_name": null,
+    "loras": []
+  },
+  "created_at": "2026-01-01T00:12:00.000Z",
+  "completed_at": "2026-01-01T00:12:09.000Z",
+  "elapsed_seconds": 9.0,
+  "error": null,
+  "progress": null,
+  "output": { "filename": "33333333333333333333333333333333.mp4" },
+  "video_url": "/api/jobs/33333333333333333333333333333333/video",
+  "image_url": null,
+  "thumbnail_url": "/api/jobs/33333333333333333333333333333333/video",
+  "cancel_available": false
+}
