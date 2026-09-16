@@ -560,9 +560,9 @@ roadmap milestones:
 
 For all future autonomous agents and Astra architecture reviewers:
 
-1. **Do NOT use this survey to alter current H3 tasks.** Current H3 work centers
-   on native model execution, Still Studio, and video quality. Do not burden H3
-   with editing requirements.
+1. **Do NOT use this survey to alter current H3 tasks.** Current H3 roadmap
+   work must proceed on its own authorized generation and authoring priorities.
+   Do not burden H3 with Video Editor requirements.
 2. **Do NOT reserve UI space in H3 for video editing.** H3 UI reviews must judge
    H3 on its own merits without placeholder timeline panels.
 3. **Do NOT attempt to unify H3 and Manga into a "multimedia studio"** using the
@@ -586,7 +586,7 @@ without dedicated future Cards:
 4. Where should the boundary lie between immutable generated shots and mutable
    timeline trims?
 5. How should audio tracks (BGM, voiceover, SFX) enter and align with generated
-   silent H3 video?
+   or imported video media?
 6. How should undo/redo history integrate with potential AI tool operations?
 
 ---
