@@ -2,10 +2,12 @@
 
 Verifies:
 - pure immutable MediaDescriptor value object
-- image descriptor creation and dimension validation
+- image descriptor creation with frame_count=None and no temporal semantics
+- format_label removal from descriptor contract
+- duration precision preservation without arbitrary six-digit rounding
 - video descriptor creation with Timebase and exact duration
 - rejection of invalid/negative dimensions, booleans, and floats
-- kind-specific constraints (image cannot have timebase or non-zero duration)
+- kind-specific constraints (image cannot have timebase, duration, or frame_count)
 - pure normalization of raw ffprobe JSON payloads
 - immutability and determinism
 - production parity with H3 ffprobe metadata structures
@@ -40,17 +42,19 @@ class MediaDescriptorTests(unittest.TestCase):
         desc = create_image_descriptor(
             width=832,
             height=1216,
-            format_label="PNG",
             file_size_bytes=1024000,
         )
         self.assertEqual(desc.kind, MediaKind.IMAGE)
         self.assertEqual(desc.width, 832)
         self.assertEqual(desc.height, 1216)
-        self.assertEqual(desc.frame_count, 1)
+        # Correction A: image frame_count is None, not 1
+        self.assertIsNone(desc.frame_count)
         self.assertIsNone(desc.duration_seconds)
         self.assertIsNone(desc.timebase)
-        self.assertEqual(desc.format_label, "PNG")
         self.assertEqual(desc.file_size_bytes, 1024000)
+
+        # Correction B: format_label is removed
+        self.assertFalse(hasattr(desc, "format_label"))
 
         # Aspect ratio
         self.assertEqual(desc.aspect_ratio, Fraction(832, 1216))
@@ -65,7 +69,6 @@ class MediaDescriptorTests(unittest.TestCase):
             duration_seconds=Fraction(31, 6),
             timebase=tb,
             frame_count=124,
-            format_label="H264",
             file_size_bytes=5242880,
         )
         self.assertEqual(desc.kind, MediaKind.VIDEO)
@@ -74,15 +77,17 @@ class MediaDescriptorTests(unittest.TestCase):
         self.assertEqual(desc.duration_seconds, Fraction(31, 6))
         self.assertEqual(desc.timebase, tb)
         self.assertEqual(desc.frame_count, 124)
-        self.assertEqual(desc.format_label, "H264")
         self.assertEqual(desc.file_size_bytes, 5242880)
+
+        # Correction B: format_label is removed
+        self.assertFalse(hasattr(desc, "format_label"))
 
         self.assertEqual(desc.aspect_ratio, Fraction(16, 9))
         self.assertAlmostEqual(desc.duration_float, 5.166667, places=5)
         self.assertEqual(desc.fps_float, 24.0)
 
     def test_image_constraint_violations(self):
-        # Non-zero duration rejected for image
+        # Duration rejected for image
         with self.assertRaises(ValueError):
             MediaDescriptor(
                 kind=MediaKind.IMAGE,
@@ -100,7 +105,14 @@ class MediaDescriptorTests(unittest.TestCase):
                 timebase=create_timebase(24),
             )
 
-        # Frame count > 1 rejected for image
+        # Frame count rejected for image (even frame_count=1)
+        with self.assertRaises(ValueError):
+            MediaDescriptor(
+                kind=MediaKind.IMAGE,
+                width=800,
+                height=600,
+                frame_count=1,
+            )
         with self.assertRaises(ValueError):
             MediaDescriptor(
                 kind=MediaKind.IMAGE,
@@ -108,6 +120,26 @@ class MediaDescriptorTests(unittest.TestCase):
                 height=600,
                 frame_count=24,
             )
+
+    def test_duration_no_arbitrary_six_digit_rounding(self):
+        # Correction C: decimal duration with > 6 places preserved exactly without truncating to 1.123457
+        payload = {
+            "streams": [
+                {
+                    "codec_type": "video",
+                    "width": 1280,
+                    "height": 720,
+                    "avg_frame_rate": "24/1",
+                }
+            ],
+            "format": {
+                "duration": "1.123456789",
+            },
+        }
+        desc = normalize_ffprobe_payload(payload)
+        expected_frac = Fraction(1123456789, 1000000000)
+        self.assertEqual(desc.duration_seconds, expected_frac)
+        self.assertNotEqual(desc.duration_seconds, Fraction(1123457, 1000000))
 
     def test_dimension_validations(self):
         # Zero or negative dimensions
@@ -132,8 +164,8 @@ class MediaDescriptorTests(unittest.TestCase):
             desc.height = 800  # type: ignore
 
     def test_determinism(self):
-        desc1 = create_image_descriptor(800, 600, format_label="PNG")
-        desc2 = create_image_descriptor(800, 600, format_label="png")
+        desc1 = create_image_descriptor(800, 600, file_size_bytes=500)
+        desc2 = create_image_descriptor(800, 600, file_size_bytes=500)
         self.assertEqual(desc1, desc2)
         self.assertEqual(hash(desc1), hash(desc2))
 
@@ -162,9 +194,9 @@ class MediaDescriptorTests(unittest.TestCase):
         self.assertEqual(desc.height, 352)
         self.assertEqual(desc.frame_count, 124)
         self.assertEqual(desc.timebase, Timebase(24, 1))
-        self.assertAlmostEqual(desc.duration_float, 5.166667, places=5)
-        self.assertEqual(desc.format_label, "H264")
+        self.assertEqual(desc.duration_seconds, Fraction(5166667, 1000000))
         self.assertEqual(desc.file_size_bytes, 3456789)
+        self.assertFalse(hasattr(desc, "format_label"))
 
     def test_normalize_ffprobe_payload_ntsc(self):
         # Replicates NTSC 24000/1001 video stream
@@ -189,8 +221,9 @@ class MediaDescriptorTests(unittest.TestCase):
         self.assertEqual(desc.height, 720)
         self.assertEqual(desc.timebase, Timebase(24000, 1001))
         self.assertEqual(desc.frame_count, 240)
+        self.assertEqual(desc.duration_seconds, Fraction(1001, 100))
         self.assertAlmostEqual(desc.duration_float, 10.01, places=3)
-        self.assertEqual(desc.format_label, "MP4")
+        self.assertFalse(hasattr(desc, "format_label"))
 
     def test_normalize_ffprobe_payload_missing_optional_fields(self):
         payload = {

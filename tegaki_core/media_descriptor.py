@@ -58,7 +58,6 @@ class MediaDescriptor:
     timebase: Timebase | None = None
     frame_count: int | None = None
     file_size_bytes: int | None = None
-    format_label: str | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.kind, MediaKind):
@@ -76,19 +75,22 @@ class MediaDescriptor:
                     raise ValueError("duration_seconds cannot be NaN or Infinity.")
                 if self.duration_seconds < 0:
                     raise ValueError(f"duration_seconds must be non-negative, got {self.duration_seconds}.")
-                # Represent float durations as exact Fraction approximation
-                object.__setattr__(
-                    self,
-                    "duration_seconds",
-                    Fraction(str(round(self.duration_seconds, 6))),
-                )
+                object.__setattr__(self, "duration_seconds", Fraction(str(self.duration_seconds)))
+            elif isinstance(self.duration_seconds, str):
+                try:
+                    frac = Fraction(self.duration_seconds)
+                except ValueError as exc:
+                    raise ValueError(f"Malformed duration string: {self.duration_seconds!r}") from exc
+                if frac < 0:
+                    raise ValueError(f"duration_seconds must be non-negative, got {self.duration_seconds}.")
+                object.__setattr__(self, "duration_seconds", frac)
             elif isinstance(self.duration_seconds, (int, Fraction)):
                 if self.duration_seconds < 0:
                     raise ValueError(f"duration_seconds must be non-negative, got {self.duration_seconds}.")
                 object.__setattr__(self, "duration_seconds", Fraction(self.duration_seconds))
             else:
                 raise TypeError(
-                    f"duration_seconds must be Fraction, int, or float, got {type(self.duration_seconds).__name__}."
+                    f"duration_seconds must be Fraction, int, float, or str, got {type(self.duration_seconds).__name__}."
                 )
 
         if self.timebase is not None:
@@ -103,19 +105,14 @@ class MediaDescriptor:
             size = _validate_non_negative_int(self.file_size_bytes, "file_size_bytes")
             object.__setattr__(self, "file_size_bytes", size)
 
-        if self.format_label is not None:
-            if not isinstance(self.format_label, str) or not self.format_label.strip():
-                raise ValueError("format_label must be a non-empty string if provided.")
-            object.__setattr__(self, "format_label", self.format_label.strip().upper())
-
         # MediaKind-specific constraints
         if self.kind == MediaKind.IMAGE:
-            if self.duration_seconds not in (None, Fraction(0, 1)):
-                raise ValueError("IMAGE descriptors cannot have a non-zero duration.")
+            if self.duration_seconds is not None:
+                raise ValueError("IMAGE descriptors cannot have duration_seconds.")
             if self.timebase is not None:
                 raise ValueError("IMAGE descriptors cannot have a timebase.")
-            if self.frame_count not in (None, 1):
-                raise ValueError("IMAGE descriptors cannot have a frame_count other than 1.")
+            if self.frame_count is not None:
+                raise ValueError("IMAGE descriptors cannot have a frame_count.")
 
     @property
     def aspect_ratio(self) -> Fraction:
@@ -142,7 +139,6 @@ def create_image_descriptor(
     width: int,
     height: int,
     *,
-    format_label: str | None = None,
     file_size_bytes: int | None = None,
 ) -> MediaDescriptor:
     """Create an immutable MediaDescriptor for an image asset."""
@@ -150,8 +146,6 @@ def create_image_descriptor(
         kind=MediaKind.IMAGE,
         width=width,
         height=height,
-        frame_count=1,
-        format_label=format_label,
         file_size_bytes=file_size_bytes,
     )
 
@@ -160,10 +154,9 @@ def create_video_descriptor(
     width: int,
     height: int,
     *,
-    duration_seconds: Fraction | int | float | None = None,
+    duration_seconds: Fraction | int | float | str | None = None,
     timebase: Timebase | None = None,
     frame_count: int | None = None,
-    format_label: str | None = None,
     file_size_bytes: int | None = None,
 ) -> MediaDescriptor:
     """Create an immutable MediaDescriptor for a video asset."""
@@ -174,7 +167,6 @@ def create_video_descriptor(
         duration_seconds=duration_seconds,
         timebase=timebase,
         frame_count=frame_count,
-        format_label=format_label,
         file_size_bytes=file_size_bytes,
     )
 
@@ -221,7 +213,7 @@ def normalize_ffprobe_payload(
     duration_frac: Fraction | None = None
     if duration_val not in (None, "", "N/A"):
         try:
-            duration_frac = Fraction(str(round(float(duration_val), 6)))
+            duration_frac = Fraction(str(duration_val))
         except (TypeError, ValueError):
             duration_frac = None
 
@@ -234,7 +226,7 @@ def normalize_ffprobe_payload(
         except (TypeError, ValueError):
             tb = None
 
-    # Frame count: check nb_read_frames or nb_frames
+    # Frame count: check nb_read_frames fallback to nb_frames
     frame_count: int | None = None
     frames_val = video_stream.get("nb_read_frames") or video_stream.get("nb_frames")
     if frames_val not in (None, "", "N/A"):
@@ -245,20 +237,11 @@ def normalize_ffprobe_payload(
         except (TypeError, ValueError):
             frame_count = None
 
-    # Format label
-    format_label: str | None = None
-    codec_name = video_stream.get("codec_name")
-    format_name = format_map.get("format_name")
-    raw_label = codec_name or (format_name.split(",")[0] if format_name else None)
-    if raw_label and isinstance(raw_label, str):
-        format_label = raw_label.strip()
-
     return create_video_descriptor(
         width=width,
         height=height,
         duration_seconds=duration_frac,
         timebase=tb,
         frame_count=frame_count,
-        format_label=format_label,
         file_size_bytes=file_size_bytes,
     )
