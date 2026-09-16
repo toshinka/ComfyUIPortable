@@ -30,8 +30,8 @@ planning.
 TEGAKI currently operates two distinct production domains:
 - **MANGA**: Page/Scene authoring, MRP regional conditioning, CAST identity,
   Guide structure, and Manga generation.
-- **H3**: Text-to-Video, Image-to-Video, Frame-Bridged Continuation, Still
-  Studio, and temporal generation.
+- **H3**: Video / temporal generation and its domain-specific authoring
+  controls.
 
 These domains share the Portable runtime base and supervisor shell but maintain
 strictly separated runtime semantics, state stores, schemas, workflow
@@ -114,7 +114,7 @@ Each surveyed project is classified across two dimensions:
 
 ### 4.1 OpenCut
 - **Repository**: https://github.com/OpenCut-app/OpenCut
-- **Taught Layers**: `PRODUCT SHAPE`, `ARCHITECTURE TEACHER`
+- **Taught Layers**: `PRODUCT SHAPE`, `AI / AGENT INTERACTION`
 - **Adoption Relationship**: `PRODUCT-SHAPE TEACHER`, `ARCHITECTURE TEACHER`
 - **Core Findings**:
   - OpenCut represents an ambitious open-source effort aimed at modern,
@@ -147,9 +147,10 @@ Each surveyed project is classified across two dimensions:
     generation, audio waveform rendering, transcript display, multi-track
     timeline, real-time preview, and in-browser rendering/export.
 - **What TEGAKI Learns**:
-  - **Browser Feasibility**: Proves that responsive video editing and export are
-    entirely feasible inside modern browsers without server-side rendering
-    farms.
+  - **Browser Feasibility**: Demonstrates feasibility and provides
+    implementation evidence that responsive video editing and export can
+    execute inside supported modern-browser environments without server-side
+    rendering farms.
   - **Pipeline Separation**: Clean separation between timeline state, preview
     canvas, media caching workers, and export pipelines.
   - **Local-First Workspace**: Practical use of OPFS / File System Access API
@@ -287,9 +288,10 @@ Each surveyed project is classified across two dimensions:
   - Features keyframe animation, color adjustments, audio filters, WebGPU
     previewing, and client-side rendering/export.
 - **What TEGAKI Learns**:
-  - **Browser Capability Ceiling**: Proves that advanced features (keyframes,
-    color correction, multi-track mixing) can execute entirely within a client
-    browser session.
+  - **Browser Feasibility & Ceiling**: Demonstrates feasibility and provides
+    implementation evidence that advanced features (keyframes, color
+    correction, multi-track mixing) can execute within supported modern-browser
+    environments.
 - **What TEGAKI Must NOT Copy**:
   - **Do NOT build to this complexity initially.**
   - OpenReel illustrates what is *possible*, not what TEGAKI *needs*. Adopting
@@ -350,14 +352,16 @@ compositors (After Effects, Nuke) serve specific, valuable roles:
 - **Edge-case stress testing**: Understanding audio-video synchronization drift,
   variable framerate (VFR) footage, and color space management.
 
-However, TEGAKI explicitly rejects the following traditional NLE assumptions:
-- **NO monolithic multi-window workspaces**: Do not force users to manage
+However, TEGAKI should not automatically inherit traditional NLE assumptions:
+- **Avoid monolithic multi-window workspaces**: Do not force users to manage
   bin browsers, source monitors, program monitors, track patch matrices, and
   audio mixers simultaneously.
-- **NO mandatory ingest/transcode hurdles**: Users expect to drag a generated H3
-  clip straight onto the timeline and scrub instantly.
-- **NO feature completeness goal**: TEGAKI does not aim to replace DaVinci
-  Resolve for film color grading or Premiere for multi-cam television editing.
+- **Avoid unnecessary ingest/transcode friction**: Allow direct drag-and-scrub
+  of generated H3 clips without mandatory upfront transcoding, while allowing
+  compatibility processing when technically required.
+- **No default feature completeness goal**: TEGAKI does not aim to replace
+  DaVinci Resolve for film color grading or Premiere for multi-cam television
+  editing.
 
 ---
 
@@ -367,7 +371,7 @@ The surveyed teachers occupy complementary layers across the editing stack:
 
 | Teacher | Primary Layer Taught | TEGAKI Role / Extraction Target |
 | :--- | :--- | :--- |
-| **OpenCut** | Product Shape / Architecture | Shared core concept (human GUI + headless API + agent access) |
+| **OpenCut** | Product Shape / AI / Agent Interaction | Shared core concept (human GUI + headless API + agent access) |
 | **FreeCut** | Browser NLE Implementation | Local-first browser architecture (WebCodecs, OPFS, workers) |
 | **Mediabunny** | Media Infrastructure | High-value candidate for container demux/decode/mux engine |
 | **LosslessCut** | Product Shape / UX | Radical scope discipline; trimming/joining without NLE bloat |
@@ -389,19 +393,25 @@ disciplined synthesis:
 
 ## 8. Provisional TEGAKI Video Editor Shape (Non-Binding Hypothesis)
 
-To prevent premature drift into full-NLE complexity, any future Video Editor
-should adhere to a strictly bounded minimum core:
+To prevent premature drift into full-NLE complexity, one provisional
+minimum-shape hypothesis is:
 
 ```
 [ MEDIA POOL ] ──▶ [ DIRECT-MANIPULATION TIMELINE ] ──▶ [ LIVE PREVIEW ] ──▶ [ LOCAL EXPORT ]
 ```
+
+This represents **ONE PROVISIONAL MINIMUM-SHAPE HYPOTHESIS**—it is **NOT** a
+required architecture, **NOT** a frozen product structure, and **NOT** a
+timeline schema. It is preserved here strictly as a mental boundary against
+unbounded NLE scope creep.
 
 ### Minimal Initial Verbs:
 - `PLACE`: Insert an H3 video, Manga still, or local file into the sequence.
 - `MOVE`: Reposition a clip horizontally on the timeline.
 - `TRIM`: Adjust the in-point or out-point of a clip.
 - `SPLIT`: Cut a clip at the playhead into two independent segments.
-- `DELETE`: Remove a clip and choose ripple or gap behavior.
+- `DELETE`: Remove a clip from the sequence (ripple vs. gap semantics remain a
+  future design question).
 
 ### Possible Progressive Additions (Deferred):
 - `TEXT`: Simple titles, subtitles, or dialogue captions.
@@ -409,8 +419,8 @@ should adhere to a strictly bounded minimum core:
 - `TRANSITION`: Dissolves, cross-fades, and cuts between adjacent clips.
 - `TRANSFORM`: Basic crop, scale, and pan (especially for Manga still pan/zoom).
 
-*(This hypothesis is non-binding and does not establish a schema or timeline
-version.)*
+*(This hypothesis is entirely non-binding and does not establish a schema,
+timeline version, or feature sequence.)*
 
 ---
 
@@ -436,30 +446,47 @@ Prefer direct, tactile actions over indirect parameter forms:
 - Advanced settings must remain tucked behind progressive disclosure.
 
 ### 9.3 Local-First Principle
-Video editing should execute entirely local-first:
-- **Zero upload/download roundtrips**: Work directly against local H3/Manga
-  output directories or browser-managed OPFS storage.
-- **Privacy & Speed**: High-resolution video scrubbing must not depend on cloud
-  bandwidth or server-side render queues.
-- **Native Efficiency**: Leverage hardware acceleration via WebCodecs and
-  WebGPU.
+Local-first operation is a **strong future preference where practical**,
+not a frozen implementation mandate:
+- **Potential Benefits**:
+  - Enhanced privacy.
+  - Practical handling of large media assets without network roundtrips.
+  - Low upload/transfer friction.
+  - Natural compatibility with local H3 video and Manga image results.
+- **Potential Implementation Options**:
+  - File System Access API
+  - Origin Private File System (OPFS)
+  - WebCodecs and WebGPU
+  - Local native helper processes
+  - Other future media infrastructure
+- **Policy & Flexibility**:
+  - **NONE of these technologies is selected by this document.**
+  - This preference does not prohibit local helper utilities, necessary
+    compatibility transcode steps, future alternative render paths, or
+    optional network-assisted features when justified.
 
 ---
 
 ## 10. Workspace Isolation Boundaries
 
 ### 10.1 Video Editor / H3 Boundary (MANDATORY & ABSOLUTE)
-- **H3 Owns**: Model loading, prompt compilation, sampling schedules, latent
-  dimensions, motion scale, IP-Adapter reference conditioning, ComfyUI
-  execution graphs, and generating raw `.mp4` video results.
-- **Future Video Editor Owns**: Cataloging generated/imported media files,
-  arranging clips along a timeline, audio synchronization, cut/trim operations,
-  and rendering composite exports.
+- **H3 Owns**:
+  - Generation semantics
+  - Generation authoring state
+  - Model, reference, and control semantics
+  - Runtime generation graphs
+  - Generation execution
+  - Result production
+- **Future Video Editor Owns**:
+  - Non-generative media editing state
+  - Timeline arrangement
+  - Edit operations
+  - Future edit/export state
 - **Permitted Relationship**:
-  $$\text{H3 Validated Result MP4} \longrightarrow \text{Video Editor Media Source}$$
+  $$\text{H3 Result} \longrightarrow \text{Video Editor Media Input}$$
 - **Prohibited Relationship**:
-  - The Video Editor must **NEVER** mutate H3 prompt state, KSampler settings,
-    or generation graphs.
+  - The Video Editor must **NEVER** mutate H3 generation authoring state or
+    runtime generation graphs.
   - H3 must **NEVER** depend on timeline or video editing packages.
   - Regeneration workflows (e.g., "re-roll shot at 00:04") must pass through
     an explicit future adapter Card, not shared internal state.
@@ -472,10 +499,11 @@ Video editing should execute entirely local-first:
   absorb video playback, timeline state, or editing concepts.
 
 ### 10.3 Shell / Navigation Boundary
-- A future Video Editor will exist as an independent top-level tab/workspace.
-- **No shell modifications are authorized now.**
-- No port is reserved, no HTTP route is registered, and no background service
-  is defined.
+- The current isolation hypothesis is that a future Video Editor would use a
+  separate top-level workspace/tab-level surface.
+- This hypothesis is strong enough to protect domain boundaries, but is **NOT**
+  permission to create routes, reserve ports, modify shell navigation, or
+  freeze navigation architecture.
 
 ---
 
@@ -492,12 +520,17 @@ infrastructure:
      candidate;
    - An *architectural pattern* (e.g., command model) $\rightarrow$ implement
      cleanly inside TEGAKI.
-2. **Vetting Requirements**: Any candidate package must be evaluated for:
-   - Permissive open-source license (MIT, Apache 2.0, BSD);
-   - Active maintenance and community health;
-   - Clean browser / Windows portability;
-   - Zero native compilation friction on target platforms;
-   - Minimal bundle footprint and zero invasive transitive dependencies.
+2. **Evaluation Requirements**: Any candidate package must be evaluated
+   separately before adoption for:
+   - License compatibility (without performing premature legal analysis here);
+   - Maintenance activity and community health;
+   - API stability;
+   - Browser support where relevant;
+   - Windows / Portable environment behavior;
+   - Bundle or dependency cost;
+   - Native-build / deployment burden where relevant (a native or local helper
+     is not categorically forbidden merely because it is native);
+   - Large-media throughput and memory behavior.
 
 *No dependency is adopted, installed, or approved by this document.*
 
@@ -558,17 +591,20 @@ without dedicated future Cards:
 
 ---
 
-## 15. Next Logical Document
+## 15. Future Research Document Candidate
 
-When the project leadership decides to begin preparing for video editing, the
-single authorized next document will be:
+ONE NATURAL FUTURE RESEARCH DOCUMENT CANDIDATE:
 
-**`docs/architecture/TEGAKI_VIDEO_EDITOR_WORKSPACE_PREP.md`**
+`TEGAKI_VIDEO_EDITOR_WORKSPACE_PREP`
 
-Its bounded charter will be to:
-- Inventory existing TEGAKI media outputs and locators.
-- Survey installed Windows/Portable media tools (if any).
-- Define the formal workspace boundary and data handoff contract.
-- Specify the minimal non-NLE assembly user journey.
+It may be created **ONLY** if a future explicit Card authorizes it.
 
-*(DO NOT create this document now. It is reserved for a future explicit Card.)*
+Its possible future responsibilities may include:
+- Inventory current media ownership and output paths.
+- Inspect current H3/media/preview/export infrastructure.
+- Identify workspace ownership boundaries.
+- Identify safe reuse points.
+- Identify missing primitives.
+
+*(DO NOT create this document now. It is a future candidate subject to explicit
+Commander authorization.)*
