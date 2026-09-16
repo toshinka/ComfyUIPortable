@@ -3,6 +3,14 @@
 Status: reserve-boundary reconciliation (docs-only), 2026-09-16 JST
 Repository state at review: codex/tegaki-shell-manga-play1, af96fee09ae4c52d184333f6dd517ed04b48adde
 
+CURRENT NOTE:
+
+This document records the pre-frontier Guide / ControlNet reconciliation state.
+
+For current external-technology comparison and product-selection questions, also read:
+
+docs/research/MANGA_GUIDE_CONTROL_FRONTIER_REVIEW.md
+
 This document records the current source boundary and the smallest future
 Guide/ControlNet preparation core. It does not add a schema field, catalog,
 node, API, UI, graph, model, or runtime behavior. The existing qualified
