@@ -1,15 +1,16 @@
-"""Pure deterministic canonical serialization and digest core for TEGAKI.
+"""Deterministic serialization and digest core for TEGAKI.
 
-This module provides deterministic, platform-independent JSON serialization
-and SHA-256 digest computation for structured data (graphs, plans, manifests,
-revisions, and snapshots).
+This module provides deterministic JSON serialization matching current TEGAKI
+repository digest contracts and SHA-256 digest computation for structured data
+(graphs, plans, manifests, revisions, and snapshots).
 
 Zero external dependencies (pure Python stdlib), strictly I/O-free, and
-reproducible across environments.
+follows the evidence-backed TEGAKI stable serialization contract.
 
 Contract:
 - Canonical JSON string: UTF-8 compatible (ensure_ascii=False), compact separators (',', ':'),
   lexicographically sorted object keys (sort_keys=True), and strict finite number validation (allow_nan=False).
+  Follows Python JSON number serialization used by current Python digest owners.
 - Canonical JSON bytes: UTF-8 encoded canonical JSON string.
 - Canonical JSON digest: SHA-256 lowercase 64-character hexadecimal digest over canonical JSON bytes.
 """
@@ -58,31 +59,13 @@ def canonical_json_bytes(value: Any) -> bytes:
     return canonical_json_str(value).encode("utf-8")
 
 
-def canonical_json_digest(value: Any, *, algorithm: str = "sha256") -> str:
-    """Compute a deterministic lowercase hexadecimal digest of the canonical JSON representation.
+def canonical_json_digest(value: Any) -> str:
+    """Compute a deterministic SHA-256 lowercase hexadecimal digest of the canonical JSON representation.
 
     Args:
         value: The Python data structure to digest.
-        algorithm: Hash algorithm name from hashlib (defaults to 'sha256').
 
     Returns:
-        Hexadecimal hash string (lowercase, 64 characters for sha256).
-
-    Raises:
-        ValueError: If algorithm is not supported by hashlib.
+        Hexadecimal hash string (lowercase, 64 characters SHA-256).
     """
-    if not isinstance(algorithm, str) or not algorithm.strip():
-        raise ValueError("Hash algorithm must be a non-empty string.")
-    try:
-        hasher = hashlib.new(algorithm)
-    except ValueError as exc:
-        raise ValueError(f"Unsupported digest algorithm: {algorithm!r}") from exc
-
-    hasher.update(canonical_json_bytes(value))
-    return hasher.hexdigest().lower()
-
-
-# Aliases for convenience matching alternative naming styles in codebase
-stable_json_str = canonical_json_str
-stable_json_bytes = canonical_json_bytes
-stable_json_digest = canonical_json_digest
+    return hashlib.sha256(canonical_json_bytes(value)).hexdigest()

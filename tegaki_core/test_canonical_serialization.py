@@ -5,7 +5,7 @@ Verifies:
 - sequence order preservation (lists remain strictly ordered)
 - proper serialization of primitives (str, int, float, bool, null)
 - unescaped UTF-8 string encoding (ensure_ascii=False)
-- rejection of non-finite floats (NaN, Infinity)
+- finite float handling and rejection of non-finite floats (NaN, Infinity)
 - rejection of non-serializable types and malformed keys
 - exact SHA-256 64-character lowercase hex digest computation
 - exact equivalence with existing Manga and H3 production digest logic
@@ -28,9 +28,6 @@ from tegaki_core.canonical_serialization import (
     canonical_json_bytes,
     canonical_json_digest,
     canonical_json_str,
-    stable_json_bytes,
-    stable_json_digest,
-    stable_json_str,
 )
 
 
@@ -104,7 +101,10 @@ class CanonicalSerializationTests(unittest.TestCase):
         self.assertNotIn("\t", serialized)
         self.assertEqual(serialized, '{"a":[1,2],"b":{"c":3}}')
 
-    def test_rejection_of_non_finite_floats(self):
+    def test_finite_floats_and_rejection_of_non_finite_floats(self):
+        # Finite float serialization
+        self.assertEqual(canonical_json_str({"val": 1.25}), '{"val":1.25}')
+
         with self.assertRaises(ValueError):
             canonical_json_str({"val": float("nan")})
 
@@ -133,24 +133,6 @@ class CanonicalSerializationTests(unittest.TestCase):
         empty_digest = canonical_json_digest({})
         expected_empty = hashlib.sha256(b"{}").hexdigest()
         self.assertEqual(empty_digest, expected_empty)
-
-    def test_custom_algorithm_support_and_rejection(self):
-        md5_digest = canonical_json_digest({"key": "value"}, algorithm="md5")
-        self.assertEqual(len(md5_digest), 32)
-        expected_md5 = hashlib.md5(b'{"key":"value"}').hexdigest()
-        self.assertEqual(md5_digest, expected_md5)
-
-        with self.assertRaises(ValueError):
-            canonical_json_digest({}, algorithm="invalid_algo_xyz")
-
-        with self.assertRaises(ValueError):
-            canonical_json_digest({}, algorithm="")
-
-    def test_aliases_equivalence(self):
-        data = {"test": [1, 2, 3]}
-        self.assertEqual(canonical_json_str(data), stable_json_str(data))
-        self.assertEqual(canonical_json_bytes(data), stable_json_bytes(data))
-        self.assertEqual(canonical_json_digest(data), stable_json_digest(data))
 
     def test_parity_with_manga_basic_generation_digest(self):
         # Reproduce exact basic_generation._canonical_json and _digest
