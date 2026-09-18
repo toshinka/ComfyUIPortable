@@ -14,20 +14,34 @@ MangaとH3はrepository/Portable baseを共有するが、現在は別production
 製品目標は共通TEGAKI shellの上位tabでMangaとVideo (H3)を切り替える構成。
 両者が独立して回帰可能になるまで、schema/runtime/workflow/evidence/outputはdomain別に維持する。
 
-## 1. CURRENT AUTHORITY (現在正本)
-以下の文書群が、ComfyUIPortable の現行戦略・UX設計・資産棚卸し・運用ルールの最高権威を持つ。
+## 1. DOCUMENT AUTHORITY & CLASSIFICATION (文書権威分類)
 
+運用・設計の最上位権威は `../../AGENTS.md` (Level 1) および `../STATUS.md` (Level 2) であり、ドメイン入口は `../../GITHUB_MANGA.txt` (Level 3) である。横断プロダクションUI/UXの現行設計権威は `../ui/*` に委譲される。
+
+### Current Operational & Domain Authority (現行運用・ドメイン正本)
 | 文書 | 権威レベル | 内容と役割 |
 |---|---|---|
-| `STATUS.md` | CURRENT STATE | 現在地・方針要約・次の一件のみを保持する最優先入口 |
-| `plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md` | STRATEGIC SSOT | 漫画制作環境の全体戦略・Minimum-Hand・マイルストーン定義 |
-| `plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md` | CURRENT DESIGN | UX導線・手数設計・画面レイアウト・出現条件 |
-| `plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md` | CURRENT AUDIT | 既存ノード/ワークフロー資産棚卸し・証拠の限界・Comic Creator参考 |
-| `plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md` | CURRENT PROCESS | Web GPT SOLのCard発行とlocal LUNA実装、GitHub review loop |
-| `README.md` | MANGA DOCUMENT HUB | Mangaの正本、report、research、verificationへのnavigation |
-| `MANGA_DOCUMENT_NAMESPACE_MIGRATION_MAP.md` | CURRENT MIGRATION AUDIT | 文書/outputのmove/retain判断と参照監査 |
-| `WEBGPT_SOL_LUNA_HANDOFF.md` | CURRENT HANDOFF | 過去会話を知らないSOL向け全体像、現在地、LUNA Card発行条件 |
-| `cards/README.md` | CARD ROUTER | Cardのcurrent/completed境界と保管場所。旧Cardを現行指示として使わないための入口 |
+| `../../AGENTS.md` | STABLE CONTRACT (Level 1) | 全社運用ルール・Agent Mode・Card統制 |
+| `../STATUS.md` | CURRENT STATE (Level 2) | 全社現在地・優先度・決定シーケンス・次Cardの単一正本 |
+| `../../GITHUB_MANGA.txt` | DOMAIN ROUTER (Level 3) | Mangaドメインの公式外部AIルーター |
+| `STATUS.md` | MANGA DOMAIN DETAIL | Mangaドメイン固有の現在地・マイルストーン詳細履歴 |
+| `../ui/TEGAKI_PRODUCTION_UI_PRINCIPLES.md` 等 | CURRENT UI AUTHORITY | 横断プロダクションUI原則・Createモデル・コンポーネント規約 |
+| `README.md` | MANGA DOCUMENT HUB | Mangaドメイン文書・レポート・検証へのnavigation |
+| `cards/README.md` | CARD ROUTER | 完了Cardの保管場所・Card規約 |
+
+### Domain Strategic Baseline & References (ドメイン戦略基準・参照資料)
+| 文書 | 権威レベル | 内容と役割 |
+|---|---|---|
+| `plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md` | DOMAIN STRATEGIC BASELINE | 漫画制作環境の初期全体戦略（docs/STATUS.mdやdocs/uiを上書きしない） |
+| `plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md` | HISTORICAL DESIGN REFERENCE | Minimum-Hand UX設計構想（現行UIはdocs/ui/*に従う） |
+| `plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md` | HISTORICAL ASSET AUDIT | 既存ノード/ワークフロー資産棚卸し・Comic Creator参考 |
+| `MANGA_DOCUMENT_NAMESPACE_MIGRATION_MAP.md` | HISTORICAL MIGRATION AUDIT | 文書/outputのmove/retain判断と参照監査 |
+
+### Legacy Operating Handoff & Protocols (旧運用資料 — 実行不可)
+| 文書 | 権威レベル | 内容と役割 |
+|---|---|---|
+| `WEBGPT_SOL_LUNA_HANDOFF.md` | LEGACY HANDOFF | 2026-09-11時点の旧チャット引き継ぎ記録（新チャット入口ではない） |
+| `plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md` | LEGACY OPERATING PROTOCOL | 旧SOL/LUNA実行プロトコル（AGENTS.mdおよびCardが優先） |
 
 ## 2. CURRENT CARD (現行作業カード)
 | カード | 状態 | 役割 |

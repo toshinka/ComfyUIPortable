@@ -2,9 +2,9 @@
 
 更新: 2026-09-11 JST
 
-このdirectoryはManga Authoringの実行Cardだけを扱う。戦略正本は
-[`ASTRA_MANGA_AUTHORING_MASTER_PLAN.md`](../plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md)、
-現在地は [`docs/manga/STATUS.md`](../STATUS.md) であり、Cardは確定した限定sliceの実行契約である。
+このdirectoryはManga Authoringの実行Cardだけを扱う。全社運用正本は
+[`AGENTS.md`](../../../AGENTS.md) および [`docs/STATUS.md`](../../STATUS.md) であり、
+Mangaドメイン詳細現在地は [`docs/manga/STATUS.md`](../STATUS.md)、Cardは確定した限定sliceの実行契約である。
 
 ## Current
 
@@ -35,9 +35,13 @@ canonical regression. M3B-LR3 is completed in completed/ with final SOL result
 `OPTION_A_INCONCLUSIVE`; M3B-LR4 is published in completed/ with
 `LOCALITY_SUPPORTED`; M3B-LR5 is published in completed/ with
 `CAST_MASKED_CONFLICT`; M3B-LR6 is published in completed/ with `SOFT_MASK_CONFLICT`; M3B-LR7 is completed locally with `EFFECT_MASK_INTERACTION_CONFIRMED`; M3B-LR8 is published and completed with `CORE_GLOBAL_QUALIFIED`; M3B-PI1 is published and completed with `PI1_BACKEND_INTEGRATED`; M3B-PI2 is completed with `PI2_AUTO_ROUTING_INTEGRATED`; M3B-PI2-BC1 is completed with `PI2_BROWSER_CLOSED`; M3B-PC1 is completed with `M3B_PRODUCTION_CLOSED`. Active Card: NONE. Production ControlNet integration: COMPLETE. Automatic product routing: COMPLETE. Final Owner product review remains deferred.
-When work resumes, SOL audits [`WEBGPT_SOL_LUNA_HANDOFF.md`](../WEBGPT_SOL_LUNA_HANDOFF.md)
-and issues exactly one new limited Card in [`current/`](current/README.md). Do not copy a
-completed Card as a new instruction.
+When work resumes:
+1. `AGENTS.md`
+2. `docs/STATUS.md`
+3. `GITHUB_MANGA.txt`
+4. Current Commander-issued Card
+
+The historical handoff ([`WEBGPT_SOL_LUNA_HANDOFF.md`](../WEBGPT_SOL_LUNA_HANDOFF.md)) may be consulted only if explicitly needed for historical context. Do not copy a completed Card as a new instruction.
 
 ## Completed
 

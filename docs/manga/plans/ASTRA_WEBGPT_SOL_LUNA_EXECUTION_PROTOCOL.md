@@ -1,9 +1,16 @@
-# Astra → Web GPT SOL → LUNA 実行プロトコル
+# Astra → Web GPT SOL → LUNA 実行プロトコル [LEGACY / HISTORICAL OPERATING PROTOCOL]
 
-更新: 2026-09-09 JST / revision 2。
+> [!WARNING]
+> **LEGACY / HISTORICAL OPERATING PROTOCOL — NOT CURRENT AGENT AUTHORITY**
+> - **Historical Record**: This document records the 2026-09-09/11 Manga execution model and role definitions.
+> - **Useful Historical Guidance**: Its core bounded-Card principles (strict boundaries, explicit stop conditions, evidence discipline) remain useful historical background.
+> - **Not Current Operating Authority**: Current agent operating rules are defined by [AGENTS.md](../../../AGENTS.md) and [docs/STATUS.md](../../STATUS.md).
+> - **Do Not Auto-Execute**: Historical mandatory audit/read sequences, review recipes, and M3A.1-specific gates in this document must NOT be auto-executed. All work is governed strictly by the current explicit Card issued by the Commander.
+
+更新: 2026-09-09 JST / revision 2 (Historical reference document)。
 
 この文書は、Manga Authoring改修の日常運用をWeb GPT SOLとローカルLUNAへ引き継ぐための
-現行プロトコルである。旧Antigravity/Gemini版は履歴として残すが、新しいCardへ流用しない。
+記録である。旧Antigravity/Gemini版は履歴として残すが、新しいCardへ流用しない。
 
 ## 役割
 

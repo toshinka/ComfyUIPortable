@@ -1,12 +1,20 @@
-# Web GPT SOL → LUNA Manga Authoring Handoff
+# Web GPT SOL → LUNA Manga Authoring Handoff [LEGACY / HISTORICAL HANDOFF]
 
-更新: 2026-09-11 JST。
+> [!WARNING]
+> **LEGACY / HISTORICAL HANDOFF — DO NOT EXECUTE**
+> - **Historical Record**: This document records the 2026-09-11 Manga operating state and historical M3A/M3B workflow.
+> - **Not Current Entry**: This is NOT the current new-chat entry.
+> - **Historical Instructions**: Its branch names (`h3-play1-longrun`), review targets, reading order, "first judgment", and next-action instructions are historical records.
+> - **Current Entry Authority**: Current agents must enter via [AGENTS.md](../../AGENTS.md) $\to$ [docs/STATUS.md](../STATUS.md) $\to$ [GITHUB_MANGA.txt](../../GITHUB_MANGA.txt) and execute only the current explicit Card issued by the Commander.
+> - **Non-Executable**: Do NOT execute instructions, issue Cards, or start chats based on this handoff unless an active Card explicitly requests historical reconstruction.
 
-## 0. この文書の目的
+更新: 2026-09-11 JST (Historical reference document)。
+
+## 0. この文書の目的 (歴史的記録)
 
 これは、過去会話を一切知らないWeb GPT SOLがGitHubだけでComfyUIPortableのManga Authoringを
-監修し、ローカルのLUNAチャットへ安全な限定Cardを発行するための引き継ぎ正本である。
-この文書自体は実装Cardではない。
+監修し、ローカルのLUNAチャットへ安全な限定Cardを発行するための引き継ぎ資料（2026-09-11時点の記録）である。
+この文書自体は実装Cardではなく、現行のエントリ正本でもない。
 
 Repository: `https://github.com/toshinka/ComfyUIPortable`
 
