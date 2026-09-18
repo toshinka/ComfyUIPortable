@@ -1,6 +1,10 @@
-# ComfyUIPortable 現在地 (Status & Direction)
+# ComfyUIPortable 現在地 (Status & Direction) — Manga Domain History
 
-更新: 2026-09-11 JST
+> **Authority Notice**:
+> 全社横断の最新運用状態・次期アクション・アクティブCardの正本は [docs/STATUS.md](../STATUS.md) です。
+> 本文書は Manga ドメイン固有の詳細履歴・マイルストーン記録を保持する参照文書であり、本文書内の過去の「次期アクション」や完了済みM3Bレビュー待ち文言が [docs/STATUS.md](../STATUS.md) の最新決定を上書きすることはありません。現在のアクティブCardは [docs/STATUS.md](../STATUS.md) に従います。
+
+更新: 2026-09-11 JST (Manga domain ledger)
 M3A.1 Core Implementation SHA: `a7f0baaa89a2e315b0492573c9da19e50727928b`
 M3A.1 Current Closure Review Target: `ad91c9277715e998663e8c12b6c37cca16e53955`
 Manga正本入口: [GITHUB_MANGA.txt](../../GITHUB_MANGA.txt)
@@ -14,19 +18,17 @@ H3 integration readiness: H3_READY_FOR_INTEGRATION_DESIGN
 Cross-track architecture design: READY FOR REVIEW
 Runtime hosting: OPEN DESIGN QUESTION
 Shared-shell implementation: NOT AUTHORIZED
-Active Card: NONE
+Active Card: docs/STATUS.md 参照 (NONE)
 Final Owner product review: DEFERRED
 Latest completed Card: [M3B-PC1 — Production Closure & Cross-Track Integration Boundary Freeze](cards/completed/M3B_PC1_PRODUCTION_CLOSURE_AND_INTEGRATION_BOUNDARY_FREEZE.md)
 Preceding completed Card: [M3B-PI2-BC1 — Real Browser Product Flow Closure](cards/completed/M3B_PI2_BC1_REAL_BROWSER_PRODUCT_FLOW_CLOSURE.md)
 Latest completed report: [M3B Production Closure & Integration Readiness Report](reports/M3B_PRODUCTION_CLOSURE_AND_INTEGRATION_READINESS_REPORT.md)
 Stable integration boundary: [Manga Product Integration Boundary](MANGA_PRODUCT_INTEGRATION_BOUNDARY.md)
-Regression: PASS / Runtime: PASS / Browser: PASS (PI2_BROWSER_CLOSED via Playwright Chrome real browser suite) / Visual evidence: PASS / M3B-LR1: COMPLETED / M3B-LR1 generation influence: NOT IMPLEMENTED / M3B-LR2: PUBLISHED / SOL REVIEWED / BLOCKED / M3B-LR2 stop: CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED / M3B-LR2R1: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED FOR RESEARCH GRAPH / quality: WEAK / Guide placement: DEGRADED / image quality: DEGRADED / M3B-LR3: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED / result: OPTION_A_INCONCLUSIVE / Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE / Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE / M3B-LR4: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / LOCALITY_SUPPORTED / M3B-LR5: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / CAST_MASKED_CONFLICT / M3B-LR5 key failure: HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED / M3B-LR6: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / SOFT_MASK_CONFLICT (key finding: SOFTENING FIGURE EFFECT-MASK EDGE DID NOT REMOVE VISUAL BOUNDARY) / M3B-LR7: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / EFFECT_MASK_INTERACTION_CONFIRMED / M3B-LR8: PUBLISHED / SOL REVIEWED / CORE_GLOBAL_QUALIFIED / M3B research qualification: CLOSED FOR CURRENT CLEAN-GLOBAL CANDIDATE / Production backend integration: COMPLETE / M3B-PI1: PUBLISHED / SOL REVIEWED / PI1_BACKEND_INTEGRATED / Automatic product routing: COMPLETE / M3B-PI2: PUBLISHED / SOL REVIEWED / PI2_AUTO_ROUTING_INTEGRATED / Browser closure: PI2_BROWSER_CLOSED / M3B-PI2-BC1: PUBLISHED / SOL REVIEWED / PI2_BROWSER_CLOSED / M3B-PC1: COMPLETED / M3B: PRODUCTION CLOSED / Manga integration readiness: READY FOR INTEGRATION DESIGN / Shared-shell implementation: NOT AUTHORIZED / Final Owner product review: DEFERRED / Active Card: NONE.
+Regression: PASS / Runtime: PASS / Browser: PASS (PI2_BROWSER_CLOSED via Playwright Chrome real browser suite) / Visual evidence: PASS / M3B-LR1: COMPLETED / M3B-LR1 generation influence: NOT IMPLEMENTED / M3B-LR2: PUBLISHED / SOL REVIEWED / BLOCKED / M3B-LR2 stop: CONTROL_MODEL_COMPATIBILITY_NOT_ESTABLISHED / M3B-LR2R1: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED FOR RESEARCH GRAPH / quality: WEAK / Guide placement: DEGRADED / image quality: DEGRADED / M3B-LR3: PUBLISHED / SOL REVIEWED / generation influence: VERIFIED / result: OPTION_A_INCONCLUSIVE / Derived CLEAN Guide: RETAINED RESEARCH CANDIDATE / Figure-union masked ControlNet: SUPPORTED RESEARCH CANDIDATE / M3B-LR4: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / LOCALITY_SUPPORTED / M3B-LR5: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / CAST_MASKED_CONFLICT / M3B-LR5 key failure: HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED / M3B-LR6: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / SOFT_MASK_CONFLICT (key finding: SOFTENING FIGURE EFFECT-MASK EDGE DID NOT REMOVE VISUAL BOUNDARY) / M3B-LR7: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / EFFECT_MASK_INTERACTION_CONFIRMED / M3B-LR8: PUBLISHED / SOL REVIEWED / CORE_GLOBAL_QUALIFIED / M3B research qualification: CLOSED FOR CURRENT CLEAN-GLOBAL CANDIDATE / Production backend integration: COMPLETE / M3B-PI1: PUBLISHED / SOL REVIEWED / PI1_BACKEND_INTEGRATED / Automatic product routing: COMPLETE / M3B-PI2: PUBLISHED / SOL REVIEWED / PI2_AUTO_ROUTING_INTEGRATED / Browser closure: PI2_BROWSER_CLOSED / M3B-PI2-BC1: PUBLISHED / SOL REVIEWED / PI2_BROWSER_CLOSED / M3B-PC1: COMPLETED / M3B: PRODUCTION CLOSED / Manga integration readiness: READY FOR INTEGRATION DESIGN / Shared-shell implementation: NOT AUTHORIZED / Final Owner product review: DEFERRED / Active Card: docs/STATUS.md 参照.
 
-`GITHUB_ComfyUI.txt` はManga/H3を振り分けるCompatibility Routerへ変更した。
-今回のnamespace整理は文書/navigationのみで、Manga runtime・workflow・schema・outputを変更していない。
-今後はWeb GPT SOLが[新規チャット引き継ぎ](WEBGPT_SOL_LUNA_HANDOFF.md)からGitHubを監査し、
-[Card Router](cards/README.md)と[現行プロトコル](plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md)に従って
-必要な場合だけ次の限定Cardを発行する。LR1完了後の次Cardは自動発行しない。
+`GITHUB_ComfyUI.txt` はManga/H3を振り分けるCompatibility Routerである。
+今回の整理は文書/navigationのみで、Manga runtime・workflow・schema・outputを変更していない。
+最新の運用指示・Card発行は統括リード／Commanderが管理し、[docs/STATUS.md](../STATUS.md) に記録される。過去のCard完了後に自動で次Cardを発行しない。
 
 ---
 

@@ -147,10 +147,20 @@ Owner acceptance: PENDING
 This entry is the starting point for external AI review of MiniMax H3 work. It
 is an index and boundary document, not an implementation instruction.
 
-Read Order
-----------
-1. GITHUB_H3.txt
-2. docs/h3/README.md
+Canonical Active Reading Route
+------------------------------
+1. AGENTS.md
+2. docs/STATUS.md
+3. GITHUB_H3.txt (this file)
+4. docs/h3/README.md (only when H3 domain detail is needed)
+5. Current explicit Card provided by the architecture lead / commander
+6. Only Card-required source / evidence
+
+Historical Milestone Reference Index (Consult only when explicitly required by the Card)
+---------------------------------------------------------------------------------------
+Do not consume these sequentially. Consult specific entries only when cited by an active Card.
+
+1. docs/h3/README.md
 3. External legacy/reference in Tegaki repository: MiniMax H3/H3_VIDEO・Still・ImagePrep・R2V・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev4.md
 3a. External legacy/reference in Tegaki repository (historical): MiniMax H3/H3_VIDEO導入・Still対応基盤・動画スタジオ化・Illustrious漫画統合・H3_MANGA化_段階的開発計画_Rev3.md (historical)
 4. docs/h3/plans/H3_GUI_DESIGN_PRINCIPLES.md

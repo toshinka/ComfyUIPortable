@@ -2,18 +2,37 @@
 
 Read this first. The operational truth and active handoff are in [docs/STATUS.md](docs/STATUS.md).
 
-## 1. Reading Order
+## 1. Reading Order & Entry Modes
 
-Do not recursively read all historical documents. Follow this sequence:
+Do not recursively read all historical documents.
 
+### Domain-Local Entry
+For domain-specific tasks, load only that domain's entry:
 1. [docs/STATUS.md](docs/STATUS.md) — Current repository location, active milestones, and handoff state.
 2. [GITHUB_ComfyUI.txt](GITHUB_ComfyUI.txt) — High-level compatibility router.
-3. Relevant domain entry:
-   - [GITHUB_MANGA.txt](GITHUB_MANGA.txt) for Manga Authoring
-   - [GITHUB_H3.txt](GITHUB_H3.txt) for MiniMax H3 Video / Still
-4. Relevant domain STATUS / handoff (e.g. [docs/manga/STATUS.md](docs/manga/STATUS.md) or [docs/h3/README.md](docs/h3/README.md)).
+3. Relevant domain router:
+   - [GITHUB_MANGA.txt](GITHUB_MANGA.txt) for Manga Authoring (Manga Card only)
+   - [GITHUB_H3.txt](GITHUB_H3.txt) for MiniMax H3 Video / Still (H3 Card only)
+   Do not load the other domain merely because both share the repository.
+4. Relevant domain STATUS / handoff (e.g. [docs/manga/STATUS.md](docs/manga/STATUS.md) or [docs/h3/README.md](docs/h3/README.md)) only if domain detail is required.
 5. Current explicit Card provided by the architecture lead.
 6. Only then inspect specific source code, tests, or runtime contracts requested by the Card.
+
+### Cross-Domain Entry
+For an explicitly cross-domain task such as:
+- shared TEGAKI shell
+- Manga/H3 sibling UI
+- cross-domain integration
+- global project architecture
+
+The route is:
+1. `AGENTS.md`
+2. `docs/STATUS.md`
+3. Relevant `docs/ui/` material explicitly required by the Card
+4. Both `GITHUB_MANGA.txt` and `GITHUB_H3.txt` as bounded subsystem references
+5. Only additional documents named or required by the Card.
+
+*Constraint*: Do not recursively descend into both domain histories.
 
 ## 2. Document Authority Model
 
@@ -53,6 +72,18 @@ Identify the Card's explicit `MODE:`. Never guess mode from task difficulty.
 - Distinguish strictly between `PROVEN`, `PLAUSIBLE`, and `UNKNOWN`.
 - Challenge structural assumptions and contracts, not merely formatting.
 - Recommend at most one next action and STOP. ASTRA must not create extra work merely because context remains.
+
+### ASTRA Resource Discipline
+- Delegation/subagents are forbidden unless the current Card explicitly authorizes them.
+- Do not recursively follow document references or expand the file set beyond the Card boundary.
+- Explicit Card budgets such as MAX FILE READS, MAX TOOL CALLS, MAX ADDITIONAL FILES,
+  REVIEW PASSES, and TEST PASSES are hard limits.
+- Do not poll long-running processes or repeatedly re-check unchanged status.
+- After a requested verification passes, do not repeat or broaden verification unless new
+  failure evidence, a new code change, or an explicit unresolved concern requires it.
+- Do not re-read large context merely to reconfirm completed decisions.
+- If the task cannot be completed within the stated resource/scope budget, report the blocker
+  and return to the Commander. Do not expand scope autonomously.
 
 ### LUNA MODE (Implementation & Runtime)
 - Focus: Bounded implementation, Windows/process interaction, ComfyUI graphs, runtime validation, GPU execution, narrow hotfixes.

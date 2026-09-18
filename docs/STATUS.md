@@ -17,8 +17,11 @@ The project operates on an **Architecture Lead / Commander vs. Worker Card** mod
 ### Canonical Reading Order
 1. [../AGENTS.md](../AGENTS.md) — Operating rules, mode behaviors, and safety boundaries.
 2. [STATUS.md](STATUS.md) (this file) — Single source of truth for active state and handoff.
-3. Domain routers: [../GITHUB_MANGA.txt](../GITHUB_MANGA.txt) and [../GITHUB_H3.txt](../GITHUB_H3.txt).
-4. Relevant domain status (e.g. [docs/manga/STATUS.md](manga/STATUS.md) or [docs/h3/README.md](h3/README.md)).
+3. Relevant domain router:
+   - [../GITHUB_MANGA.txt](../GITHUB_MANGA.txt) for Manga
+   - [../GITHUB_H3.txt](../GITHUB_H3.txt) for H3
+   - both only for an explicitly cross-domain Card
+4. Relevant domain status (e.g. [docs/manga/STATUS.md](manga/STATUS.md) or [docs/h3/README.md](h3/README.md)) only if domain detail is needed.
 5. Current explicit Card issued by the commander.
 6. Only then inspect specific source files, tests, or runtime contracts.
 
@@ -76,9 +79,19 @@ Accepted technical milestones:
   - *character_instance*: Placement of a CAST member inside a Scene.
 - **Runtime Lifecycle**: Supervisor scripts own port listeners. Cards must shut down spawned processes at completion unless explicitly authorized to keep running.
 
-## Current Priority
+## Current Priority & Decision Sequence
 
-Next major UI step: run the bounded Astra review using [TEGAKI_ASTRA_UI_REVIEW_BRIEF.md](ui/TEGAKI_ASTRA_UI_REVIEW_BRIEF.md) against the rendered Manga/H3 wide and narrow layouts, established UI principles, Create workspace model, and component contracts. Astra may recommend composition, density, hierarchy, Preview/Create balance, focus, motion, and narrow behavior; it does not silently redefine product semantics. Keep H3 and Manga separate.
+Current Commander flow:
+1. **Manga ordinary-generation usability / MRP controllability**: In progress / foundational proofs completed.
+2. **Capability-bank consolidation**: Phase 1 banked (Bank size: 4).
+3. **Astra Capability Selection / Redundancy Review**: NEXT immediate architectural step. Evaluate banked capabilities, eliminate redundancy, and identify candidate set without modifying code.
+4. **Accepted capability set**: Commander gate freeze on authorized capabilities.
+5. **Astra UI Review / Composition**: Bounded Astra review using [TEGAKI_ASTRA_UI_REVIEW_BRIEF.md](ui/TEGAKI_ASTRA_UI_REVIEW_BRIEF.md) against rendered Manga/H3 layouts, Create workspace model, and component contracts.
+6. **Reviewed Luna MAX implementation slice**: Exactly one reviewed implementation slice.
+
+*Subsystem & Authority Principles*:
+- Astra is an analysis and review mode, not the permanent manager. The Commander issues all Cards.
+- Manga and H3 remain separate production subsystems with isolated schemas, runtimes, and models. They are sibling UI productions where cognitive continuity is maintained, but shared-shell/runtime unification is NOT implied.
 
 ## UI Planning State
 
@@ -87,7 +100,7 @@ Next major UI step: run the bounded Astra review using [TEGAKI_ASTRA_UI_REVIEW_B
 - **Current design state**: Manga/H3 Production sibling cognitive model, Create workspace state flow, GLANCE/FOCUS principles, truthful `GenerationStatus`, component behavioral contracts, and the Astra review contract are defined.
 - **Implementation state**: major Create redesign **NOT implemented**; `PreviewFocus` **NOT implemented**; `MediaPreviewShell` redesign **NOT implemented**; `CompactContext` **NOT implemented**.
 - **Prototype-safe contracts identified**: `GenerationStatus`, `ProgressProjection / ProgressOverlay`, and `AttachmentCard` grammar. **No prototype is currently authorized.**
-- **Next UI action**: bounded Astra review of the current rendered Manga/H3 UI against the prepared specifications. Astra review performed: **NO**.
+- **Next UI action**: Astra Capability Selection / Redundancy Review must precede Astra UI Review / Composition. Astra review performed: **NO**.
 
 ## Evidence Locations
 

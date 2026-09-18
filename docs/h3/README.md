@@ -1,5 +1,8 @@
 # MiniMax H3 Document Hub
 
+> **Authority Notice**:
+> Current cross-project operational facts, active milestones, and next actions are governed by [docs/STATUS.md](../STATUS.md). This document hub preserves H3 domain history, research, and milestone verification evidence.
+
 更新: 2026-09-11 JST
 
 このページは `ComfyUIPortable` における MiniMax H3 の調査・計画・報告・
@@ -372,7 +375,9 @@ Native settings, History settings reuse, bounded Edit in Prep, and Prep to
 Character handoff. Donor attribute isolation is not guaranteed; IP2 is not a
 production Image Studio or identity-locking feature.
 
-## Review recipe
+## Review recipe (Historical Milestone Verification Index)
+
+> **Notice**: This recipe is a reference ledger of completed historical milestone verifications, NOT a mandatory prerequisite or active reading order for a current Card. A fresh agent must not sequentially replay H0 → IP2 before executing an active Card. Active reading order is governed by [AGENTS.md](../../AGENTS.md) and [docs/STATUS.md](../STATUS.md).
 
 1. Start at `GITHUB_H3.txt`.
 2. Read the current Rev.4 master and confirm the Rev.3 root/Archive sources are preserved.

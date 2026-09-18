@@ -164,10 +164,11 @@ M3B-LR5 key failure: HARD EFFECT-MASK BOUNDARY / QUALITY DEGRADED
 M3B-LR6: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / SOFT_MASK_CONFLICT
 M3B-LR7: PUBLISHED / SOL REVIEWED / TECHNICAL PASS / EFFECT_MASK_INTERACTION_CONFIRMED
 M3B-LR8: PUBLISHED / SOL REVIEWED / CORE_GLOBAL_QUALIFIED
-Active Card: NONE
+Active Card:
+Current active Card is governed by docs/STATUS.md (do not infer the current Card from historical sections here).
 
 Next:
-Awaiting Web GPT SOL review of M3B-PI2-BC1 real browser closure evidence.
+Current operational handoff, priority sequence, and next action are owned exclusively by docs/STATUS.md. This file preserves Manga domain/history context.
 
 Completed review slice:
 M3B-LR1 — Rough Guide Foundation Long-Run Batch.
@@ -193,18 +194,25 @@ M3B-LR2R1 closeout:
 - Canonical no-Guide generation and LR1/M2B regressions passed.
 - ControlNet remains research-only; production integration was not performed.
 
-Reading order
--------------
-1. GITHUB_MANGA.txt
-2. docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md
-3. docs/manga/STATUS.md
-4. docs/manga/README.md
-5. docs/manga/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md
-6. docs/manga/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md
-7. docs/manga/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md
-8. docs/manga/plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md
-9. docs/manga/cards/README.md
-10. Current report, then only relevant source/workflows/tests.
+Canonical Active Reading Route
+------------------------------
+1. AGENTS.md
+2. docs/STATUS.md
+3. GITHUB_MANGA.txt (this file)
+4. docs/manga/STATUS.md (only when Manga domain detail is needed)
+5. Current explicit Card provided by the architecture lead / commander
+6. Only Card-required source / evidence
+
+Historical / Domain Reference Index (Consult only when explicitly required by the Card)
+--------------------------------------------------------------------------------------
+1. docs/manga/WEBGPT_SOL_LUNA_HANDOFF.md
+2. docs/manga/README.md
+3. docs/manga/plans/ASTRA_MANGA_AUTHORING_MASTER_PLAN.md
+4. docs/manga/plans/ASTRA_MINIMAL_HAND_MANGA_UX_BLUEPRINT.md
+5. docs/manga/plans/ASTRA_ASSET_AND_WORKFLOW_INVENTORY.md
+6. docs/manga/plans/ASTRA_WEBGPT_SOL_LUNA_EXECUTION_PROTOCOL.md
+7. docs/manga/cards/README.md
+8. Historical reports under docs/manga/reports/
 
 Current review documents
 ------------------------

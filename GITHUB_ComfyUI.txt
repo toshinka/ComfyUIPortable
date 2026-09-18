@@ -19,27 +19,29 @@ Do not maintain detailed project status, Review Target SHA, plans, or evidence h
 For stable agent operating rules, read AGENTS.md.
 For current operational facts and handoff, read docs/STATUS.md.
 
-Manga Authoring
----------------
-Canonical entry:
-GITHUB_MANGA.txt
+Routing Modes
+-------------
 
-Local path:
-GITHUB_MANGA.txt
+1. MANGA-ONLY
+   Canonical entry: GITHUB_MANGA.txt
+   Read only Manga-side current/domain material. Do not consult H3.
 
-MiniMax H3
-----------
-Canonical entry:
-GITHUB_H3.txt
+2. H3-ONLY
+   Canonical entry: GITHUB_H3.txt
+   Read only H3-side current/domain material. Do not consult Manga.
 
-Local path:
-GITHUB_H3.txt
+3. CROSS-DOMAIN / SHARED TEGAKI SHELL / SIBLING UI
+   For explicit cross-domain, shared TEGAKI shell, or sibling UI tasks:
+   - Consult docs/STATUS.md and Card-scoped docs/ui/ material first.
+   - Consult both GITHUB_MANGA.txt and GITHUB_H3.txt only as bounded subsystem references.
+   - WARNING: Reading both domain entries for a cross-domain task does NOT authorize
+     recursively reading both historical document trees.
 
 Boundary
 --------
 Manga Authoring and H3 share the repository and Portable base, but currently
 have separate feature namespaces, runtime semantics, planning, evidence, and
-External AI entries. Read the relevant canonical entry before reviewing work.
+External AI entries.
 
 The target product uses one TEGAKI shell/skin with top-level Manga and Video
 (H3) tabs. Until a separate Shell Integration Card is authorized, each domain
