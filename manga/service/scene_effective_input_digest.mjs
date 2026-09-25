@@ -249,13 +249,22 @@ export function computeSceneEffectiveInputDigest(evidence) {
         );
     }
 
+    // Semantic vs execution-instance split (MANGA-ISOLATED-BASELINE-CORRECTION1 / B5):
+    // CURRENT means "this result still corresponds to the current editable
+    // Authoring/generation contract".  checkpoint, sampler, scheduler, steps, cfg,
+    // mask_feather, panel_strength (and prompts/LoRA tags via the Scene/Page/CAST
+    // sections) are deterministic user-chosen inputs and stay in the digest.
+    // The seed (seed_requested / effective_seed) only identifies one execution
+    // instance: with seed "-1" every fresh compile draws a new random seed, which
+    // made every stored result STALE.  It is validated above and remains recorded
+    // in the SceneResult manifest's execution.effective_settings, but it does not
+    // participate in semantic freshness.
     const normalizedSettings = {
         checkpoint_id: settings.checkpoint_id,
         sampler_id: settings.sampler_id,
         scheduler_id: settings.scheduler_id,
         steps: settings.steps,
         cfg: settings.cfg,
-        effective_seed: settings.effective_seed,
         mask_feather: Number.isInteger(settings.mask_feather) ? settings.mask_feather : 16,
         panel_strength: isFiniteNumber(settings.panel_strength) ? settings.panel_strength : 1.0,
     };

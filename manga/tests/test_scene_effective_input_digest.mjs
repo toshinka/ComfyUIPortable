@@ -289,15 +289,19 @@ test("Case F: Reference content digest changes affect the digest", () => {
     assert.notStrictEqual(disabledRef, base);
 });
 
-test("Case G: Checkpoint, effective seed or generation settings changes affect the digest", () => {
+test("Case G: Checkpoint or semantic generation settings changes affect the digest", () => {
     const base = computeSceneEffectiveInputDigest(makeValidEvidence()).effective_input_digest;
 
     const modifiedCheckpoint = computeSceneEffectiveInputDigest(makeValidEvidence({
         effective_settings: { checkpoint_id: "animagine_xl_v3.safetensors" },
     })).effective_input_digest;
 
-    const modifiedSeed = computeSceneEffectiveInputDigest(makeValidEvidence({
-        effective_settings: { effective_seed: 99999 },
+    const modifiedSampler = computeSceneEffectiveInputDigest(makeValidEvidence({
+        effective_settings: { sampler_id: "dpmpp_2m" },
+    })).effective_input_digest;
+
+    const modifiedScheduler = computeSceneEffectiveInputDigest(makeValidEvidence({
+        effective_settings: { scheduler_id: "normal" },
     })).effective_input_digest;
 
     const modifiedSteps = computeSceneEffectiveInputDigest(makeValidEvidence({
@@ -321,12 +325,33 @@ test("Case G: Checkpoint, effective seed or generation settings changes affect t
     })).effective_input_digest;
 
     assert.notStrictEqual(modifiedCheckpoint, base);
-    assert.notStrictEqual(modifiedSeed, base);
+    assert.notStrictEqual(modifiedSampler, base);
+    assert.notStrictEqual(modifiedScheduler, base);
     assert.notStrictEqual(modifiedSteps, base);
     assert.notStrictEqual(modifiedCfg, base);
     assert.notStrictEqual(modifiedRefWeight, base);
     assert.notStrictEqual(modifiedRefStart, base);
     assert.notStrictEqual(modifiedRefEnd, base);
+});
+
+test("Case G2 (B5): Execution-instance seed does not affect the semantic digest", () => {
+    const base = computeSceneEffectiveInputDigest(makeValidEvidence()).effective_input_digest;
+    // A new random execution seed (seed_requested "-1") must not STALE a result.
+    const reseeded = computeSceneEffectiveInputDigest(makeValidEvidence({
+        effective_settings: { effective_seed: 99999, seed_requested: "-1" },
+    })).effective_input_digest;
+    assert.strictEqual(reseeded, base);
+    // The seed is still validated as execution evidence (fail-closed).
+    assert.throws(
+        () => computeSceneEffectiveInputDigest(makeValidEvidence({ effective_settings: { effective_seed: 1.5 } })),
+        (err) => err.code === "INVALID_SETTINGS_EVIDENCE"
+    );
+    // Semantic authoring changes alongside a reseed still produce STALE-worthy divergence.
+    const promptChanged = computeSceneEffectiveInputDigest(makeValidEvidence({
+        effective_settings: { effective_seed: 99999 },
+        scene: { prompt: "a completely different scene prompt" },
+    })).effective_input_digest;
+    assert.notStrictEqual(promptChanged, base);
 });
 
 test("Case H: Page placement or local canvas dimensions change the digest", () => {

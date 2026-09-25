@@ -18,6 +18,7 @@ L. Invalid local canvas dimensions fail explicitly.
 from __future__ import annotations
 
 import copy
+import math
 import os
 import sys
 import unittest
@@ -361,9 +362,12 @@ class TestIsolatedScenePlan(unittest.TestCase):
             create_isolated_scene_plan(doc, scene_id="scene_2", local_dimensions=(4096, 512))
         self.assertEqual(ctx.exception.code, "INVALID_LOCAL_DIMENSIONS")
 
-        # Missing dimensions entirely
+        # Missing dimensions entirely: canonical derivation applies (B6), but it
+        # still fails closed when the Page has no pixel dimensions to derive from.
+        no_page_px = copy.deepcopy(doc)
+        del no_page_px["pages"][0]["width_px"]
         with self.assertRaises(IsolatedScenePlanError) as ctx:
-            create_isolated_scene_plan(doc, scene_id="scene_2")
+            create_isolated_scene_plan(no_page_px, scene_id="scene_2")
         self.assertEqual(ctx.exception.code, "INVALID_LOCAL_DIMENSIONS")
 
     def test_broken_cast_reference_fails(self):
@@ -412,6 +416,73 @@ class TestIsolatedScenePlan(unittest.TestCase):
         self.assertIsNotNone(plan)
         self.assertEqual(doc, snapshot)
         self.assertNotIn("guide_state", doc["pages"][0])
+
+
+class TestCanonicalLocalCanvasDerivation(unittest.TestCase):
+    """B6: one authoritative aspect-preserving local canvas rule."""
+
+    def _doc_with_scene(self, page_w, page_h, rect):
+        doc = make_sample_document()
+        page = doc["pages"][0]
+        page["width_px"], page["height_px"] = page_w, page_h
+        page["character_instances"] = []
+        page["scenes"] = [{
+            "scene_id": "s_geo", "order": 1, "name": "geo", "input_mode": "simple",
+            "prompt": "x", "negative_prompt": "",
+            "area": {"shape_type": "rect", **rect},
+        }]
+        return doc
+
+    def _assert_allowed(self, w, h):
+        self.assertEqual(w % isolated_scene_plan.LOCAL_CANVAS_GRID, 0)
+        self.assertEqual(h % isolated_scene_plan.LOCAL_CANVAS_GRID, 0)
+        self.assertTrue(DIMENSION_BOUNDS["width"]["min"] <= w <= DIMENSION_BOUNDS["width"]["max"])
+        self.assertTrue(DIMENSION_BOUNDS["height"]["min"] <= h <= DIMENSION_BOUNDS["height"]["max"])
+        self.assertLessEqual(w * h, isolated_scene_plan.LOCAL_CANVAS_TARGET_PIXELS)
+        self.assertLessEqual(w * h, DIMENSION_BOUNDS["max_pixels"])
+
+    def _derive(self, page_w, page_h, rect):
+        plan = create_isolated_scene_plan(self._doc_with_scene(page_w, page_h, rect), scene_id="s_geo")
+        w, h = plan["local_canvas"]["width"], plan["local_canvas"]["height"]
+        self._assert_allowed(w, h)
+        scene_aspect = (rect["w"] * page_w) / (rect["h"] * page_h)
+        return w, h, scene_aspect
+
+    def test_portrait_scene_gets_portrait_canvas(self):
+        w, h, a = self._derive(1024, 1536, {"x": 0.05, "y": 0.05, "w": 0.45, "h": 0.9})  # ~0.33
+        self.assertLess(w, h)
+        self.assertLess(abs(math.log((w / h) / a)), math.log(1.05))
+        self.assertGreaterEqual(w * h, 0.8 * isolated_scene_plan.LOCAL_CANVAS_TARGET_PIXELS)
+
+    def test_landscape_scene_gets_landscape_canvas(self):
+        w, h, a = self._derive(1024, 1536, {"x": 0.05, "y": 0.05, "w": 0.9, "h": 0.3})  # 2.0
+        self.assertGreater(w, h)
+        self.assertLess(abs(math.log((w / h) / a)), math.log(1.05))
+        self.assertEqual((w, h), (1408, 704))
+
+    def test_square_scene_stays_square(self):
+        w, h, a = self._derive(1024, 1536, {"x": 0.1, "y": 0.1, "w": 0.6, "h": 0.4})  # 1.0 in pixels
+        self.assertAlmostEqual(a, 1.0, places=6)
+        self.assertEqual((w, h), (1024, 1024))
+
+    def test_normalized_rect_uses_page_pixel_aspect(self):
+        # Normalized 0.5 x 0.5 on a 1024x1536 page is 512x768 px (2:3 portrait), not square.
+        w, h, a = self._derive(1024, 1536, {"x": 0.0, "y": 0.0, "w": 0.5, "h": 0.5})
+        self.assertEqual((w, h), (768, 1152))
+
+    def test_extreme_strip_respects_bounds(self):
+        w, h, _ = self._derive(1024, 1536, {"x": 0.0, "y": 0.0, "w": 1.0, "h": 0.05})
+        self.assertEqual((w, h), (2048, 256))
+
+    def test_deterministic_and_explicit_override_still_honored(self):
+        rect = {"x": 0.05, "y": 0.05, "w": 0.45, "h": 0.9}
+        doc = self._doc_with_scene(1024, 1536, rect)
+        self.assertEqual(
+            create_isolated_scene_plan(doc, scene_id="s_geo")["local_canvas"],
+            create_isolated_scene_plan(copy.deepcopy(doc), scene_id="s_geo")["local_canvas"],
+        )
+        plan = create_isolated_scene_plan(doc, scene_id="s_geo", local_dimensions=(512, 768))
+        self.assertEqual(plan["local_canvas"], {"width": 512, "height": 768})
 
 
 if __name__ == "__main__":

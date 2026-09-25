@@ -107,6 +107,19 @@ const stable = value => {
 const isObject = value => value !== null && typeof value === "object" && !Array.isArray(value);
 const isNonEmptyString = value => typeof value === "string" && value.trim().length > 0;
 
+/**
+ * Canonical SceneResult manifest identity for one isolated job.
+ * Deterministic (job_id -> manifest_id) so a retried finalization after a
+ * partial failure (saved but not indexed) converges on the same immutable
+ * record instead of creating a second manifest.  RFC 4122 v4 layout (version
+ * and variant bits set) as required by the SceneResult manifest contract.
+ */
+export function sceneResultManifestIdForJob(jobId) {
+    const h = createHash("sha256").update(`tegaki.manga.scene_result.v1:${jobId}`).digest("hex");
+    const variant = ((parseInt(h[16], 16) & 0x3) | 0x8).toString(16);
+    return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-${variant}${h.slice(17, 20)}-${h.slice(20, 32)}`;
+}
+
 export function validateOutputLocator(locator, jobId) {
     if (!JOB_ID.test(jobId) || !isObject(locator) || locator.type !== "output" ||
         typeof locator.filename !== "string" || typeof locator.subfolder !== "string") {
@@ -885,7 +898,11 @@ export class GenerationService {
     }
 
     async analyzeIsolatedSceneArtifact(jobId) {
-        return this._exclusive(async () => {
+        return this._exclusive(() => this._analyzeIsolatedSceneArtifactLocked(jobId));
+    }
+
+    async _analyzeIsolatedSceneArtifactLocked(jobId) {
+        {
             if (!JOB_ID.test(jobId)) fail("INVALID_JOB_ID", "Invalid Manga job ID", 400);
             let record;
             try {
@@ -943,10 +960,37 @@ export class GenerationService {
                     byte_length: analysis.byte_length
                 }
             };
-        });
+        }
     }
 
+    /**
+     * Idempotent: one isolated job -> one canonical SceneResult.  Serialized with
+     * all other job operations (getJob polling included) through _exclusive.
+     */
     async finalizeIsolatedSceneResult(jobId, options = {}) {
+        return this._exclusive(() => this._finalizeIsolatedSceneResultLocked(jobId, options));
+    }
+
+    _verifyExistingSceneResult(existing, record) {
+        if (!isObject(existing) || existing.execution?.job_id !== record.job_id ||
+            existing.owner?.document_id !== record.owner?.document_id ||
+            existing.owner?.page_id !== record.owner?.page_id ||
+            existing.owner?.scene_id !== record.owner?.scene_id) {
+            fail("SCENE_RESULT_CONSISTENCY_ERROR",
+                `Stored SceneResult ${existing?.manifest_id} does not belong to job ${record.job_id}`, 409);
+        }
+    }
+
+    async _indexSceneResult(manifestId) {
+        try {
+            await this.sceneResultIndex.indexManifest(manifestId);
+        } catch (indexError) {
+            const status = indexError.code === "JOB_RESULT_CONFLICT" ? 409 : 500;
+            fail(indexError.code || "INDEX_PUBLICATION_FAILED", `Manifest saved but indexing failed: ${indexError.message}`, status);
+        }
+    }
+
+    async _finalizeIsolatedSceneResultLocked(jobId, options = {}) {
         if (!isNonEmptyString(jobId) || !JOB_ID.test(jobId)) {
             fail("INVALID_JOB_ID", "Invalid Manga job ID", 400);
         }
@@ -971,8 +1015,15 @@ export class GenerationService {
             fail("JOB_NOT_READY", `Isolated scene job is in state '${record.state}', expected 'SUCCEEDED'`, 409);
         }
 
-        const canonicalResult = await this.sceneResultIndex.getByJobId(jobId);
+        let canonicalResult;
+        try {
+            canonicalResult = await this.sceneResultIndex.getByJobId(jobId);
+        } catch (indexError) {
+            if (indexError instanceof SceneResultIndexError) fail(indexError.code, indexError.message, 500);
+            throw indexError;
+        }
         if (canonicalResult) {
+            this._verifyExistingSceneResult(canonicalResult.manifest, record);
             return {
                 manifest_id: canonicalResult.manifest_id,
                 manifest: canonicalResult.manifest,
@@ -1038,11 +1089,28 @@ export class GenerationService {
             fail("REFERENCE_NOT_DISABLED", "Isolated scene job must be Reference-disabled", 400);
         }
 
-        const artifactResult = await this.analyzeIsolatedSceneArtifact(jobId);
-
         const manifestId = (typeof options._manifestIdFactory === "function")
             ? options._manifestIdFactory()
-            : randomUUID();
+            : sceneResultManifestIdForJob(jobId);
+
+        // Recovery of a previous partial finalization (persisted, not indexed):
+        // reuse the immutable record only if it provably belongs to this job.
+        const adoptExisting = async () => {
+            let existing;
+            try {
+                existing = await this.sceneResultStore.getManifest(manifestId, { required: false });
+            } catch (storeError) {
+                fail("SCENE_RESULT_CONSISTENCY_ERROR", `Stored SceneResult ${manifestId} is unreadable: ${storeError.message}`, 409);
+            }
+            if (!existing) return null;
+            this._verifyExistingSceneResult(existing, record);
+            await this._indexSceneResult(existing.manifest_id);
+            return { manifest_id: existing.manifest_id, manifest: existing };
+        };
+        const adopted = await adoptExisting();
+        if (adopted) return adopted;
+
+        const artifactResult = await this._analyzeIsolatedSceneArtifactLocked(jobId);
 
         const evidence = {
             manifest_id: manifestId,
@@ -1093,17 +1161,17 @@ export class GenerationService {
         try {
             saved = await this.sceneResultStore.saveCompletedManifest(manifest);
         } catch (storeError) {
+            if (storeError instanceof SceneResultStoreError && storeError.code === "MANIFEST_EXISTS") {
+                const raced = await adoptExisting();
+                if (raced) return raced;
+            }
             if (storeError instanceof SceneResultStoreError) {
                 fail(storeError.code, `Manifest persistence failed: ${storeError.message}`, 500);
             }
             throw storeError;
         }
 
-        try {
-            await this.sceneResultIndex.indexManifest(saved.manifest_id);
-        } catch (indexError) {
-            fail(indexError.code || "INDEX_PUBLICATION_FAILED", `Manifest saved but indexing failed: ${indexError.message}`, 500);
-        }
+        await this._indexSceneResult(saved.manifest_id);
 
         return {
             manifest_id: saved.manifest_id,
@@ -1116,9 +1184,41 @@ export class GenerationService {
             if (!JOB_ID.test(jobId)) fail("INVALID_JOB_ID", "Invalid Manga job ID", 400);
             const record = await this.journal.get(jobId);
             if (!record) fail("JOB_NOT_FOUND", "Manga job not found", 404);
-            if (ACTIVE.has(record.state)) return this._reconcileUnknown(record, "RECONCILE_UNAVAILABLE");
-            return this.publicJob(record);
+            const job = ACTIVE.has(record.state)
+                ? await this._reconcileUnknown(record, "RECONCILE_UNAVAILABLE")
+                : this.publicJob(record);
+            if (job.mode === "isolated_scene" && job.state === "SUCCEEDED") {
+                return this._withSceneResult(job);
+            }
+            return job;
         });
+    }
+
+    /**
+     * Auto-finalization on the normal observation path (B4).  Only a verified
+     * SUCCEEDED isolated job reaches here.  Idempotent: an already-indexed job
+     * returns its canonical association without new persistence.  The
+     * association is response-only derived data (never written to the journal
+     * or the Authoring Document).  A failure never masks the job state; it is
+     * reported as a structured scene_result error and retried on the next poll.
+     */
+    async _withSceneResult(job) {
+        try {
+            const finalized = await this._finalizeIsolatedSceneResultLocked(job.job_id);
+            return { ...job, scene_result: { status: "FINALIZED", manifest_id: finalized.manifest_id, error: null } };
+        } catch (error) {
+            return {
+                ...job,
+                scene_result: {
+                    status: "FINALIZATION_FAILED",
+                    manifest_id: null,
+                    error: {
+                        code: error?.code || "SCENE_RESULT_FINALIZATION_FAILED",
+                        message: error?.message || "SceneResult finalization failed",
+                    },
+                },
+            };
+        }
     }
 
     async _image(locator) {

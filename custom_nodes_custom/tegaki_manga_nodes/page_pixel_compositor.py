@@ -1,7 +1,7 @@
 """Pure CPU Page Pixel Compositor for TEGAKI_PAGE_COMPOSITION_PLAN 1.0.0.
 
 Consumes a trusted page composition plan, loads and verifies selected scene
-artifacts, performs normalized edge conversion, crops, resizes via Lanczos,
+artifacts, performs normalized edge conversion, crops, aspect-preserving center-crop (cover fit, no stretch), resizes via Lanczos,
 and executes source-over alpha compositing on an opaque white canvas.
 """
 
@@ -298,6 +298,24 @@ def compose_page_pixels(
             tgt_l, tgt_t, tgt_r, tgt_b = normalized_rect_to_pixel_edges(target_rect, page_w, page_h)
             tgt_w = tgt_r - tgt_l
             tgt_h = tgt_b - tgt_t
+
+            # Aspect-preserving cover fit: never stretch non-uniformly.  If the
+            # source aspect differs from the target aspect, center-crop the
+            # excess from the source before a uniform resize (no letterbox bars).
+            if tgt_w > 0 and tgt_h > 0 and cropped.width > 0 and cropped.height > 0:
+                if cropped.width * tgt_h > tgt_w * cropped.height:
+                    keep_w = max(1, min(cropped.width, int(cropped.height * tgt_w / tgt_h + 0.5)))
+                    keep_h = cropped.height
+                else:
+                    keep_w = cropped.width
+                    keep_h = max(1, min(cropped.height, int(cropped.width * tgt_h / tgt_w + 0.5)))
+                if keep_w != cropped.width or keep_h != cropped.height:
+                    cut_l = (cropped.width - keep_w) // 2
+                    cut_t = (cropped.height - keep_h) // 2
+                    try:
+                        cropped = cropped.crop((cut_l, cut_t, cut_l + keep_w, cut_t + keep_h))
+                    except Exception as exc:
+                        raise PagePixelCompositorError("IMAGE_COMPOSITE_FAILED", f"Aspect crop failed: {exc}")
 
             if cropped.width != tgt_w or cropped.height != tgt_h:
                 try:

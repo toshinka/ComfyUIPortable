@@ -119,14 +119,14 @@ export function buildSemanticPayload(plan) {
                     page_target_rect: scene.selected_result.placement.page_target_rect ? {
                         x: scene.selected_result.placement.page_target_rect.x,
                         y: scene.selected_result.placement.page_target_rect.y,
-                        width: scene.selected_result.placement.page_target_rect.width,
-                        height: scene.selected_result.placement.page_target_rect.height,
+                        width: scene.selected_result.placement.page_target_rect.w ?? scene.selected_result.placement.page_target_rect.width,
+                        height: scene.selected_result.placement.page_target_rect.h ?? scene.selected_result.placement.page_target_rect.height,
                     } : null,
                     local_source_rect: scene.selected_result.placement.local_source_rect ? {
                         x: scene.selected_result.placement.local_source_rect.x,
                         y: scene.selected_result.placement.local_source_rect.y,
-                        width: scene.selected_result.placement.local_source_rect.width,
-                        height: scene.selected_result.placement.local_source_rect.height,
+                        width: scene.selected_result.placement.local_source_rect.w ?? scene.selected_result.placement.local_source_rect.width,
+                        height: scene.selected_result.placement.local_source_rect.h ?? scene.selected_result.placement.local_source_rect.height,
                     } : null,
                     transform: scene.selected_result.placement.transform ?? {},
                     target_page_dimensions: scene.selected_result.placement.target_page_dimensions ? {

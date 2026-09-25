@@ -240,6 +240,33 @@ class TestPurePagePixelCompositor(unittest.TestCase):
         self.assertEqual(img.size, (100, 200))
         self.assertEqual(img.getpixel((50, 100)), (0, 255, 0, 255))
 
+    def test_case_j2_mismatched_source_is_cover_fit_not_stretched(self):
+        """B6: a 2:1 source into a 1:1 target is center-cropped, never squeezed."""
+        # Source 200x100: red | green-stripe (center 100px) | blue
+        src = Image.new("RGBA", (200, 100), (255, 0, 0, 255))
+        src.paste(Image.new("RGBA", (100, 100), (0, 255, 0, 255)), (50, 0))
+        src.paste(Image.new("RGBA", (50, 100), (0, 0, 255, 255)), (150, 0))
+        # Circle-like marker: a 20x20 black square at the center must stay square.
+        src.paste(Image.new("RGBA", (20, 20), (0, 0, 0, 255)), (90, 40))
+        buf = io.BytesIO()
+        src.save(buf, format="PNG")
+        data = buf.getvalue()
+        digest = hashlib.sha256(data).hexdigest()
+        slot = make_current_slot("s1", data, digest, 200, 100, {"x": 0.0, "y": 0.0, "w": 1.0, "h": 1.0}, page_w=100, page_h=100)
+        plan = make_test_plan(100, 100, [slot])
+        img = Image.open(io.BytesIO(compose_page_pixels(plan, artifact_loader=lambda loc: data))).convert("RGBA")
+        self.assertEqual(img.size, (100, 100))
+        # Excess red/blue side bands were cropped away (a stretch would keep them).
+        for pt in [(2, 50), (97, 50), (2, 2), (97, 97)]:
+            self.assertEqual(img.getpixel(pt), (0, 255, 0, 255), pt)
+        # Marker keeps its 1:1 aspect (uniform scale): measure its black extent.
+        xs = [x for x in range(100) if img.getpixel((x, 50))[:3] == (0, 0, 0)]
+        ys = [y for y in range(100) if img.getpixel((50, y))[:3] == (0, 0, 0)]
+        self.assertTrue(xs and ys)
+        self.assertLessEqual(abs(len(xs) - len(ys)), 2)
+        # No letterbox: page background never shows through inside the target.
+        self.assertFalse(any(img.getpixel((x, y)) == (255, 255, 255, 255) for x in range(0, 100, 7) for y in range(0, 100, 7)))
+
     def test_case_k_transparent_pixels_preserve_background(self):
         # Source with 50% opacity red
         data, digest, w, h = make_test_png(50, 50, (255, 0, 0, 128))

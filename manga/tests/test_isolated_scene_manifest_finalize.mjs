@@ -22,9 +22,10 @@ import os from "node:os";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { deflateSync } from "node:zlib";
 
-import { GenerationService } from "../service/generation_service.mjs";
+import { GenerationService, sceneResultManifestIdForJob } from "../service/generation_service.mjs";
 import { GenerationJournal } from "../service/generation_journal.mjs";
 import { SceneResultStore } from "../service/scene_result_store.mjs";
+import { SceneResultIndex } from "../service/scene_result_index.mjs";
 import {
     SCHEMA_ID,
     SCHEMA_VERSION,
@@ -467,6 +468,8 @@ async function runTests() {
 
             // Mock store whose saveCompletedManifest always fails
             const failingStore = {
+                // No prior record exists for this job (canonical-id lookup).
+                getManifest: async () => null,
                 saveCompletedManifest: async () => {
                     const err = new Error("Disk full simulation");
                     err.code = "STORE_WRITE_FAILED";
@@ -533,6 +536,165 @@ async function runTests() {
             const calledUrl = new URL(requestedUrls[0]);
             assert.equal(calledUrl.pathname, "/view");
             assert.ok(!requestedUrls.some(u => u.includes("/prompt") || u.includes("/history") || u.includes("8188")));
+        });
+
+        // ------------------------------------------------------------------
+        // MANGA-ISOLATED-BASELINE-CORRECTION1 / B4: auto-finalization on getJob
+        // ------------------------------------------------------------------
+        const b4Env = async (label, setup, { fetchImpl = null } = {}) => {
+            const base = path.join(tmpBase, `b4-${label}`);
+            const journal = new GenerationJournal(path.join(base, "journal"));
+            await journal.put(setup.record);
+            const store = new SceneResultStore(path.join(base, "scene_results"));
+            const index = new SceneResultIndex({ directory: path.join(base, "scene_result_index"), store });
+            const pngBytes = makeValidPng(setup.width, setup.height);
+            const calls = [];
+            const fetchFn = fetchImpl || (async (url) => {
+                calls.push(new URL(url).pathname);
+                if (new URL(url).pathname === "/view") {
+                    return new Response(pngBytes, { status: 200, headers: { "Content-Type": "image/png" } });
+                }
+                throw new Error(`Unexpected fetch URL: ${url}`);
+            });
+            const service = new GenerationService({
+                backendUrl: "http://127.0.0.1:8189", journal, fetchFn,
+                sceneResultStore: store, sceneResultIndex: index,
+            });
+            const manifestFiles = async () => {
+                try {
+                    return (await fs.readdir(path.join(base, "scene_results"))).filter(n => n.endsWith(".json"));
+                } catch { return []; }
+            };
+            return { base, journal, store, index, service, calls, manifestFiles };
+        };
+
+        await test("B4-1: getJob on SUCCEEDED isolated job auto-finalizes exactly one durable SceneResult", async () => {
+            const setup = createValidJobSetup();
+            const env = await b4Env("one", setup);
+            const journalPath = path.join(env.base, "journal", `${setup.jobId}.json`);
+            const journalBefore = await fs.readFile(journalPath, "utf8");
+
+            const job = await env.service.getJob(setup.jobId);
+            assert.equal(job.state, "SUCCEEDED");
+            assert.equal(job.scene_result.status, "FINALIZED");
+            assert.equal(job.scene_result.manifest_id, sceneResultManifestIdForJob(setup.jobId));
+            assert.equal(job.ownership_token, undefined);
+
+            const entry = await env.index.getEntryByJobId(setup.jobId);
+            assert.equal(entry.manifest_id, job.scene_result.manifest_id);
+            const stored = await env.store.getManifest(job.scene_result.manifest_id, { required: true });
+            assert.equal(stored.execution.job_id, setup.jobId);
+            assert.deepEqual(await env.manifestFiles(), [`${job.scene_result.manifest_id}.json`]);
+            // Association is response-only: the journal record is untouched.
+            assert.equal(await fs.readFile(journalPath, "utf8"), journalBefore);
+        });
+
+        await test("B4-2: repeated and concurrent polling is idempotent (one manifest, one /view fetch)", async () => {
+            const setup = createValidJobSetup();
+            const env = await b4Env("idem", setup);
+            const first = await env.service.getJob(setup.jobId);
+            const again = await Promise.all([
+                env.service.getJob(setup.jobId),
+                env.service.getJob(setup.jobId),
+                env.service.getJob(setup.jobId),
+            ]);
+            for (const j of again) {
+                assert.equal(j.scene_result.status, "FINALIZED");
+                assert.equal(j.scene_result.manifest_id, first.scene_result.manifest_id);
+            }
+            const direct = await env.service.finalizeIsolatedSceneResult(setup.jobId);
+            assert.equal(direct.manifest_id, first.scene_result.manifest_id);
+            assert.equal((await env.manifestFiles()).length, 1);
+            assert.equal(env.calls.filter(p => p === "/view").length, 1);
+        });
+
+        await test("B4-3: already-finalized job reuses its existing canonical result (no new manifest)", async () => {
+            const setup = createValidJobSetup();
+            const env = await b4Env("reuse", setup);
+            const legacyId = randomUUID();
+            await env.service.finalizeIsolatedSceneResult(setup.jobId, { _manifestIdFactory: () => legacyId });
+            const job = await env.service.getJob(setup.jobId);
+            assert.equal(job.scene_result.manifest_id, legacyId);
+            assert.deepEqual(await env.manifestFiles(), [`${legacyId}.json`]);
+        });
+
+        await test("B4-4: saved-but-unindexed partial finalization is adopted, not duplicated", async () => {
+            const setup = createValidJobSetup();
+            const env = await b4Env("partial", setup);
+            const brokenIndex = {
+                getByJobId: async () => null,
+                indexManifest: async () => { const e = new Error("disk full"); e.code = "INDEX_WRITE_FAILED"; throw e; },
+            };
+            const broken = new GenerationService({
+                backendUrl: "http://127.0.0.1:8189", journal: env.journal, fetchFn: env.service.fetchFn,
+                sceneResultStore: env.store, sceneResultIndex: brokenIndex,
+            });
+            const failed = await broken.getJob(setup.jobId);
+            assert.equal(failed.state, "SUCCEEDED");
+            assert.equal(failed.scene_result.status, "FINALIZATION_FAILED");
+            assert.equal(failed.scene_result.error.code, "INDEX_WRITE_FAILED");
+            assert.equal((await env.manifestFiles()).length, 1);
+
+            const job = await env.service.getJob(setup.jobId);
+            assert.equal(job.scene_result.status, "FINALIZED");
+            assert.equal(job.scene_result.manifest_id, sceneResultManifestIdForJob(setup.jobId));
+            assert.equal((await env.manifestFiles()).length, 1);
+            assert.equal((await env.index.getEntryByJobId(setup.jobId)).manifest_id, job.scene_result.manifest_id);
+        });
+
+        await test("B4-5: conflicting durable data fails closed without overwrite or repair", async () => {
+            const victim = createValidJobSetup();
+            const env = await b4Env("conflict", victim);
+            // Another job's manifest occupies the victim's canonical id (tampered/foreign data).
+            const other = createValidJobSetup();
+            await env.journal.put(other.record);
+            const sideIndex = new SceneResultIndex({ directory: path.join(env.base, "side_index"), store: env.store });
+            const side = new GenerationService({
+                backendUrl: "http://127.0.0.1:8189", journal: env.journal, fetchFn: env.service.fetchFn,
+                sceneResultStore: env.store, sceneResultIndex: sideIndex,
+            });
+            const squatId = sceneResultManifestIdForJob(victim.jobId);
+            await side.finalizeIsolatedSceneResult(other.jobId, { _manifestIdFactory: () => squatId });
+            const squatPath = path.join(env.base, "scene_results", `${squatId}.json`);
+            const squatBefore = await fs.readFile(squatPath, "utf8");
+
+            const job = await env.service.getJob(victim.jobId);
+            assert.equal(job.state, "SUCCEEDED");
+            assert.equal(job.scene_result.status, "FINALIZATION_FAILED");
+            assert.equal(job.scene_result.error.code, "SCENE_RESULT_CONSISTENCY_ERROR");
+            assert.equal(await fs.readFile(squatPath, "utf8"), squatBefore);
+            assert.equal((await env.manifestFiles()).length, 1);
+            assert.equal(await env.index.getEntryByJobId(victim.jobId), null);
+        });
+
+        await test("B4-6: FAILED / RUNNING / UNKNOWN isolated jobs never finalize", async () => {
+            for (const state of ["FAILED", "RUNNING", "UNKNOWN"]) {
+                const setup = createValidJobSetup();
+                if (state === "FAILED") {
+                    setup.record.error = { code: "BACKEND_EXECUTION_FAILED", message: "x" };
+                }
+                setup.record.state = state;
+                const env = await b4Env(`state-${state}`, setup, {
+                    fetchImpl: async () => { throw new Error("backend offline"); },
+                });
+                const job = await env.service.getJob(setup.jobId);
+                assert.notEqual(job.state, "SUCCEEDED");
+                assert.equal(job.scene_result, undefined, `${state} must not carry a scene_result`);
+                assert.equal((await env.manifestFiles()).length, 0);
+                assert.equal(await env.index.getEntryByJobId(setup.jobId), null);
+            }
+        });
+
+        await test("B4-7: whole-page (non-isolated) SUCCEEDED job is returned unchanged by getJob", async () => {
+            const setup = createValidJobSetup();
+            delete setup.record.mode;
+            const env = await b4Env("whole-page", setup, {
+                fetchImpl: async () => { throw new Error("no backend call expected"); },
+            });
+            const job = await env.service.getJob(setup.jobId);
+            const { ownership_token, ...expected } = setup.record;
+            assert.deepEqual(job, expected);
+            assert.equal((await env.manifestFiles()).length, 0);
         });
 
     } finally {

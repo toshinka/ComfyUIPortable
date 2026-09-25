@@ -111,8 +111,8 @@ function buildTestPlan({
                         content_digest: contentDigest,
                     },
                     placement: {
-                        page_target_rect: { x: placementX, y: placementY, width, height },
-                        local_source_rect: { x: 0, y: 0, width, height },
+                        page_target_rect: { x: placementX, y: placementY, w: width, h: height },
+                        local_source_rect: { x: 0, y: 0, w: width, h: height },
                         transform: {},
                         target_page_dimensions: { width, height },
                     },
@@ -529,6 +529,41 @@ async function runTests() {
             });
 
             assert.equal(JSON.stringify(docClone), docSnapshot, "Authoring document must not be mutated");
+        });
+
+        // Regression: canonical production rect { x, y, w, h } canonicalizes and classifies CURRENT
+        await test("Regression: canonical production rect { x, y, w, h } canonicalizes and classifies CURRENT", async () => {
+            const prodPlan = buildTestPlan({
+                docId: "doc_prod",
+                pageId: "page_1",
+            });
+            prodPlan.scenes[0].selected_result.placement.page_target_rect = {
+                x: 0.05,
+                y: 0.05,
+                w: 0.90,
+                h: 0.40,
+            };
+            const saved = await store.saveComposite({
+                composition_plan: prodPlan,
+                composite_bytes: pngBytes,
+            });
+            await index.indexComposite(saved.composite_id);
+
+            const classifier = new PageCompositeCurrentClassifier({
+                store,
+                index,
+                prepFn: async () => prodPlan,
+            });
+
+            const res = await classifier.classifyCurrentPageComposite({
+                composite_id: saved.composite_id,
+                authoring_document: { document_id: "doc_prod", pages: [{ page_id: "page_1" }] },
+            });
+
+            assert.equal(res.status, CURRENT_STATUS.CURRENT);
+            assert.equal(res.reason_code, CURRENT_REASON.SEMANTIC_PLAN_MATCH);
+            assert.ok(res.stored_semantic_digest);
+            assert.equal(res.stored_semantic_digest, res.current_semantic_digest);
         });
 
     } finally {

@@ -31,6 +31,15 @@ DIMENSION_BOUNDS = {
     "max_pixels": 2097152,
 }
 
+# Canonical normal-path local canvas rule (single source of truth).
+# Every other layer (workspace, GenerationService, compiler, compositor) consumes
+# plan["local_canvas"]; none re-derives it.
+LOCAL_CANVAS_GRID = 64
+LOCAL_CANVAS_TARGET_PIXELS = 1024 * 1024
+LOCAL_CANVAS_MIN_BUDGET_RATIO = 0.8
+LOCAL_CANVAS_WIDE_BUDGET_RATIO = 0.5
+LOCAL_CANVAS_MAX_ASPECT_ERROR = math.log(1.05)
+
 MAX_INSTANCES_PER_SCENE = 2
 MAX_REFERENCES_PER_SCENE = 1
 GEOMETRY_TOLERANCE = 0.0001
@@ -230,6 +239,56 @@ def _check_active_guides(page: Dict[str, Any]) -> None:
                 )
 
 
+def derive_local_canvas_dimensions(
+    page_width_px: Any,
+    page_height_px: Any,
+    scene_rect: Dict[str, float],
+) -> Tuple[int, int]:
+    """Canonical isolated-Scene local canvas derivation.
+
+    Preserves the Scene rectangle's pixel aspect ratio (Scene w/h in page pixels)
+    as closely as the LOCAL_CANVAS_GRID allows, at approximately the SDXL pixel
+    budget, inside DIMENSION_BOUNDS.  Deterministic.
+
+    Selection: among grid candidates with pixels in
+    [MIN_BUDGET_RATIO * TARGET, TARGET], pick the smallest |ln(aspect error)|,
+    ties broken by larger pixel count, then larger width.  If that best
+    candidate still misses the Scene aspect by more than 5% (extreme strips
+    limited by the max edge), widen the band to [WIDE_BUDGET_RATIO * TARGET,
+    TARGET] and pick again by the same ordering.
+    """
+    if type(page_width_px) is not int or type(page_height_px) is not int or page_width_px <= 0 or page_height_px <= 0:
+        raise IsolatedScenePlanError(
+            "INVALID_LOCAL_DIMENSIONS",
+            "Page width_px/height_px must be positive integers to derive Scene local canvas dimensions",
+        )
+    scene_px_w = scene_rect["w"] * page_width_px
+    scene_px_h = scene_rect["h"] * page_height_px
+    if not (scene_px_w > 0 and scene_px_h > 0):
+        raise IsolatedScenePlanError("INVALID_SCENE_GEOMETRY", "Scene rectangle has no pixel area")
+    target_log_aspect = math.log(scene_px_w / scene_px_h)
+
+    grid = LOCAL_CANVAS_GRID
+    w_b, h_b = DIMENSION_BOUNDS["width"], DIMENSION_BOUNDS["height"]
+    budget = min(LOCAL_CANVAS_TARGET_PIXELS, DIMENSION_BOUNDS["max_pixels"])
+    widths = [v for v in range(grid, w_b["max"] + 1, grid) if v >= w_b["min"]]
+    heights = [v for v in range(grid, h_b["max"] + 1, grid) if v >= h_b["min"]]
+    candidates = [(w, h) for w in widths for h in heights if w * h <= budget]
+
+    def pick(pool):
+        return min(pool, key=lambda c: (aspect_error(c), -(c[0] * c[1]), -c[0]))
+
+    def aspect_error(c):
+        return abs(math.log(c[0] / c[1]) - target_log_aspect)
+
+    band = [c for c in candidates if c[0] * c[1] >= LOCAL_CANVAS_MIN_BUDGET_RATIO * budget]
+    best = pick(band) if band else None
+    if best is None or aspect_error(best) > LOCAL_CANVAS_MAX_ASPECT_ERROR:
+        wide = [c for c in candidates if c[0] * c[1] >= LOCAL_CANVAS_WIDE_BUDGET_RATIO * budget]
+        best = pick(wide) if wide else pick(candidates)
+    return best
+
+
 def create_isolated_scene_plan(
     document_snapshot: Dict[str, Any],
     scene_id: str,
@@ -267,8 +326,13 @@ def create_isolated_scene_plan(
 
     scene_id = scene_id.strip()
 
-    # 1. Validate local dimensions
-    local_w, local_h = _validate_dimensions(local_dimensions, width_override=width, height_override=height)
+    # 1. Validate explicit local dimensions (diagnostic override).  When omitted,
+    #    the canonical rule derives them from the Scene rectangle below.
+    explicit_dimensions = not (
+        local_dimensions is None and width is None and height is None
+    )
+    if explicit_dimensions:
+        local_w, local_h = _validate_dimensions(local_dimensions, width_override=width, height_override=height)
 
     # 2. Resolve target page
     page, resolved_page_index = _resolve_page(
@@ -298,6 +362,8 @@ def create_isolated_scene_plan(
     # Validate scene area
     scene_rect = _parse_rect(scene.get("area"), f"Scene '{scene_id}'")
     sx, sy, sw, sh = scene_rect["x"], scene_rect["y"], scene_rect["w"], scene_rect["h"]
+    if not explicit_dimensions:
+        local_w, local_h = derive_local_canvas_dimensions(page.get("width_px"), page.get("height_px"), scene_rect)
 
     # 5. Filter and transform Character Instances
     all_instances = page.get("character_instances", [])
