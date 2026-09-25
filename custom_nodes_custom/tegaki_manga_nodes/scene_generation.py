@@ -17,7 +17,10 @@ from .authoring_execution_bridge import (
     compile_document_to_page_plan,
     validate_authoring_execution_document,
 )
-from .authoring_contract import validate_reference_asset_reference
+from .authoring_contract import (
+    validate_asset_reference,
+    validate_reference_asset_reference,
+)
 from .basic_generation import (
     CORE_NODES,
     GenerationContractError,
@@ -36,17 +39,35 @@ from .scene_spec import validate_page_compile_plan
 SCENE_REQUEST_FIELDS = frozenset({
     "request_id", "mode", "checkpoint_id", "authoring_document", "page_index",
     "sampler_id", "scheduler_id", "steps", "cfg", "seed_requested",
-    "capability_revision", "mask_feather", "panel_strength",
+    "capability_revision", "mask_feather", "panel_strength", "controlnet_strength",
+    "controlnet_start_percent", "controlnet_end_percent",
+    "reference_weight", "reference_start", "reference_end",
+    "reference_start_at", "reference_end_at",
 })
-SCENE_REQUIRED_FIELDS = SCENE_REQUEST_FIELDS - {"mask_feather", "panel_strength"}
+SCENE_REQUIRED_FIELDS = SCENE_REQUEST_FIELDS - {
+    "mask_feather", "panel_strength", "controlnet_strength",
+    "controlnet_start_percent", "controlnet_end_percent",
+    "reference_weight", "reference_start", "reference_end",
+    "reference_start_at", "reference_end_at",
+}
 SCENE_REQUIRED_NODES = (
     "TegakiMangaPagePlanFromJSON", "TegakiMangaConditioningBuilder",
 )
 SCENE_REFERENCE_REQUIRED_NODES = (
     "LoadImage", "CLIPVisionLoader", "IPAdapterModelLoader", "IPAdapterAdvanced",
 )
+SCENE_CONTROLNET_REQUIRED_NODES = (
+    "ControlNetLoader", "ControlNetApplyAdvanced", "LoadImage",
+)
+CONTROLNET_DEFAULT_MODEL = r"CN-anytest_v4\CN-anytest4_illustrious2_A.safetensors"
+CONTROLNET_DEFAULT_STRENGTH = 0.35
+CONTROLNET_START_PERCENT = 0.0
+CONTROLNET_END_PERCENT = 1.0
 REFERENCE_CLIP_VISION = "CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors"
 REFERENCE_IPADAPTER = "ip-adapter-plus_sdxl_vit-h.safetensors"
+# This is the one checkpoint whose live safetensors architecture and
+# IP-Adapter Plus SDXL cross-attention dimensions were verified for this path.
+REFERENCE_SUPPORTED_CHECKPOINT = r"!新規SDモデル\comicBookIllustrious_illustriousV11.safetensors"
 REFERENCE_WEIGHT = 0.70
 REFERENCE_WEIGHT_TYPE = "linear"
 REFERENCE_COMBINE_EMBEDS = "concat"
@@ -54,6 +75,32 @@ REFERENCE_START_AT = 0.0
 REFERENCE_END_AT = 1.0
 REFERENCE_EMBEDS_SCALING = "V only"
 SCENE_LORA_RE = re.compile(r"<lora:", re.IGNORECASE)
+INCOMPATIBLE_CHECKPOINT_SUBSTRINGS = (
+    "sd15", "sd_1.5", "sd-1.5", "v1-5", "v1.5", "sd21", "sd_2.1", "sd-2.1", "flux", "cascade",
+)
+COMPATIBLE_CHECKPOINT_SUBSTRINGS = ("illustrious", "sdxl")
+
+
+def is_illustrious_sdxl_checkpoint(checkpoint_id: str, catalog: dict | None = None) -> bool:
+    """Validate whether checkpoint is an Illustrious / SDXL compatible model."""
+    if not isinstance(checkpoint_id, str) or not checkpoint_id:
+        return False
+    if checkpoint_id == REFERENCE_SUPPORTED_CHECKPOINT:
+        return True
+    if isinstance(catalog, dict):
+        for entry in catalog.get("checkpoints", []):
+            if isinstance(entry, dict) and entry.get("id") == checkpoint_id:
+                family = str(entry.get("family", "")).lower()
+                if family in ("illustrious", "sdxl"):
+                    return True
+                if family in ("sd15", "v1-5", "sd21", "v2-1", "flux", "cascade", "auraflow", "sd3"):
+                    return False
+                break
+    lower = checkpoint_id.lower()
+    if any(sub in lower for sub in INCOMPATIBLE_CHECKPOINT_SUBSTRINGS):
+        return False
+    return any(sub in lower for sub in COMPATIBLE_CHECKPOINT_SUBSTRINGS)
+
 
 
 def _fail(code: str, message: str) -> None:
@@ -116,12 +163,12 @@ def _validate_scene_document(document: Any, page_index: int) -> tuple[dict, dict
         # deterministic before it can accidentally enter a dormant CAST path.
         _fail("SCENE_CAST_UNSUPPORTED", "CAST execution requires canonical cast and character_instances lists")
 
-    # The existing simple Scene route remains byte-for-byte compatible when
-    # there is no executable CAST state.
-    if not cast_list and not instances:
+    # Unplaced CAST definitions are authoring data, not active conditions.
+    # Keep simple Scene compilation independent of them.
+    if not instances:
         for scene in scenes:
             if scene.get("input_mode", "simple") != "simple":
-                _fail("SCENE_CAST_UNSUPPORTED", f"Scene {scene.get('scene_id', '?')!r} is not simple-only")
+                _fail("SCENE_CAST_UNSUPPORTED", f"Scene {scene.get('scene_id', '?')!r} requires a placed Character Instance")
         try:
             validate_authoring_execution_document(document, page_index, allow_cast=False)
         except GenerationContractError:
@@ -130,39 +177,84 @@ def _validate_scene_document(document: Any, page_index: int) -> tuple[dict, dict
             _fail("INVALID_DOCUMENT", str(exc))
         return page, None
 
-    # PLAY5 reference integration deliberately enables one Scene + one
-    # Character Instance.  All other CAST shapes remain fail-closed.
-    if len(instances) > 1:
-        referenced = []
-        cast_by_id = {entry.get("cast_id"): entry for entry in cast_list if isinstance(entry, dict)}
-        for instance in instances:
-            cast = cast_by_id.get(instance.get("cast_id"), {})
-            if cast.get("reference_asset"):
-                referenced.append(instance)
-        if len(referenced) > 1:
-            _fail("REFERENCE_MULTI_INSTANCE_UNSUPPORTED", "Only one referenced character instance is supported")
-        _fail("SCENE_CAST_UNSUPPORTED", "Only one character instance is supported in PLAY5 Scene mode")
-    if len(cast_list) != 1 or len(instances) != 1 or len(scenes) != 1:
-        _fail("SCENE_CAST_UNSUPPORTED", "PLAY5 CAST execution requires exactly one Scene, CAST, and character instance")
-    scene = scenes[0]
-    if scene.get("input_mode", "simple") != "cast":
-        _fail("SCENE_CAST_UNSUPPORTED", "Character execution requires a cast Scene")
-    instance = instances[0]
-    if not isinstance(instance.get("area"), dict):
-        _fail("REFERENCE_MASK_UNAVAILABLE", "Character instance area is required for the canonical Manga mask")
+    # The active text-conditioning path supports up to two placed Character Instances
+    # across CAST-enabled Scenes. Other Scenes must use simple mode.
+    if len(instances) > 2:
+        _fail("SCENE_CAST_UNSUPPORTED", "Scenes generation currently supports at most two placed Character Instances")
+
+    cast_by_id = {entry.get("cast_id"): entry for entry in cast_list if isinstance(entry, dict)}
+    scene_by_id = {s.get("scene_id"): s for s in scenes if isinstance(s, dict)}
+
+    scenes_with_instances = set()
+    referenced_assets = set()
+    primary_reference_asset = None
+    for instance in instances:
+        instance_scene_id = instance.get("scene_id")
+        parent_scene = scene_by_id.get(instance_scene_id)
+        if parent_scene is None:
+            _fail("INVALID_DOCUMENT", f"Character instance references unknown scene_id '{instance_scene_id}'")
+        if parent_scene.get("input_mode", "simple") != "cast":
+            _fail("SCENE_CAST_UNSUPPORTED", "Character execution requires a cast Scene")
+        scenes_with_instances.add(instance_scene_id)
+
+        cid = instance.get("cast_id")
+        cast = cast_by_id.get(cid)
+        if cast is None:
+            _fail("INVALID_DOCUMENT", f"Character instance references unknown cast_id '{cid}'")
+
+        if not _rect_area_within(parent_scene.get("area"), instance.get("area")):
+            _fail("SCENE_CHARACTER_AREA_INVALID", "Character instance area must be a normalized rectangle inside its parent Scene")
+
+        ref = cast.get("reference_asset")
+        if ref:
+            referenced_assets.add(ref)
+            if primary_reference_asset is None:
+                primary_reference_asset = ref
+
+    if len(referenced_assets) > 1:
+        _fail("REFERENCE_MULTI_ASSET_UNSUPPORTED", "Only one unique active Character Reference asset is supported across instances")
+
+    for s in scenes:
+        if isinstance(s, dict) and s.get("scene_id") not in scenes_with_instances:
+            if s.get("input_mode", "simple") != "simple":
+                _fail("SCENE_CAST_UNSUPPORTED", f"Scene {s.get('scene_id', '?')!r} requires a placed Character Instance")
+
     try:
         validate_authoring_execution_document(document, page_index, allow_cast=True)
     except GenerationContractError:
         raise
     except ValueError as exc:
         _fail("INVALID_DOCUMENT", str(exc))
-    cast = cast_list[0]
+
     return page, {
-        "cast_id": cast.get("cast_id"),
-        "instance_id": instance.get("instance_id"),
-        "reference_asset": cast.get("reference_asset"),
-        "area": copy.deepcopy(instance.get("area")),
+        "reference_asset": primary_reference_asset,
+        "instance_count": len(instances),
     }
+
+
+def _rect_area_within(parent: Any, child: Any) -> bool:
+    def read(area: Any) -> dict | None:
+        if not isinstance(area, dict) or area.get("shape_type", "rect") != "rect":
+            return None
+        values = [area.get(key) for key in ("x", "y", "w", "h")]
+        if any(type(value) not in (int, float) or not math.isfinite(value) for value in values):
+            return None
+        x, y, w, h = map(float, values)
+        if x < 0 or y < 0 or w <= 0 or h <= 0 or x + w > 1.0001 or y + h > 1.0001:
+            return None
+        return {"x": x, "y": y, "w": w, "h": h}
+
+    parent_rect = read(parent)
+    child_rect = read(child)
+    if parent_rect is None or child_rect is None:
+        return False
+    tolerance = 0.0001
+    return (
+        child_rect["x"] >= parent_rect["x"] - tolerance
+        and child_rect["y"] >= parent_rect["y"] - tolerance
+        and child_rect["x"] + child_rect["w"] <= parent_rect["x"] + parent_rect["w"] + tolerance
+        and child_rect["y"] + child_rect["h"] <= parent_rect["y"] + parent_rect["h"] + tolerance
+    )
 
 
 def _reference_character(plan: dict) -> dict | None:
@@ -178,12 +270,15 @@ def _reference_character(plan: dict) -> dict | None:
                 if validate_reference_asset_reference(asset, "PAGE_COMPILE_PLAN.characters[].reference_asset"):
                     _fail("REFERENCE_ASSET_INVALID", f"Reference asset '{asset}' is not a canonical Manga reference")
                 references.append(character)
-    if len(references) > 1:
-        _fail("REFERENCE_MULTI_INSTANCE_UNSUPPORTED", "Only one referenced character instance is supported")
-    return references[0] if references else None
+    if not references:
+        return None
+    unique_assets = {r.get("reference_asset") for r in references}
+    if len(unique_assets) > 1:
+        _fail("REFERENCE_MULTI_ASSET_UNSUPPORTED", "Only one unique active Character Reference asset is supported across instances")
+    return references[0]
 
 
-def _catalog_reference(catalog: dict, asset: str) -> None:
+def _catalog_reference(catalog: dict, asset: str, checkpoint_id: str) -> None:
     capability = catalog.get("scene_generation", {}).get("reference")
     if not isinstance(capability, dict) or capability.get("available") is not True:
         _fail("REFERENCE_RUNTIME_UNAVAILABLE", "Manga Reference runtime support is unavailable")
@@ -203,6 +298,59 @@ def _catalog_reference(catalog: dict, asset: str) -> None:
     assets = capability.get("reference_assets")
     if not isinstance(assets, list) or asset not in assets:
         _fail("REFERENCE_ASSET_UNAVAILABLE", f"Reference asset '{asset}' is unavailable")
+
+
+def _active_guide(page: dict) -> dict | None:
+    """Return the single active structural Guide, if any."""
+    guides = page.get("guides")
+    if guides is None:
+        return None
+    if not isinstance(guides, list):
+        _fail("INVALID_DOCUMENT", "page.guides must be a list")
+    active = []
+    for idx, g in enumerate(guides):
+        if not isinstance(g, dict):
+            _fail("INVALID_DOCUMENT", f"page.guides[{idx}] must be an object")
+        if g.get("enabled", True) is not False:
+            active.append(g)
+    if not active:
+        return None
+    if len(active) > 1:
+        _fail("GUIDE_MULTI_INSTANCE_UNSUPPORTED", "Only one active structural guide is supported in PLAY5 Scene mode")
+    guide = active[0]
+    guide_type = guide.get("guide_type")
+    if guide_type not in ("rough_manga", "frame_guide"):
+        _fail("GUIDE_TYPE_UNSUPPORTED", f"Unsupported guide_type '{guide_type}'")
+    asset = guide.get("asset_reference")
+    if not isinstance(asset, str) or not asset.strip():
+        _fail("GUIDE_ASSET_INVALID", "Active structural guide must specify asset_reference")
+    asset = asset.strip()
+    errors = validate_asset_reference(asset, "page.guides[].asset_reference")
+    if errors:
+        _fail("GUIDE_ASSET_INVALID", f"Invalid guide asset_reference '{asset}': {'; '.join(errors)}")
+    return {
+        "guide_id": guide.get("guide_id"),
+        "guide_type": guide_type,
+        "asset_reference": asset,
+        "placement": copy.deepcopy(guide.get("placement")),
+    }
+
+
+def _catalog_controlnet(catalog: dict, asset: str, checkpoint_id: str) -> tuple[str, float]:
+    capability = catalog.get("scene_generation", {}).get("controlnet")
+    if not isinstance(capability, dict) or capability.get("available") is not True:
+        _fail("CONTROLNET_RUNTIME_UNAVAILABLE", "Manga ControlNet runtime support is unavailable")
+    if capability.get("required_nodes") != list(SCENE_CONTROLNET_REQUIRED_NODES):
+        _fail("CONTROLNET_RUNTIME_UNAVAILABLE", "Manga ControlNet node capability is incomplete")
+    model = capability.get("model")
+    if not isinstance(model, str) or not model:
+        _fail("CONTROLNET_MODEL_UNAVAILABLE", "Manga ControlNet model selector is unavailable in catalog")
+    assets = capability.get("guide_assets")
+    if isinstance(assets, list) and asset not in assets:
+        _fail("GUIDE_ASSET_UNAVAILABLE", f"Guide asset '{asset}' is unavailable")
+    strength = capability.get("default_strength", CONTROLNET_DEFAULT_STRENGTH)
+    return model, float(strength)
+
 
 
 def _resolve_seed(seed_text: Any, random_seed: Callable[[], int] | None) -> tuple[str, int]:
@@ -348,8 +496,65 @@ def compile_scene(request: dict, catalog: dict, random_seed: Callable[[], int] |
     if type(strength) not in (int, float) or not math.isfinite(strength) or not 0 <= strength <= 2:
         _fail("INVALID_PARAMETER", "panel_strength must be a finite number in 0..2")
     strength = float(strength)
+    cnet_strength = request.get("controlnet_strength")
+    if cnet_strength is not None:
+        if type(cnet_strength) not in (int, float) or not math.isfinite(cnet_strength) or not 0 <= cnet_strength <= 2:
+            _fail("INVALID_PARAMETER", "controlnet_strength must be a finite number in 0..2")
+        cnet_strength = float(cnet_strength)
+
+    cnet_start = request.get("controlnet_start_percent")
+    if cnet_start is not None:
+        if type(cnet_start) not in (int, float) or not math.isfinite(cnet_start) or not 0.0 <= cnet_start <= 1.0:
+            _fail("INVALID_PARAMETER", "controlnet_start_percent must be a finite number in 0..1")
+        cnet_start = float(cnet_start)
+    else:
+        cnet_start = CONTROLNET_START_PERCENT
+
+    cnet_end = request.get("controlnet_end_percent")
+    if cnet_end is not None:
+        if type(cnet_end) not in (int, float) or not math.isfinite(cnet_end) or not 0.0 <= cnet_end <= 1.0:
+            _fail("INVALID_PARAMETER", "controlnet_end_percent must be a finite number in 0..1")
+        cnet_end = float(cnet_end)
+    else:
+        cnet_end = CONTROLNET_END_PERCENT
+
+    if cnet_start >= cnet_end:
+        _fail("INVALID_PARAMETER", "controlnet_start_percent must be strictly less than controlnet_end_percent")
+
+    ref_weight = request.get("reference_weight")
+    if ref_weight is not None:
+        if type(ref_weight) not in (int, float) or not math.isfinite(ref_weight) or not 0.0 <= ref_weight <= 2.0:
+            _fail("INVALID_PARAMETER", "reference_weight must be a finite number in 0..2")
+        ref_weight = float(ref_weight)
+    else:
+        ref_weight = REFERENCE_WEIGHT
+
+    ref_start = request.get("reference_start") if "reference_start" in request else request.get("reference_start_at")
+    if ref_start is not None:
+        if type(ref_start) not in (int, float) or not math.isfinite(ref_start) or not 0.0 <= ref_start <= 1.0:
+            _fail("INVALID_PARAMETER", "reference_start must be a finite number in 0..1")
+        ref_start = float(ref_start)
+    else:
+        ref_start = REFERENCE_START_AT
+
+    ref_end = request.get("reference_end") if "reference_end" in request else request.get("reference_end_at")
+    if ref_end is not None:
+        if type(ref_end) not in (int, float) or not math.isfinite(ref_end) or not 0.0 <= ref_end <= 1.0:
+            _fail("INVALID_PARAMETER", "reference_end must be a finite number in 0..1")
+        ref_end = float(ref_end)
+    else:
+        ref_end = REFERENCE_END_AT
+
+    if ref_start >= ref_end:
+        _fail("INVALID_PARAMETER", "reference_start must be strictly less than reference_end")
 
     page, cast_slice = _validate_scene_document(request["authoring_document"], page_index)
+    active_guide = _active_guide(page)
+    cnet_model = None
+    if active_guide is not None:
+        cnet_model, default_strength = _catalog_controlnet(catalog, active_guide["asset_reference"], selected)
+        if cnet_strength is None:
+            cnet_strength = default_strength
     width, height = page.get("width_px"), page.get("height_px")
     if type(width) is not int or type(height) is not int:
         _fail("INVALID_DOCUMENT", "Authoring page width_px and height_px must be integers")
@@ -372,7 +577,7 @@ def compile_scene(request: dict, catalog: dict, random_seed: Callable[[], int] |
     if cast_slice is not None and cast_slice["reference_asset"] and reference_character is None:
         _fail("REFERENCE_ASSET_UNAVAILABLE", "The CAST reference was not carried into PAGE_COMPILE_PLAN")
     if reference_character is not None:
-        _catalog_reference(catalog, reference_character["reference_asset"])
+        _catalog_reference(catalog, reference_character["reference_asset"], selected)
     plan_json = json.dumps(plan, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     page_plan_digest = _digest(plan)
     audit["effective_seed"] = seed
@@ -389,12 +594,24 @@ def compile_scene(request: dict, catalog: dict, random_seed: Callable[[], int] |
             "area": copy.deepcopy(reference_character.get("area")),
             "clip_vision": REFERENCE_CLIP_VISION,
             "ipadapter": REFERENCE_IPADAPTER,
-            "weight": REFERENCE_WEIGHT,
+            "weight": ref_weight,
             "weight_type": REFERENCE_WEIGHT_TYPE,
             "combine_embeds": REFERENCE_COMBINE_EMBEDS,
-            "start_at": REFERENCE_START_AT,
-            "end_at": REFERENCE_END_AT,
+            "start_at": ref_start,
+            "end_at": ref_end,
             "embeds_scaling": REFERENCE_EMBEDS_SCALING,
+        }
+    audit["controlnet"] = {"enabled": False}
+    if active_guide is not None:
+        audit["controlnet"] = {
+            "enabled": True,
+            "guide_id": active_guide.get("guide_id"),
+            "guide_type": active_guide.get("guide_type"),
+            "asset_reference": active_guide["asset_reference"],
+            "model": cnet_model,
+            "strength": cnet_strength,
+            "start_percent": cnet_start,
+            "end_percent": cnet_end,
         }
 
     graph = {"1": {"class_type": "CheckpointLoaderSimple", "inputs": {"ckpt_name": selected}}}
@@ -420,12 +637,14 @@ def compile_scene(request: dict, catalog: dict, random_seed: Callable[[], int] |
         "set_cond_area": "default", "mask_feather": feather,
     }}
     graph[latent_id] = {"class_type": "EmptyLatentImage", "inputs": {"width": width, "height": height, "batch_size": 1}}
+    last_id = int(save_id)
     sampler_model = model
     if reference_character is not None:
-        ref_clip_id = str(int(save_id) + 1)
-        ref_model_id = str(int(save_id) + 2)
-        ref_image_id = str(int(save_id) + 3)
-        ref_apply_id = str(int(save_id) + 4)
+        ref_clip_id = str(last_id + 1)
+        ref_model_id = str(last_id + 2)
+        ref_image_id = str(last_id + 3)
+        ref_apply_id = str(last_id + 4)
+        last_id += 4
         graph[ref_clip_id] = {"class_type": "CLIPVisionLoader", "inputs": {
             "clip_name": REFERENCE_CLIP_VISION,
         }}
@@ -439,20 +658,47 @@ def compile_scene(request: dict, catalog: dict, random_seed: Callable[[], int] |
             "model": model,
             "ipadapter": [ref_model_id, 0],
             "image": [ref_image_id, 0],
-            "weight": REFERENCE_WEIGHT,
+            "weight": ref_weight,
             "weight_type": REFERENCE_WEIGHT_TYPE,
             "combine_embeds": REFERENCE_COMBINE_EMBEDS,
-            "start_at": REFERENCE_START_AT,
-            "end_at": REFERENCE_END_AT,
+            "start_at": ref_start,
+            "end_at": ref_end,
             "embeds_scaling": REFERENCE_EMBEDS_SCALING,
-            "attn_mask": [conditioning_id, 3],
+            "attn_mask": [conditioning_id, 6],
             "clip_vision": [ref_clip_id, 0],
         }}
         sampler_model = [ref_apply_id, 0]
+
+    sampler_pos = [conditioning_id, 0]
+    sampler_neg = [conditioning_id, 1]
+    if active_guide is not None:
+        cnet_model_id = str(last_id + 1)
+        cnet_image_id = str(last_id + 2)
+        cnet_apply_id = str(last_id + 3)
+        last_id += 3
+        graph[cnet_model_id] = {"class_type": "ControlNetLoader", "inputs": {
+            "control_net_name": cnet_model,
+        }}
+        graph[cnet_image_id] = {"class_type": "LoadImage", "inputs": {
+            "image": f"{active_guide['asset_reference']} [input]",
+        }}
+        graph[cnet_apply_id] = {"class_type": "ControlNetApplyAdvanced", "inputs": {
+            "positive": [conditioning_id, 0],
+            "negative": [conditioning_id, 1],
+            "control_net": [cnet_model_id, 0],
+            "image": [cnet_image_id, 0],
+            "strength": float(cnet_strength),
+            "start_percent": float(cnet_start),
+            "end_percent": float(cnet_end),
+            "vae": ["1", 2],
+        }}
+        sampler_pos = [cnet_apply_id, 0]
+        sampler_neg = [cnet_apply_id, 1]
+
     graph[sampler_id] = {"class_type": "KSampler", "inputs": {
         "model": sampler_model, "seed": seed, "steps": steps, "cfg": cfg,
         "sampler_name": request["sampler_id"], "scheduler": request["scheduler_id"],
-        "positive": [conditioning_id, 0], "negative": [conditioning_id, 1],
+        "positive": sampler_pos, "negative": sampler_neg,
         "latent_image": [latent_id, 0], "denoise": 1.0,
     }}
     graph[decode_id] = {"class_type": "VAEDecode", "inputs": {"samples": [sampler_id, 0], "vae": ["1", 2]}}
@@ -464,6 +710,14 @@ def compile_scene(request: dict, catalog: dict, random_seed: Callable[[], int] |
     normalized["seed_requested"] = seed_text
     normalized["mask_feather"] = feather
     normalized["panel_strength"] = float(strength)
+    if cnet_strength is not None:
+        normalized["controlnet_strength"] = float(cnet_strength)
+    if "reference_weight" in request:
+        normalized["reference_weight"] = float(ref_weight)
+    if "reference_start" in request or "reference_start_at" in request:
+        normalized["reference_start"] = float(ref_start)
+    if "reference_end" in request or "reference_end_at" in request:
+        normalized["reference_end"] = float(ref_end)
     normalized["authoring_document"] = copy.deepcopy(request["authoring_document"])
     return {
         "ok": True,

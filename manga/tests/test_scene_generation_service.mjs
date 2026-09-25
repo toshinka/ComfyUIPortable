@@ -65,6 +65,17 @@ class SceneBackend {
                 }};
                 graph["5"].inputs.model = ["11", 0];
             }
+            const guideAsset = request.authoring_document?.pages?.[0]?.guides?.[0]?.asset_reference;
+            if (guideAsset) {
+                graph["12"] = { class_type: "ControlNetLoader", inputs: { control_net_name: "CN-anytest_v4\\CN-anytest4_illustrious2_A.safetensors" } };
+                graph["13"] = { class_type: "LoadImage", inputs: { image: `${guideAsset} [input]` } };
+                graph["14"] = { class_type: "ControlNetApplyAdvanced", inputs: {
+                    positive: ["3", 0], negative: ["3", 1], control_net: ["12", 0], image: ["13", 0],
+                    strength: 0.35, start_percent: 0.0, end_percent: 1.0, vae: ["1", 2]
+                }};
+                graph["5"].inputs.positive = ["14", 0];
+                graph["5"].inputs.negative = ["14", 1];
+            }
             return json(res, 200, { ok: true, normalized_request: request, effective_seed: Number(request.seed_requested),
                 capability_revision: "scene-r1", graph, graph_digest: DIGEST, page_compile_plan_digest: "b".repeat(64),
                 audit_trail: { global: {}, scenes: [], scene_ids: ["scene_one"] }, resolved_loras: [],
@@ -168,3 +179,66 @@ test("Reference Scene job passes compile validation with identical digest and su
     assert.equal(backend.payload.prompt["11"].class_type, "IPAdapterAdvanced");
     assert.equal(backend.payload.prompt["5"].inputs.model[0], "11");
 });
+
+test("Guide ControlNet Scene job passes compile validation with identical digest and submits reviewed graph", async t => {
+    const directory = await fs.mkdtemp(path.join(os.tmpdir(), "manga-play5-service-cnet-"));
+    const backend = new SceneBackend();
+    await backend.start();
+    const service = new GenerationService({ backendUrl: backend.origin, journal: new GenerationJournal(directory) });
+    t.after(async () => { await close(backend.server); await fs.rm(directory, { recursive: true, force: true }); });
+
+    const guideDoc = structuredClone(documentValue);
+    guideDoc.pages[0].guides = [{
+        guide_id: "guide_1",
+        guide_type: "rough_manga",
+        asset_reference: "tegaki_manga_guides/rough_layout1.png",
+        placement: { x: 0, y: 0, w: 1, h: 1 },
+        enabled: true
+    }];
+    const guideSettings = { ...settings(), authoring_document: guideDoc, controlnet_strength: 0.35 };
+
+    const job = await service.createSceneJob({ settings: guideSettings, idempotency_key: "scene-cnet-pass", expected_graph_digest: DIGEST });
+    assert.equal(backend.promptCalls, 1);
+    assert.equal(job.state, "QUEUED");
+    assert.equal(job.prompt_id, backend.promptId);
+    assert.equal(backend.payload.prompt["12"].class_type, "ControlNetLoader");
+    assert.equal(backend.payload.prompt["13"].class_type, "LoadImage");
+    assert.equal(backend.payload.prompt["14"].class_type, "ControlNetApplyAdvanced");
+    assert.equal(backend.payload.prompt["5"].inputs.positive[0], "14");
+    assert.equal(backend.payload.prompt["5"].inputs.negative[0], "14");
+});
+
+test("Combined Guide and Reference Scene job passes compile validation and submits both ControlNet and IP-Adapter", async t => {
+    const directory = await fs.mkdtemp(path.join(os.tmpdir(), "manga-play5-service-combined-"));
+    const backend = new SceneBackend();
+    await backend.start();
+    const service = new GenerationService({ backendUrl: backend.origin, journal: new GenerationJournal(directory) });
+    t.after(async () => { await close(backend.server); await fs.rm(directory, { recursive: true, force: true }); });
+
+    const combinedDoc = structuredClone(documentValue);
+    combinedDoc.pages[0].cast = [{ cast_id: "heroine", identity_prompt: "heroine", reference_asset: "tegaki_manga_references/ref_test.png" }];
+    combinedDoc.pages[0].character_instances = [{
+        instance_id: "inst_1", cast_id: "heroine", scene_id: "scene_one",
+        area: { shape_type: "rect", x: 0.1, y: 0.1, w: 0.8, h: 0.35 }
+    }];
+    combinedDoc.pages[0].guides = [{
+        guide_id: "guide_1",
+        guide_type: "rough_manga",
+        asset_reference: "tegaki_manga_guides/rough_layout1.png",
+        placement: { x: 0, y: 0, w: 1, h: 1 },
+        enabled: true
+    }];
+    const combinedSettings = { ...settings(), authoring_document: combinedDoc, controlnet_strength: 0.35 };
+
+    const job = await service.createSceneJob({ settings: combinedSettings, idempotency_key: "scene-combined-pass", expected_graph_digest: DIGEST });
+    assert.equal(backend.promptCalls, 1);
+    assert.equal(job.state, "QUEUED");
+    assert.equal(job.prompt_id, backend.promptId);
+    assert.equal(backend.payload.prompt["11"].class_type, "IPAdapterAdvanced");
+    assert.equal(backend.payload.prompt["14"].class_type, "ControlNetApplyAdvanced");
+    assert.equal(backend.payload.prompt["5"].inputs.model[0], "11");
+    assert.equal(backend.payload.prompt["5"].inputs.positive[0], "14");
+    assert.equal(backend.payload.prompt["5"].inputs.negative[0], "14");
+});
+
+

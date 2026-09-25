@@ -64,6 +64,7 @@ const stageActionSlot = $("stage-action-slot");
 const generateActionSlot = $("generate-action-slot");
 const generateActionDock = $("generate-action-dock");
 const stageStatusSlot = $("stage-status-slot");
+const createStatusSlot = $("create-status-slot");
 const statusStrip = document.querySelector(".status-strip");
 const generationStatusBlock = $("generation-status-block");
 const videoTypeCard = $("video-type-card");
@@ -167,6 +168,7 @@ function populateNamedOptions(select, names, selected, emptyLabel) {
 function renderPlayableControls() {
   const video = state.mode === "video";
   $("video-model-controls").hidden = !video;
+  $("video-lora-controls").hidden = !video;
   modelInput.disabled = !video;
   const cap = state.config?.playable;
   const selected = playableSelection();
@@ -176,7 +178,7 @@ function renderPlayableControls() {
   const models = cap?.models?.[state.videoType] || [];
   populateNamedOptions(modelInput, models, selected.model_name, "Native models not yet available");
   $("model-status").textContent = models.includes(selected.model_name)
-    ? "Native model · rechecked when you Generate"
+    ? ""
     : "Selected model is unavailable. Refresh after connecting Native or choose an available model.";
   const loraCap = cap?.lora;
   $("lora-status").textContent = loraCap?.state === "AVAILABLE"
@@ -482,6 +484,7 @@ function setMode(nextMode) {
       : "Enter a prompt and generate a short Native H3 video.";
   promptInput.placeholder = prep ? "Describe the requested image preparation…" : "Describe the video...";
   footerMode.textContent = `H3 / Native ${prep ? "Prep/Edit" : still ? "Still" : "Video"}`;
+  syncResponsiveMounts();
   updateGenerateAvailability();
 }
 
@@ -489,6 +492,7 @@ function configureMangaWorkspace() {
   const configured = state.config?.manga_workspace_url;
   if (typeof configured !== "string" || !configured) {
     state.mangaWorkspaceUrl = null;
+    mangaShellStatus.hidden = false;
     mangaShellStatus.textContent = "Manga workspace endpoint is unavailable.";
     return;
   }
@@ -498,12 +502,14 @@ function configureMangaWorkspace() {
         || parsed.username || parsed.password || parsed.search || parsed.hash
         || !/^\/$/.test(parsed.pathname)) throw new Error("endpoint is not a local HTTP workspace");
     state.mangaWorkspaceUrl = parsed.href;
-    mangaShellStatus.textContent = `Workspace ${parsed.host}`;
+    mangaShellStatus.hidden = true;
+    mangaShellStatus.textContent = "";
     const embedded = new URL(parsed.href);
     embedded.searchParams.set("embedded", "1");
     if (!mangaWorkspaceFrame.src || mangaWorkspaceFrame.src !== embedded.href) mangaWorkspaceFrame.src = embedded.href;
   } catch (error) {
     state.mangaWorkspaceUrl = null;
+    mangaShellStatus.hidden = false;
     mangaShellStatus.textContent = `Manga workspace unavailable: ${error.message}`;
   }
 }
@@ -545,14 +551,16 @@ function setNarrowView(nextView) {
 
 function syncResponsiveMounts() {
   const wide = !isNarrowViewport();
-  const actionSlot = wide ? stageActionSlot : generateActionSlot;
-  const statusSlot = wide ? stageStatusSlot : statusStrip;
+  const stageVideo = wide && state.mode === "video";
+  const actionSlot = stageVideo ? stageActionSlot : generateActionSlot;
+  const statusSlot = stageVideo ? stageStatusSlot : wide ? createStatusSlot : statusStrip;
   if (generateActionDock.parentElement !== actionSlot) actionSlot.append(generateActionDock);
   if (generationStatusBlock.parentElement !== statusSlot) {
-    if (wide) statusSlot.append(generationStatusBlock);
+    if (stageVideo || wide) statusSlot.append(generationStatusBlock);
     else statusSlot.prepend(generationStatusBlock);
   }
-  stageActionBar.setAttribute("aria-hidden", String(!wide));
+  stageActionBar.hidden = !stageVideo;
+  stageActionBar.setAttribute("aria-hidden", String(!stageVideo));
 }
 
 function statusLabelForJob(job) {
@@ -923,6 +931,9 @@ function setReferenceSlotView(slot, reference) {
   if (slot === "start_frame") state.reference = reference;
   view.selected.hidden = !reference;
   view.empty.hidden = Boolean(reference);
+  const selectedRoles = Object.entries(state.references).filter(([, value]) => value).map(([role]) => role === "start_frame" ? "Start selected" : "End selected");
+  $("reference-summary").textContent = selectedRoles.join(" · ") || "Optional · text-only when empty";
+  if (reference) videoReferenceCard.open = true;
   if (!reference) {
     view.thumbnail.removeAttribute("src");
     view.name.textContent = "";

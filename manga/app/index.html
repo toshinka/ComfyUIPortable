@@ -5,25 +5,337 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TEGAKI Manga · Standalone Workspace</title>
     <link rel="stylesheet" href="css/manga_workspace.css">
+    <style>
+        /* ControlNet Controls in Page Guide */
+        /* Unified Compact Settings Rows (ControlNet & Character Reference) */
+        .mg-compact-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 6px 8px;
+            background: var(--manga-surface, #241d2a);
+            border: 1px solid var(--manga-line-soft, #4f445b);
+            border-radius: 6px;
+            margin-top: 6px;
+        }
+        .mg-compact-row {
+            display: flex;
+            gap: 6px;
+            align-items: flex-start;
+        }
+        .mg-compact-col {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .mg-compact-label {
+            font-size: 9.5px;
+            font-weight: 700;
+            color: var(--manga-muted, #94a3b8);
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .mg-compact-number {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 3px 4px;
+            font-size: 11px;
+            background: var(--manga-surface-inset, #18121d);
+            color: var(--manga-text, #f0ecf4);
+            border: 1px solid var(--manga-line, #3b3344);
+            border-radius: 4px;
+            font-family: inherit;
+            text-align: right;
+        }
+        .mg-compact-error {
+            font-size: 10px;
+            color: var(--manga-danger-text, #f87171);
+            background: var(--manga-danger-background, rgba(239, 68, 68, 0.1));
+            border: 1px solid var(--manga-danger-border, #ef4444);
+            border-radius: 4px;
+            padding: 3px 6px;
+        }
+
+        /* Contextual Character Reference Layout */
+        .mg-cast-ref-assigned {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            padding: 6px 8px;
+            border: 1px solid var(--manga-line, #3b3344);
+            border-radius: 6px;
+            background: var(--manga-surface-inset, #18121d);
+        }
+        .mg-cast-ref-left-col {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 0 0 250px;
+            max-width: 250px;
+        }
+        .mg-cast-ref-top-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .mg-cast-ref-right-slot {
+            flex: 1 1 auto;
+            min-width: 0;
+            min-height: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            border-left: 1px solid var(--manga-line-soft, #2b2333);
+            padding-left: 10px;
+        }
+        @media (max-width: 600px) {
+            .mg-cast-ref-assigned {
+                flex-direction: column;
+            }
+            .mg-cast-ref-left-col {
+                flex: 1 1 auto;
+                max-width: 100%;
+                width: 100%;
+            }
+            .mg-cast-ref-right-slot {
+                width: 100%;
+                max-width: 100%;
+                border-left: none;
+                border-top: 1px solid var(--manga-line-soft, #2b2333);
+                padding-left: 0;
+                padding-top: 8px;
+            }
+            .mg-compact-row {
+                flex-wrap: wrap;
+            }
+            .mg-compact-col {
+                min-width: 70px;
+            }
+        }
+    </style>
 </head>
 <body>
     <nav id="manga-mode-nav" aria-label="Manga workspace modes">
         <div class="manga-nav-left">
             <div class="manga-identity"><span class="manga-mark">T</span><span>TEGAKI</span><span class="manga-slash">/</span><strong>MANGA</strong></div>
-            <div class="manga-mode-tabs" role="tablist" aria-label="Manga mode">
-                <button id="manga-tab-generate" type="button" role="tab" aria-selected="false" aria-controls="generate-view">Generate</button>
-                <button id="manga-tab-authoring" type="button" role="tab" aria-selected="true" aria-controls="authoring-workspace">Authoring</button>
-            </div>
         </div>
-        <header id="workspace-header" class="header-actions">
-            <span id="doc-schema-label" style="font-size: 11px; color: #94a3b8; margin-right: 4px;">TEGAKI_AUTHORING_DOCUMENT 1.0.0</span>
-            <button id="btn-reset-default" class="btn" title="Reset to default document">Reset Default</button>
-            <button id="btn-load-fixture" class="btn" title="Load rich authoring fixture with all layers">Load Rich Fixture</button>
-            <button id="btn-load-json" class="btn" title="Import document JSON">Import JSON</button>
-            <button id="btn-export-json" class="btn btn-primary" title="Export / View document JSON">Export JSON</button>
-        </header>
+        <div class="product-switch" role="tablist" aria-label="TEGAKI engine">
+            <a class="product-button" id="standalone-product-h3" href="http://127.0.0.1:8190/" role="tab" aria-selected="false">H3</a>
+            <button class="product-button active" id="standalone-product-manga" type="button" role="tab" aria-selected="true">MANGA</button>
+        </div>
+        <div class="manga-mode-tabs" role="tablist" aria-label="Manga mode" style="display: none;">
+            <button id="manga-tab-generate" type="button" role="tab" aria-selected="false" aria-controls="generate-view">Generate</button>
+            <button id="manga-tab-authoring" type="button" role="tab" aria-selected="true" aria-controls="authoring-workspace">Authoring</button>
+        </div>
     </nav>
-    <div id="authoring-workspace" role="tabpanel" aria-labelledby="manga-tab-authoring">
+    <section id="generate-view" role="tabpanel" aria-labelledby="manga-tab-generate" data-presentation="glance" data-result="empty">
+        <div class="mg-main">
+            <div class="mg-stage-column">
+                <div class="mg-action-bar">
+                    <div><span class="mg-eyebrow">STATUS</span><div id="mg-status" role="status" aria-live="polite">Loading Manga capabilities…</div></div>
+                    <div id="mg-generation-scope" class="mg-generation-scope" role="group" aria-label="Generation scope" hidden>
+                        <button id="mg-generation-scope-global" type="button" aria-pressed="true">Global</button>
+                        <button id="mg-generation-scope-scenes" type="button" aria-pressed="false">Scenes</button>
+                    </div>
+                    <button id="mg-generate" type="button" class="mg-generate-button" aria-describedby="mg-generate-reason" disabled><span id="mg-generate-label">Generate</span><span aria-hidden="true"> →</span></button>
+                </div>
+                <div id="mg-generate-reason" class="mg-disabled-reason" role="note" aria-live="polite"></div>
+                <div id="mg-error" class="mg-error" role="alert" hidden></div>
+                <div class="mg-preview-controls" role="group" aria-label="Preview controls">
+                    <div class="mg-preview-size-fields">
+                        <div class="mg-preview-size-field"><label for="mg-width">Width</label><input id="mg-width" type="number" step="8" value="832"></div>
+                        <div class="mg-preview-size-field"><label for="mg-height">Height</label><input id="mg-height" type="number" step="8" value="1216"></div>
+                    </div>
+                    <div id="mg-stage-mode-switch" class="mg-stage-mode-switch" role="tablist" aria-label="Stage surface mode">
+                        <button id="mg-stage-mode-layout" type="button" role="tab" aria-selected="true" class="mg-stage-mode-btn" data-stage-mode="layout" title="領域編集 · Current authoring layout">Layout</button>
+                        <button id="mg-stage-mode-result" type="button" role="tab" aria-selected="false" class="mg-stage-mode-btn" data-stage-mode="result" title="生成結果 · Generation result">Result</button>
+                    </div>
+                    <div class="mg-layer-toggles" style="display: none;" aria-hidden="true">
+                        <button id="mg-toggle-artwork" type="button" class="mg-layer-toggle" aria-pressed="true" disabled>Artwork</button>
+                        <button id="mg-toggle-regions" type="button" class="mg-layer-toggle" aria-pressed="false" disabled>Regions</button>
+                    </div>
+                    <button id="mg-focus-toggle" type="button" class="mg-presentation-toggle" aria-controls="mg-stage" aria-pressed="false" aria-label="Focus Preview">Focus Preview</button>
+                </div>
+                <div id="mg-stage" class="mg-stage">
+                    <div class="mg-stage-frame">
+                        <div id="mg-preview-empty" class="mg-stage-empty"><span>No verified result yet.</span></div>
+                        <div id="mg-stage-neutral" class="mg-stage-neutral" hidden><span>Artwork and regions hidden</span></div>
+                        <img id="mg-preview-image" alt="Verified Manga generation result" hidden>
+                        <svg id="mg-stage-overlay" class="mg-stage-overlay" aria-hidden="true"></svg>
+                    </div>
+                </div>
+                <div class="mg-preview-result-meta" aria-live="polite"><span id="mg-preview-label">No verified result yet</span></div>
+            </div>
+            <aside id="mg-create" aria-label="Create settings">
+                <div class="mg-create-head">
+                    <div class="mg-create-title"><span class="mg-eyebrow">CREATE</span><p id="mg-catalog-note" class="mg-note mg-catalog-note">Loading Manga capabilities…</p></div>
+                    <button id="mg-refresh-catalog" type="button">Refresh models</button>
+                </div>
+                <div id="mg-scene-layout">
+                    <!-- Scene Composer (Prompt Target Selection & Editor at top of Create) -->
+                    <section id="scene-composer-panel" class="panel-section" aria-label="Scene Composer">
+                        <div class="scene-composer-head">
+                            <div class="scene-target-action-row">
+                                <div class="scene-global-target" role="tablist" aria-label="Global prompt target">
+                                    <button id="scene-prompt-tab-global" class="scene-prompt-target-button scene-target-global" type="button" role="tab" aria-selected="true" aria-controls="scene-composer-editor" data-prompt-target="global">Global</button>
+                                </div>
+                                <div class="scene-lifecycle-actions">
+                                    <button id="mg-scene-add" type="button" class="mg-scene-btn mg-scene-btn-add" title="Add new scene">+ Scene</button>
+                                    <button id="mg-cast-add" type="button" class="mg-scene-btn mg-scene-btn-add" title="Add reusable CAST definition">+ Char</button>
+                                    <button id="mg-target-delete" type="button" class="mg-scene-btn mg-scene-btn-delete" aria-label="Delete selected Scene or CAST definition" title="Select a Scene or CAST definition to delete" disabled>Del</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="scene-prompt-tabs" class="scene-prompt-tabs" hidden>
+                            <div id="scene-prompt-scene-row" class="scene-prompt-row scene-prompt-scene-row" hidden>
+                                <span class="scene-prompt-group-label" aria-hidden="true">SCENE</span>
+                                <div id="scene-prompt-scene-group" class="scene-prompt-target-group scene-prompt-scene-group" role="tablist" aria-label="Scene prompt targets"></div>
+                            </div>
+                            <div id="scene-prompt-cast-row" class="scene-prompt-row scene-prompt-cast-row" hidden>
+                                <span class="scene-prompt-group-label" aria-hidden="true">CAST</span>
+                                <div id="scene-prompt-cast-group" class="scene-prompt-target-group scene-prompt-cast-group" role="group" aria-label="CAST identity prompts and current Scene appearances"></div>
+                            </div>
+                        </div>
+                        <div id="scene-composer-selection" class="scene-composer-selection" role="status" aria-live="polite">Global page style</div>
+                        <div id="scene-composer-error" class="scene-composer-error" role="alert" aria-live="polite"></div>
+                        <div id="scene-composer-editor" class="scene-composer-editor" role="tabpanel" aria-labelledby="scene-prompt-tab-global">
+                            <div id="scene-composer-prompt-wrap" class="scene-composer-field">
+                                <label for="scene-composer-prompt">Prompt</label>
+                                <textarea id="scene-composer-prompt" rows="4" placeholder="Describe the page or scene…" aria-describedby="mg-global-prompt-syntax-help"></textarea>
+                                <p id="mg-global-prompt-syntax-help" class="mg-hint">Wildcards: __name__ · choices: {a|b}</p>
+                            </div>
+                            <div id="scene-composer-negative-wrap" class="scene-composer-field">
+                                <label for="scene-composer-negative">Negative Prompt</label>
+                                <textarea id="scene-composer-negative" rows="2" placeholder="What should be excluded…"></textarea>
+                            </div>
+                            <!-- Contextual Character Reference Hub in Create -->
+                            <div id="scene-composer-cast-reference-wrap" class="scene-composer-field mg-cast-ref-field" style="display: none;">
+                                <div class="mg-cast-ref-header">
+                                    <label id="scene-composer-cast-ref-label" class="mg-cast-ref-title">Character Reference</label>
+                                    <span id="mg-cast-ref-status" class="mg-status-badge" style="display: none;"></span>
+                                </div>
+                                <div id="mg-cast-ref-empty" class="mg-cast-ref-empty" style="display: none;">
+                                    <span class="mg-hint">No reference image assigned to this CAST.</span>
+                                    <button id="mg-btn-add-char-ref" type="button" class="btn btn-sm btn-primary">+ Reference</button>
+                                </div>
+                                <div id="mg-cast-ref-assigned" class="mg-cast-ref-assigned" style="display: none;">
+                                    <div class="mg-cast-ref-left-col">
+                                        <div class="mg-cast-ref-top-row">
+                                            <div class="mg-cast-ref-preview-box">
+                                                <img id="mg-cast-ref-img" alt="CAST Reference Image" class="mg-cast-ref-img" />
+                                            </div>
+                                            <div class="mg-cast-ref-details">
+                                                <div id="mg-cast-ref-name" class="mg-cast-ref-filename">-</div>
+                                                <div class="mg-cast-ref-actions">
+                                                    <button id="mg-btn-replace-char-ref" type="button" class="btn btn-sm">Replace</button>
+                                                    <button id="mg-btn-clear-char-ref" type="button" class="btn btn-sm btn-danger">Clear</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="mg-cast-ref-controls" class="mg-compact-group">
+                                            <div class="mg-compact-row">
+                                                <div class="mg-compact-col">
+                                                    <label for="mg-ref-weight" class="mg-compact-label">Weight</label>
+                                                    <input type="number" id="mg-ref-weight" min="0" max="2.0" step="0.05" value="0.70" class="mg-compact-number">
+                                                </div>
+                                                <div class="mg-compact-col">
+                                                    <label for="mg-ref-start" class="mg-compact-label">Start</label>
+                                                    <input type="number" id="mg-ref-start" min="0.0" max="1.0" step="0.05" value="0.0" class="mg-compact-number">
+                                                </div>
+                                                <div class="mg-compact-col">
+                                                    <label for="mg-ref-end" class="mg-compact-label">End</label>
+                                                    <input type="number" id="mg-ref-end" min="0.0" max="1.0" step="0.05" value="1.0" class="mg-compact-number">
+                                                </div>
+                                            </div>
+                                            <div id="mg-ref-validation-error" class="mg-compact-error" style="display: none;"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mg-cast-ref-right-slot" id="mg-cast-ref-right-slot">
+                                        <div class="mg-ref-analysis-header">
+                                            <button id="mg-btn-analyze-ref" type="button" class="btn btn-sm">Analyze Reference</button>
+                                            <span id="mg-ref-analysis-badge" class="mg-ref-analysis-badge" data-state="ready">Ready to analyze</span>
+                                        </div>
+                                        <div class="mg-ref-candidate-box">
+                                            <label for="mg-ref-candidate-text" class="mg-compact-label">Identity Candidate</label>
+                                            <textarea id="mg-ref-candidate-text" class="mg-ref-candidate-area" rows="2" placeholder="Click 'Analyze Reference' to extract identity tags…"></textarea>
+                                        </div>
+                                        <div class="mg-ref-candidate-actions">
+                                            <button id="mg-btn-candidate-append" type="button" class="btn btn-sm" disabled>Append</button>
+                                            <button id="mg-btn-candidate-replace" type="button" class="btn btn-sm" disabled>Replace</button>
+                                            <button id="mg-btn-candidate-discard" type="button" class="btn btn-sm btn-danger" disabled>Discard</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="mg-cast-ref-error" class="alert-error" style="display: none; margin-top: 4px; font-size: 11px;"></div>
+                                <p class="mg-hint" style="margin-top: 4px;">Reference belongs to CAST definition. Appearance in Scenes is controlled via CAST appearance buttons.</p>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- Page Guide Section in Create -->
+                    <section id="mg-page-guide-panel" class="panel-section mg-guide-panel" aria-label="Page Guide">
+                        <div class="mg-guide-head">
+                            <div class="mg-guide-title-row">
+                                <span class="mg-guide-title">PAGE GUIDE</span>
+                                <span id="mg-guide-status-badge" class="mg-guide-badge" data-state="none">NO GUIDE ASSIGNED</span>
+                            </div>
+                            <p class="mg-hint">Structural composition guide for Scenes generation via ControlNet.</p>
+                        </div>
+                        <div id="mg-guide-content">
+                            <!-- Empty state: when no guide assigned -->
+                            <div id="mg-guide-empty" class="mg-guide-empty-state">
+                                <span class="mg-hint">No structural guide assigned to this page.</span>
+                                <button id="mg-btn-add-guide" type="button" class="btn btn-sm btn-primary">+ Upload Guide</button>
+                            </div>
+                            <!-- Assigned state: when guide exists -->
+                            <div id="mg-guide-assigned" class="mg-guide-assigned-card" style="display: none;">
+                                <div class="mg-guide-preview-box">
+                                    <img id="mg-guide-img" alt="Page Guide Preview" class="mg-guide-img" />
+                                </div>
+                                <div class="mg-guide-info">
+                                    <div id="mg-guide-name" class="mg-guide-filename">-</div>
+                                    <div id="mg-guide-meta" class="mg-guide-meta-text">-</div>
+                                    <div class="mg-guide-actions">
+                                        <button id="mg-btn-toggle-guide" type="button" class="btn btn-sm">Disable</button>
+                                        <button id="mg-btn-replace-guide" type="button" class="btn btn-sm">Replace</button>
+                                        <button id="mg-btn-remove-guide" type="button" class="btn btn-sm btn-danger">Remove</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="mg-guide-cnet-controls" class="mg-compact-group" style="display: none;">
+                            <div class="mg-compact-row">
+                                <div class="mg-compact-col">
+                                    <label for="mg-cnet-strength" class="mg-compact-label">Strength</label>
+                                    <input type="number" id="mg-cnet-strength" min="0" max="2.0" step="0.05" value="0.35" class="mg-compact-number">
+                                </div>
+                                <div class="mg-compact-col">
+                                    <label for="mg-cnet-start" class="mg-compact-label">Start</label>
+                                    <input type="number" id="mg-cnet-start" min="0.0" max="1.0" step="0.05" value="0.0" class="mg-compact-number">
+                                </div>
+                                <div class="mg-compact-col">
+                                    <label for="mg-cnet-end" class="mg-compact-label">End</label>
+                                    <input type="number" id="mg-cnet-end" min="0.0" max="1.0" step="0.05" value="1.0" class="mg-compact-number">
+                                </div>
+                            </div>
+                            <div id="mg-cnet-validation-error" class="mg-compact-error" style="display: none;"></div>
+                        </div>
+                        <div id="mg-guide-support-note" class="mg-guide-support-note" style="display: none;"></div>
+                    </section>
+                    <details id="mg-legacy-entry" class="mg-legacy-entry">
+                        <summary id="mg-legacy-summary" aria-expanded="false">Legacy tools · Frames, Guides &amp; documents</summary>
+                        <div class="mg-legacy-document-controls" role="group" aria-label="Document controls">
+                            <span id="doc-schema-label">TEGAKI_AUTHORING_DOCUMENT 1.0.0</span>
+                            <button id="btn-reset-default" class="btn" title="Reset to default document">Reset Default</button>
+                            <button id="btn-load-fixture" class="btn" title="Load rich authoring fixture with all layers">Load Rich Fixture</button>
+                            <button id="btn-load-json" class="btn" title="Import document JSON">Import JSON</button>
+                            <button id="btn-export-json" class="btn btn-primary" title="Export / View document JSON">Export JSON</button>
+                        </div>
+                    <div id="authoring-workspace" role="tabpanel" aria-labelledby="manga-tab-authoring">
 
     <!-- Backend Integration Bar -->
     <div id="backend-bar">
@@ -80,36 +392,6 @@
                 </div>
             </div>
 
-            <!-- Scene Composer (Primary Workflow) -->
-            <section id="scene-composer-panel" class="panel-section" aria-labelledby="scene-composer-title">
-                <div class="scene-composer-head">
-                    <div>
-                        <span class="scene-composer-eyebrow">MANGA AUTHORING</span>
-                        <h2 id="scene-composer-title">Scene Composer</h2>
-                    </div>
-                    <button id="composer-advanced-toggle" type="button" class="scene-composer-advanced" aria-expanded="false">Advanced Layers</button>
-                </div>
-                <div id="scene-prompt-tabs" class="scene-prompt-tabs" role="tablist" aria-label="Scene prompts">
-                    <button id="scene-prompt-tab-global" type="button" role="tab" aria-selected="true" aria-controls="scene-composer-editor" data-prompt-target="global">Global</button>
-                </div>
-                <div id="scene-composer-selection" class="scene-composer-selection" role="status" aria-live="polite">Global page style</div>
-                <div id="scene-composer-error" class="scene-composer-error" role="alert" aria-live="polite"></div>
-                <div id="scene-composer-editor" class="scene-composer-editor" role="tabpanel" aria-labelledby="scene-prompt-tab-global">
-                    <div id="scene-composer-name-wrap" class="scene-composer-field" hidden>
-                        <label for="scene-composer-name">Scene name</label>
-                        <input id="scene-composer-name" type="text" autocomplete="off" placeholder="Scene name">
-                    </div>
-                    <div class="scene-composer-field">
-                        <label for="scene-composer-prompt">Prompt</label>
-                        <textarea id="scene-composer-prompt" rows="4" placeholder="Describe the page or scene…"></textarea>
-                    </div>
-                    <div class="scene-composer-field">
-                        <label for="scene-composer-negative">Negative Prompt</label>
-                        <textarea id="scene-composer-negative" rows="2" placeholder="What should be excluded…"></textarea>
-                    </div>
-                </div>
-            </section>
-
             <!-- CAST Section -->
             <div id="cast-section" class="panel-section">
                 <div class="section-title">
@@ -153,7 +435,7 @@
                         </div>
                     </div>
                     <div class="form-actions" style="margin-top: 6px; border-top: 1px solid #334155; padding-top: 6px;">
-                        <button id="btn-place-character" class="btn btn-sm" style="background:#0284c7;color:white;">Place in Scene</button>
+                        <button id="btn-place-character" class="btn btn-sm" style="background:#0284c7;color:white;" disabled>Place in Scene</button>
                         <button id="btn-delete-cast" class="btn btn-sm btn-danger">Delete CAST</button>
                     </div>
                 </div>
@@ -234,7 +516,7 @@
                         </div>
                     </details>
                     <div class="form-actions" style="margin-top: 6px; border-top: 1px solid #334155; padding-top: 6px;">
-                        <button id="btn-place-character-in-scene" class="btn btn-sm" style="background:#0284c7;color:white;">+ Place Character</button>
+                        <button id="btn-place-character-in-scene" class="btn btn-sm" style="background:#0284c7;color:white;" disabled>+ Place Character</button>
                         <button id="btn-delete-scene" class="btn btn-sm btn-danger">Delete Scene</button>
                     </div>
                 </div>
@@ -365,55 +647,19 @@
         </div>
     </div>
     </div>
-
-    <section id="generate-view" role="tabpanel" aria-labelledby="manga-tab-generate" hidden>
-        <div class="mg-page-heading"><div><span class="mg-eyebrow">MANGA ENGINE</span><h1>Generate</h1><p>One image from an Illustrious-compatible checkpoint and your prompt.</p></div></div>
-        <div class="mg-main">
-            <div class="mg-stage-column">
-                <div class="mg-action-bar">
-                    <div><span class="mg-eyebrow">STATUS</span><div id="mg-status" role="status" aria-live="polite">Loading Manga capabilities…</div></div>
-                    <button id="mg-generate" type="button" class="mg-generate-button" aria-describedby="mg-generate-reason" disabled><span id="mg-generate-label">Generate</span><span aria-hidden="true"> →</span></button>
+                    </details>
                 </div>
-                <div id="mg-generate-reason" class="mg-disabled-reason" role="note" aria-live="polite"></div>
-                <div id="mg-error" class="mg-error" role="alert" hidden></div>
-                <div class="mg-preview-head"><span class="mg-eyebrow">RESULT PREVIEW</span><span id="mg-preview-label">No verified result yet</span></div>
-                <div class="mg-stage">
-                    <div id="mg-preview-empty" class="mg-stage-empty"><span class="mg-stage-icon">✦</span><strong>Your Manga result appears here</strong><span>Only a verified Manga job image enters this stage.</span></div>
-                    <img id="mg-preview-image" alt="Verified Manga generation result" hidden>
-                </div>
-            </div>
-            <aside id="mg-create" aria-label="Create settings">
-                <div class="mg-create-head"><span class="mg-eyebrow">CREATE</span><button id="mg-refresh-catalog" type="button">Refresh models</button></div>
-                <p id="mg-catalog-note" class="mg-note">Loading Manga capabilities…</p>
-                <div class="mg-mode-switch" role="tablist" aria-label="Manga generation mode">
-                    <button id="mg-mode-basic" type="button" role="tab" aria-selected="true">Basic Draft</button>
-                    <button id="mg-mode-scene" type="button" role="tab" aria-selected="false">Scene Layout</button>
-                </div>
-                <div id="mg-scene-layout" data-mg-scene-only hidden>
-                    <div class="mg-scene-summary-label">AUTHORING SCENES</div>
-                    <p id="mg-scene-summary" class="mg-note">Scene Layout uses the current simple Scene document.</p>
-                    <p id="mg-scene-resolution" class="mg-scene-resolution" aria-readonly="true">Resolution · Authoring page</p>
-                    <button id="mg-edit-scenes" type="button" class="mg-inline-action">Edit Scenes</button>
-                </div>
-                <div class="mg-section-label">BASIC</div>
                 <label for="mg-checkpoint_id">Checkpoint</label>
                 <select id="mg-checkpoint_id"></select>
                 <p class="mg-hint">Select an available Illustrious-compatible checkpoint. Missing selections stay visible.</p>
-                <div data-mg-basic-only>
-                    <label for="mg-positive_raw">Prompt</label>
-                    <textarea id="mg-positive_raw" rows="6" placeholder="Describe the image…"></textarea>
-                    <p id="mg-dynamic-prompt-hint" class="mg-hint">Wildcards: __name__ · choices: {a|b}</p>
-                    <label for="mg-negative_raw">Negative Prompt</label>
-                    <textarea id="mg-negative_raw" rows="3" placeholder="What should be excluded…"></textarea>
-                    <div class="mg-section-label">RESOLUTION</div>
-                    <div class="mg-pair"><div><label for="mg-width">Width</label><input id="mg-width" type="number" step="8" value="832"></div><div><label for="mg-height">Height</label><input id="mg-height" type="number" step="8" value="1216"></div></div>
-                </div>
                 <div class="mg-section-label">GENERATION</div>
-                <label for="mg-sampler_id">Sampler</label><select id="mg-sampler_id"></select>
-                <label for="mg-scheduler_id">Scheduler</label><select id="mg-scheduler_id"></select>
-                <div class="mg-pair"><div><label for="mg-steps">Steps</label><input id="mg-steps" type="number" step="1" value="20"></div><div><label for="mg-cfg">CFG</label><input id="mg-cfg" type="number" step="0.1" value="7"></div></div>
-                <label for="mg-seed_requested">Seed</label><input id="mg-seed_requested" type="text" inputmode="numeric" value="0" aria-describedby="mg-seed-help">
-                <p id="mg-seed-help" class="mg-hint">0..4294967295, or -1 for a server-resolved random seed.</p>
+                <div class="mg-generation-settings" role="group" aria-label="Generation settings">
+                    <div class="mg-generation-control mg-generation-sampler"><label for="mg-sampler_id">Sampler</label><select id="mg-sampler_id"></select></div>
+                    <div class="mg-generation-control mg-generation-scheduler"><label for="mg-scheduler_id">Scheduler</label><select id="mg-scheduler_id"></select></div>
+                    <div class="mg-generation-control mg-generation-steps"><label for="mg-steps">Steps</label><input id="mg-steps" type="number" step="1" value="20"></div>
+                    <div class="mg-generation-control mg-generation-cfg"><label for="mg-cfg">CFG</label><input id="mg-cfg" type="number" step="0.1" value="7"></div>
+                    <div class="mg-generation-control mg-generation-seed"><label for="mg-seed_requested">Seed</label><input id="mg-seed_requested" type="text" inputmode="numeric" value="0" aria-describedby="mg-seed-help"><p id="mg-seed-help" class="mg-hint">0..4294967295, or -1 for a server-resolved random seed.</p></div>
+                </div>
                 <details class="mg-advanced"><summary>Advanced</summary><p>Multiple LoRAs can be written directly in either prompt as &lt;lora:name:weight&gt;. Unknown or malformed tags stop the entire job before submit.</p></details>
             </aside>
         </div>
@@ -435,15 +681,17 @@
     </div>
 
     <script type="module">
-        import { AuthoringStore } from "./src/state/authoring_store.js";
+        import { AuthoringStore, createNewAuthoringSessionDocument } from "./src/state/authoring_store.js";
         import { SessionState } from "./src/state/session_state.js";
         import { renderMangaCanvas, hitTestCanvas } from "./src/view/canvas_renderer.js";
         import { MangaBackendClient, BACKEND_STATUS } from "./src/adapters/manga_backend_client.js";
-        import { mountGenerationView } from "./src/view/generation_view.js";
+        import { mountGenerationView, buildSceneGenerationSettings } from "./src/view/generation_view.js";
         import { createTagAutocomplete } from "./src/view/tag_autocomplete.js";
+        import { setupNumericWheelControl } from "./src/view/numeric_wheel.js";
 
-        const store = new AuthoringStore();
+        const store = new AuthoringStore(createNewAuthoringSessionDocument());
         const session = new SessionState();
+        session.selectScene(null);
         const client = new MangaBackendClient("http://127.0.0.1:8189");
 
         const canvas = document.getElementById("manga-canvas");
@@ -470,57 +718,243 @@
         const guideErrorMsg = document.getElementById("guide-error-banner");
         const guideUploadStatus = document.getElementById("guide-upload-status");
         const inspectorPanel = document.getElementById("inspector-panel");
+        const legacyEntry = document.getElementById("mg-legacy-entry");
         const sceneToolSelect = document.getElementById("scene-tool-select");
         const sceneToolAdd = document.getElementById("scene-tool-add");
         const sceneToolDelete = document.getElementById("scene-tool-delete");
         const sceneToolStatus = document.getElementById("scene-tool-status");
-        const composerAdvancedToggle = document.getElementById("composer-advanced-toggle");
+        const legacySummary = document.getElementById("mg-legacy-summary");
         const composerSelection = document.getElementById("scene-composer-selection");
         const composerPromptTabs = document.getElementById("scene-prompt-tabs");
+        const composerGlobalTab = document.getElementById("scene-prompt-tab-global");
+        const composerSceneRow = document.getElementById("scene-prompt-scene-row");
+        const composerSceneTargets = document.getElementById("scene-prompt-scene-group");
+        const composerCastRow = document.getElementById("scene-prompt-cast-row");
+        const composerCastTargets = document.getElementById("scene-prompt-cast-group");
+        const composerTargetDelete = document.getElementById("mg-target-delete");
         const composerEditor = document.getElementById("scene-composer-editor");
         const composerError = document.getElementById("scene-composer-error");
-        const composerNameWrap = document.getElementById("scene-composer-name-wrap");
-        const composerName = document.getElementById("scene-composer-name");
         const composerPrompt = document.getElementById("scene-composer-prompt");
         const composerNegative = document.getElementById("scene-composer-negative");
         const composerTagAutocomplete = createTagAutocomplete(composerPrompt);
+
+        // Create-side Character Reference Hub elements
+        const sceneComposerCastRefWrap = document.getElementById("scene-composer-cast-reference-wrap");
+        const sceneComposerCastRefLabel = document.getElementById("scene-composer-cast-ref-label");
+        const mgCastRefStatus = document.getElementById("mg-cast-ref-status");
+        const mgCastRefEmpty = document.getElementById("mg-cast-ref-empty");
+        const mgCastRefAssigned = document.getElementById("mg-cast-ref-assigned");
+        const mgCastRefImg = document.getElementById("mg-cast-ref-img");
+        const mgCastRefName = document.getElementById("mg-cast-ref-name");
+        const mgCastRefError = document.getElementById("mg-cast-ref-error");
+        const mgBtnAddCharRef = document.getElementById("mg-btn-add-char-ref");
+        const mgBtnReplaceCharRef = document.getElementById("mg-btn-replace-char-ref");
+        const mgBtnClearCharRef = document.getElementById("mg-btn-clear-char-ref");
+        const mgRefWeight = document.getElementById("mg-ref-weight");
+        const mgRefStart = document.getElementById("mg-ref-start");
+        const mgRefEnd = document.getElementById("mg-ref-end");
+        const mgRefValidationError = document.getElementById("mg-ref-validation-error");
+
+        // Create-side Character Reference Identity Analysis elements (Card MANGA-REFERENCE-TO-IDENTITY-INTEGRATION1)
+        const mgBtnAnalyzeRef = document.getElementById("mg-btn-analyze-ref");
+        const mgRefAnalysisBadge = document.getElementById("mg-ref-analysis-badge");
+        const mgRefCandidateText = document.getElementById("mg-ref-candidate-text");
+        const mgBtnCandidateAppend = document.getElementById("mg-btn-candidate-append");
+        const mgBtnCandidateReplace = document.getElementById("mg-btn-candidate-replace");
+        const mgBtnCandidateDiscard = document.getElementById("mg-btn-candidate-discard");
+
+        let currentAnalysisRequestId = 0;
+        let pendingAnalysis = null; // { requestId, castId, referenceAsset, controller }
+        let analysisState = {
+            targetKey: null,
+            status: "ready", // "ready" | "analyzing" | "candidate_ready" | "failed"
+            candidate: "",
+            error: null
+        };
+
+        function setAnalysisStatusBadge(statusText, stateAttr) {
+            if (!mgRefAnalysisBadge) return;
+            mgRefAnalysisBadge.textContent = statusText;
+            mgRefAnalysisBadge.setAttribute("data-state", stateAttr);
+        }
+
+        function updateAnalysisUI(selectedCast = null) {
+            if (!selectedCast) {
+                const page = store.getPage();
+                const castList = page?.cast || [];
+                const isCast = composerPromptTarget.startsWith("cast_");
+                selectedCast = isCast ? castList.find(c => `cast_${c.cast_id}` === composerPromptTarget) : null;
+            }
+
+            if (!selectedCast || !selectedCast.reference_asset) {
+                setAnalysisStatusBadge("No Reference", "ready");
+                if (mgBtnAnalyzeRef) mgBtnAnalyzeRef.disabled = true;
+                if (mgRefCandidateText) {
+                    mgRefCandidateText.value = "";
+                    mgRefCandidateText.disabled = true;
+                }
+                if (mgBtnCandidateAppend) mgBtnCandidateAppend.disabled = true;
+                if (mgBtnCandidateReplace) mgBtnCandidateReplace.disabled = true;
+                if (mgBtnCandidateDiscard) mgBtnCandidateDiscard.disabled = true;
+                return;
+            }
+
+            const currentKey = `${selectedCast.cast_id}:${selectedCast.reference_asset}`;
+            const isAnalyzing = (pendingAnalysis !== null && pendingAnalysis.castId === selectedCast.cast_id && pendingAnalysis.referenceAsset === selectedCast.reference_asset);
+
+            if (isAnalyzing || (analysisState.targetKey === currentKey && analysisState.status === "analyzing")) {
+                setAnalysisStatusBadge("Analyzing…", "analyzing");
+                if (mgBtnAnalyzeRef) mgBtnAnalyzeRef.disabled = true;
+                if (mgRefCandidateText) {
+                    mgRefCandidateText.disabled = true;
+                    if (document.activeElement !== mgRefCandidateText) {
+                        mgRefCandidateText.placeholder = "Analyzing reference image…";
+                    }
+                }
+                if (mgBtnCandidateAppend) mgBtnCandidateAppend.disabled = true;
+                if (mgBtnCandidateReplace) mgBtnCandidateReplace.disabled = true;
+                if (mgBtnCandidateDiscard) mgBtnCandidateDiscard.disabled = true;
+            } else if (analysisState.targetKey === currentKey && analysisState.status === "candidate_ready") {
+                setAnalysisStatusBadge("Candidate ready", "candidate_ready");
+                if (mgBtnAnalyzeRef) mgBtnAnalyzeRef.disabled = false;
+                if (mgRefCandidateText) {
+                    mgRefCandidateText.disabled = false;
+                    if (document.activeElement !== mgRefCandidateText && !mgRefCandidateText.value && analysisState.candidate) {
+                        mgRefCandidateText.value = analysisState.candidate;
+                    }
+                }
+                const hasCandidate = Boolean(mgRefCandidateText?.value?.trim());
+                if (mgBtnCandidateAppend) mgBtnCandidateAppend.disabled = !hasCandidate;
+                if (mgBtnCandidateReplace) mgBtnCandidateReplace.disabled = !hasCandidate;
+                if (mgBtnCandidateDiscard) mgBtnCandidateDiscard.disabled = false;
+            } else if (analysisState.targetKey === currentKey && analysisState.status === "failed") {
+                setAnalysisStatusBadge("Analysis failed", "failed");
+                if (mgBtnAnalyzeRef) mgBtnAnalyzeRef.disabled = false;
+                if (mgRefCandidateText) {
+                    mgRefCandidateText.disabled = false;
+                }
+                if (mgBtnCandidateAppend) mgBtnCandidateAppend.disabled = true;
+                if (mgBtnCandidateReplace) mgBtnCandidateReplace.disabled = true;
+                if (mgBtnCandidateDiscard) mgBtnCandidateDiscard.disabled = true;
+            } else {
+                setAnalysisStatusBadge("Ready to analyze", "ready");
+                if (mgBtnAnalyzeRef) mgBtnAnalyzeRef.disabled = false;
+                if (mgRefCandidateText) {
+                    mgRefCandidateText.disabled = false;
+                    if (document.activeElement !== mgRefCandidateText && analysisState.targetKey !== currentKey) {
+                        mgRefCandidateText.value = "";
+                        mgRefCandidateText.placeholder = "Click 'Analyze Reference' to extract identity tags…";
+                    }
+                }
+                const hasCandidate = Boolean(mgRefCandidateText?.value?.trim());
+                if (mgBtnCandidateAppend) mgBtnCandidateAppend.disabled = !hasCandidate;
+                if (mgBtnCandidateReplace) mgBtnCandidateReplace.disabled = !hasCandidate;
+                if (mgBtnCandidateDiscard) mgBtnCandidateDiscard.disabled = !hasCandidate;
+            }
+        }
+
+        function invalidateAnalysisIfTargetChanged(newCastId, newRefAsset) {
+            const newKey = (newCastId && newRefAsset) ? `${newCastId}:${newRefAsset}` : null;
+            if (pendingAnalysis && (pendingAnalysis.castId !== newCastId || pendingAnalysis.referenceAsset !== newRefAsset)) {
+                pendingAnalysis.controller.abort();
+                pendingAnalysis = null;
+            }
+            if (analysisState.targetKey !== newKey) {
+                analysisState = {
+                    targetKey: newKey,
+                    status: "ready",
+                    candidate: "",
+                    error: null
+                };
+                if (mgRefCandidateText && document.activeElement !== mgRefCandidateText) {
+                    mgRefCandidateText.value = "";
+                }
+            }
+        }
+
+        // Create-side Page Guide Hub elements
+        const mgPageGuidePanel = document.getElementById("mg-page-guide-panel");
+        const mgGuideStatusBadge = document.getElementById("mg-guide-status-badge");
+        const mgGuideEmpty = document.getElementById("mg-guide-empty");
+        const mgGuideAssigned = document.getElementById("mg-guide-assigned");
+        const mgGuideImg = document.getElementById("mg-guide-img");
+        const mgGuideName = document.getElementById("mg-guide-name");
+        const mgGuideMeta = document.getElementById("mg-guide-meta");
+        const mgGuideSupportNote = document.getElementById("mg-guide-support-note");
+        const mgBtnAddGuide = document.getElementById("mg-btn-add-guide");
+        const mgBtnToggleGuide = document.getElementById("mg-btn-toggle-guide");
+        const mgBtnReplaceGuide = document.getElementById("mg-btn-replace-guide");
+        const mgBtnRemoveGuide = document.getElementById("mg-btn-remove-guide");
+        const mgGuideCnetControls = document.getElementById("mg-guide-cnet-controls");
+        const mgCnetStrength = document.getElementById("mg-cnet-strength");
+        const mgCnetStart = document.getElementById("mg-cnet-start");
+        const mgCnetEnd = document.getElementById("mg-cnet-end");
+        const mgCnetValidationError = document.getElementById("mg-cnet-validation-error");
 
         // Composer selection and drawing state are ephemeral UI state. They never
         // enter the TEGAKI_AUTHORING_DOCUMENT; SessionState remains the selection
         // authority for durable scene operations.
         let composerPromptTarget = "global";
         let lastComposerSelectedSceneId = session.selectedSceneId;
+        let lastComposerNameClick = null;
         let sceneToolMode = "select";
         let sceneDraftStart = null;
         let sceneDraftArea = null;
 
         function setCastReferenceStatus(status) {
-            if (!castReferenceStatus) return;
-            if (!status) {
-                castReferenceStatus.style.display = "none";
-                castReferenceStatus.textContent = "";
-                return;
+            if (castReferenceStatus) {
+                if (!status) {
+                    castReferenceStatus.style.display = "none";
+                    castReferenceStatus.textContent = "";
+                } else {
+                    castReferenceStatus.style.display = "block";
+                    castReferenceStatus.textContent = status;
+                    if (status === "Uploading...") {
+                        castReferenceStatus.style.color = "#38bdf8";
+                    } else if (status === "Ready") {
+                        castReferenceStatus.style.color = "#4ade80";
+                    } else if (status === "Upload failed") {
+                        castReferenceStatus.style.color = "#f87171";
+                    }
+                }
             }
-            castReferenceStatus.style.display = "block";
-            castReferenceStatus.textContent = status;
-            if (status === "Uploading...") {
-                castReferenceStatus.style.color = "#38bdf8";
-            } else if (status === "Ready") {
-                castReferenceStatus.style.color = "#4ade80";
-            } else if (status === "Upload failed") {
-                castReferenceStatus.style.color = "#f87171";
+            if (mgCastRefStatus) {
+                if (!status) {
+                    mgCastRefStatus.style.display = "none";
+                    mgCastRefStatus.textContent = "";
+                } else {
+                    mgCastRefStatus.style.display = "inline-block";
+                    mgCastRefStatus.textContent = status;
+                    if (status === "Uploading...") {
+                        mgCastRefStatus.style.color = "var(--manga-warning-text)";
+                    } else if (status === "Ready") {
+                        mgCastRefStatus.style.color = "var(--manga-success-text)";
+                    } else if (status === "Upload failed") {
+                        mgCastRefStatus.style.color = "var(--manga-danger-text)";
+                    }
+                }
             }
         }
 
         function showCastReferenceError(msg) {
-            if (!castReferenceError) return;
-            if (!msg) {
-                castReferenceError.style.display = "none";
-                castReferenceError.textContent = "";
-            } else {
-                setCastReferenceStatus("Upload failed");
-                castReferenceError.style.display = "block";
-                castReferenceError.textContent = msg;
+            if (castReferenceError) {
+                if (!msg) {
+                    castReferenceError.style.display = "none";
+                    castReferenceError.textContent = "";
+                } else {
+                    setCastReferenceStatus("Upload failed");
+                    castReferenceError.style.display = "block";
+                    castReferenceError.textContent = msg;
+                }
+            }
+            if (mgCastRefError) {
+                if (!msg) {
+                    mgCastRefError.style.display = "none";
+                    mgCastRefError.textContent = "";
+                } else {
+                    mgCastRefError.style.display = "block";
+                    mgCastRefError.textContent = msg;
+                }
             }
         }
 
@@ -617,12 +1051,158 @@
             return name || `Scene ${Number(scene?.order) || index + 1}`;
         }
 
-        function noteComposerSelection() {
-            const current = session.selectedSceneId;
-            if (current !== lastComposerSelectedSceneId && current) {
-                composerPromptTarget = current;
+        function createCastAppearanceToggle(page, cast, activeScene) {
+            const castName = cast.display_name || cast.cast_id;
+            const activeSceneName = activeScene
+                ? sceneDisplayName(activeScene, (page.scenes || []).indexOf(activeScene))
+                : null;
+            const instances = activeScene
+                ? (page.character_instances || []).filter(instance =>
+                    instance.scene_id === activeScene.scene_id && instance.cast_id === cast.cast_id)
+                : [];
+            const toggle = document.createElement("button");
+            toggle.type = "button";
+            toggle.className = "scene-cast-appearance-button";
+            toggle.textContent = instances.length > 1 ? `CAST ×${instances.length}` : "CAST";
+            toggle.disabled = !activeScene || instances.length > 1;
+            if (activeScene) {
+                toggle.setAttribute("aria-pressed", instances.length > 1
+                    ? "mixed"
+                    : String(instances.length === 1));
             }
-            lastComposerSelectedSceneId = current;
+            toggle.classList.toggle("is-on", instances.length === 1);
+            toggle.classList.toggle("is-mixed", instances.length > 1);
+            toggle.setAttribute("aria-label", !activeScene
+                ? `CAST appearance unavailable for ${castName}: select a current Scene`
+                : instances.length > 1
+                    ? `CAST appearance is mixed: ${instances.length} ${castName} placements in ${activeSceneName}; toggle unavailable`
+                    : instances.length === 1
+                        ? `Turn off ${castName} appearance in ${activeSceneName}`
+                        : `Turn on ${castName} appearance in ${activeSceneName}`);
+            toggle.title = !activeScene
+                ? "Select a valid current Scene to change CAST appearance"
+                : instances.length > 1
+                    ? `${instances.length} placements exist in ${activeSceneName}; no binary toggle is available`
+                    : instances.length === 1
+                        ? `Turn off in ${activeSceneName}; this removes its placement geometry`
+                        : `Turn on in ${activeSceneName}`;
+            toggle.addEventListener("click", () => {
+                const livePage = store.getPage();
+                const liveScene = (livePage?.scenes || []).find(scene => scene.scene_id === session.selectedSceneId);
+                const liveCast = (livePage?.cast || []).find(item => item.cast_id === cast.cast_id);
+                if (!liveScene || !liveCast) {
+                    showComposerError("Select a valid current Scene before changing CAST appearance.");
+                    renderSceneComposer();
+                    return;
+                }
+                const liveInstances = (livePage.character_instances || []).filter(instance =>
+                    instance.scene_id === liveScene.scene_id && instance.cast_id === liveCast.cast_id);
+                if (liveInstances.length > 1) {
+                    renderSceneComposer();
+                    return;
+                }
+                try {
+                    if (liveInstances.length === 0) {
+                        const instance = store.placeCharacter(liveScene.scene_id, liveCast.cast_id);
+                        session.setActiveTab("cast");
+                        session.selectInstance(instance.instance_id);
+                        return;
+                    }
+
+                    const liveInstance = liveInstances[0];
+                    const currentPage = store.getPage();
+                    const currentInstances = (currentPage?.character_instances || []).filter(instance =>
+                        instance.scene_id === liveScene.scene_id && instance.cast_id === liveCast.cast_id);
+                    if (currentInstances.length !== 1 || currentInstances[0].instance_id !== liveInstance.instance_id) {
+                        renderSceneComposer();
+                        showComposerError("CAST placements changed; no geometry was removed. Review the current Scene and try again.");
+                        return;
+                    }
+                    store.removeCharacter(liveInstance.instance_id);
+                    if (session.selectedInstanceId === liveInstance.instance_id) session.selectInstance(null);
+                } catch (error) {
+                    showComposerError(error.message);
+                }
+            });
+            return toggle;
+        }
+
+        let lastComposerSelectedCastId = session.selectedCastId;
+        function noteComposerSelection() {
+            const currentScene = session.selectedSceneId;
+            const currentCast = session.selectedCastId;
+            if (session.activeTab === "cast" && currentCast && (!composerPromptTarget.startsWith("cast_") || currentCast !== lastComposerSelectedCastId)) {
+                composerPromptTarget = `cast_${currentCast}`;
+            } else if (session.activeTab === "scenes" && composerPromptTarget.startsWith("cast_") && currentScene) {
+                composerPromptTarget = currentScene;
+            } else if (currentCast !== lastComposerSelectedCastId && currentCast && session.activeTab === "cast") {
+                composerPromptTarget = `cast_${currentCast}`;
+            } else if (currentScene !== lastComposerSelectedSceneId && currentScene) {
+                composerPromptTarget = currentScene;
+            }
+            lastComposerSelectedSceneId = currentScene;
+            lastComposerSelectedCastId = currentCast;
+        }
+
+        function beginInlineRename(button, { type, name, save }) {
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "scene-inline-rename";
+            input.value = name;
+            input.maxLength = 120;
+            input.autocomplete = "off";
+            input.setAttribute("aria-label", `Rename ${type} ${name}`);
+            input.title = "Press Enter to save; Escape to cancel";
+            let finished = false;
+
+            const refresh = (returnFocus = false) => {
+                if (input.isConnected) renderSceneComposer();
+                if (returnFocus) document.getElementById(button.id)?.focus();
+            };
+            const cancel = () => {
+                if (finished) return;
+                finished = true;
+                input.removeEventListener("blur", commitOnBlur);
+                refresh(true);
+            };
+            const commit = (returnFocus = false) => {
+                if (finished) return;
+                finished = true;
+                input.removeEventListener("blur", commitOnBlur);
+                const nextName = input.value.trim();
+                if (nextName && nextName !== name) {
+                    try {
+                        save(nextName);
+                    } catch (error) {
+                        showComposerError(error.message);
+                    }
+                }
+                refresh(returnFocus);
+            };
+            const commitOnBlur = () => commit(false);
+
+            input.addEventListener("blur", commitOnBlur);
+            input.addEventListener("keydown", event => {
+                event.stopPropagation();
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    commit(true);
+                } else if (event.key === "Escape") {
+                    event.preventDefault();
+                    cancel();
+                }
+            });
+            button.replaceWith(input);
+            input.focus();
+            input.select();
+        }
+
+        function isSecondNameClick(event, key) {
+            const now = Date.now();
+            const isDoubleClick = event.detail >= 2 ||
+                (lastComposerNameClick?.key === key && now - lastComposerNameClick.time <= 450);
+            lastComposerNameClick = isDoubleClick ? null : { key, time: now };
+            return isDoubleClick;
         }
 
         function syncLayerTabClasses() {
@@ -637,58 +1217,335 @@
 
         function renderSceneComposer() {
             const page = store.getPage();
-            if (!page || !composerPromptTabs) return;
+            if (!page || !composerPromptTabs || !composerGlobalTab || !composerSceneTargets || !composerCastTargets) return;
             const scenes = sortedScenes(page);
             const sceneIds = new Set(scenes.map(scene => scene.scene_id));
-            if (composerPromptTarget !== "global" && !sceneIds.has(composerPromptTarget)) {
-                composerPromptTarget = sceneIds.has(session.selectedSceneId)
-                    ? session.selectedSceneId
-                    : (scenes[0]?.scene_id || "global");
+            const castList = page.cast || [];
+            const castIds = new Set(castList.map(c => `cast_${c.cast_id}`));
+            const activeScene = scenes.find(scene => scene.scene_id === session.selectedSceneId) || null;
+            if (composerPromptTarget !== "global" && !sceneIds.has(composerPromptTarget) && !castIds.has(composerPromptTarget)) {
+                composerPromptTarget = activeScene?.scene_id || "global";
             }
-
-            composerPromptTabs.replaceChildren();
-            const targets = [{ id: "global", label: "Global" }, ...scenes.map((scene, index) => ({
+            composerSceneTargets.replaceChildren();
+            composerCastTargets.replaceChildren();
+            composerGlobalTab.setAttribute("aria-selected", String(composerPromptTarget === "global"));
+            const sceneTargets = scenes.map((scene, index) => ({
                 id: scene.scene_id,
-                label: sceneDisplayName(scene, index)
-            }))];
-            for (const target of targets) {
+                label: sceneDisplayName(scene, index),
+                type: "scene"
+            }));
+            const castTargets = castList.map(cast => ({
+                id: `cast_${cast.cast_id}`,
+                castId: cast.cast_id,
+                cast,
+                label: cast.display_name || cast.cast_id,
+                type: "cast"
+            }));
+            for (const target of sceneTargets) {
                 const tab = document.createElement("button");
                 tab.type = "button";
                 tab.role = "tab";
                 tab.id = target.id === "global" ? "scene-prompt-tab-global" : `scene-prompt-tab-${target.id}`;
                 tab.dataset.promptTarget = target.id;
+                tab.className = "scene-prompt-target-button";
+                const isCurrentScene = activeScene?.scene_id === target.id;
+                tab.dataset.currentScene = String(isCurrentScene);
+                tab.setAttribute("aria-label", isCurrentScene
+                    ? `${target.label}, current appearance Scene`
+                    : `Edit Scene prompt ${target.label}`);
+                if (isCurrentScene) tab.setAttribute("aria-current", "true");
                 tab.setAttribute("aria-controls", "scene-composer-editor");
                 tab.setAttribute("aria-selected", String(composerPromptTarget === target.id));
                 tab.textContent = target.label;
-                tab.addEventListener("click", () => selectComposerTarget(target.id));
-                composerPromptTabs.appendChild(tab);
+                tab.title = `${target.label} · Double-click or press F2 to rename`;
+                const saveSceneName = nextName => store.updateScene(target.id, { name: nextName });
+                const startSceneRename = event => {
+                    if (!tab.isConnected) return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    beginInlineRename(tab, { type: "Scene", name: target.label, save: saveSceneName });
+                };
+                tab.addEventListener("click", event => {
+                    if (composerPromptTarget === target.id && isSecondNameClick(event, `scene:${target.id}`)) {
+                        startSceneRename(event);
+                        return;
+                    }
+                    if (composerPromptTarget === target.id && session.selectedSceneId === target.id && session.activeTab === "scenes") return;
+                    lastComposerNameClick = { key: `scene:${target.id}`, time: Date.now() };
+                    selectComposerTarget(target.id);
+                });
+                tab.addEventListener("dblclick", startSceneRename);
+                tab.addEventListener("keydown", event => {
+                    if (event.key !== "F2") return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    beginInlineRename(tab, { type: "Scene", name: target.label, save: saveSceneName });
+                });
+                composerSceneTargets.appendChild(tab);
             }
+            for (const target of castTargets) {
+                const entry = document.createElement("div");
+                entry.className = "scene-cast-entry";
+                entry.setAttribute("role", "group");
+                entry.setAttribute("aria-label", `${target.label} identity prompt and current Scene appearance`);
+                const tab = document.createElement("button");
+                tab.type = "button";
+                tab.id = `scene-prompt-tab-${target.id}`;
+                tab.dataset.promptTarget = target.id;
+                tab.className = "scene-prompt-target-button scene-cast-identity-button";
+                tab.setAttribute("aria-label", `Edit CAST ${target.label} identity prompt`);
+                tab.setAttribute("aria-controls", "scene-composer-editor");
+                tab.setAttribute("aria-pressed", String(composerPromptTarget === target.id));
+                tab.textContent = target.label;
+                tab.title = `Edit CAST ${target.label} identity prompt · Double-click or press F2 to rename`;
+                const saveCastName = nextName => store.updateCast(target.castId, { display_name: nextName });
+                const startCastRename = event => {
+                    if (!tab.isConnected) return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    beginInlineRename(tab, { type: "Character", name: target.label, save: saveCastName });
+                };
+                tab.addEventListener("click", event => {
+                    if (composerPromptTarget === target.id && isSecondNameClick(event, `cast:${target.castId}`)) {
+                        startCastRename(event);
+                        return;
+                    }
+                    if (composerPromptTarget === target.id && session.selectedCastId === target.castId && session.activeTab === "cast") return;
+                    lastComposerNameClick = { key: `cast:${target.castId}`, time: Date.now() };
+                    selectComposerTarget(target.id);
+                });
+                tab.addEventListener("dblclick", startCastRename);
+                tab.addEventListener("keydown", event => {
+                    if (event.key !== "F2") return;
+                    event.preventDefault();
+                    event.stopPropagation();
+                    beginInlineRename(tab, { type: "Character", name: target.label, save: saveCastName });
+                });
+                entry.appendChild(tab);
+                entry.appendChild(createCastAppearanceToggle(page, target.cast, activeScene));
+                composerCastTargets.appendChild(entry);
+            }
+            composerSceneTargets.hidden = sceneTargets.length === 0;
+            composerCastTargets.hidden = castTargets.length === 0;
+            if (composerSceneRow) composerSceneRow.hidden = !sceneTargets.length;
+            if (composerCastRow) composerCastRow.hidden = !castTargets.length;
+            composerPromptTabs.hidden = !sceneTargets.length && !castTargets.length;
 
             const isGlobal = composerPromptTarget === "global";
-            const selectedScene = scenes.find(scene => scene.scene_id === composerPromptTarget);
-            const activeTarget = isGlobal ? null : selectedScene;
-            composerNameWrap.hidden = isGlobal || !activeTarget;
-            if (activeTarget) {
-                composerSelection.textContent = `Editing ${sceneDisplayName(activeTarget, scenes.indexOf(activeTarget))}`;
-                composerEditor.setAttribute("aria-labelledby", `scene-prompt-tab-${activeTarget.scene_id}`);
-                if (document.activeElement !== composerName) composerName.value = activeTarget.name || "";
-                if (document.activeElement !== composerPrompt) composerPrompt.value = activeTarget.prompt || "";
-                if (document.activeElement !== composerNegative) composerNegative.value = activeTarget.negative_prompt || "";
+            const isCast = composerPromptTarget.startsWith("cast_");
+            const selectedScene = isGlobal || isCast ? null : scenes.find(scene => scene.scene_id === composerPromptTarget);
+            const selectedCast = isCast ? castList.find(c => `cast_${c.cast_id}` === composerPromptTarget) : null;
+            const activeTarget = isGlobal || isCast ? null : selectedScene;
+
+            const promptLabel = document.querySelector('label[for="scene-composer-prompt"]');
+            const negativeLabel = document.querySelector('label[for="scene-composer-negative"]');
+
+            if (isCast && selectedCast) {
+                composerSelection.textContent = `Editing CAST: ${selectedCast.display_name || selectedCast.cast_id}`;
+                composerEditor.setAttribute("aria-labelledby", `scene-prompt-tab-cast_${selectedCast.cast_id}`);
+                if (promptLabel) promptLabel.textContent = "Identity Prompt";
+                if (negativeLabel) negativeLabel.textContent = "Negative Prompt";
+                if (document.activeElement !== composerPrompt) composerPrompt.value = selectedCast.identity_prompt || "";
+                if (document.activeElement !== composerNegative) composerNegative.value = selectedCast.negative_prompt || "";
             } else {
-                composerSelection.textContent = "Global page style";
-                composerEditor.setAttribute("aria-labelledby", "scene-prompt-tab-global");
-                if (document.activeElement !== composerPrompt) composerPrompt.value = page.style_prompt || "";
-                if (document.activeElement !== composerNegative) composerNegative.value = page.style_negative_prompt || "";
+                if (promptLabel) promptLabel.textContent = "Prompt";
+                if (negativeLabel) negativeLabel.textContent = "Negative Prompt";
+
+                if (activeTarget) {
+                    composerSelection.textContent = `Editing ${sceneDisplayName(activeTarget, scenes.indexOf(activeTarget))}`;
+                    composerEditor.setAttribute("aria-labelledby", `scene-prompt-tab-${activeTarget.scene_id}`);
+                    if (document.activeElement !== composerPrompt) composerPrompt.value = activeTarget.prompt || "";
+                    if (document.activeElement !== composerNegative) composerNegative.value = activeTarget.negative_prompt || "";
+                } else {
+                    composerSelection.textContent = "Global page style";
+                    composerEditor.setAttribute("aria-labelledby", "scene-prompt-tab-global");
+                    if (document.activeElement !== composerPrompt) composerPrompt.value = page.style_prompt || "";
+                    if (document.activeElement !== composerNegative) composerNegative.value = page.style_negative_prompt || "";
+                }
             }
 
-            sceneToolDelete.disabled = false;
-            sceneToolDelete.title = scenes.length <= 1
-                ? "At least one scene must remain"
-                : "Delete the selected scene";
+            // Render Contextual Character Reference Hub in Create
+            if (sceneComposerCastRefWrap) {
+                if (isCast && selectedCast) {
+                    sceneComposerCastRefWrap.style.display = "flex";
+                    if (sceneComposerCastRefLabel) {
+                        sceneComposerCastRefLabel.textContent = `Character Reference · ${selectedCast.display_name || selectedCast.cast_id}`;
+                    }
+                    if (selectedCast.reference_asset) {
+                        if (mgCastRefEmpty) mgCastRefEmpty.style.display = "none";
+                        if (mgCastRefAssigned) mgCastRefAssigned.style.display = "flex";
+                        if (mgCastRefImg) {
+                            mgCastRefImg.src = `/api/reference-assets/view?ref=${encodeURIComponent(selectedCast.reference_asset)}`;
+                            mgCastRefImg.style.display = "block";
+                        }
+                        if (mgCastRefName) {
+                            mgCastRefName.textContent = selectedCast.reference_asset.replace(/^tegaki_manga_references\//, "");
+                        }
+                        const sd = generation?.state?.sceneDraft;
+                        if (sd) {
+                            if (mgRefWeight && document.activeElement !== mgRefWeight) {
+                                mgRefWeight.value = sd.reference_weight ?? "0.70";
+                            }
+                            if (mgRefStart && document.activeElement !== mgRefStart) {
+                                mgRefStart.value = sd.reference_start ?? "0.0";
+                            }
+                            if (mgRefEnd && document.activeElement !== mgRefEnd) {
+                                mgRefEnd.value = sd.reference_end ?? "1.0";
+                            }
+                        }
+                        invalidateAnalysisIfTargetChanged(selectedCast.cast_id, selectedCast.reference_asset);
+                        updateAnalysisUI(selectedCast);
+                    } else {
+                        if (mgCastRefEmpty) mgCastRefEmpty.style.display = "flex";
+                        if (mgCastRefAssigned) mgCastRefAssigned.style.display = "none";
+                        if (mgCastRefImg) {
+                            mgCastRefImg.src = "";
+                            mgCastRefImg.style.display = "none";
+                        }
+                        if (mgCastRefName) mgCastRefName.textContent = "(none)";
+                        invalidateAnalysisIfTargetChanged(selectedCast.cast_id, null);
+                        updateAnalysisUI(selectedCast);
+                    }
+                } else {
+                    sceneComposerCastRefWrap.style.display = "none";
+                    invalidateAnalysisIfTargetChanged(null, null);
+                    updateAnalysisUI(null);
+                }
+            }
+
+            if (generation?.renderStageOverlay) {
+                generation.renderStageOverlay();
+            }
+
+            const mgSceneAdd = document.getElementById("mg-scene-add");
+            if (mgSceneAdd) {
+                const canAdd = scenes.length < 6;
+                mgSceneAdd.disabled = !canAdd;
+                mgSceneAdd.title = canAdd ? "Add new scene" : "Maximum 6 scenes allowed per page";
+            }
+            for (const placeControlId of ["btn-place-character", "btn-place-character-in-scene"]) {
+                const placeControl = document.getElementById(placeControlId);
+                if (!placeControl) continue;
+                placeControl.disabled = !activeScene;
+                placeControl.title = activeScene
+                    ? `Place the selected CAST in ${sceneDisplayName(activeScene, scenes.indexOf(activeScene))}`
+                    : "Select a valid Scene before placing a CAST";
+            }
+            const canDeleteScene = Boolean(activeTarget) && scenes.length > 0;
+            const canDeleteCast = Boolean(selectedCast);
+            if (composerTargetDelete) {
+                composerTargetDelete.disabled = !canDeleteScene && !canDeleteCast;
+                if (selectedCast) {
+                    composerTargetDelete.title = `Delete CAST ${selectedCast.display_name || selectedCast.cast_id}`;
+                    composerTargetDelete.setAttribute("aria-label", `Delete CAST ${selectedCast.display_name || selectedCast.cast_id}`);
+                } else if (activeTarget) {
+                    composerTargetDelete.title = "Delete selected Scene; CAST definitions are preserved";
+                    composerTargetDelete.setAttribute("aria-label", "Delete selected Scene");
+                } else {
+                    composerTargetDelete.title = "Select a Scene or CAST definition to delete";
+                    composerTargetDelete.setAttribute("aria-label", "Delete selected Scene or CAST definition");
+                }
+            }
+
+            sceneToolDelete.disabled = !activeTarget;
+            sceneToolDelete.title = activeTarget
+                ? "Delete the selected scene"
+                : "Select a scene to delete";
             if (sceneToolMode === "select") {
                 setComposerStatus(activeTarget
                     ? `${sceneDisplayName(activeTarget, scenes.indexOf(activeTarget))} selected · drag to move or use a corner handle to resize`
                     : "Select a scene to edit, or click + Scene to create one.");
+            }
+
+            renderCreatePageGuide();
+        }
+
+        function renderCreatePageGuide() {
+            if (!mgGuideStatusBadge) return;
+            const page = store.getPage();
+            const guides = page?.guides || [];
+
+            if (guides.length === 0) {
+                mgGuideStatusBadge.textContent = "NO GUIDE ASSIGNED";
+                mgGuideStatusBadge.dataset.state = "none";
+                if (mgGuideEmpty) mgGuideEmpty.style.display = "flex";
+                if (mgGuideAssigned) mgGuideAssigned.style.display = "none";
+                if (mgGuideCnetControls) mgGuideCnetControls.style.display = "none";
+                if (mgGuideSupportNote) {
+                    mgGuideSupportNote.style.display = "none";
+                    mgGuideSupportNote.textContent = "";
+                }
+                return;
+            }
+
+            if (mgGuideEmpty) mgGuideEmpty.style.display = "none";
+            if (mgGuideAssigned) mgGuideAssigned.style.display = "flex";
+            if (mgGuideCnetControls) mgGuideCnetControls.style.display = "flex";
+            const sd = generation?.state?.sceneDraft;
+            if (sd) {
+                if (mgCnetStrength && document.activeElement !== mgCnetStrength) {
+                    mgCnetStrength.value = sd.controlnet_strength ?? "0.35";
+                }
+                if (mgCnetStart && document.activeElement !== mgCnetStart) {
+                    mgCnetStart.value = sd.controlnet_start_percent ?? "0.0";
+                }
+                if (mgCnetEnd && document.activeElement !== mgCnetEnd) {
+                    mgCnetEnd.value = sd.controlnet_end_percent ?? "1.0";
+                }
+            }
+
+            const activeGuide = guides.find(g => g.guide_id === session.selectedGuideId) || guides[0];
+            if (mgGuideImg) {
+                if (activeGuide.asset_reference) {
+                    mgGuideImg.src = `/api/guide-assets/view?ref=${encodeURIComponent(activeGuide.asset_reference)}`;
+                    mgGuideImg.style.display = "block";
+                } else {
+                    mgGuideImg.src = "";
+                    mgGuideImg.style.display = "none";
+                }
+            }
+            if (mgGuideName) {
+                mgGuideName.textContent = activeGuide.asset_reference
+                    ? activeGuide.asset_reference.replace(/^tegaki_manga_guides\//, "")
+                    : activeGuide.guide_id;
+            }
+            if (mgGuideMeta) {
+                const w = activeGuide.metadata?.source_dimensions?.width_px || activeGuide.image_width;
+                const h = activeGuide.metadata?.source_dimensions?.height_px || activeGuide.image_height;
+                const dims = (w && h) ? `${w} × ${h}px` : "";
+                const countInfo = guides.length > 1 ? ` · Guide (${guides.indexOf(activeGuide) + 1}/${guides.length})` : "";
+                mgGuideMeta.textContent = dims ? (dims + countInfo) : (countInfo.replace(/^ · /, "") || "-");
+            }
+            if (mgBtnToggleGuide) {
+                mgBtnToggleGuide.textContent = activeGuide.enabled !== false ? "Disable" : "Enable";
+            }
+
+            // Check ControlNet generation eligibility from catalog
+            const cnetCap = generation?.state?.catalog?.scene_generation?.controlnet;
+            const isCnetAvailable = Boolean(cnetCap?.available);
+
+            if (activeGuide.enabled === false) {
+                mgGuideStatusBadge.textContent = "GUIDE ASSIGNED BUT DISABLED";
+                mgGuideStatusBadge.dataset.state = "disabled";
+                if (mgGuideSupportNote) {
+                    mgGuideSupportNote.style.display = "block";
+                    mgGuideSupportNote.textContent = "Guide is disabled and will not be applied to Scenes generation.";
+                }
+            } else if (!isCnetAvailable) {
+                mgGuideStatusBadge.textContent = "GUIDE ENABLED BUT GENERATION CURRENTLY UNSUPPORTED";
+                mgGuideStatusBadge.dataset.state = "unsupported";
+                if (mgGuideSupportNote) {
+                    mgGuideSupportNote.style.display = "block";
+                    mgGuideSupportNote.textContent = "ControlNet capability is unavailable from the backend. Scenes generation is blocked while this structural guide is enabled; disable the guide to proceed without it.";
+                }
+            } else {
+                mgGuideStatusBadge.textContent = "GUIDE ENABLED";
+                mgGuideStatusBadge.dataset.state = "enabled";
+                if (mgGuideSupportNote) {
+                    mgGuideSupportNote.style.display = "block";
+                    const modelLabel = cnetCap.model ? cnetCap.model.split(/[\\/]/).pop() : "active";
+                    mgGuideSupportNote.textContent = `Ready for Scenes via ControlNet (${modelLabel})`;
+                }
             }
         }
 
@@ -700,11 +1557,22 @@
                 renderSceneComposer();
                 return;
             }
+            if (target.startsWith("cast_")) {
+                const castId = target.replace(/^cast_/, "");
+                const cast = (store.getPage()?.cast || []).find(item => item.cast_id === castId);
+                if (!cast) return;
+                composerPromptTarget = target;
+                session.selectCast(castId);
+                session.setActiveTab("cast");
+                renderSceneComposer();
+                return;
+            }
             const scene = sortedScenes().find(item => item.scene_id === target);
             if (!scene) return;
             composerPromptTarget = target;
             session.selectScene(target);
             session.setActiveTab("scenes");
+            renderSceneComposer();
         }
 
         function setSceneTool(mode) {
@@ -796,9 +1664,9 @@
             updateCanvas();
         }
 
-        function deleteSelectedScene() {
+        function deleteSelectedScene(targetId = null) {
             clearErrors();
-            const selectedId = session.selectedSceneId;
+            const selectedId = targetId || session.selectedSceneId || (composerPromptTarget && composerPromptTarget.startsWith("scene_") ? composerPromptTarget : null);
             if (!selectedId) return;
             const before = sortedScenes();
             const index = before.findIndex(scene => scene.scene_id === selectedId);
@@ -811,9 +1679,20 @@
             }
             const remaining = sortedScenes();
             const next = remaining[Math.min(Math.max(index, 0), remaining.length - 1)] || remaining[0] || null;
-            composerPromptTarget = next?.scene_id || "global";
-            session.selectScene(next?.scene_id || null);
-            session.setActiveTab("scenes");
+            if (next) {
+                selectComposerTarget(next.scene_id);
+            } else {
+                session.selectScene(null);
+                generation?.setGenerationScope("global");
+                selectComposerTarget("global");
+                const page = store.getPage();
+                const hasOtherStageEntity = Boolean(
+                    (page?.character_instances || []).length ||
+                    (page?.visual_frames || []).length ||
+                    (page?.guides || []).length
+                );
+                if (!hasOtherStageEntity) generation?.setStageMode("result");
+            }
             setSceneTool("select");
         }
 
@@ -936,6 +1815,7 @@
                 div.onclick = () => {
                     session.selectCast(c.cast_id);
                     session.setActiveTab("cast");
+                    composerPromptTarget = `cast_${c.cast_id}`;
                     clearErrors();
                 };
                 castContainer.appendChild(div);
@@ -1185,22 +2065,25 @@
                 btn.classList.add("active");
                 session.setActiveTab(btn.dataset.tab);
                 if (btn.dataset.tab !== "scenes") {
+                    legacyEntry.open = true;
                     inspectorPanel.classList.add("advanced-open");
-                    composerAdvancedToggle.setAttribute("aria-expanded", "true");
+                    legacySummary.setAttribute("aria-expanded", "true");
                 }
             };
         });
 
-        composerAdvancedToggle.onclick = () => {
-            const open = !inspectorPanel.classList.contains("advanced-open");
-            inspectorPanel.classList.toggle("advanced-open", open);
-            composerAdvancedToggle.setAttribute("aria-expanded", String(open));
-        };
+        legacyEntry.addEventListener("toggle", () => {
+            inspectorPanel.classList.toggle("advanced-open", legacyEntry.open);
+            legacySummary.setAttribute("aria-expanded", String(legacyEntry.open));
+        });
+
+
 
         function handleCreateScene() {
             clearErrors();
             const page = store.getPage();
-            if ((page?.scenes || []).length >= 6) {
+            const existingSceneCount = (page?.scenes || []).length;
+            if (existingSceneCount >= 6) {
                 const msg = "Maximum 6 scenes allowed per page.";
                 showComposerError(msg);
                 showSceneError(msg);
@@ -1217,9 +2100,11 @@
                 sceneToolSelect.setAttribute("aria-pressed", "true");
                 sceneToolAdd.setAttribute("aria-pressed", "false");
                 canvas.classList.remove("scene-add-mode");
-                composerPromptTarget = sc.scene_id;
-                session.selectScene(sc.scene_id);
-                session.setActiveTab("scenes");
+                selectComposerTarget(sc.scene_id);
+                if (existingSceneCount === 0) {
+                    generation?.setGenerationScope("scenes");
+                    generation?.setStageMode("layout");
+                }
                 clearErrors();
             } catch (err) {
                 showSceneError(err.message);
@@ -1234,19 +2119,30 @@
         };
         sceneToolAdd.onclick = handleCreateScene;
         sceneToolDelete.onclick = deleteSelectedScene;
+        const mgSceneAdd = document.getElementById("mg-scene-add");
+        const mgCastAdd = document.getElementById("mg-cast-add");
+        if (mgSceneAdd) mgSceneAdd.onclick = handleCreateScene;
+        if (composerGlobalTab) composerGlobalTab.addEventListener("click", () => {
+            lastComposerNameClick = null;
+            if (composerPromptTarget !== "global" || session.activeTab !== "scenes") selectComposerTarget("global");
+        });
+        if (composerTargetDelete) {
+            composerTargetDelete.addEventListener("click", () => {
+                if (composerPromptTarget.startsWith("cast_")) {
+                    deleteSelectedCastDefinition(composerPromptTarget.slice("cast_".length), true);
+                } else if (composerPromptTarget !== "global") {
+                    deleteSelectedScene(composerPromptTarget);
+                }
+            });
+        }
 
-        composerName.oninput = (event) => {
-            if (composerPromptTarget === "global" || !session.selectedSceneId) return;
-            try {
-                store.updateScene(session.selectedSceneId, { name: event.target.value });
-            } catch (err) {
-                showComposerError(err.message);
-            }
-        };
         composerPrompt.oninput = (event) => {
             try {
                 if (composerPromptTarget === "global") {
                     store.setStyleMetadata({ stylePrompt: event.target.value });
+                } else if (composerPromptTarget.startsWith("cast_")) {
+                    const castId = composerPromptTarget.replace(/^cast_/, "");
+                    store.updateCast(castId, { identity_prompt: event.target.value });
                 } else if (session.selectedSceneId) {
                     store.updateScene(session.selectedSceneId, { prompt: event.target.value });
                 }
@@ -1258,6 +2154,9 @@
             try {
                 if (composerPromptTarget === "global") {
                     store.setStyleMetadata({ styleNegativePrompt: event.target.value });
+                } else if (composerPromptTarget.startsWith("cast_")) {
+                    const castId = composerPromptTarget.replace(/^cast_/, "");
+                    store.updateCast(castId, { negative_prompt: event.target.value });
                 } else if (session.selectedSceneId) {
                     store.updateScene(session.selectedSceneId, { negative_prompt: event.target.value });
                 }
@@ -1333,12 +2232,36 @@
         // -----------------------------------------------------------------
         // CAST Mutations & Rejection Handling (Step J)
         // -----------------------------------------------------------------
-        document.getElementById("btn-add-cast").onclick = () => {
+        function handleAddCastDefinition() {
             clearErrors();
             const c = store.addCast({ display_name: `Character ${store.getPage().cast.length + 1}` });
-            session.selectCast(c.cast_id);
-            session.setActiveTab("cast");
-        };
+            selectComposerTarget(`cast_${c.cast_id}`);
+        }
+        document.getElementById("btn-add-cast").onclick = handleAddCastDefinition;
+        if (mgCastAdd) mgCastAdd.onclick = handleAddCastDefinition;
+
+        function deleteSelectedCastDefinition(castId = session.selectedCastId, selectNextPromptTarget = false) {
+            clearErrors();
+            if (!castId || !(store.getPage()?.cast || []).some(cast => cast.cast_id === castId)) return;
+            const wasPromptTarget = composerPromptTarget === `cast_${castId}`;
+            try {
+                store.deleteCast(castId);
+            } catch (err) {
+                showCastError(err.message);
+                showComposerError(err.message);
+                return;
+            }
+            if (session.selectedCastId === castId) session.selectCast(null);
+            if (selectNextPromptTarget || wasPromptTarget) {
+                const remainingScenes = sortedScenes();
+                const nextTarget = remainingScenes.some(scene => scene.scene_id === session.selectedSceneId)
+                    ? session.selectedSceneId
+                    : (remainingScenes[0]?.scene_id || "global");
+                selectComposerTarget(nextTarget);
+            } else {
+                renderSceneComposer();
+            }
+        }
 
         document.getElementById("input-cast-name").oninput = (e) => {
             if (session.selectedCastId) {
@@ -1358,17 +2281,7 @@
             }
         };
 
-        document.getElementById("btn-delete-cast").onclick = () => {
-            clearErrors();
-            if (!session.selectedCastId) return;
-            try {
-                store.deleteCast(session.selectedCastId);
-                session.selectCast(null);
-            } catch (err) {
-                // Card Step J: attempt referenced CAST deletion -> visibly rejected
-                showCastError(err.message);
-            }
-        };
+        document.getElementById("btn-delete-cast").onclick = () => deleteSelectedCastDefinition();
 
         const fileCastReference = document.getElementById("file-cast-reference");
         const btnAddCastReference = document.getElementById("btn-add-cast-reference");
@@ -1431,6 +2344,7 @@
                     store.assignCastReference(targetCastId, data.asset_reference);
                     setCastReferenceStatus("Ready");
                     renderSceneComposer();
+                    await generation?.refreshCatalog?.().catch(() => {});
                 } catch (err) {
                     showCastReferenceError(err.message);
                 }
@@ -1442,15 +2356,15 @@
         // -----------------------------------------------------------------
         function doPlaceCharacter(targetSceneId = null) {
             clearErrors();
-            const scId = targetSceneId || session.selectedSceneId || store.getPage().scenes[0]?.scene_id;
-            if (!scId) {
-                showCastError("Cannot place character: no scene available");
+            const scId = targetSceneId || session.selectedSceneId || null;
+            const sceneExists = (store.getPage()?.scenes || []).some(scene => scene.scene_id === scId);
+            if (!scId || !sceneExists) {
+                showCastError("Cannot place character: select a valid current Scene first");
                 return;
             }
             try {
                 const inst = store.placeCharacter(scId, session.selectedCastId);
                 session.selectInstance(inst.instance_id);
-                session.selectScene(scId);
                 session.setActiveTab("cast");
             } catch (err) {
                 showCastError(err.message);
@@ -1654,6 +2568,7 @@
                     });
                 }
                 setGuideUploadStatus("Ready");
+                await generation?.refreshCatalog?.().catch(() => {});
             } catch (err) {
                 showGuideError(err.message);
             }
@@ -1687,6 +2602,379 @@
                 showGuideError(err.message);
             }
         };
+
+        // -----------------------------------------------------------------
+        // Create-side Page Guide and Character Reference Actions
+        // -----------------------------------------------------------------
+        if (mgBtnAddGuide) {
+            mgBtnAddGuide.onclick = () => {
+                clearErrors();
+                pendingAssetAction = { mode: "add" };
+                guideFileInput.value = "";
+                guideFileInput.click();
+            };
+        }
+
+        if (mgBtnReplaceGuide) {
+            mgBtnReplaceGuide.onclick = () => {
+                clearErrors();
+                const page = store.getPage();
+                const guides = page?.guides || [];
+                const activeGuide = guides.find(g => g.guide_id === session.selectedGuideId) || guides[0];
+                if (!activeGuide) return;
+                pendingAssetAction = { mode: "replace", guideId: activeGuide.guide_id };
+                guideFileInput.value = "";
+                guideFileInput.click();
+            };
+        }
+
+        if (mgBtnToggleGuide) {
+            mgBtnToggleGuide.onclick = () => {
+                clearErrors();
+                const page = store.getPage();
+                const guides = page?.guides || [];
+                const activeGuide = guides.find(g => g.guide_id === session.selectedGuideId) || guides[0];
+                if (!activeGuide) return;
+                try {
+                    store.toggleGuideEnabled(activeGuide.guide_id);
+                } catch (err) {
+                    showGuideError(err.message);
+                }
+            };
+        }
+
+        if (mgBtnRemoveGuide) {
+            mgBtnRemoveGuide.onclick = () => {
+                clearErrors();
+                const page = store.getPage();
+                const guides = page?.guides || [];
+                const activeGuide = guides.find(g => g.guide_id === session.selectedGuideId) || guides[0];
+                if (!activeGuide) return;
+                try {
+                    store.deleteGuide(activeGuide.guide_id);
+                    const remaining = store.getPage().guides || [];
+                    if (remaining.length > 0) {
+                        session.selectGuide(remaining[0].guide_id);
+                    } else {
+                        session.selectGuide(null);
+                    }
+                    session.selectFigure(null);
+                } catch (err) {
+                    showGuideError(err.message);
+                }
+            };
+        }
+
+        function updateCnetStrength(val) {
+            let num = parseFloat(val);
+            if (!Number.isFinite(num)) return;
+            num = Math.max(0.0, Math.min(2.0, num));
+            const strVal = String(num);
+            if (generation?.state?.sceneDraft) {
+                generation.state.sceneDraft.controlnet_strength = strVal;
+            }
+            if (mgCnetStrength && document.activeElement !== mgCnetStrength) mgCnetStrength.value = strVal;
+        }
+
+        function validateCnetTiming() {
+            if (!generation?.state?.sceneDraft) return;
+            const startVal = parseFloat(mgCnetStart?.value ?? "0");
+            const endVal = parseFloat(mgCnetEnd?.value ?? "1");
+            let errMsg = "";
+            if (!Number.isFinite(startVal) || startVal < 0 || startVal > 1.0) {
+                errMsg = "Start Percent must be between 0.0 and 1.0";
+            } else if (!Number.isFinite(endVal) || endVal < 0 || endVal > 1.0) {
+                errMsg = "End Percent must be between 0.0 and 1.0";
+            } else if (startVal >= endVal) {
+                errMsg = "Start Percent must be strictly less than End Percent";
+            }
+            if (errMsg) {
+                if (mgCnetValidationError) {
+                    mgCnetValidationError.textContent = errMsg;
+                    mgCnetValidationError.style.display = "block";
+                }
+            } else {
+                if (mgCnetValidationError) {
+                    mgCnetValidationError.textContent = "";
+                    mgCnetValidationError.style.display = "none";
+                }
+                generation.state.sceneDraft.controlnet_start_percent = String(startVal);
+                generation.state.sceneDraft.controlnet_end_percent = String(endVal);
+            }
+        }
+
+        if (mgCnetStrength) mgCnetStrength.addEventListener("input", (e) => updateCnetStrength(e.target.value));
+        if (mgCnetStart) mgCnetStart.addEventListener("input", validateCnetTiming);
+        if (mgCnetEnd) mgCnetEnd.addEventListener("input", validateCnetTiming);
+
+        setupNumericWheelControl(mgCnetStrength);
+        setupNumericWheelControl(mgCnetStart, {
+            canUpdate: (candidate) => {
+                const endVal = parseFloat(mgCnetEnd?.value ?? "1.0");
+                return Number.isFinite(endVal) ? candidate < endVal : true;
+            }
+        });
+        setupNumericWheelControl(mgCnetEnd, {
+            canUpdate: (candidate) => {
+                const startVal = parseFloat(mgCnetStart?.value ?? "0.0");
+                return Number.isFinite(startVal) ? candidate > startVal : true;
+            }
+        });
+
+        function updateRefWeight(val) {
+            let num = parseFloat(val);
+            if (!Number.isFinite(num)) return;
+            num = Math.max(0.0, Math.min(2.0, num));
+            const strVal = String(num);
+            if (generation?.state?.sceneDraft) {
+                generation.state.sceneDraft.reference_weight = strVal;
+            }
+            if (mgRefWeight && document.activeElement !== mgRefWeight) mgRefWeight.value = strVal;
+        }
+
+        function validateRefTiming() {
+            if (!generation?.state?.sceneDraft) return;
+            const startVal = parseFloat(mgRefStart?.value ?? "0");
+            const endVal = parseFloat(mgRefEnd?.value ?? "1");
+            let errMsg = "";
+            if (!Number.isFinite(startVal) || startVal < 0 || startVal > 1.0) {
+                errMsg = "Start must be between 0.0 and 1.0";
+            } else if (!Number.isFinite(endVal) || endVal < 0 || endVal > 1.0) {
+                errMsg = "End must be between 0.0 and 1.0";
+            } else if (startVal >= endVal) {
+                errMsg = "Start must be strictly less than End";
+            }
+            if (errMsg) {
+                if (mgRefValidationError) {
+                    mgRefValidationError.textContent = errMsg;
+                    mgRefValidationError.style.display = "block";
+                }
+            } else {
+                if (mgRefValidationError) {
+                    mgRefValidationError.textContent = "";
+                    mgRefValidationError.style.display = "none";
+                }
+                generation.state.sceneDraft.reference_start = String(startVal);
+                generation.state.sceneDraft.reference_end = String(endVal);
+            }
+        }
+
+        if (mgRefWeight) mgRefWeight.addEventListener("input", (e) => updateRefWeight(e.target.value));
+        if (mgRefStart) mgRefStart.addEventListener("input", validateRefTiming);
+        if (mgRefEnd) mgRefEnd.addEventListener("input", validateRefTiming);
+
+        setupNumericWheelControl(mgRefWeight);
+        setupNumericWheelControl(mgRefStart, {
+            canUpdate: (candidate) => {
+                const endVal = parseFloat(mgRefEnd?.value ?? "1.0");
+                return Number.isFinite(endVal) ? candidate < endVal : true;
+            }
+        });
+        setupNumericWheelControl(mgRefEnd, {
+            canUpdate: (candidate) => {
+                const startVal = parseFloat(mgRefStart?.value ?? "0.0");
+                return Number.isFinite(startVal) ? candidate > startVal : true;
+            }
+        });
+
+        const openCharRefUpload = () => {
+            showCastReferenceError("");
+            setCastReferenceStatus("");
+            const page = store.getPage();
+            const castList = page?.cast || [];
+            const isCast = composerPromptTarget.startsWith("cast_");
+            const selectedCast = isCast ? castList.find(c => `cast_${c.cast_id}` === composerPromptTarget) : null;
+            const targetCastId = selectedCast?.cast_id || session.selectedCastId;
+            if (!targetCastId) return;
+            session.selectCast(targetCastId);
+            if (fileCastReference) {
+                fileCastReference.value = "";
+                fileCastReference.click();
+            }
+        };
+
+        if (mgBtnAddCharRef) mgBtnAddCharRef.onclick = openCharRefUpload;
+        if (mgBtnReplaceCharRef) mgBtnReplaceCharRef.onclick = openCharRefUpload;
+
+        if (mgBtnClearCharRef) {
+            mgBtnClearCharRef.onclick = () => {
+                showCastReferenceError("");
+                setCastReferenceStatus("");
+                const page = store.getPage();
+                const castList = page?.cast || [];
+                const isCast = composerPromptTarget.startsWith("cast_");
+                const selectedCast = isCast ? castList.find(c => `cast_${c.cast_id}` === composerPromptTarget) : null;
+                const targetCastId = selectedCast?.cast_id || session.selectedCastId;
+                if (!targetCastId) return;
+                try {
+                    store.clearCastReference(targetCastId);
+                    renderSceneComposer();
+                } catch (err) {
+                    showCastReferenceError(err.message);
+                }
+            };
+        }
+
+        async function runReferenceAnalysis() {
+            clearErrors();
+            const page = store.getPage();
+            const castList = page?.cast || [];
+            const isCast = composerPromptTarget.startsWith("cast_");
+            const selectedCast = isCast ? castList.find(c => `cast_${c.cast_id}` === composerPromptTarget) : null;
+            const targetCastId = selectedCast?.cast_id || session.selectedCastId;
+            const castObj = castList.find(c => c.cast_id === targetCastId);
+            if (!castObj || !castObj.reference_asset) return;
+
+            if (pendingAnalysis) return; // Prevent duplicate concurrent analysis
+
+            const castId = castObj.cast_id;
+            const refAsset = castObj.reference_asset;
+            const targetKey = `${castId}:${refAsset}`;
+            const requestId = ++currentAnalysisRequestId;
+            const controller = new AbortController();
+
+            pendingAnalysis = {
+                requestId,
+                castId,
+                referenceAsset: refAsset,
+                controller
+            };
+
+            analysisState = {
+                targetKey,
+                status: "analyzing",
+                candidate: "",
+                error: null
+            };
+            updateAnalysisUI(castObj);
+
+            try {
+                const res = await fetch("/api/reference-assets/analyze", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ asset_reference: refAsset }),
+                    signal: controller.signal
+                });
+
+                if (!pendingAnalysis || pendingAnalysis.requestId !== requestId) return;
+
+                const data = await res.json().catch(() => ({ ok: false, error: "Failed to parse server response" }));
+
+                // Re-verify that target CAST and reference_asset have not changed
+                const curPage = store.getPage();
+                const curCast = (curPage?.cast || []).find(c => c.cast_id === castId);
+                if (!curCast || curCast.reference_asset !== refAsset) {
+                    pendingAnalysis = null;
+                    return;
+                }
+
+                if (!res.ok || !data.ok) {
+                    analysisState = {
+                        targetKey,
+                        status: "failed",
+                        candidate: "",
+                        error: data.error || "Analysis failed"
+                    };
+                    showCastReferenceError(data.error || "Analysis failed");
+                } else {
+                    analysisState = {
+                        targetKey,
+                        status: "candidate_ready",
+                        candidate: data.candidate || "",
+                        error: null
+                    };
+                    if (mgRefCandidateText) {
+                        mgRefCandidateText.value = data.candidate || "";
+                    }
+                }
+            } catch (err) {
+                if (err.name === "AbortError") return;
+                if (!pendingAnalysis || pendingAnalysis.requestId !== requestId) return;
+                analysisState = {
+                    targetKey,
+                    status: "failed",
+                    candidate: "",
+                    error: err.message || "Network request failed"
+                };
+                showCastReferenceError(err.message || "Network request failed");
+            } finally {
+                if (pendingAnalysis && pendingAnalysis.requestId === requestId) {
+                    pendingAnalysis = null;
+                }
+                const curPage = store.getPage();
+                const curCast = (curPage?.cast || []).find(c => c.cast_id === castId);
+                updateAnalysisUI(curCast);
+            }
+        }
+
+        if (mgBtnAnalyzeRef) mgBtnAnalyzeRef.onclick = runReferenceAnalysis;
+
+        if (mgRefCandidateText) {
+            mgRefCandidateText.addEventListener("input", () => {
+                const hasCandidate = Boolean(mgRefCandidateText.value.trim());
+                if (mgBtnCandidateAppend) mgBtnCandidateAppend.disabled = !hasCandidate;
+                if (mgBtnCandidateReplace) mgBtnCandidateReplace.disabled = !hasCandidate;
+                if (mgBtnCandidateDiscard) mgBtnCandidateDiscard.disabled = !hasCandidate && !mgRefCandidateText.value;
+            });
+        }
+
+        if (mgBtnCandidateAppend) {
+            mgBtnCandidateAppend.onclick = () => {
+                clearErrors();
+                const page = store.getPage();
+                const castList = page?.cast || [];
+                const isCast = composerPromptTarget.startsWith("cast_");
+                const selectedCast = isCast ? castList.find(c => `cast_${c.cast_id}` === composerPromptTarget) : null;
+                const targetCastId = selectedCast?.cast_id || session.selectedCastId;
+                const castObj = castList.find(c => c.cast_id === targetCastId);
+                if (!castObj) return;
+
+                const candidateText = (mgRefCandidateText?.value || "").trim();
+                if (!candidateText) return;
+
+                const currentPrompt = (castObj.identity_prompt || "").trim();
+                const newPrompt = currentPrompt ? `${currentPrompt}, ${candidateText}` : candidateText;
+
+                store.updateCast(castObj.cast_id, { identity_prompt: newPrompt });
+                if (composerPrompt && isCast) {
+                    composerPrompt.value = newPrompt;
+                }
+                renderSceneComposer();
+            };
+        }
+
+        if (mgBtnCandidateReplace) {
+            mgBtnCandidateReplace.onclick = () => {
+                clearErrors();
+                const page = store.getPage();
+                const castList = page?.cast || [];
+                const isCast = composerPromptTarget.startsWith("cast_");
+                const selectedCast = isCast ? castList.find(c => `cast_${c.cast_id}` === composerPromptTarget) : null;
+                const targetCastId = selectedCast?.cast_id || session.selectedCastId;
+                const castObj = castList.find(c => c.cast_id === targetCastId);
+                if (!castObj) return;
+
+                const candidateText = (mgRefCandidateText?.value || "").trim();
+                store.updateCast(castObj.cast_id, { identity_prompt: candidateText });
+                if (composerPrompt && isCast) {
+                    composerPrompt.value = candidateText;
+                }
+                renderSceneComposer();
+            };
+        }
+
+        if (mgBtnCandidateDiscard) {
+            mgBtnCandidateDiscard.onclick = () => {
+                clearErrors();
+                if (mgRefCandidateText) {
+                    mgRefCandidateText.value = "";
+                }
+                analysisState.status = "ready";
+                analysisState.candidate = "";
+                analysisState.error = null;
+                updateAnalysisUI();
+            };
+        }
 
         document.getElementById("btn-add-figure").onclick = () => {
             clearErrors();
@@ -2051,27 +3339,39 @@
         };
 
         // Initialize both domain views once; hiding one never resets its state.
+        let generation = null;
         updateAll();
-        const generation = mountGenerationView(document.getElementById("generate-view"), {
+        generation = mountGenerationView(document.getElementById("generate-view"), {
             authoringStore: store,
-            onEditScenes: () => setMangaMode("authoring")
+            session: session,
+            getPromptTarget: () => composerPromptTarget,
+            setPromptTarget: (target) => selectComposerTarget(target),
+            onCatalogChange: () => updateAll()
         });
+        generation.ready.then(() => updateAll()).catch(() => updateAll());
+        document.getElementById("mg-refresh-catalog")?.addEventListener("click", () => {
+            setTimeout(updateAll, 200);
+        });
+        updateAll();
         function setMangaMode(mode) {
-            const isGenerate = mode === "generate";
-            document.getElementById("generate-view").hidden = !isGenerate;
-            document.getElementById("authoring-workspace").hidden = isGenerate;
-            const wsHeader = document.getElementById("workspace-header");
-            if (wsHeader) wsHeader.hidden = isGenerate;
-            document.getElementById("manga-tab-generate").setAttribute("aria-selected", String(isGenerate));
-            document.getElementById("manga-tab-authoring").setAttribute("aria-selected", String(!isGenerate));
-            document.body.classList.toggle("manga-generate-active", isGenerate);
-            if (!isGenerate) updateAll();
+            const isScene = (mode === "authoring" || mode === "scene");
+            const genView = document.getElementById("generate-view");
+            if (genView) genView.dataset.mode = isScene ? "scene" : "basic";
+            generation.state.setMode(isScene ? "scene" : "basic");
+            generation.renderForm();
+            generation.refresh();
+            const genTab = document.getElementById("manga-tab-generate");
+            const authTab = document.getElementById("manga-tab-authoring");
+            if (genTab) genTab.setAttribute("aria-selected", String(!isScene));
+            if (authTab) authTab.setAttribute("aria-selected", String(isScene));
+            if (isScene) updateAll();
         }
         document.getElementById("manga-tab-generate").onclick = () => setMangaMode("generate");
         document.getElementById("manga-tab-authoring").onclick = () => setMangaMode("authoring");
         const embedded = new URLSearchParams(window.location.search).get("embedded") === "1";
         document.body.classList.toggle("manga-embedded", embedded);
-        setMangaMode(embedded ? "generate" : "authoring");
+        document.body.classList.add("manga-generate-active");
+        setMangaMode("authoring");
 
         // Expose to window for automated testing
         window.__tegakiManga = {
@@ -2082,7 +3382,10 @@
             composerTagAutocomplete,
             setMangaMode,
             checkBackend,
-            updateAll
+            updateAll,
+            getComposerPromptTarget: () => composerPromptTarget,
+            buildSceneGenerationSettings: () => buildSceneGenerationSettings(generation.state, store),
+            setupNumericWheelControl
         };
     </script>
 </body>

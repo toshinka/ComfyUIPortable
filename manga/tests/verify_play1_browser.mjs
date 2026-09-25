@@ -139,21 +139,37 @@ try {
     page.on("pageerror", error => pageErrors.push(error.message));
     page.on("request", request => browserRequests.push(request.url()));
     await page.goto(origin, { waitUntil: "networkidle" });
-    check(await page.getAttribute("#manga-tab-authoring", "aria-selected") === "true" &&
-        await page.isVisible("#authoring-workspace") && await page.isHidden("#generate-view"),
-        "standalone mode keeps the authoring default");
-    await page.click("#manga-tab-generate");
+    check(await page.isVisible("#generate-view") &&
+        await page.getAttribute("#mg-mode-basic", "aria-selected") === "true",
+        "standalone mode enters unified production workspace with Basic Draft default");
+    await page.click("#mg-mode-basic");
     await page.waitForFunction(() => Boolean(window.__tegakiManga?.generation?.state.catalog));
     check(await page.locator("#mg-checkpoint_id option").count() === 2, "catalog checkpoints populate");
     check(await page.inputValue("#mg-checkpoint_id") === "Illustrious.safetensors", "available checkpoint default");
     check(await page.locator("#mg-sampler_id option").count() === 2 && await page.locator("#mg-scheduler_id option").count() === 2,
         "sampler and scheduler catalog populate");
     check(await page.getAttribute("#mg-width", "min") === "256" && await page.getAttribute("#mg-steps", "max") === "100", "bounds populate");
+    check(await page.getAttribute("#generate-view", "data-presentation") === "glance" &&
+        await page.getAttribute("#mg-focus-toggle", "aria-label") === "Focus Preview" &&
+        (await page.getAttribute("#mg-focus-toggle", "aria-pressed")) === "false", "Generate enters explicit GLANCE");
     const widePreview = await page.locator(".mg-stage").boundingBox();
     const wideCreate = await page.locator("#mg-create").boundingBox();
     const wideHistory = await page.locator(".mg-history-section").boundingBox();
     await page.screenshot({ path: path.join(os.tmpdir(), "manga-play1c-wide.png"), fullPage: true });
-    check(widePreview.x < wideCreate.x && wideHistory.y > widePreview.y, "wide Preview/Create/History hierarchy");
+    check(wideCreate.x < widePreview.x && wideHistory.y > widePreview.y, "wide Create/Preview/History hierarchy");
+    check(widePreview.height < 280 && wideCreate.width > 360, "empty GLANCE prioritizes usable Create controls");
+    await page.fill("#mg-positive_raw", "draft survives presentation focus");
+    await page.click("#mg-focus-toggle");
+    const emptyFocusPreview = await page.locator(".mg-stage").boundingBox();
+    check(await page.getAttribute("#generate-view", "data-presentation") === "focus" &&
+        await page.getAttribute("#mg-focus-toggle", "aria-label") === "Return to Create view" &&
+        emptyFocusPreview.height > widePreview.height &&
+        await page.inputValue("#mg-positive_raw") === "draft survives presentation focus", "explicit GLANCE to FOCUS preserves draft");
+    await page.click(".mg-page-heading");
+    check(await page.getAttribute("#generate-view", "data-presentation") === "focus", "click outside does not change FOCUS");
+    await page.keyboard.press("Escape");
+    check(await page.getAttribute("#generate-view", "data-presentation") === "glance" &&
+        await page.inputValue("#mg-positive_raw") === "draft survives presentation focus", "scoped Escape returns to GLANCE without input loss");
     await page.locator("#mg-create").evaluate(element => { element.scrollTop = element.scrollHeight; });
     check(await page.locator("#mg-create").evaluate(element => element.scrollTop > 0), "wide Create controls scroll independently");
     await page.mouse.move(wideCreate.x + wideCreate.width / 2, wideCreate.y + wideCreate.height / 2);
@@ -204,6 +220,14 @@ try {
     check((await page.textContent("#mg-status")).includes("SUCCEEDED"), "SUCCEEDED state is visible");
     const firstPreview = await page.getAttribute("#mg-preview-image", "src");
     check(firstPreview.startsWith("blob:") && await page.isVisible("#mg-preview-image"), "validated PLAY1b PNG enters Preview");
+    await page.click("#mg-focus-toggle");
+    const resultFocusPreview = await page.locator(".mg-stage").boundingBox();
+    check(await page.getAttribute("#generate-view", "data-result") === "validated" &&
+        await page.isVisible("#mg-preview-image") && await page.getAttribute("#mg-preview-image", "src") === firstPreview &&
+        resultFocusPreview.height > widePreview.height && await page.isVisible("#mg-status"), "FOCUS retains validated result and truthful status");
+    await page.click("#mg-focus-toggle");
+    check(await page.getAttribute("#generate-view", "data-presentation") === "glance" &&
+        await page.getAttribute("#mg-preview-image", "src") === firstPreview, "return to GLANCE retains validated result identity");
     check(browserRequests.every(url => !url.startsWith(backend.origin)), "Browser never calls backend directly");
 
     backend.mode = "reject";
@@ -234,7 +258,7 @@ try {
     await page.waitForTimeout(1700);
     check(backend.promptCalls === unknownPromptCount, "UNKNOWN polling never resubmits");
 
-    await page.click("#manga-tab-authoring");
+    await page.click("#mg-mode-scene");
     check((await page.getAttribute("#btn-prepare-draft", "title")).includes("never generates") &&
         (await page.textContent("#prepare-feedback")).includes("prepare-only"),
         "Authoring prepare action is explicitly prepare-only");
@@ -244,14 +268,14 @@ try {
     const afterAuthoring = await page.evaluate(() => ({ json: window.__tegakiManga.store.exportJson(true),
         session: window.__tegakiManga.session.getSnapshot() }));
     check(beforeAuthoring.json !== afterAuthoring.json, "authoring interaction still works");
-    await page.click("#manga-tab-generate");
+    await page.click("#mg-mode-basic");
     check(await page.inputValue("#mg-positive_raw") === "uncertain panel", "Generate draft survives tab switch");
-    await page.click("#manga-tab-authoring");
+    await page.click("#mg-mode-scene");
     const returnedAuthoring = await page.evaluate(() => ({ json: window.__tegakiManga.store.exportJson(true),
         session: window.__tegakiManga.session.getSnapshot() }));
     check(returnedAuthoring.json === afterAuthoring.json &&
         JSON.stringify(returnedAuthoring.session) === JSON.stringify(afterAuthoring.session), "AuthoringStore and session survive tab switch");
-    await page.click("#manga-tab-generate");
+    await page.click("#mg-mode-basic");
     await page.setViewportSize({ width: 430, height: 850 });
     const narrowPreview = await page.locator(".mg-stage").boundingBox();
     const narrowCreate = await page.locator("#mg-create").boundingBox();
@@ -262,7 +286,7 @@ try {
     const embeddedPage = await browser.newPage({ viewport: { width: 1440, height: 900 } });
     await embeddedPage.goto(`${origin}/?embedded=1`, { waitUntil: "networkidle" });
     await embeddedPage.waitForFunction(() => Boolean(window.__tegakiManga?.generation?.state.catalog));
-    check(await embeddedPage.getAttribute("#manga-tab-generate", "aria-selected") === "true" &&
+    check(await embeddedPage.getAttribute("#mg-mode-basic", "aria-selected") === "true" &&
         await embeddedPage.isVisible("#generate-view") && await embeddedPage.isHidden("#authoring-workspace"),
         "embedded mode defaults to Generate");
     check(!await embeddedPage.isVisible(".manga-identity") && !await embeddedPage.isVisible(".mg-page-heading"),
@@ -270,12 +294,12 @@ try {
     await embeddedPage.close();
     const beforeReload = backend.promptCalls;
     await page.reload({ waitUntil: "networkidle" });
-    await page.click("#manga-tab-generate");
+    await page.click("#mg-mode-basic");
     await page.waitForFunction(() => document.querySelectorAll(".mg-history-row").length >= 3);
     check(backend.promptCalls === beforeReload, "reload displays journal jobs without resubmit");
     const responseLostPage = await browser.newPage();
     await responseLostPage.goto(origin, { waitUntil: "networkidle" });
-    await responseLostPage.click("#manga-tab-generate");
+    await responseLostPage.click("#mg-mode-basic");
     await responseLostPage.waitForFunction(() => Boolean(window.__tegakiManga?.generation?.state.catalog) &&
         !window.__tegakiManga.generation.state.historyLoading);
     await responseLostPage.evaluate(() => {

@@ -13,6 +13,7 @@ const [html, app, styles] = await Promise.all([
   readFile(join(root, "app.js"), "utf8"),
   readFile(join(root, "styles.css"), "utf8"),
 ]);
+const normalizedStyles = styles.replace(/\r\n/g, "\n");
 
 const count = (value, marker) => value.split(marker).length - 1;
 
@@ -45,8 +46,11 @@ for (const marker of [
   "function isNarrowViewport()",
   "function setNarrowView(nextView)",
   "function syncResponsiveMounts()",
-  "const actionSlot = wide ? stageActionSlot : generateActionSlot;",
-  "const statusSlot = wide ? stageStatusSlot : statusStrip;",
+  "const stageVideo = wide && state.mode === \"video\";",
+  "const actionSlot = stageVideo ? stageActionSlot : generateActionSlot;",
+  "const statusSlot = stageVideo ? stageStatusSlot : wide ? createStatusSlot : statusStrip;",
+  "stageActionBar.hidden = !stageVideo;",
+  "syncResponsiveMounts();",
   "window.addEventListener(\"resize\", syncResponsiveMounts);",
   "function statusLabelForJob(job)",
   'if (job?.state === "RUNNING") return "Generating";',
@@ -121,10 +125,10 @@ for (const marker of [
   'body[data-narrow-view="result"] .control-column { display: none; }',
   ".narrow-view-button:focus-visible",
 ]) {
-  assert.ok(styles.includes(marker), `R1 CSS marker missing: ${marker}`);
+  assert.ok(normalizedStyles.includes(marker), `R1 CSS marker missing: ${marker}`);
 }
-assert.ok(styles.includes(".stage-action-bar { display: none; }"), "Narrow must hide the wide Stage action bar.");
-assert.equal(styles.includes("position: fixed"), false, "R1 Stage must not become a page-wide fixed overlay.");
-assert.equal(styles.includes("overflow: auto"), false, "R1 must not add a nested scrolling workspace.");
+assert.ok(normalizedStyles.includes(".stage-action-bar { display: none; }"), "Narrow must hide the wide Stage action bar.");
+assert.equal(normalizedStyles.includes("position: fixed"), false, "R1 Stage must not become a page-wide fixed overlay.");
+assert.equal(normalizedStyles.includes("overflow: auto"), false, "R1 must not add a nested scrolling workspace.");
 
 console.log("H3-R1A Stage / Generate visibility source+logic smoke: 61 PASS");

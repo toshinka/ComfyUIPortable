@@ -17,7 +17,9 @@ import {
     createDefaultAuthoringDocument,
     createRichAuthoringFixture,
     validateAuthoringDocument,
-    cloneDocument
+    cloneDocument,
+    ensureDocumentIdentity,
+    duplicateDocument
 } from "../domain/authoring_document.js";
 import {
     chooseCastForPlacement,
@@ -56,9 +58,25 @@ const DEFAULT_CAST_PALETTE = [
     "#06b6d4", "#eab308", "#ec4899", "#a855f7", "#22c55e", "#f97316"
 ];
 
+/** Fresh app sessions start Global-first without changing the sample reset or fixture contract. */
+export function createNewAuthoringSessionDocument() {
+    const document = createDefaultAuthoringDocument();
+    for (const page of document.pages || []) {
+        page.scenes = [];
+        page.cast = [];
+        page.character_instances = [];
+    }
+    const validation = validateAuthoringDocument(document);
+    if (!validation.valid) {
+        throw new Error(`Invalid new authoring session document: ${validation.errors.join("; ")}`);
+    }
+    return document;
+}
+
 export class AuthoringStore {
     constructor(initialDoc = null) {
-        this.document = initialDoc ? cloneDocument(initialDoc) : createDefaultAuthoringDocument();
+        const doc = initialDoc || createDefaultAuthoringDocument();
+        this.document = cloneDocument(ensureDocumentIdentity(doc));
         this.listeners = new Set();
     }
 
@@ -71,11 +89,12 @@ export class AuthoringStore {
     }
 
     setDocument(newDoc) {
-        const validation = validateAuthoringDocument(newDoc);
+        const ingested = ensureDocumentIdentity(newDoc);
+        const validation = validateAuthoringDocument(ingested);
         if (!validation.valid) {
             throw new Error("Invalid authoring document: " + validation.errors.join(", "));
         }
-        this.document = cloneDocument(newDoc);
+        this.document = cloneDocument(ingested);
         this.notify();
     }
 
@@ -85,6 +104,13 @@ export class AuthoringStore {
 
     loadRichFixture() {
         this.setDocument(createRichAuthoringFixture());
+    }
+
+    duplicateDocument(sourceDoc = null) {
+        const source = sourceDoc || this.document;
+        const copy = duplicateDocument(source);
+        this.setDocument(copy);
+        return this.getDocument();
     }
 
     exportJson(pretty = true) {
@@ -102,11 +128,12 @@ export class AuthoringStore {
         } catch (e) {
             return { ok: false, error: "JSON parse error: " + e.message };
         }
-        const validation = validateAuthoringDocument(parsed);
+        const ingested = ensureDocumentIdentity(parsed);
+        const validation = validateAuthoringDocument(ingested);
         if (!validation.valid) {
             return { ok: false, error: validation.errors.join("; ") };
         }
-        this.setDocument(parsed);
+        this.setDocument(ingested);
         return { ok: true, document: this.getDocument() };
     }
 
@@ -134,6 +161,30 @@ export class AuthoringStore {
         if (stylePrompt !== undefined) page.style_prompt = stylePrompt;
         if (styleNegativePrompt !== undefined) page.style_negative_prompt = styleNegativePrompt;
         this.setDocument(draft);
+    }
+
+    setPageDimensions({ width, height } = {}, pageIndex = 0) {
+        const draft = cloneDocument(this.document);
+        const page = draft.pages[pageIndex];
+        if (!page) throw new Error("Page not found");
+        let changed = false;
+        if (width !== undefined) {
+            const w = parseInt(width, 10);
+            if (Number.isFinite(w) && w > 0 && page.width_px !== w) {
+                page.width_px = w;
+                changed = true;
+            }
+        }
+        if (height !== undefined) {
+            const h = parseInt(height, 10);
+            if (Number.isFinite(h) && h > 0 && page.height_px !== h) {
+                page.height_px = h;
+                changed = true;
+            }
+        }
+        if (changed) {
+            this.setDocument(draft);
+        }
     }
 
     // ==========================================
@@ -247,9 +298,6 @@ export class AuthoringStore {
         const draft = cloneDocument(this.document);
         const page = draft.pages[pageIndex];
         if (!page) throw new Error("Page not found");
-        if ((page.scenes || []).length <= 1) {
-            throw new Error("Cannot delete the only scene; at least 1 scene required");
-        }
 
         const res = cascadeDeleteScene(sceneId, page.scenes, page.character_instances, page.guides);
         page.scenes = res.scenes;

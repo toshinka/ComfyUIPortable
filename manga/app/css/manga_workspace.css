@@ -1,16 +1,66 @@
 /* manga_workspace.css — Standalone Manga Workspace Styles */
 :root {
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-tertiary: #334155;
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --accent-blue: #2563eb;
-    --accent-green: #16a34a;
-    --accent-red: #dc2626;
-    --accent-amber: #d97706;
-    --border-color: #475569;
+    /* Canonical FUTABA tokens */
+    --futaba-maroon: #800000;
+    --futaba-light-maroon: #9c3835;
+    --futaba-medium: #b8706b;
+    --futaba-light-medium: #d4a8a0;
+    --futaba-cream: #f0e0d6;
+    --futaba-background: #ffffee;
+
+    --text-primary: #800000;
+    --text-secondary: #9c3835;
+    --text-inverse: #ffffff;
+
+    --active-border: #ff8c42;
+
+    --deformer-pose-line: var(--active-border);
+    --deformer-pose-point: var(--futaba-maroon);
+
+    --deformer-bind-line: #527fbd;
+    --deformer-bind-point: #315c96;
+
+    /* Derived FUTABA dark-side surfaces for MANGA (warm maroon/red-brown family, no neutral near-black) */
+    --manga-background: #461d22;
+    --manga-surface: #5a262d;
+    --manga-surface-raised: #6f2e37;
+    --manga-surface-inset: #341418;
+    --manga-line: #8e3d48;
+    --manga-line-soft: #72313a;
+    --manga-text: var(--futaba-cream);
+    --manga-muted: var(--futaba-light-medium);
+    --manga-maroon: var(--futaba-maroon);
+    --manga-maroon-hover: var(--futaba-light-maroon);
+    --manga-selection: #7d313b;
+    --manga-medium: var(--futaba-medium);
+    --manga-active-border: var(--active-border);
+    --manga-shadow: rgba(52, 20, 24, 0.60);
+    --manga-cast-on: #6a2a32;
+    --manga-danger-background: #5c1d24;
+    --manga-danger-border: #b83844;
+    --manga-danger-text: #ffd9dc;
+    --manga-warning-background: #542d16;
+    --manga-warning-border: #b36b2e;
+    --manga-warning-text: #fedeb0;
+    --manga-success-background: #1f4028;
+    --manga-success-border: #428c57;
+    --manga-success-text: #bdf0c8;
+    --bg-primary: var(--manga-background);
+    --bg-secondary: var(--manga-surface);
+    --bg-tertiary: var(--manga-surface-raised);
+    --border-color: var(--manga-line);
+    accent-color: var(--manga-maroon);
 }
+
+html {
+    background: var(--manga-background);
+    color-scheme: dark;
+    scrollbar-color: var(--manga-line) var(--manga-background);
+}
+
+html::-webkit-scrollbar { width: 12px; background: var(--manga-background); }
+html::-webkit-scrollbar-track { background: var(--manga-background); }
+html::-webkit-scrollbar-thumb { border: 3px solid var(--manga-background); border-radius: 999px; background: var(--manga-line); }
 
 * {
     box-sizing: border-box;
@@ -20,12 +70,15 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: var(--bg-primary);
-    color: var(--text-primary);
+    background: var(--manga-background);
+    color: var(--manga-text);
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-color: var(--manga-line) var(--manga-background);
 }
 
 /* Header */
@@ -36,6 +89,7 @@ body {
     background: transparent;
     padding: 0;
     flex-shrink: 0;
+    flex-wrap: wrap;
 }
 
 .header-brand {
@@ -47,13 +101,13 @@ body {
 .brand-title {
     font-size: 15px;
     font-weight: 700;
-    color: #38bdf8;
+    color: var(--manga-muted);
     letter-spacing: 0.5px;
 }
 
 .brand-badge {
-    background: #0369a1;
-    color: #e0f2fe;
+    background: var(--manga-maroon);
+    color: var(--manga-text);
     font-size: 10px;
     font-weight: 700;
     padding: 2px 6px;
@@ -67,9 +121,9 @@ body {
 }
 
 .btn {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
+    background: var(--manga-surface-raised);
+    color: var(--manga-text);
+    border: 1px solid var(--manga-line);
     border-radius: 4px;
     padding: 5px 10px;
     font-size: 11px;
@@ -79,22 +133,24 @@ body {
 }
 
 .btn:hover {
-    background: #475569;
+    background: var(--manga-selection);
+    color: var(--text-inverse);
 }
 
 .btn-primary {
-    background: var(--accent-blue);
-    border-color: #3b82f6;
+    background: var(--manga-maroon);
+    border-color: var(--manga-medium);
+    color: var(--text-inverse);
 }
 
 .btn-primary:hover {
-    background: #1d4ed8;
+    background: var(--manga-maroon-hover);
 }
 
 /* Backend Status Bar */
 #backend-bar {
-    background: #111827;
-    border-bottom: 1px solid #1f2937;
+    background: var(--manga-surface-inset);
+    border-bottom: 1px solid var(--manga-line-soft);
     padding: 6px 16px;
     display: flex;
     align-items: center;
@@ -113,21 +169,21 @@ body {
 }
 
 .status-unavailable {
-    background: #450a0a;
-    color: #fca5a5;
-    border-color: #991b1b;
+    background: var(--manga-danger-background);
+    color: var(--manga-danger-text);
+    border-color: var(--manga-danger-border);
 }
 
 .status-generic {
-    background: #451a03;
-    color: #fcd34d;
-    border-color: #92400e;
+    background: var(--manga-warning-background);
+    color: var(--manga-warning-text);
+    border-color: var(--manga-warning-border);
 }
 
 .status-ready {
-    background: #052e16;
-    color: #86efac;
-    border-color: #166534;
+    background: var(--manga-success-background);
+    color: var(--manga-success-text);
+    border-color: var(--manga-success-border);
 }
 
 .status-dot {
@@ -137,14 +193,14 @@ body {
     display: inline-block;
 }
 
-.status-unavailable .status-dot { background: #ef4444; }
-.status-generic .status-dot { background: #f59e0b; }
-.status-ready .status-dot { background: #22c55e; }
+.status-unavailable .status-dot { background: var(--manga-maroon-hover); }
+.status-generic .status-dot { background: var(--manga-warning-text); }
+.status-ready .status-dot { background: var(--manga-success-text); }
 
 .backend-input {
-    background: #1f2937;
-    color: #f3f4f6;
-    border: 1px solid #374151;
+    background: var(--manga-surface-inset);
+    color: var(--manga-text);
+    border: 1px solid var(--manga-line-soft);
     border-radius: 4px;
     padding: 3px 8px;
     font-size: 11px;
@@ -160,16 +216,20 @@ body {
 /* Main Layout */
 #workspace-main {
     display: flex;
-    flex: 1;
-    overflow: hidden;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: flex-start;
 }
 
 /* Canvas Area */
 #canvas-container {
-    flex: 1;
+    flex: 1 1 440px;
+    min-width: 320px;
     display: flex;
     flex-direction: column;
-    background: #020617;
+    background: var(--manga-surface-inset);
+    border: 1px solid var(--manga-line);
+    border-radius: 8px;
     overflow: hidden;
     position: relative;
 }
@@ -194,33 +254,37 @@ body {
 }
 
 .tab-btn.active {
-    background: var(--bg-tertiary);
-    color: #38bdf8;
-    border-color: #38bdf8;
+    background: var(--manga-selection);
+    color: var(--manga-text);
+    border-color: var(--manga-active-border);
 }
 
 #canvas-viewport {
-    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 16px;
+    padding: 14px;
+    background: var(--manga-surface-inset);
     overflow: auto;
 }
 
 #manga-canvas {
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+    max-width: 100%;
+    height: auto;
+    box-shadow: 0 10px 25px -5px var(--manga-shadow);
     background: #ffffff;
 }
 
 /* Inspector Area */
 #inspector-panel {
-    width: 380px;
-    background: var(--bg-secondary);
-    border-left: 1px solid var(--border-color);
+    flex: 1 1 360px;
+    min-width: 300px;
+    background: var(--manga-surface);
+    border: 1px solid var(--manga-line);
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
+    overflow: visible;
     font-size: 12px;
 }
 
@@ -233,7 +297,7 @@ body {
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--manga-muted);
     margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
@@ -266,8 +330,8 @@ body {
 }
 
 .list-item.selected {
-    border-color: #38bdf8;
-    background: #1e3a8a;
+    border-color: var(--manga-active-border);
+    background: var(--manga-selection);
 }
 
 /* Modal / Export Dialog */
@@ -277,7 +341,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.7);
+    background: var(--manga-shadow);
     display: none;
     justify-content: center;
     align-items: center;
@@ -300,7 +364,7 @@ body {
     width: 100%;
     height: 350px;
     background: var(--bg-primary);
-    color: #e2e8f0;
+    color: var(--manga-text);
     font-family: monospace;
     font-size: 11px;
     padding: 8px;
@@ -331,14 +395,14 @@ body {
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--manga-muted);
 }
 
 .form-input, .form-textarea, .form-select {
-    background: #090d16;
-    border: 1px solid #334155;
+    background: var(--manga-surface-inset);
+    border: 1px solid var(--manga-line);
     border-radius: 4px;
-    color: #f8fafc;
+    color: var(--manga-text);
     font-size: 11px;
     padding: 4px 6px;
     outline: none;
@@ -346,7 +410,7 @@ body {
 }
 
 .form-input:focus, .form-textarea:focus, .form-select:focus {
-    border-color: #38bdf8;
+    border-color: var(--manga-active-border);
 }
 
 .form-textarea {
@@ -362,14 +426,14 @@ body {
 }
 
 .btn-danger {
-    background: #7f1d1d;
-    color: #fca5a5;
-    border-color: #991b1b;
+    background: var(--manga-danger-background);
+    color: var(--manga-danger-text);
+    border-color: var(--manga-danger-border);
 }
 
 .btn-danger:hover {
-    background: #991b1b;
-    color: #ffffff;
+    background: var(--manga-maroon-hover);
+    color: var(--manga-text);
 }
 
 .btn-sm {
@@ -378,9 +442,9 @@ body {
 }
 
 .alert-error {
-    background: #450a0a;
-    border: 1px solid #991b1b;
-    color: #fca5a5;
+    background: var(--manga-danger-background);
+    border: 1px solid var(--manga-danger-border);
+    color: var(--manga-danger-text);
     padding: 6px 8px;
     border-radius: 4px;
     font-size: 11px;
@@ -393,142 +457,232 @@ body {
 }
 
 /* Inspector Panel Sections & Progressive Disclosure */
-#inspector-panel > .panel-section.panel-section-advanced { display: none; }
-#inspector-panel.advanced-open > .panel-section.panel-section-advanced { display: block; }
-#scene-composer-panel { background: #21182a; border-bottom-color: #624569; }
-.scene-composer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-.scene-composer-eyebrow, .scene-tool-eyebrow { color: #d4a1e1; font-size: 10px; font-weight: 800; letter-spacing: .12em; }
-.scene-composer-head h2 { margin-top: 3px; color: #f4d8f3; font-size: 16px; line-height: 1.1; }
-.scene-composer-advanced { flex: 0 0 auto; background: #38283f; border: 1px solid #795782; border-radius: 6px; color: #eedbf2; padding: 5px 8px; font-size: 10px; font-weight: 700; cursor: pointer; }
-.scene-composer-advanced:hover, .scene-composer-advanced[aria-expanded="true"] { background: #503457; }
-.scene-composer-note { margin-top: 6px; color: #cbb6ce; font-size: 11px; line-height: 1.4; }
-.scene-composer-selection { margin-top: 8px; padding: 6px 8px; border: 1px solid #624569; border-radius: 6px; background: #17111d; color: #f1d9f1; font-size: 11px; font-weight: 700; }
-.scene-prompt-tabs { display: flex; gap: 5px; margin-top: 8px; overflow-x: auto; padding-bottom: 3px; scrollbar-color: #76537e transparent; }
+#inspector-panel > .panel-section { display: none; }
+#inspector-panel.advanced-open > .panel-section { display: block; }
+#scene-composer-panel { background: transparent; border: none; border-radius: 0; padding: 0; margin-bottom: 6px; }
+.scene-composer-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; margin-bottom: 4px; flex-wrap: wrap; }
+.scene-target-action-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 10px; min-width: 0; flex: 1 1 auto; }
+.scene-global-target { display: flex; align-items: center; flex: 0 0 auto; }
+.scene-lifecycle-actions { display: flex; align-items: center; gap: 4px; flex: 0 1 auto; min-width: 0; flex-wrap: wrap; }
+.mg-scene-btn { min-height: 30px; border: 1px solid var(--manga-line); border-radius: 6px; background: var(--manga-surface-raised); color: var(--manga-text); padding: 4px 8px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; line-height: 1.2; }
+.mg-scene-btn:hover:not(:disabled) { background: var(--manga-selection); color: var(--manga-text); }
+.mg-scene-btn:disabled { opacity: 0.45; cursor: not-allowed; border-color: var(--manga-line-soft); }
+.mg-scene-btn-delete:hover:not(:disabled) { background: var(--manga-danger-background); border-color: var(--manga-danger-border); color: var(--manga-danger-text); }
+.scene-composer-eyebrow, .scene-tool-eyebrow { color: var(--manga-muted); font-size: 10px; font-weight: 800; letter-spacing: .12em; }
+.scene-composer-head h2 { margin: 0; color: var(--manga-text); font-size: 13px; line-height: 1.2; }
+.scene-composer-advanced { flex: 0 0 auto; background: var(--manga-surface-raised); border: 1px solid var(--manga-line); border-radius: 6px; color: var(--manga-text); padding: 4px 8px; font-size: 10px; font-weight: 700; cursor: pointer; }
+.scene-composer-advanced:hover, .scene-composer-advanced[aria-expanded="true"] { background: var(--manga-selection); }
+.scene-composer-note { margin-top: 4px; color: var(--manga-muted); font-size: 10px; line-height: 1.4; }
+.scene-composer-selection { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.scene-prompt-tabs { display: flex; flex-direction: column; align-items: stretch; gap: 4px; overflow: visible; min-width: 0; width: 100%; padding: 0; }
+.scene-prompt-row { display: flex; align-items: flex-start; gap: 6px; flex-wrap: wrap; min-width: 0; width: 100%; }
+.scene-prompt-row[hidden], .scene-prompt-target-group[hidden], .scene-prompt-tabs[hidden] { display: none !important; }
+.scene-prompt-group-label { flex: 0 0 42px; padding-top: 8px; color: var(--manga-muted); font-size: 9px; font-weight: 800; letter-spacing: .1em; line-height: 1.2; }
+.scene-prompt-target-group { display: flex; align-items: center; gap: 5px; flex: 0 1 auto; flex-wrap: wrap; min-width: 0; max-width: 100%; }
+.scene-prompt-scene-row .scene-prompt-target-group { flex: 1 1 auto; }
+.scene-prompt-cast-group { align-items: center; gap: 5px 8px; }
+.scene-cast-entry { display: inline-flex; flex: 0 1 auto; align-items: stretch; min-width: 0; max-width: 100%; }
+.scene-cast-identity-button { max-width: 180px; overflow: hidden; border-top-right-radius: 0; border-bottom-right-radius: 0; border-right-width: 0; text-overflow: ellipsis; white-space: nowrap; }
+.scene-prompt-cast-group .scene-cast-identity-button[aria-pressed="true"] { background: var(--manga-maroon); border-color: var(--manga-active-border); color: var(--manga-text); }
+.scene-cast-appearance-button { flex: 0 0 auto; min-height: 30px; border: 1px solid var(--manga-line); border-radius: 0 999px 999px 0; background: var(--manga-surface-raised); color: var(--manga-text); padding: 5px 8px; font-size: 10px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.scene-cast-appearance-button:hover:not(:disabled) { background: var(--manga-cast-on); color: var(--manga-text); }
+.scene-cast-appearance-button:disabled { opacity: .48; cursor: not-allowed; }
+.scene-cast-appearance-button.is-on { background: var(--manga-cast-on); border-color: var(--manga-active-border); color: var(--manga-text); box-shadow: inset 0 0 0 1px var(--manga-active-border); }
+.scene-cast-appearance-button.is-mixed { border-color: var(--manga-medium); border-style: dashed; background: var(--manga-surface); color: var(--manga-muted); }
 
-.document-summary-compact { background: #141b2d; border-bottom: 1px solid #334155; padding: 8px 12px; }
-.document-summary-compact .section-title { font-size: 10px; margin-bottom: 4px; color: #94a3b8; }
-.fine-adjust-details { margin-top: 6px; border-top: 1px solid #334155; padding-top: 4px; }
-.fine-adjust-summary { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #94a3b8; cursor: pointer; user-select: none; margin-bottom: 4px; }
-.fine-adjust-summary:hover { color: #cbd5e1; }
+.document-summary-compact { background: var(--manga-surface-inset); border-bottom: 1px solid var(--manga-line-soft); padding: 8px 12px; }
+.document-summary-compact .section-title { font-size: 10px; margin-bottom: 4px; color: var(--manga-muted); }
+.fine-adjust-details { margin-top: 6px; border-top: 1px solid var(--manga-line-soft); padding-top: 4px; }
+.fine-adjust-summary { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--manga-muted); cursor: pointer; user-select: none; margin-bottom: 4px; }
+.fine-adjust-summary:hover { color: var(--manga-text); }
 .session-state-details { width: 100%; }
 .session-state-details summary { cursor: pointer; user-select: none; }
-.scene-prompt-tabs button { flex: 0 0 auto; border: 1px solid #694b70; border-radius: 999px; background: #2c2033; color: #ccb7cf; padding: 6px 10px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; }
-.scene-prompt-tabs button:hover { background: #49304f; color: #fff; }
-.scene-prompt-tabs button[aria-selected="true"] { background: #75438b; border-color: #c99bd2; color: #fff; }
-.scene-prompt-tabs button:focus-visible, .scene-composer-advanced:focus-visible, #scene-composer-panel input:focus-visible, #scene-composer-panel textarea:focus-visible,
-#scene-composer-toolbar button:focus-visible, .tab-btn:focus-visible { outline: 2px solid #f5c98b; outline-offset: 2px; }
-.scene-composer-error { display: none; margin-top: 9px; padding: 7px 8px; border: 1px solid #a6586c; border-radius: 6px; background: #44212d; color: #ffd2d7; font-size: 11px; line-height: 1.35; }
+.scene-prompt-target-button { min-width: 0; max-width: 100%; min-height: 30px; border: 1px solid var(--manga-line); border-radius: 999px; background: var(--manga-surface-raised); color: var(--manga-muted); padding: 5px 10px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: normal; overflow-wrap: anywhere; }
+.scene-prompt-cast-group .scene-prompt-target-button { border-color: var(--manga-line-soft); background: var(--manga-surface-inset); }
+.scene-prompt-target-button:hover { background: var(--manga-selection); color: var(--manga-text); }
+.scene-prompt-target-button[aria-selected="true"] { background: var(--manga-maroon); border-color: var(--manga-active-border); color: var(--manga-text); }
+.scene-prompt-target-button[data-current-scene="true"] { border-color: var(--manga-active-border); box-shadow: 0 0 0 1px rgba(255, 140, 66, .32); }
+.scene-inline-rename { flex: 0 1 180px; width: min(180px, 100%); min-width: 72px; max-width: 100%; min-height: 30px; border: 1px solid var(--manga-medium); border-radius: 999px; background: var(--manga-surface-inset); color: var(--manga-text); padding: 4px 9px; font: inherit; font-size: 11px; }
+.scene-inline-rename:focus-visible { outline: 2px solid var(--manga-active-border); outline-offset: 2px; }
+.scene-global-target button:focus-visible, .scene-prompt-target-button:focus-visible, .scene-cast-appearance-button:focus-visible, .scene-composer-advanced:focus-visible, #scene-composer-panel input:focus-visible, #scene-composer-panel textarea:focus-visible,
+#scene-composer-toolbar button:focus-visible, .tab-btn:focus-visible { outline: 2px solid var(--manga-active-border); outline-offset: 2px; }
+.scene-composer-error { display: none; margin-top: 8px; padding: 6px 8px; border: 1px solid var(--manga-danger-border); border-radius: 6px; background: var(--manga-danger-background); color: var(--manga-danger-text); font-size: 11px; line-height: 1.35; }
 .scene-composer-error.visible { display: block; }
-.scene-composer-editor { display: flex; flex-direction: column; gap: 9px; margin-top: 12px; }
+.scene-composer-editor { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
 .scene-composer-field { display: flex; flex-direction: column; gap: 4px; }
-.scene-composer-field label { color: #eee1ef; font-size: 11px; font-weight: 700; }
-.scene-composer-field input, .scene-composer-field textarea { width: 100%; border: 1px solid #725574; border-radius: 7px; background: #17111d; color: #fff7ff; padding: 9px 10px; font: inherit; font-size: 12px; line-height: 1.45; }
+.scene-composer-field label { color: var(--manga-text); font-size: 11px; font-weight: 700; }
+.scene-composer-field input, .scene-composer-field textarea { width: 100%; border: 1px solid var(--manga-line); border-radius: 7px; background: var(--manga-surface-inset); color: var(--manga-text); padding: 7px 9px; font: inherit; font-size: 12px; line-height: 1.45; }
 .scene-composer-field textarea { resize: vertical; min-height: 52px; }
-
-#scene-composer-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 6px 12px; border-bottom: 1px solid #4e3357; background: #17111d; }
+#scene-composer-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 6px 12px; border-bottom: 1px solid var(--manga-line); background: var(--manga-surface-inset); }
 #scene-composer-toolbar .scene-tool-eyebrow { margin-right: 3px; }
-.scene-tool-btn { border: 1px solid #604265; border-radius: 6px; background: #2c2033; color: #d9c5dd; padding: 5px 9px; font-size: 11px; font-weight: 700; cursor: pointer; }
-.scene-tool-btn:hover, .scene-tool-btn.active { background: #75438b; border-color: #c99bd2; color: #fff; }
-.scene-tool-btn.scene-tool-danger { color: #f3b5bc; border-color: #7b4755; }
-.scene-tool-btn.scene-tool-danger:hover:not(:disabled) { background: #7f3047; border-color: #d47a8e; color: #fff; }
+.scene-tool-btn { border: 1px solid var(--manga-line); border-radius: 6px; background: var(--manga-surface-raised); color: var(--manga-text); padding: 5px 9px; font-size: 11px; font-weight: 700; cursor: pointer; }
+.scene-tool-btn:hover, .scene-tool-btn.active { background: var(--manga-maroon); border-color: var(--manga-active-border); color: var(--manga-text); }
+.scene-tool-btn.scene-tool-danger { color: var(--manga-danger-text); border-color: var(--manga-danger-border); }
+.scene-tool-btn.scene-tool-danger:hover:not(:disabled) { background: var(--manga-danger-background); border-color: var(--manga-maroon-hover); color: var(--manga-text); }
 .scene-tool-btn:disabled { cursor: not-allowed; opacity: .45; }
-#scene-tool-status { min-width: 180px; margin-left: auto; color: #bda8c0; font-size: 10px; line-height: 1.3; }
+#scene-tool-status { min-width: 180px; margin-left: auto; color: var(--manga-muted); font-size: 10px; line-height: 1.3; }
 #manga-canvas.scene-add-mode { cursor: crosshair; }
 
 /* PLAY3 — offline tag autocomplete. The catalog is optional; a missing
    catalog leaves the prompt fields fully usable and simply keeps this popup
    closed. */
 .tag-autocomplete-host { position: relative; }
-.tag-autocomplete-popup { position: absolute; z-index: 40; top: calc(100% + 4px); left: 0; right: 0; max-height: 246px; overflow-y: auto; padding: 4px; border: 1px solid #795782; border-radius: 8px; background: #1d1522; box-shadow: 0 14px 30px #09070caa; }
-.tag-autocomplete-option { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 9px; border: 0; border-radius: 5px; background: transparent; color: #f5e8f5; padding: 7px 8px; text-align: left; font: inherit; font-size: 12px; cursor: pointer; }
-.tag-autocomplete-option:hover, .tag-autocomplete-option[aria-selected="true"] { background: #503457; }
+.tag-autocomplete-popup { position: absolute; z-index: 40; top: calc(100% + 4px); left: 0; right: 0; max-height: 246px; overflow-y: auto; padding: 4px; border: 1px solid var(--manga-line); border-radius: 8px; background: var(--manga-surface); box-shadow: 0 14px 30px var(--manga-shadow); }
+.tag-autocomplete-option { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 9px; border: 0; border-radius: 5px; background: transparent; color: var(--manga-text); padding: 7px 8px; text-align: left; font: inherit; font-size: 12px; cursor: pointer; }
+.tag-autocomplete-option:hover, .tag-autocomplete-option[aria-selected="true"] { background: var(--manga-selection); }
 .tag-autocomplete-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tag-autocomplete-category { flex: 0 0 auto; color: #c9a8d0; font-size: 9px; letter-spacing: .04em; text-transform: uppercase; }
-.tag-autocomplete-option:focus-visible { outline: 2px solid #f5c98b; outline-offset: -2px; }
+.tag-autocomplete-category { flex: 0 0 auto; color: var(--manga-muted); font-size: 9px; letter-spacing: .04em; text-transform: uppercase; }
+.tag-autocomplete-option:focus-visible { outline: 2px solid var(--manga-active-border); outline-offset: -2px; }
 
 
 /* PLAY1c — Manga Generate. Authoring remains mounted and retains its own layout. */
 [hidden] { display: none !important; }
-#authoring-workspace { display: flex; flex: 1; min-height: 0; flex-direction: column; }
+#authoring-workspace { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 8px; }
 #manga-mode-nav {
-    min-height: 40px; padding: 4px 14px; display: flex; align-items: center;
-    justify-content: space-between; gap: 12px; background: #11111a;
-    border-bottom: 1px solid #4e3357; flex-shrink: 0;
+    min-height: 44px; padding: 6px 16px; display: flex; align-items: center;
+    justify-content: space-between; gap: 12px; background: #fffdf9;
+    border-bottom: 1px solid #ddc7bd; flex-shrink: 0;
 }
 .manga-nav-left { display: flex; align-items: center; gap: 12px; }
-.manga-identity { display: flex; align-items: center; gap: 8px; color: #f7e8f5; font-size: 12px; letter-spacing: .06em; font-weight: 700; }
-.manga-identity strong { color: #d7a4e9; }
-.manga-mark { display: grid; place-items: center; width: 22px; height: 22px; border: 1px solid #a46bb7; border-radius: 6px; color: #eec5f5; font-size: 11px; }
-.manga-slash { color: #76537e; }
-.manga-mode-tabs { display: flex; padding: 2px; gap: 2px; border-radius: 999px; background: #21192b; border: 1px solid #594163; }
-.manga-mode-tabs button { border: 0; border-radius: 999px; padding: 4px 13px; background: transparent; color: #c4adcb; font-size: 11px; font-weight: 700; cursor: pointer; }
-.manga-mode-tabs button[aria-selected="true"] { background: #75438b; color: #fff; }
+.manga-identity { display: flex; align-items: center; gap: 8px; color: #3a2724; font-size: 13px; letter-spacing: .06em; font-weight: 700; text-decoration: none; }
+.manga-identity strong { color: #800000; font-weight: 800; }
+.manga-mark { display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid #b8706b; border-radius: 6px; color: #800000; font-size: 11px; font-weight: 900; background: #fffaf5; }
+.manga-slash { color: #b8706b; }
+.product-switch { display: inline-flex; align-items: center; gap: 3px; padding: 3px; border: 1px solid #ddc7bd; border-radius: 999px; background: #fffaf5; }
+.product-button { min-height: 30px; border: 0; border-radius: 999px; padding: 0 13px; color: #7b625d; background: transparent; font-size: .74rem; font-weight: 800; letter-spacing: .03em; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+.product-button:hover { color: #800000; background: #e5cbc1; }
+.product-button.active { color: #ffffee; background: #800000; }
+.manga-mode-tabs { display: none !important; }
+.manga-mode-tabs button { border: 0; border-radius: 999px; padding: 4px 13px; background: transparent; color: var(--manga-muted); font-size: 11px; font-weight: 700; cursor: pointer; }
+.manga-mode-tabs button[aria-selected="true"] { background: var(--manga-maroon); color: var(--manga-text); }
 .manga-mode-tabs button:focus-visible, #generate-view button:focus-visible, #generate-view input:focus-visible,
-#generate-view textarea:focus-visible, #generate-view select:focus-visible { outline: 2px solid #f5c98b; outline-offset: 2px; }
-body.manga-generate-active { min-height: 100vh; height: auto; overflow-x: hidden; overflow-y: auto; background: #17111d; }
-body.manga-generate-active #workspace-header { display: none !important; }
-#generate-view { width: 100%; max-width: 1560px; margin: 0 auto; padding: 14px clamp(16px, 2.5vw, 36px) 44px; color: #f4edf4; }
-.mg-page-heading { margin-bottom: 12px; }
+#generate-view textarea:focus-visible, #generate-view select:focus-visible { outline: 2px solid var(--manga-active-border); outline-offset: 2px; }
+body.manga-generate-active { min-height: 100vh; height: auto; overflow-x: hidden; overflow-y: auto; background: var(--manga-background); }
+/* body.manga-generate-active #workspace-header retained */
+#generate-view { width: 100%; max-width: min(98vw, 1800px); margin: 0 auto; padding: 14px clamp(16px, 2vw, 32px) 44px; color: var(--manga-text); }
+.mg-page-heading { display: none !important; margin-bottom: 12px; }
 .mg-page-heading h1 { font-size: clamp(20px, 2vw, 26px); line-height: 1.2; margin: 2px 0 3px; }
-.mg-page-heading p, .mg-history-section p { color: #baaaba; font-size: 12px; }
-.mg-eyebrow { color: #d4a1e1; font-size: 10px; font-weight: 800; letter-spacing: .14em; }
-.mg-main { display: grid; grid-template-columns: minmax(0, 1.18fr) minmax(360px, 0.95fr); gap: 20px; align-items: start; }
-.mg-stage-column { min-width: 0; position: sticky; top: 12px; }
-.mg-action-bar { min-height: 42px; padding: 6px 12px; border: 1px solid #604265; border-radius: 9px; background: #261a2b; display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; }
-#mg-status { margin-top: 2px; font-size: 12px; font-weight: 700; overflow-wrap: anywhere; }
-#mg-status[data-state="UNKNOWN"] { color: #f2c785; }
-#mg-status[data-state="FAILED"] { color: #f3a7a7; }
-#mg-status[data-state="SUCCEEDED"] { color: #a8e0b5; }
-#mg-status[data-state="QUEUED"], #mg-status[data-state="RUNNING"], #mg-status[data-state="GENERATING"], #mg-status[data-state="SUBMITTING"] { color: #f5c98b; }
-.mg-generate-button { border: 1px solid #c99bd2; background: #a968bc; color: #fff; border-radius: 6px; padding: 0 16px; min-height: 34px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 750; cursor: pointer; white-space: nowrap; letter-spacing: .02em; }
-.mg-generate-button:hover:not(:disabled) { background: #bd80cf; }
+.mg-page-heading p, .mg-history-section p { color: var(--manga-muted); font-size: 12px; }
+.mg-eyebrow { color: var(--manga-muted); font-size: 10px; font-weight: 800; letter-spacing: .14em; }
+.mg-main { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(360px, 0.7fr); gap: 24px; align-items: start; }
+.mg-stage-column { min-width: 0; position: sticky; top: 12px; grid-column: 2; grid-row: 1; }
+.mg-action-bar { min-height: 42px; padding: 6px 10px; border: 1px solid var(--manga-line); border-radius: 9px; background: var(--manga-surface); display: flex; justify-content: space-between; align-items: center; gap: 8px 12px; margin-bottom: 8px; flex-wrap: wrap; }
+.mg-action-bar > div:first-child { min-width: 0; flex: 1 1 auto; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.mg-action-bar > div:first-child .mg-eyebrow { display: none; }
+#mg-status { margin-top: 0; font-size: .88rem; font-weight: 700; overflow-wrap: anywhere; }
+#mg-status[data-state="UNKNOWN"] { color: var(--manga-warning-text); }
+#mg-status[data-state="FAILED"] { color: var(--manga-danger-text); }
+#mg-status[data-state="SUCCEEDED"] { color: var(--manga-success-text); }
+#mg-status[data-state="QUEUED"], #mg-status[data-state="RUNNING"], #mg-status[data-state="GENERATING"], #mg-status[data-state="SUBMITTING"] { color: var(--manga-warning-text); }
+.mg-generate-button { min-width: 110px; min-height: 34px; margin-left: auto; border: 1px solid var(--manga-medium); background: var(--manga-maroon); color: var(--manga-text); border-radius: 6px; padding: 0 14px; display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 750; cursor: pointer; white-space: nowrap; letter-spacing: .02em; }
+.mg-generate-button:hover:not(:disabled) { background: var(--manga-maroon-hover); }
 .mg-generate-button:disabled { opacity: .48; cursor: not-allowed; }
-.mg-disabled-reason { min-height: 16px; color: #d8b7d7; font-size: 11px; line-height: 1.35; }
-.mg-error { padding: 10px 12px; margin-top: 10px; background: #44212d; border: 1px solid #a6586c; border-radius: 8px; color: #ffd2d7; font-size: 12px; overflow-wrap: anywhere; }
-.mg-preview-head { display: flex; justify-content: space-between; gap: 10px; padding: 10px 2px 6px; font-size: 11px; color: #b8aab8; }
-.mg-stage { width: 100%; aspect-ratio: 16 / 9; min-height: 280px; max-height: min(58vh, 520px); border-radius: 12px; border: 1px solid #634767; background: radial-gradient(circle at 50% 42%, #3a2940, #211725 70%); display: flex; align-items: center; justify-content: center; padding: 14px; overflow: hidden; }
-.mg-stage-empty { display: flex; flex-direction: column; text-align: center; align-items: center; gap: 9px; color: #c2adca; font-size: 12px; }
-.mg-stage-empty strong { color: #ead8ed; font-size: 17px; }
-.mg-stage-icon { font-size: 44px; color: #c390d4; }
-#mg-preview-image { display: block; width: auto; height: 100%; max-height: 100%; max-width: 100%; object-fit: contain; box-shadow: 0 16px 40px #100d12aa; }
-#mg-create { max-height: calc(100vh - 72px); overflow-y: auto; overscroll-behavior: auto; padding: 16px 18px; background: #241b29; border: 1px solid #604265; border-radius: 12px; display: flex; flex-direction: column; gap: 6px; scrollbar-color: #76537e transparent; }
+.mg-generation-scope { display: inline-flex; align-items: center; gap: 2px; flex: 0 0 auto; padding: 2px; border: 1px solid var(--manga-line); border-radius: 7px; background: var(--manga-surface-inset); }
+.mg-generation-scope[hidden] { display: none !important; }
+.mg-generation-scope button { min-height: 28px; border: 1px solid transparent; border-radius: 5px; padding: 3px 9px; background: transparent; color: var(--manga-muted); font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.mg-generation-scope button[aria-pressed="true"] { background: var(--manga-maroon); border-color: var(--manga-active-border); color: var(--manga-text); }
+.mg-generation-scope button:hover:not(:disabled) { background: var(--manga-selection); color: var(--manga-text); }
+.mg-generation-scope button:disabled { cursor: not-allowed; opacity: .45; }
+.mg-generation-scope button:focus-visible { outline: 2px solid var(--manga-active-border); outline-offset: 2px; }
+.mg-disabled-reason { min-height: 16px; color: var(--manga-muted); font-size: 11px; line-height: 1.35; }
+.mg-error { padding: 10px 12px; margin-top: 10px; background: var(--manga-danger-background); border: 1px solid var(--manga-danger-border); border-radius: 8px; color: var(--manga-danger-text); font-size: 12px; overflow-wrap: anywhere; }
+.mg-preview-controls { display: flex; align-items: center; justify-content: space-between; gap: 6px 10px; min-width: 0; min-height: 28px; padding: 0 0 6px; flex-wrap: wrap; }
+.mg-stage-mode-switch { display: inline-flex; align-items: center; gap: 3px; background: var(--manga-surface-inset); border: 1px solid var(--manga-line); border-radius: 8px; padding: 2px; flex: 0 0 auto; }
+.mg-stage-mode-btn { border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--manga-muted); padding: 3px 10px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: background 0.15s, color 0.15s; }
+.mg-stage-mode-btn:hover:not(:disabled) { background: var(--manga-selection); color: var(--manga-text); }
+.mg-stage-mode-btn[aria-selected="true"] { background: var(--manga-maroon); border-color: var(--manga-active-border); color: var(--manga-text); }
+.mg-stage-mode-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.mg-stage-mode-btn:focus-visible { outline: 2px solid var(--manga-active-border); outline-offset: 1px; }
+.mg-layer-toggles { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+.mg-layer-toggle { min-height: 26px; padding: 0 8px; border: 1px solid var(--manga-line); border-radius: 6px; background: var(--manga-surface); color: var(--manga-muted); font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.mg-layer-toggle:hover:not(:disabled) { background: var(--manga-selection); color: var(--manga-text); }
+.mg-layer-toggle[aria-pressed="true"] { background: var(--manga-maroon); border-color: var(--manga-active-border); color: var(--manga-text); }
+.mg-layer-toggle:disabled { opacity: .45; cursor: not-allowed; }
+.mg-presentation-toggle { flex: 0 0 auto; min-height: 26px; margin-left: auto; border: 1px solid var(--manga-line); border-radius: 6px; padding: 0 8px; background: var(--manga-surface-raised); color: var(--manga-text); font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.mg-presentation-toggle:hover { background: var(--manga-selection); }
+.mg-presentation-toggle[aria-pressed="true"] { background: var(--manga-maroon); border-color: var(--manga-active-border); color: var(--manga-text); }
+.mg-preview-size-fields { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; min-width: 0; }
+.mg-preview-size-field { display: inline-flex; align-items: center; gap: 4px; min-width: 0; }
+.mg-preview-size-field label { color: var(--manga-text); font-size: 11px; font-weight: 700; white-space: nowrap; }
+.mg-preview-size-field input { width: 62px; min-width: 54px; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--manga-line); background: var(--manga-surface-inset); color: var(--manga-text); font: inherit; font-size: 11px; }
+.mg-stage { --mg-preview-display-height: clamp(380px, calc(100vh - 220px), 640px); width: 100%; height: var(--mg-preview-display-height); min-height: 340px; max-height: var(--mg-preview-display-height); margin-inline: auto; border-radius: 10px; border: 1px solid var(--manga-line); background: var(--manga-surface-inset); display: flex; align-items: center; justify-content: center; padding: 6px; overflow: hidden; box-sizing: border-box; }
+.mg-stage-frame { position: relative; width: min(calc(100% - 4px), calc((var(--mg-preview-display-height) - 12px) * var(--mg-preview-ratio-value, 1.7777778))); height: auto; max-height: calc(var(--mg-preview-display-height) - 12px); aspect-ratio: var(--mg-preview-ratio, 16 / 9); min-width: 0; min-height: 0; border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+#generate-view[data-stage-mode="layout"] .mg-stage-frame { background: var(--manga-surface-inset); border: 1px solid var(--manga-line-soft); }
+.mg-stage-empty { width: 100%; height: 100%; display: flex; flex-direction: column; text-align: center; align-items: center; justify-content: center; padding: 10px; border: 1px dashed var(--manga-line); border-radius: 6px; background: transparent; color: var(--manga-muted); font-size: 11px; }
+.mg-stage-neutral { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: transparent; color: var(--manga-muted); font-size: 11px; border: 1px dashed var(--manga-line); border-radius: 6px; font-style: italic; }
+.mg-stage-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; display: block; }
+.mg-stage-overlay text { pointer-events: none; user-select: none; }
+.mg-stage-overlay text[letter-spacing] { opacity: .45; font-size: 9px; }
+.mg-stage-guide-raster { pointer-events: none !important; user-select: none; }
+.mg-stage-scene-region, .mg-stage-char-instance { pointer-events: all; cursor: pointer; }
+.mg-stage-frame-region, .mg-stage-guide-figure { pointer-events: none; }
+.mg-stage-scene-region.is-active, .mg-stage-char-instance.is-active { pointer-events: all; cursor: move; }
+.mg-stage-frame-region.is-active, .mg-stage-guide-figure.is-active { pointer-events: all; cursor: move; }
+.mg-stage-resize-handle { pointer-events: all; fill: var(--manga-text); stroke-width: 2px; }
+.mg-stage-resize-handle[data-handle="nw"], .mg-stage-resize-handle[data-handle="se"] { cursor: nwse-resize; }
+.mg-stage-resize-handle[data-handle="ne"], .mg-stage-resize-handle[data-handle="sw"] { cursor: nesw-resize; }
+#mg-preview-image { display: block; width: 100%; height: 100%; object-fit: contain; }
+#mg-preview-image[hidden], .mg-stage-empty[hidden], .mg-stage-neutral[hidden] { display: none !important; }
+.mg-preview-result-meta { display: flex; align-items: baseline; gap: 6px; min-width: 0; margin-top: 4px; color: var(--manga-muted); font-size: 10px; overflow-wrap: anywhere; }
+.mg-preview-result-meta .mg-eyebrow { display: none; }
+#generate-view[data-result="empty"] .mg-preview-result-meta { display: none; }
+#generate-view[data-presentation="glance"][data-result="empty"] .mg-main { grid-template-columns: minmax(0, 1.3fr) minmax(360px, 0.7fr); }
+#generate-view[data-presentation="focus"] .mg-main { grid-template-columns: minmax(320px, 0.65fr) minmax(0, 1.35fr); gap: 16px; }
+#generate-view[data-presentation="focus"] .mg-stage { --mg-preview-display-height: clamp(480px, calc(100vh - 140px), 840px); }
+#generate-view[data-presentation="focus"] .mg-action-bar { position: sticky; top: 12px; z-index: 3; }
+#mg-create { min-width: 0; grid-column: 1; grid-row: 1; max-height: none; overflow: visible; overscroll-behavior: auto; padding: 14px 16px; background: var(--manga-surface); border: 1px solid var(--manga-line); border-radius: 12px; display: flex; flex-direction: column; gap: 6px; }
 #mg-create > * { flex-shrink: 0; }
-.mg-create-head { display: flex; align-items: center; justify-content: space-between; }
-.mg-create-head button, .mg-restore { background: #38283f; border: 1px solid #795782; border-radius: 6px; color: #eedbf2; padding: 5px 8px; font-size: 11px; cursor: pointer; }
-.mg-create-head button:hover, .mg-restore:hover { background: #503457; }
-.mg-mode-switch { display: flex; gap: 4px; margin-top: 8px; padding: 3px; border: 1px solid #604265; border-radius: 8px; background: #1b1420; }
-.mg-mode-switch button { flex: 1; border: 1px solid transparent; border-radius: 5px; padding: 7px 8px; background: transparent; color: #c4adcb; font-size: 11px; font-weight: 700; cursor: pointer; }
-.mg-mode-switch button[aria-selected="true"] { background: #75438b; color: #fff; border-color: #c99bd2; }
-.mg-scene-summary-label { margin-top: 10px; color: #d4a1e1; font-size: 10px; font-weight: 800; letter-spacing: .1em; }
-.mg-scene-resolution { margin-top: 7px; color: #f0dff2; font-size: 11px; font-weight: 700; }
-.mg-inline-action { align-self: flex-start; border: 1px solid #795782; border-radius: 6px; padding: 5px 8px; background: #38283f; color: #eedbf2; font-size: 11px; font-weight: 700; cursor: pointer; }
-.mg-inline-action:hover { background: #503457; }
-.mg-note, .mg-hint { color: #b8a4ba; font-size: 10px; line-height: 1.4; }
-.mg-section-label { margin-top: 14px; padding-top: 12px; border-top: 1px solid #543d59; color: #d4a1e1; font-size: 10px; font-weight: 800; letter-spacing: .11em; }
-#mg-create label { margin-top: 7px; color: #eee1ef; font-size: 11px; font-weight: 700; }
-#mg-create select, #mg-create textarea, #mg-create input { width: 100%; min-width: 0; padding: 9px 10px; border-radius: 7px; border: 1px solid #725574; background: #17111d; color: #fff7ff; font: inherit; font-size: 12px; }
-#mg-create textarea { resize: vertical; line-height: 1.5; }
-#mg-create select option { background: #241b29; }
-.mg-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.mg-pair > div { min-width: 0; }
-.mg-pair label { display: block; margin: 7px 0 6px; }
-.mg-advanced { margin-top: 16px; border-top: 1px solid #543d59; padding-top: 13px; font-size: 11px; }
-.mg-advanced summary { cursor: pointer; font-weight: 700; color: #e1b9e8; }
-.mg-advanced p { padding-top: 9px; line-height: 1.5; color: #cbb6ce; }
-.mg-history-section { margin-top: 24px; border: 1px solid #604265; border-radius: 12px; padding: 17px 20px; background: #241b29; }
+.mg-create-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mg-create-title { min-width: 0; flex: 1 1 auto; display: flex; align-items: baseline; gap: 8px; }
+.mg-catalog-note { min-width: 0; flex: 1 1 auto; margin: 0; overflow-wrap: anywhere; }
+.mg-create-head button, .mg-restore { background: var(--manga-surface-raised); border: 1px solid var(--manga-line); border-radius: 6px; color: var(--manga-text); padding: 5px 8px; font-size: 11px; cursor: pointer; }
+.mg-create-head button:hover, .mg-restore:hover { background: var(--manga-selection); }
+.mg-legacy-entry { min-width: 0; margin-top: 8px; border: 1px solid var(--manga-line); border-radius: 7px; background: var(--manga-surface-inset); }
+.mg-legacy-entry > summary { cursor: pointer; padding: 7px 9px; color: var(--manga-muted); font-size: 10px; font-weight: 800; letter-spacing: .04em; }
+.mg-legacy-entry > summary:focus-visible { outline: 2px solid var(--manga-active-border); outline-offset: 2px; border-radius: 4px; }
+.mg-legacy-entry[open] > summary { border-bottom: 1px solid var(--manga-line-soft); }
+.mg-legacy-document-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 8px; }
+#doc-schema-label { color: var(--manga-muted); font-size: 10px; }
+.mg-legacy-document-controls .btn { padding: 5px 7px; font-size: 10px; }
+.mg-note, .mg-hint { margin: 2px 0 0; color: var(--manga-muted); font-size: 10px; line-height: 1.4; }
+.mg-section-label { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--manga-line); color: var(--manga-muted); font-size: 10px; font-weight: 800; letter-spacing: .11em; }
+#mg-create label { margin-top: 5px; color: var(--manga-text); font-size: 11px; font-weight: 700; }
+#mg-create select, #mg-create textarea, #mg-create input { width: 100%; min-width: 0; padding: 7px 9px; border-radius: 7px; border: 1px solid var(--manga-line); background: var(--manga-surface-inset); color: var(--manga-text); font: inherit; font-size: 12px; }
+#mg-create textarea { padding: 8px 10px; resize: vertical; line-height: 1.5; }
+#mg-create select option { background: var(--manga-surface); }
+.mg-generation-settings { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1.35fr) minmax(70px, .65fr) minmax(75px, .65fr) minmax(130px, 1.1fr); gap: 7px 8px; min-width: 0; }
+.mg-generation-control { display: grid; align-content: start; gap: 3px; min-width: 0; }
+.mg-generation-control label { margin-top: 5px; }
+.mg-generation-control input, .mg-generation-control select { box-sizing: border-box; }
+.mg-generation-control .mg-hint { overflow-wrap: anywhere; }
+#mg-create { container: mg-create / inline-size; }
+@container mg-create (max-width: 650px) {
+    .mg-generation-settings { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(118px, 1.1fr); }
+    .mg-generation-sampler { grid-column: 1; }
+    .mg-generation-scheduler { grid-column: 2; }
+    .mg-generation-steps { grid-column: 1; }
+    .mg-generation-cfg { grid-column: 2; }
+    .mg-generation-seed { grid-column: 3; }
+}
+@container mg-create (max-width: 400px) {
+    .mg-generation-settings { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .mg-generation-seed { grid-column: 1; }
+}
+.mg-advanced { margin-top: 12px; border-top: 1px solid var(--manga-line); padding-top: 9px; font-size: 11px; }
+.mg-advanced summary { cursor: pointer; font-weight: 700; color: var(--manga-muted); }
+.mg-advanced p { padding-top: 9px; line-height: 1.5; color: var(--manga-muted); }
+.mg-history-section { margin-top: 24px; border: 1px solid var(--manga-line); border-radius: 12px; padding: 17px 20px; background: var(--manga-surface); }
 .mg-history-section h2 { font-size: 18px; margin: 3px 0 5px; }
 #mg-history { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
-#mg-history > p { padding: 10px; color: #baaaba; }
-.mg-history-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; border: 1px solid #553c5c; background: #1b1420; font-size: 11px; }
-.mg-history-row span { color: #bfaec2; overflow-wrap: anywhere; }
-.mg-history-row strong { color: #f4d4f4; }
+#mg-history > p { padding: 10px; color: var(--manga-muted); }
+.mg-history-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; border: 1px solid var(--manga-line); background: var(--manga-surface-inset); font-size: 11px; }
+.mg-history-row span { color: var(--manga-muted); overflow-wrap: anywhere; }
+.mg-history-row strong { color: var(--manga-text); }
 .mg-restore:disabled { opacity: .5; cursor: not-allowed; }
-body.manga-embedded { background: #17111d; }
-body.manga-embedded #manga-mode-nav { min-height: 0; padding: 7px 18px 0; background: transparent; border-bottom: 0; justify-content: flex-end; }
-body.manga-embedded .manga-identity { display: none; }
-body.manga-embedded #workspace-header { display: none !important; }
+body.manga-embedded { background: var(--manga-background); }
+body.manga-embedded #manga-mode-nav { display: none; }
 body.manga-embedded .mg-page-heading { display: none; }
-body.manga-embedded #generate-view { padding-top: 12px; }
+body.manga-embedded #generate-view { width: 100%; max-width: none; margin: 0; padding: 10px clamp(12px, 1.4vw, 24px) 32px; }
 @media (max-width: 850px) {
     #workspace-main { flex-direction: column; overflow-y: auto; overflow-x: hidden; }
     #canvas-container { flex: 0 0 auto; min-height: min(70vh, 680px); }
@@ -538,16 +692,393 @@ body.manga-embedded #generate-view { padding-top: 12px; }
     #scene-tool-status { flex: 1 1 100%; margin-left: 0; }
     #generate-view { padding: 14px 14px 40px; }
     .mg-main { grid-template-columns: minmax(0, 1fr); gap: 16px; }
-    .mg-stage-column { position: static; }
-    .mg-stage { min-height: min(48vh, 420px); max-height: none; }
-    #mg-create { max-height: none; overflow: visible; overscroll-behavior: auto; }
+    #generate-view[data-presentation="glance"][data-result="empty"] .mg-main,
+    #generate-view[data-presentation="focus"] .mg-main { grid-template-columns: minmax(0, 1fr); }
+    .mg-stage-column { position: static; grid-column: 1; grid-row: 1; }
+    #generate-view[data-presentation="glance"][data-result="empty"] .mg-stage { --mg-preview-display-height: min(58vh, 480px); }
+    #generate-view[data-presentation="focus"] .mg-stage { --mg-preview-display-height: min(78vh, 720px); }
+    #generate-view[data-presentation="focus"] .mg-action-bar { top: 6px; }
+    #mg-create { grid-column: 1; grid-row: 2; max-height: none; overflow: visible; overscroll-behavior: auto; }
 }
 @media (max-width: 520px) {
     #manga-mode-nav { padding: 6px 10px; gap: 6px; flex-wrap: wrap; }
+    #doc-schema-label { display: none; }
+    #workspace-header { flex-wrap: wrap; gap: 4px; }
     .manga-identity { gap: 4px; font-size: 11px; }
     .manga-mode-tabs button { padding: 4px 8px; font-size: 10px; }
-    .mg-action-bar { align-items: stretch; flex-direction: column; }
-    .mg-generate-button { width: 100%; justify-content: center; }
-    .mg-preview-head { flex-direction: column; }
+    .mg-preview-controls { align-items: flex-end; flex-wrap: wrap; }
+    .mg-presentation-toggle { order: 2; margin-left: auto; }
+    .mg-create-head { align-items: flex-start; }
+    .mg-create-title { align-items: flex-start; flex-direction: column; gap: 2px; }
+    .mg-catalog-note { max-width: 100%; }
     .mg-history-row { align-items: start; flex-direction: column; }
 }
+
+:where(button, input, select, textarea, summary, a, [tabindex]):focus-visible {
+    outline: 2px solid var(--manga-active-border);
+    outline-offset: 2px;
+}
+
+/* PLAY1d — Manga Create Guide & Character Reference Hub */
+.mg-guide-panel {
+    margin-top: 8px;
+    border: 1px solid var(--manga-line);
+    border-radius: 9px;
+    background: var(--manga-surface-inset);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.mg-guide-head {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.mg-guide-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.mg-guide-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--manga-muted);
+    letter-spacing: .08em;
+}
+.mg-guide-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: .02em;
+    white-space: nowrap;
+}
+.mg-guide-badge[data-state="none"] {
+    background: var(--manga-surface-raised);
+    color: var(--manga-muted);
+    border: 1px solid var(--manga-line-soft);
+}
+.mg-guide-badge[data-state="disabled"] {
+    background: var(--manga-warning-background);
+    color: var(--manga-warning-text);
+    border: 1px solid var(--manga-warning-border);
+}
+.mg-guide-badge[data-state="enabled"] {
+    background: var(--manga-success-background);
+    color: var(--manga-success-text);
+    border: 1px solid var(--manga-success-border);
+}
+.mg-guide-badge[data-state="unsupported"] {
+    background: var(--manga-warning-background);
+    color: var(--manga-warning-text);
+    border: 1px solid var(--manga-warning-border);
+}
+.mg-guide-empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border: 1px dashed var(--manga-line);
+    border-radius: 6px;
+    background: var(--manga-surface);
+    margin-top: 4px;
+}
+.mg-guide-assigned-card {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 10px;
+    border: 1px solid var(--manga-line);
+    border-radius: 6px;
+    background: var(--manga-surface);
+    margin-top: 4px;
+}
+.mg-guide-preview-box {
+    width: 68px;
+    height: 68px;
+    flex: 0 0 68px;
+    border: 1px solid var(--manga-line-soft);
+    border-radius: 4px;
+    background: var(--manga-surface-inset);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.mg-guide-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+.mg-guide-info {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.mg-guide-filename {
+    font-family: monospace;
+    font-size: 11px;
+    color: var(--manga-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.mg-guide-meta-text {
+    font-size: 10px;
+    color: var(--manga-muted);
+}
+.mg-guide-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 2px;
+}
+.mg-guide-support-note {
+    font-size: 10px;
+    line-height: 1.35;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: var(--manga-surface);
+    border: 1px solid var(--manga-line-soft);
+    color: var(--manga-muted);
+}
+
+/* Contextual Character Reference Hub in Create */
+.mg-cast-ref-field {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--manga-line-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.mg-cast-ref-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.mg-cast-ref-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--manga-text);
+}
+.mg-cast-ref-empty {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    border: 1px dashed var(--manga-line);
+    border-radius: 6px;
+    background: var(--manga-surface-inset);
+}
+.mg-cast-ref-assigned {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 6px 10px;
+    border: 1px solid var(--manga-line);
+    border-radius: 6px;
+    background: var(--manga-surface-inset);
+}
+.mg-cast-ref-preview-box {
+    width: 54px;
+    height: 54px;
+    flex: 0 0 54px;
+    border: 1px solid var(--manga-line-soft);
+    border-radius: 4px;
+    background: var(--manga-surface);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.mg-cast-ref-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+.mg-cast-ref-details {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.mg-cast-ref-filename {
+    font-family: monospace;
+    font-size: 11px;
+    color: var(--manga-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.mg-cast-ref-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+/* Character Reference Identity Analysis (Card MANGA-REFERENCE-TO-IDENTITY-INTEGRATION1) */
+.mg-cast-ref-right-slot {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-left: 1px solid var(--manga-line-soft, #2b2333);
+    padding-left: 10px;
+}
+@media (max-width: 600px) {
+    .mg-cast-ref-right-slot {
+        border-left: none;
+        border-top: 1px solid var(--manga-line-soft, #2b2333);
+        padding-left: 0;
+        padding-top: 8px;
+    }
+}
+.mg-ref-analysis-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.mg-ref-analysis-badge {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--manga-line, #3b3344);
+    background: var(--manga-surface-inset, #18121d);
+    color: var(--manga-text-muted, #948b9c);
+    text-transform: uppercase;
+}
+.mg-ref-analysis-badge[data-state="ready"] {
+    color: var(--manga-text-muted, #948b9c);
+}
+.mg-ref-analysis-badge[data-state="analyzing"] {
+    color: var(--manga-warning-text, #facc15);
+    border-color: var(--manga-warning-border, #854d0e);
+}
+.mg-ref-analysis-badge[data-state="candidate_ready"] {
+    color: var(--manga-success-text, #4ade80);
+    border-color: var(--manga-success-border, #166534);
+}
+.mg-ref-analysis-badge[data-state="failed"] {
+    color: var(--manga-danger-text, #f87171);
+    border-color: var(--manga-danger-border, #991b1b);
+}
+.mg-ref-candidate-box {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.mg-ref-candidate-area {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 11px;
+    line-height: 1.4;
+    padding: 4px 6px;
+    background: var(--manga-input-bg, #0f0a14);
+    border: 1px solid var(--manga-line, #3b3344);
+    border-radius: 4px;
+    color: var(--manga-text, #e2d9ec);
+    resize: vertical;
+    min-height: 48px;
+}
+.mg-ref-candidate-area:focus {
+    border-color: var(--manga-focus, #a855f7);
+    outline: none;
+}
+.mg-ref-candidate-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Page Composite History (Card MANGA-WORKSPACE-PAGE-COMPOSITE-HISTORY-GUI1) */
+.mg-page-composite-history-btn {
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 4px;
+    border: 1px solid var(--manga-line, #3b3344);
+    background: var(--manga-surface-inset, #18121d);
+    color: var(--manga-text, #e2d9ec);
+    cursor: pointer;
+}
+.mg-page-composite-history-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.mg-page-composite-history-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 6px;
+}
+.mg-page-composite-history-error {
+    font-size: 11px;
+    color: var(--manga-danger-text, #f87171);
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--manga-danger-border, #991b1b);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+.mg-page-composite-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 140px;
+    overflow-y: auto;
+}
+.mg-page-composite-history-empty {
+    font-size: 11px;
+    color: var(--manga-text-muted, #948b9c);
+    padding: 4px 6px;
+    font-style: italic;
+}
+.mg-page-composite-history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--manga-line-soft, #2b2333);
+    background: var(--manga-surface-inset, #18121d);
+    font-size: 11px;
+    cursor: pointer;
+}
+.mg-page-composite-history-item:hover {
+    background: var(--manga-surface, #231c28);
+}
+.mg-page-composite-history-item.selected {
+    border-color: var(--manga-focus, #a855f7);
+    background: rgba(168, 85, 247, 0.1);
+}
+.mg-page-composite-history-item-status {
+    font-size: 10px;
+    font-weight: 600;
+}
+.mg-page-composite-history-item-status[data-status="CURRENT"] {
+    color: var(--manga-success-text, #4ade80);
+}
+.mg-page-composite-history-item-status[data-status="STALE"] {
+    color: var(--manga-warning-text, #facc15);
+}
+.mg-page-composite-history-item-status[data-status="UNKNOWN"] {
+    color: var(--manga-text-muted, #948b9c);
+}
+
+

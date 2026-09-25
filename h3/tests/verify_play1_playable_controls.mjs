@@ -70,7 +70,8 @@ const settings=resolveHistoryScalars({request:{prompt:'retained',width:512,heigh
 context.settings=settings; call('restorePlayableSettings(settings)');
 assert.equal($('video-model').value,'missing'); assert.equal(call('playablePayload()').loras[0].name,'old');
 const advanced=html.slice(html.indexOf('<details class="advanced-panel">'),html.indexOf('</details>',html.indexOf('<details class="advanced-panel">')));
-for(const id of ['resolution','duration','video-model','lora-stack']) assert.ok(advanced.includes(`id="${id}"`));
+assert.ok(advanced.includes('id="lora-stack"'));
+for(const id of ['resolution','duration','video-model','seed']) { assert.ok(html.includes(`id="${id}"`)); assert.equal(advanced.includes(`id="${id}"`), false); }
 assert.equal((html.match(/<summary>Advanced<\/summary>/g)||[]).length,1);
 assert.ok(app.includes('Object.assign(payload, playablePayload())'));
 assert.equal(app.includes('payload.duration = 5'),false);

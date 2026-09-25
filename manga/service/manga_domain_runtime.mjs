@@ -52,6 +52,8 @@ export const OwnershipClassification = Object.freeze({
     UNAVAILABLE: "UNAVAILABLE"
 });
 
+export const MANGA_PROFILE_NODE = "TegakiMangaSceneCompiler";
+
 /**
  * Helper to perform HTTP JSON requests with timeout.
  */
@@ -133,6 +135,7 @@ export class MangaDomainRuntime {
         this.comfyMain = config.comfyMain || path.resolve(portableRoot, "ComfyUI", "main.py");
         this.workspaceScript = config.workspaceScript || path.resolve(__dirname, "manga_workspace_server.mjs");
         this.log = typeof config.log === "function" ? config.log : (message) => console.log(message);
+        this.profileNode = config.profileNode || MANGA_PROFILE_NODE;
 
         // Custom override for spawning backend / workspace (used by fake tests)
         this.customSpawnBackend = config.customSpawnBackend || null;
@@ -178,7 +181,7 @@ export class MangaDomainRuntime {
      * Positive Backend Identity Probe:
      * Requires:
      * A. GET /queue: HTTP 200, array queue_running, array queue_pending.
-     * B. GET /object_info/TegakiMinimumHandSceneEditor: HTTP 200 with object containing key.
+     * B. GET /object_info/TegakiMangaSceneCompiler: HTTP 200 with object containing key.
      * C. POST /tegaki/manga/generation/prepare: HTTP 400 with { ok: false, error_code: "MISSING_DOCUMENT" }.
      * Re-read /queue to verify state unchanged.
      */
@@ -208,20 +211,20 @@ export class MangaDomainRuntime {
 
         // Check node object_info
         const nodeRes = await httpRequest(
-            `${this.backendUrl}/object_info/TegakiMinimumHandSceneEditor`,
+            `${this.backendUrl}/object_info/${this.profileNode}`,
             { timeout: this.probeTimeoutMs }
         );
         const isNodeValid =
             nodeRes.status === 200 &&
             nodeRes.json &&
             typeof nodeRes.json === "object" &&
-            Boolean(nodeRes.json.TegakiMinimumHandSceneEditor);
+            Boolean(nodeRes.json[this.profileNode]);
 
         if (!isNodeValid) {
             return {
                 classification: OwnershipClassification.PORT_OCCUPIED_WRONG_PROFILE,
                 queue: queueRes.json,
-                details: "Node TegakiMinimumHandSceneEditor not found on server"
+                details: `Node ${this.profileNode} not found on server`
             };
         }
 

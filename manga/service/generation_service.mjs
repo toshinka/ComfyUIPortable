@@ -2,6 +2,11 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import { GenerationJournal, JournalError, JOB_ID } from "./generation_journal.mjs";
+import { IsolatedScenePrepService, IsolatedScenePrepError } from "./isolated_scene_prep_service.mjs";
+import { analyzePngArtifact, PngArtifactAnalyzerError } from "./png_artifact_analyzer.mjs";
+import { buildSceneResultManifest, SceneResultBuilderError } from "./scene_result_builder.mjs";
+import { SceneResultStore, SceneResultStoreError } from "./scene_result_store.mjs";
+import { SceneResultIndex, SceneResultIndexError } from "./scene_result_index.mjs";
 
 const SETTINGS = new Set([
     "mode", "checkpoint_id", "positive_raw", "negative_raw", "sampler_id", "scheduler_id",
@@ -9,7 +14,9 @@ const SETTINGS = new Set([
 ]);
 const SCENE_SETTINGS = new Set([
     "mode", "checkpoint_id", "authoring_document", "page_index", "sampler_id", "scheduler_id",
-    "steps", "cfg", "seed_requested", "capability_revision", "mask_feather", "panel_strength"
+    "steps", "cfg", "seed_requested", "capability_revision", "mask_feather", "panel_strength",
+    "controlnet_strength", "controlnet_start_percent", "controlnet_end_percent",
+    "reference_weight", "reference_start", "reference_end", "reference_start_at", "reference_end_at"
 ]);
 const SCENE_REQUIRED_SETTINGS = new Set([
     "mode", "checkpoint_id", "authoring_document", "page_index", "sampler_id", "scheduler_id",
@@ -22,11 +29,61 @@ const GRAPH_CLASSES = new Set([
 const SCENE_GRAPH_CLASSES = new Set([
     "CheckpointLoaderSimple", "LoraLoader", "TegakiMangaPagePlanFromJSON",
     "TegakiMangaConditioningBuilder", "LoadImage", "CLIPVisionLoader",
-    "IPAdapterModelLoader", "IPAdapterAdvanced", "EmptyLatentImage", "KSampler",
+    "IPAdapterModelLoader", "IPAdapterAdvanced", "ControlNetLoader",
+    "ControlNetApplyAdvanced", "EmptyLatentImage", "KSampler",
     "VAEDecode", "SaveImage"
 ]);
 const SHA256 = /^[0-9a-f]{64}$/;
 const PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+const FORBIDDEN_CLIENT_DISPATCH_FIELDS = [
+    "backend_url", "backend_origin", "snapshot_id", "snapshot", "job_id",
+    "prompt_id", "manifest_id", "artifact_locator", "graph", "graph_digest",
+    "compile_metadata", "page_compile_plan", "save_node_id"
+];
+
+export function validatePreparedBundle(bundle) {
+    if (!isObject(bundle)) {
+        fail("INVALID_PREPARED_BUNDLE", "Prepared bundle must be a non-null object", 400);
+    }
+    if (!isObject(bundle.owner) ||
+        typeof bundle.owner.document_id !== "string" || !bundle.owner.document_id ||
+        typeof bundle.owner.page_id !== "string" || !bundle.owner.page_id ||
+        typeof bundle.owner.scene_id !== "string" || !bundle.owner.scene_id) {
+        fail("INVALID_PREPARED_BUNDLE", "Prepared bundle owner must contain document_id, page_id, and scene_id", 400);
+    }
+    if (!isObject(bundle.snapshot) ||
+        typeof bundle.snapshot.snapshot_id !== "string" || !bundle.snapshot.snapshot_id ||
+        typeof bundle.snapshot.snapshot_ref !== "string" || !bundle.snapshot.snapshot_ref ||
+        typeof bundle.snapshot.content_digest !== "string" || !SHA256.test(bundle.snapshot.content_digest)) {
+        fail("INVALID_PREPARED_BUNDLE", "Prepared bundle snapshot must contain valid snapshot_id, snapshot_ref, and content_digest", 400);
+    }
+    if (!isObject(bundle.graph) || Object.keys(bundle.graph).length === 0) {
+        fail("INVALID_PREPARED_BUNDLE", "Prepared bundle graph must be a non-empty object", 400);
+    }
+    if (typeof bundle.graph_digest !== "string" || !SHA256.test(bundle.graph_digest)) {
+        fail("INVALID_PREPARED_BUNDLE", "Prepared bundle graph_digest must be a 64-character SHA-256 hash", 400);
+    }
+    if (typeof bundle.save_node_id !== "string" && typeof bundle.save_node_id !== "number") {
+        fail("INVALID_PREPARED_BUNDLE", "Prepared bundle save_node_id must be a string or number", 400);
+    }
+    const saveNode = bundle.graph[bundle.save_node_id];
+    if (!isObject(saveNode) || saveNode.class_type !== "SaveImage" || !isObject(saveNode.inputs)) {
+        fail("INVALID_PREPARED_BUNDLE", "Prepared bundle save_node_id must point to a valid SaveImage node", 400);
+    }
+    if (!isObject(bundle.page_compile_plan)) {
+        fail("INVALID_PREPARED_BUNDLE", "Prepared bundle page_compile_plan must be an object", 400);
+    }
+    if (typeof bundle.page_compile_plan_digest !== "string" || !bundle.page_compile_plan_digest) {
+        fail("INVALID_PREPARED_BUNDLE", "Prepared bundle page_compile_plan_digest must be a non-empty string", 400);
+    }
+    if (!isObject(bundle.compile_metadata)) {
+        fail("INVALID_PREPARED_BUNDLE", "Prepared bundle compile_metadata must be an object", 400);
+    }
+    if (!isObject(bundle.compile_metadata.effective_settings)) {
+        fail("INVALID_PREPARED_BUNDLE", "Prepared bundle compile_metadata.effective_settings must be an object", 400);
+    }
+    return bundle;
+}
 const ACTIVE = new Set(["VALIDATING", "SUBMITTING", "QUEUED", "RUNNING", "UNKNOWN"]);
 
 export class GenerationServiceError extends Error {
@@ -48,6 +105,7 @@ const stable = value => {
     return JSON.stringify(value);
 };
 const isObject = value => value !== null && typeof value === "object" && !Array.isArray(value);
+const isNonEmptyString = value => typeof value === "string" && value.trim().length > 0;
 
 export function validateOutputLocator(locator, jobId) {
     if (!JOB_ID.test(jobId) || !isObject(locator) || locator.type !== "output" ||
@@ -64,7 +122,8 @@ export function validateOutputLocator(locator, jobId) {
 
 export class GenerationService {
     constructor({ backendUrl = "http://127.0.0.1:8189", journal = new GenerationJournal(),
-                  fetchFn = fetch, timeoutMs = 5000 } = {}) {
+                  fetchFn = fetch, timeoutMs = 5000, isolatedScenePrepService = null,
+                  sceneResultStore = null, sceneResultIndex = null } = {}) {
         const target = new URL(backendUrl);
         if (target.protocol !== "http:" || !["127.0.0.1", "localhost"].includes(target.hostname) ||
             target.pathname !== "/" || target.search || target.hash) {
@@ -75,6 +134,13 @@ export class GenerationService {
         this.fetchFn = fetchFn;
         this.timeoutMs = timeoutMs;
         this.tail = Promise.resolve();
+        this.isolatedScenePrepService = isolatedScenePrepService || new IsolatedScenePrepService({
+            backendUrl: this.origin,
+            fetchFn: this.fetchFn,
+            timeoutMs: this.timeoutMs
+        });
+        this.sceneResultStore = sceneResultStore || new SceneResultStore();
+        this.sceneResultIndex = sceneResultIndex || new SceneResultIndex({ store: this.sceneResultStore });
     }
 
     _exclusive(work) {
@@ -278,7 +344,15 @@ export class GenerationService {
             typeof settings.scheduler_id !== "string" || typeof settings.seed_requested !== "string" ||
             !Number.isInteger(settings.steps) || typeof settings.cfg !== "number" ||
             (Object.hasOwn(settings, "mask_feather") && !Number.isInteger(settings.mask_feather)) ||
-            (Object.hasOwn(settings, "panel_strength") && typeof settings.panel_strength !== "number")) {
+            (Object.hasOwn(settings, "panel_strength") && typeof settings.panel_strength !== "number") ||
+            (Object.hasOwn(settings, "controlnet_strength") && typeof settings.controlnet_strength !== "number") ||
+            (Object.hasOwn(settings, "controlnet_start_percent") && typeof settings.controlnet_start_percent !== "number") ||
+            (Object.hasOwn(settings, "controlnet_end_percent") && typeof settings.controlnet_end_percent !== "number") ||
+            (Object.hasOwn(settings, "reference_weight") && typeof settings.reference_weight !== "number") ||
+            (Object.hasOwn(settings, "reference_start") && typeof settings.reference_start !== "number") ||
+            (Object.hasOwn(settings, "reference_end") && typeof settings.reference_end !== "number") ||
+            (Object.hasOwn(settings, "reference_start_at") && typeof settings.reference_start_at !== "number") ||
+            (Object.hasOwn(settings, "reference_end_at") && typeof settings.reference_end_at !== "number")) {
             fail("INVALID_REQUEST", "Invalid PLAY5 Scene settings", 400);
         }
         if (typeof body.idempotency_key !== "string" || !/^[A-Za-z0-9_-]{1,64}$/.test(body.idempotency_key) ||
@@ -490,6 +564,201 @@ export class GenerationService {
         });
     }
 
+
+    _validateIsolatedSceneSubmission(body) {
+        if (!isObject(body)) {
+            fail("INVALID_REQUEST", "Request body must be an object", 400);
+        }
+        const forbiddenFound = new Set();
+        for (const f of FORBIDDEN_CLIENT_DISPATCH_FIELDS) {
+            if (Object.hasOwn(body, f)) forbiddenFound.add(f);
+            if (isObject(body.settings) && Object.hasOwn(body.settings, f)) forbiddenFound.add(f);
+        }
+        if (forbiddenFound.size > 0) {
+            fail("INVALID_REQUEST", `Forbidden client request fields: ${[...forbiddenFound].join(", ")}`, 400);
+        }
+        if (body.idempotency_key !== undefined) {
+            if (typeof body.idempotency_key !== "string" || !/^[A-Za-z0-9_-]{1,64}$/.test(body.idempotency_key)) {
+                fail("INVALID_REQUEST", "Invalid idempotency key", 400);
+            }
+        }
+        const doc = body.authoring_document || body.settings?.authoring_document;
+        const sceneId = body.scene_id || body.settings?.scene_id;
+        const genParams = body.generation_params || body.settings?.generation_params || (
+            isObject(body.settings) && body.settings.mode === "isolated_scene" ? body.settings : null
+        );
+        if (!isObject(doc)) {
+            fail("INVALID_REQUEST", "authoring_document is required", 400);
+        }
+        if (typeof sceneId !== "string" || !sceneId.trim()) {
+            fail("INVALID_REQUEST", "scene_id is required", 400);
+        }
+        if (!isObject(genParams)) {
+            fail("INVALID_REQUEST", "generation_params is required", 400);
+        }
+        return body;
+    }
+
+    async dispatchIsolatedScene(bundle, { idempotency_key, requested_settings } = {}) {
+        return this._exclusive(async () => {
+            validatePreparedBundle(bundle);
+            const idempotencyKey = idempotency_key || randomUUID();
+            if (typeof idempotencyKey !== "string" || !/^[A-Za-z0-9_-]{1,64}$/.test(idempotencyKey)) {
+                fail("INVALID_REQUEST", "Invalid idempotency key", 400);
+            }
+
+            let records;
+            try {
+                records = await this.journal.list();
+            } catch (error) {
+                if (error instanceof JournalError) fail(error.code, error.message, 503);
+                throw error;
+            }
+            if (records.some(record => record.idempotency_key === idempotencyKey)) {
+                fail("DUPLICATE_REQUEST", "Manga request was already recorded", 409);
+            }
+            if (records.some(record => ACTIVE.has(record.state) && record.graph_digest === bundle.graph_digest)) {
+                fail("DUPLICATE_GRAPH", "Identical reviewed graph already has an unresolved job", 409);
+            }
+            if (records.some(record => ACTIVE.has(record.state))) {
+                fail("OWNED_JOB_BUSY", "A Manga-owned job is still unresolved", 409);
+            }
+
+            const jobId = randomUUID();
+            const requestId = randomUUID();
+            const token = randomBytes(32).toString("hex");
+
+            const executionGraph = structuredClone(bundle.graph);
+            const saveNode = executionGraph[bundle.save_node_id];
+            saveNode.inputs.filename_prefix = `Manga/Playable/${jobId}`;
+            const submittedGraphDigest = hash(stable(executionGraph));
+
+            const record = {
+                job_id: jobId,
+                request_id: requestId,
+                idempotency_key: idempotencyKey,
+                mode: "isolated_scene",
+                owner: structuredClone(bundle.owner),
+                snapshot: structuredClone(bundle.snapshot),
+                plan: bundle.plan ? structuredClone(bundle.plan) : null,
+                requested_settings: isObject(requested_settings) ? structuredClone(requested_settings) : { mode: "isolated_scene" },
+                effective_settings: structuredClone(bundle.compile_metadata.effective_settings),
+                graph_digest: bundle.graph_digest,
+                submitted_graph_digest: submittedGraphDigest,
+                save_node_id: String(bundle.save_node_id),
+                page_compile_plan: structuredClone(bundle.page_compile_plan),
+                page_compile_plan_digest: bundle.page_compile_plan_digest,
+                compile_metadata: structuredClone(bundle.compile_metadata),
+                audit_trail: bundle.audit_trail ? structuredClone(bundle.audit_trail) : null,
+                backend_identity: null,
+                prompt_id: null,
+                created_at: now(),
+                submitted_at: null,
+                started_at: null,
+                finished_at: null,
+                state: "VALIDATING",
+                error: null,
+                output_locator: null,
+                ownership_token: token,
+            };
+
+            await this.journal.put(record);
+
+            record.state = "SUBMITTING";
+            await this.journal.put(record);
+
+            const payload = {
+                prompt: executionGraph,
+                extra_data: {
+                    tegaki_manga: {
+                        job_id: jobId,
+                        request_id: requestId,
+                        graph_digest: bundle.graph_digest,
+                        submitted_graph_digest: submittedGraphDigest,
+                        ownership_token: token,
+                    }
+                }
+            };
+
+            let reply;
+            try {
+                reply = await this._json("/prompt", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+            } catch (error) {
+                record.state = "UNKNOWN";
+                record.finished_at = now();
+                record.error = {
+                    code: error.code || "SUBMIT_UNCONFIRMED",
+                    message: error.message || "Submit outcome cannot be confirmed"
+                };
+                await this.journal.put(record);
+                return this.publicJob(record);
+            }
+
+            if (reply.ok && typeof reply.data.prompt_id === "string" && JOB_ID.test(reply.data.prompt_id) &&
+                typeof reply.data.number === "number" && Number.isFinite(reply.data.number) &&
+                isObject(reply.data.node_errors)) {
+                record.prompt_id = reply.data.prompt_id;
+                record.state = "QUEUED";
+                record.submitted_at = now();
+                await this.journal.put(record);
+                return this.publicJob(record);
+            }
+
+            record.state = "FAILED";
+            record.finished_at = now();
+            record.error = {
+                code: reply.data?.error_code || "BACKEND_REJECTED",
+                message: reply.data?.error?.message || reply.data?.error || "Backend rejected the isolated Scene graph"
+            };
+            await this.journal.put(record);
+            return this.publicJob(record);
+        });
+    }
+
+    async createIsolatedSceneJob(input) {
+        this._validateIsolatedSceneSubmission(input);
+
+        const prepInput = {
+            authoring_document: input.authoring_document || input.settings?.authoring_document,
+            scene_id: input.scene_id || input.settings?.scene_id,
+            generation_params: input.generation_params || input.settings?.generation_params || (
+                isObject(input.settings) && input.settings.mode === "isolated_scene" ? input.settings : null
+            ),
+        };
+        if (input.page_id !== undefined || input.settings?.page_id !== undefined) {
+            prepInput.page_id = input.page_id ?? input.settings?.page_id;
+        }
+        if (input.page_index !== undefined || input.settings?.page_index !== undefined) {
+            prepInput.page_index = input.page_index ?? input.settings?.page_index;
+        }
+        if (input.local_dimensions !== undefined || input.settings?.local_dimensions !== undefined) {
+            prepInput.local_dimensions = input.local_dimensions ?? input.settings?.local_dimensions;
+        }
+        if (input.random_seed !== undefined || input.settings?.random_seed !== undefined) {
+            prepInput.random_seed = input.random_seed ?? input.settings?.random_seed;
+        }
+
+        let bundle;
+        try {
+            bundle = await this.isolatedScenePrepService.prepareIsolatedScene(prepInput);
+        } catch (error) {
+            if (error instanceof IsolatedScenePrepError) {
+                fail(error.code || "PREPARATION_FAILED", error.message, error.status || 400);
+            }
+            throw error;
+        }
+
+        const idempotencyKey = input.idempotency_key || input.settings?.idempotency_key;
+        return this.dispatchIsolatedScene(bundle, {
+            idempotency_key: idempotencyKey,
+            requested_settings: input.generation_params || input.settings || input
+        });
+    }
+
     _owned(item, record, promptId = record.prompt_id) {
         const meta = item?.[3]?.tegaki_manga;
         return JOB_ID.test(promptId) && Array.isArray(item) && isObject(item[2]) &&
@@ -534,7 +803,12 @@ export class GenerationService {
     }
 
     async _observe(record) {
-        if (record.prompt_id === null) await this._recoverPromptId(record);
+        if (record.prompt_id === null) {
+            if (record.mode === "isolated_scene") {
+                fail("JOB_UNCONFIRMED", "Isolated scene job has no confirmed prompt ID", 409);
+            }
+            await this._recoverPromptId(record);
+        }
         const history = await this._history(record);
         if (history) {
             const status = history.status;
@@ -544,7 +818,9 @@ export class GenerationService {
                     fail("OUTPUT_INVALID", "Completed history lacks the expected SaveImage output", 502);
                 }
                 const locator = validateOutputLocator(images[0], record.job_id);
-                await this._image(locator);
+                if (record.mode !== "isolated_scene") {
+                    await this._image(locator);
+                }
                 record.state = "SUCCEEDED";
                 record.output_locator = locator;
                 record.error = null;
@@ -588,6 +864,251 @@ export class GenerationService {
             await this.journal.put(record);
             return this.publicJob(record);
         }
+    }
+
+    async observeIsolatedSceneJob(jobId) {
+        return this._exclusive(async () => {
+            if (!JOB_ID.test(jobId)) fail("INVALID_JOB_ID", "Invalid Manga job ID", 400);
+            const record = await this.journal.get(jobId);
+            if (!record) fail("JOB_NOT_FOUND", "Manga job not found", 404);
+            if (record.mode !== "isolated_scene") {
+                fail("INVALID_JOB_MODE", "Job is not an isolated-Scene job", 400);
+            }
+            if (record.state === "SUCCEEDED" || record.state === "FAILED") {
+                return this.publicJob(record);
+            }
+            if (!record.prompt_id || !JOB_ID.test(record.prompt_id)) {
+                fail("JOB_UNCONFIRMED", "Isolated scene job has no confirmed prompt ID", 409);
+            }
+            return this._reconcileUnknown(record, "RECONCILE_UNAVAILABLE");
+        });
+    }
+
+    async analyzeIsolatedSceneArtifact(jobId) {
+        return this._exclusive(async () => {
+            if (!JOB_ID.test(jobId)) fail("INVALID_JOB_ID", "Invalid Manga job ID", 400);
+            let record;
+            try {
+                record = await this.journal.get(jobId);
+            } catch (error) {
+                if (error instanceof JournalError) fail(error.code, error.message, 503);
+                throw error;
+            }
+            if (!record) fail("JOB_NOT_FOUND", "Manga job not found", 404);
+            if (record.mode !== "isolated_scene") {
+                fail("INVALID_JOB_MODE", "Job is not an isolated-Scene job", 400);
+            }
+            if (record.state !== "SUCCEEDED") {
+                fail("JOB_NOT_READY", `Isolated scene job is in state '${record.state}', expected 'SUCCEEDED'`, 409);
+            }
+            if (!record.prompt_id || !JOB_ID.test(record.prompt_id)) {
+                fail("JOB_UNCONFIRMED", "Isolated scene job has no confirmed prompt ID", 409);
+            }
+            if (!isObject(record.compile_metadata) || !isObject(record.compile_metadata.local_dimensions)) {
+                fail("LOCAL_DIMENSIONS_REQUIRED", "Isolated scene compile_metadata lacks local_dimensions", 502);
+            }
+            const localDims = record.compile_metadata.local_dimensions;
+            const expW = localDims.width;
+            const expH = localDims.height;
+            if (typeof expW !== "number" || !Number.isInteger(expW) || expW <= 0 ||
+                typeof expH !== "number" || !Number.isInteger(expH) || expH <= 0) {
+                fail("LOCAL_DIMENSIONS_INVALID", "compile_metadata.local_dimensions must contain positive integers", 502);
+            }
+
+            const locator = validateOutputLocator(record.output_locator, record.job_id);
+            const bytes = await this._image(locator);
+
+            let analysis;
+            try {
+                analysis = analyzePngArtifact(bytes, { width: expW, height: expH });
+            } catch (err) {
+                if (err instanceof PngArtifactAnalyzerError) {
+                    fail(err.code || "ARTIFACT_ANALYSIS_FAILED", err.message, 502);
+                }
+                throw err;
+            }
+
+            return {
+                job_id: record.job_id,
+                prompt_id: record.prompt_id,
+                output_locator: {
+                    filename: locator.filename,
+                    subfolder: locator.subfolder,
+                    type: locator.type
+                },
+                png_analysis: {
+                    content_digest: analysis.content_digest,
+                    declared_width: analysis.declared_width,
+                    declared_height: analysis.declared_height,
+                    byte_length: analysis.byte_length
+                }
+            };
+        });
+    }
+
+    async finalizeIsolatedSceneResult(jobId, options = {}) {
+        if (!isNonEmptyString(jobId) || !JOB_ID.test(jobId)) {
+            fail("INVALID_JOB_ID", "Invalid Manga job ID", 400);
+        }
+
+        let record;
+        try {
+            record = await this.journal.get(jobId);
+        } catch (error) {
+            if (error instanceof JournalError) fail(error.code, error.message, 503);
+            throw error;
+        }
+
+        if (!record) {
+            fail("JOB_NOT_FOUND", "Manga job not found", 404);
+        }
+
+        if (record.mode !== "isolated_scene") {
+            fail("INVALID_JOB_MODE", "Job is not an isolated-Scene job", 400);
+        }
+
+        if (record.state !== "SUCCEEDED") {
+            fail("JOB_NOT_READY", `Isolated scene job is in state '${record.state}', expected 'SUCCEEDED'`, 409);
+        }
+
+        const canonicalResult = await this.sceneResultIndex.getByJobId(jobId);
+        if (canonicalResult) {
+            return {
+                manifest_id: canonicalResult.manifest_id,
+                manifest: canonicalResult.manifest,
+            };
+        }
+
+        if (!isNonEmptyString(record.prompt_id) || !JOB_ID.test(record.prompt_id)) {
+            fail("MISSING_EXECUTION_PROVENANCE", "Job record missing valid prompt_id", 500);
+        }
+
+        if (!isObject(record.owner) ||
+            !isNonEmptyString(record.owner.document_id) ||
+            !isNonEmptyString(record.owner.page_id) ||
+            !isNonEmptyString(record.owner.scene_id)) {
+            fail("MISSING_EXECUTION_PROVENANCE", "Job record missing complete owner identity", 500);
+        }
+
+        if (!isObject(record.snapshot) ||
+            !isNonEmptyString(record.snapshot.snapshot_ref) ||
+            !isNonEmptyString(record.snapshot.content_digest) ||
+            !SHA256.test(record.snapshot.content_digest)) {
+            fail("MISSING_EXECUTION_PROVENANCE", "Job record missing valid snapshot provenance", 500);
+        }
+
+        if (!isObject(record.plan)) {
+            fail("MISSING_EXECUTION_PROVENANCE", "Job record missing plan", 500);
+        }
+
+        if (!isObject(record.compile_metadata)) {
+            fail("MISSING_EXECUTION_PROVENANCE", "Job record missing compile_metadata", 500);
+        }
+
+        if (!isNonEmptyString(record.graph_digest) || !SHA256.test(record.graph_digest)) {
+            fail("MISSING_EXECUTION_PROVENANCE", "Job record missing valid graph_digest", 500);
+        }
+
+        if (!isNonEmptyString(record.submitted_graph_digest) || !SHA256.test(record.submitted_graph_digest)) {
+            fail("MISSING_EXECUTION_PROVENANCE", "Job record missing valid submitted_graph_digest", 500);
+        }
+
+        if (!isObject(record.page_compile_plan)) {
+            fail("MISSING_EXECUTION_PROVENANCE", "Job record missing page_compile_plan", 500);
+        }
+
+        if (!isNonEmptyString(record.page_compile_plan_digest) || !SHA256.test(record.page_compile_plan_digest)) {
+            fail("MISSING_EXECUTION_PROVENANCE", "Job record missing valid page_compile_plan_digest", 500);
+        }
+
+        if (!isObject(record.effective_settings)) {
+            fail("MISSING_EXECUTION_PROVENANCE", "Job record missing effective_settings", 500);
+        }
+
+        if (typeof record.save_node_id !== "string" && typeof record.save_node_id !== "number") {
+            fail("MISSING_EXECUTION_PROVENANCE", "Job record missing valid save_node_id", 500);
+        }
+
+        if (!isObject(record.output_locator)) {
+            fail("MISSING_EXECUTION_PROVENANCE", "Job record missing output_locator", 500);
+        }
+
+        const planRef = record.plan.reference;
+        if (!isObject(planRef) || planRef.enabled !== false) {
+            fail("REFERENCE_NOT_DISABLED", "Isolated scene job must be Reference-disabled", 400);
+        }
+
+        const artifactResult = await this.analyzeIsolatedSceneArtifact(jobId);
+
+        const manifestId = (typeof options._manifestIdFactory === "function")
+            ? options._manifestIdFactory()
+            : randomUUID();
+
+        const evidence = {
+            manifest_id: manifestId,
+            created_at: now(),
+            owner: {
+                document_id: record.owner.document_id,
+                page_id: record.owner.page_id,
+                scene_id: record.owner.scene_id,
+            },
+            input_provenance: {
+                authoring_snapshot_ref: record.snapshot.snapshot_ref,
+                authoring_snapshot_digest: record.snapshot.content_digest,
+            },
+            plan: record.plan,
+            compile_metadata: record.compile_metadata,
+            job: {
+                job_id: record.job_id,
+                prompt_id: record.prompt_id,
+                state: record.state,
+                graph_digest: record.graph_digest,
+                page_compile_plan_digest: record.page_compile_plan_digest,
+                effective_settings: record.effective_settings,
+                scene_id: record.owner.scene_id,
+                page_id: record.owner.page_id,
+            },
+            reference: {
+                enabled: false,
+                reference_asset: null,
+                content_digest: null,
+            },
+            locator: artifactResult.output_locator,
+            png_analysis: artifactResult.png_analysis,
+        };
+
+        let manifest;
+        try {
+            manifest = buildSceneResultManifest(evidence, {
+                _computeDigest: options._computeDigest,
+            });
+        } catch (builderError) {
+            if (builderError instanceof SceneResultBuilderError) {
+                fail(builderError.code, `Manifest assembly failed: ${builderError.message}`, 500);
+            }
+            throw builderError;
+        }
+
+        let saved;
+        try {
+            saved = await this.sceneResultStore.saveCompletedManifest(manifest);
+        } catch (storeError) {
+            if (storeError instanceof SceneResultStoreError) {
+                fail(storeError.code, `Manifest persistence failed: ${storeError.message}`, 500);
+            }
+            throw storeError;
+        }
+
+        try {
+            await this.sceneResultIndex.indexManifest(saved.manifest_id);
+        } catch (indexError) {
+            fail(indexError.code || "INDEX_PUBLICATION_FAILED", `Manifest saved but indexing failed: ${indexError.message}`, 500);
+        }
+
+        return {
+            manifest_id: saved.manifest_id,
+            manifest: saved,
+        };
     }
 
     async getJob(jobId) {

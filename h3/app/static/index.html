@@ -20,6 +20,7 @@
           <button class="product-button active" id="product-h3" type="button" role="tab" aria-selected="true">H3</button>
           <button class="product-button" id="product-manga" type="button" role="tab" aria-selected="false">MANGA</button>
         </div>
+        <span id="manga-shell-status" class="manga-shell-status" role="status" aria-live="polite">Connecting to Manga workspace…</span>
         <div class="mode-switch" role="group" aria-label="Media mode">
           <button class="mode-button active" id="mode-video" type="button" data-mode="video" aria-pressed="true">Video</button>
           <button class="mode-button" id="mode-still" type="button" data-mode="still" aria-pressed="false">Still</button>
@@ -32,10 +33,8 @@
       </div>
     </header>
 
+    <div class="shell-content-scroll" id="shell-content-scroll">
     <section id="manga-shell-panel" hidden aria-label="TEGAKI Manga workspace">
-      <div class="manga-shell-heading">
-        <span id="manga-shell-status" class="manga-shell-status" role="status" aria-live="polite">Connecting to Manga workspace…</span>
-      </div>
       <iframe id="manga-workspace-frame" title="TEGAKI Manga workspace" loading="eager" referrerpolicy="same-origin"></iframe>
     </section>
 
@@ -45,45 +44,39 @@
     </div>
 
     <main class="workspace">
-      <section class="preview-column" aria-labelledby="preview-heading">
+      <section class="stage-workspace" aria-label="Stage workspace">
         <div class="stage-action-bar" id="stage-action-bar" aria-label="Stage actions" aria-live="polite">
           <div class="stage-status-slot" id="stage-status-slot"></div>
           <div class="stage-action-slot" id="stage-action-slot"></div>
         </div>
-        <div class="section-kicker">Preview</div>
-        <div class="preview-card" id="preview-card">
-          <div class="preview-empty" id="preview-empty">
-            <div class="preview-icon" aria-hidden="true">▶</div>
-            <h1 id="preview-heading">Your video will appear here</h1>
-            <p id="preview-empty-copy">Enter a prompt and generate a short Native H3 video.</p>
+        <section class="preview-column" aria-labelledby="preview-heading">
+          <div class="section-kicker">Preview</div>
+          <div class="preview-card" id="preview-card">
+            <div class="preview-empty" id="preview-empty">
+              <div class="preview-icon" aria-hidden="true">▶</div>
+              <h1 id="preview-heading">Your video will appear here</h1>
+              <p id="preview-empty-copy">Enter a prompt and generate a short Native H3 video.</p>
+            </div>
+            <video id="preview-video" class="preview-video" controls playsinline preload="metadata" hidden></video>
+            <img id="preview-image" class="preview-image" alt="Generated Still preview" hidden />
+            <div class="preview-overlay" id="preview-overlay" hidden>
+              <span id="preview-state">Queued</span>
+              <span class="overlay-separator">·</span>
+              <span id="preview-elapsed">0.0s</span>
+            </div>
           </div>
-          <video id="preview-video" class="preview-video" controls playsinline preload="metadata" hidden></video>
-          <img id="preview-image" class="preview-image" alt="Generated Still preview" hidden />
-          <div class="preview-overlay" id="preview-overlay" hidden>
-            <span id="preview-state">Queued</span>
-            <span class="overlay-separator">·</span>
-            <span id="preview-elapsed">0.0s</span>
-          </div>
-        </div>
-        <div class="preview-meta" id="preview-meta">No generation in this session.</div>
+          <div class="preview-meta" id="preview-meta">No generation in this session.</div>
+        </section>
       </section>
 
       <aside class="control-column" id="control-column" aria-label="Video controls">
         <form id="generate-form" novalidate>
-          <div class="section-kicker">Create</div>
-          <div class="generate-action-slot" id="generate-action-slot">
-            <div class="generate-action-dock" id="generate-action-dock">
-              <button class="primary-button" id="generate-button" type="submit" form="generate-form" disabled>
-                <span id="generate-label">Generate</span>
-                <span class="button-arrow" aria-hidden="true">→</span>
-              </button>
-              <button class="cancel-button" id="cancel-button" type="button" hidden>Cancel current job</button>
-              <div class="submit-status" id="submit-status" aria-live="polite" hidden></div>
-            </div>
+          <div class="create-heading-row">
+            <div class="section-kicker">Create</div>
+            <label class="field-label" for="prompt">Prompt</label>
           </div>
-          <label class="field-label" for="prompt">Prompt</label>
           <textarea id="prompt" name="prompt" rows="5" maxlength="4000" placeholder="Describe the video..." required></textarea>
-          <div class="field-hint"><span>Prompt</span><span id="prompt-count">0 / 4000</span></div>
+          <div class="field-hint prompt-field-hint"><span id="prompt-count">0 / 4000</span></div>
 
           <section class="video-type-card" id="video-type-card" aria-labelledby="video-type-heading">
             <div class="video-type-heading-row">
@@ -96,6 +89,49 @@
             </div>
           </section>
 
+<section class="video-basic-settings" aria-label="Basic generation settings">
+              <div id="video-model-controls">
+                <div class="model-heading-row">
+                  <label class="field-label" for="video-model">Model</label>
+                  <button class="quiet-button model-refresh-button" id="refresh-playable" type="button" aria-label="Refresh available models and LoRAs">Refresh models / LoRAs</button>
+                </div>
+                <select id="video-model" aria-describedby="model-status"></select>
+                <p class="field-hint" id="model-status" aria-live="polite"></p>
+              </div>
+              <div class="basic-control-row">
+                <div id="resolution-field">
+                  <label class="field-label" for="resolution">Resolution</label>
+                  <select id="resolution" name="resolution">
+                    <option value="608x352">608 x 352</option>
+                  </select>
+                </div>
+                <div id="duration-field">
+                  <label class="field-label" for="duration">Duration</label>
+                  <select id="duration" name="duration">
+                    <option value="5">5 seconds</option>
+                  </select>
+                </div>
+
+                <div class="basic-seed">
+                  <label class="field-label" for="seed">Seed</label>
+                  <div class="seed-row">
+                    <input id="seed" name="seed" type="number" min="0" max="9223372036854775807" placeholder="Random" />
+                    <button class="quiet-button" id="random-seed" type="button">Random</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          <div class="generate-action-slot" id="generate-action-slot">
+            <div class="generate-action-dock" id="generate-action-dock">
+              <button class="primary-button" id="generate-button" type="submit" form="generate-form" disabled>
+                <span id="generate-label">Generate</span>
+                <span class="button-arrow" aria-hidden="true">→</span>
+              </button>
+              <button class="cancel-button" id="cancel-button" type="button" hidden>Cancel current job</button>
+              <div class="submit-status" id="submit-status" aria-live="polite" hidden></div>
+            </div>
+          </div>
+<div id="create-status-slot" class="stage-status-slot" aria-live="polite"></div>
           <section class="reference-card r2v-card" id="r2v-card" aria-labelledby="r2v-heading" hidden>
             <div class="reference-heading-row">
               <div>
@@ -160,13 +196,8 @@
             </div>
           </section>
 
-          <section class="reference-card" id="video-reference-card" aria-labelledby="reference-heading">
-            <div class="reference-heading-row">
-              <div>
-                <label class="field-label" id="reference-heading">Reference</label>
-                <div class="reference-helper">Optional keyframes<br /><span>Leave both empty to generate from text only.</span></div>
-              </div>
-            </div>
+          <details class="reference-card" id="video-reference-card" aria-labelledby="reference-heading">
+            <summary id="reference-heading">Start / End Reference <span id="reference-summary">Optional · text-only when empty</span></summary>
             <div class="reference-slots">
               <div class="reference-slot" data-reference-slot="start_frame">
                 <div class="reference-slot-heading">
@@ -215,7 +246,7 @@
                 <div class="reference-status" id="end-reference-status" aria-live="polite"></div>
               </div>
             </div>
-          </section>
+          </details>
 
           <section class="reference-card still-source-card" id="still-source-card" aria-labelledby="still-source-heading" hidden>
             <div class="reference-heading-row">
@@ -313,35 +344,11 @@
           <details class="advanced-panel">
             <summary>Advanced</summary>
             <div class="advanced-body">
-              <div class="control-grid">
-                <div id="resolution-field">
-                  <label class="field-label" for="resolution">Resolution</label>
-                  <select id="resolution" name="resolution">
-                    <option value="608x352">608 x 352</option>
-                  </select>
-                </div>
-                <div id="duration-field">
-                  <label class="field-label" for="duration">Duration</label>
-                  <select id="duration" name="duration">
-                    <option value="5">5 seconds</option>
-                  </select>
-                </div>
-              </div>
-
-              <div id="video-model-controls">
-                <label class="field-label" for="video-model">Model</label>
-                <select id="video-model" aria-describedby="model-status"></select>
-                <p class="field-hint" id="model-status" aria-live="polite"></p>
-                <button class="quiet-button" id="refresh-playable" type="button">Refresh available models / LoRAs</button>
+              <div id="video-lora-controls">
                 <label class="field-label">LoRA · optional</label>
                 <div id="lora-stack"></div>
                 <p class="field-hint" id="lora-status" aria-live="polite"></p>
                 <button class="quiet-button" id="add-lora" type="button">Add LoRA</button>
-              </div>
-              <label class="field-label" for="seed">Seed</label>
-              <div class="seed-row">
-                <input id="seed" name="seed" type="number" min="0" max="9223372036854775807" placeholder="Random" />
-                <button class="quiet-button" id="random-seed" type="button">Random</button>
               </div>
               <label class="field-label" for="steps">Steps</label>
               <input id="steps" name="steps" type="number" value="20" readonly aria-readonly="true" />
@@ -393,6 +400,7 @@
       <span id="footer-mode">H3 / Native Video</span>
       <span>Model terms are separate from TEGAKI code. See the H3 model acquisition manifest.</span>
     </footer>
+    </div>
 
     <script type="module" src="/static/app.js"></script>
   </body>

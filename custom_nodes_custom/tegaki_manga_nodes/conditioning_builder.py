@@ -41,8 +41,8 @@ class TegakiMangaConditioningBuilder:
             }
         }
 
-    RETURN_TYPES = ("CONDITIONING", "CONDITIONING", "MASK", "MASK", "STRING", "MASK")
-    RETURN_NAMES = ("positive", "negative", "panel_masks", "character_masks", "debug_json", "local_region_masks")
+    RETURN_TYPES = ("CONDITIONING", "CONDITIONING", "MASK", "MASK", "STRING", "MASK", "MASK")
+    RETURN_NAMES = ("positive", "negative", "panel_masks", "character_masks", "debug_json", "local_region_masks", "reference_mask")
     FUNCTION = "build_conditioning"
     CATEGORY = "tegaki/manga"
 
@@ -172,6 +172,7 @@ class TegakiMangaConditioningBuilder:
 
         # 5. Character Conditioning (各Character Area)
         char_idx = 0
+        ref_masks = []
         for p in panels:
             pid = p["target_panel_id"]
             for c in p.get("characters", []):
@@ -182,6 +183,8 @@ class TegakiMangaConditioningBuilder:
 
                 if char_idx < len(char_masks):
                     c_mask = char_masks[char_idx:char_idx+1]
+                    if c.get("reference_asset") and str(c.get("reference_asset")).strip():
+                        ref_masks.append(c_mask)
 
                     if c_pos_text and c_pos_text.strip():
                         c_pos_raw = self._encode_text(clip, c_pos_text)
@@ -204,6 +207,19 @@ class TegakiMangaConditioningBuilder:
                     })
                 char_idx += 1
 
+        if len(ref_masks) == 0:
+            if hasattr(panel_masks, "shape") and len(panel_masks.shape) >= 3:
+                reference_mask = torch.zeros((1, panel_masks.shape[1], panel_masks.shape[2]), dtype=torch.float32, device=panel_masks.device)
+            else:
+                canvas = plan.get("canvas", {})
+                h = int(canvas.get("height", 1024))
+                w = int(canvas.get("width", 1024))
+                reference_mask = torch.zeros((1, h, w), dtype=torch.float32)
+        elif len(ref_masks) == 1:
+            reference_mask = ref_masks[0]
+        else:
+            reference_mask = torch.clamp(sum(ref_masks), 0.0, 1.0)
+
         debug_json = json.dumps({
             "status": "success",
             "tuning": {
@@ -218,4 +234,4 @@ class TegakiMangaConditioningBuilder:
             "total_negative_branches": len(neg_conditioning)
         }, indent=2, ensure_ascii=False)
 
-        return (pos_conditioning, neg_conditioning, panel_masks, char_masks, debug_json, lr_masks)
+        return (pos_conditioning, neg_conditioning, panel_masks, char_masks, debug_json, lr_masks, reference_mask)

@@ -728,6 +728,9 @@ export class TagAutocompleteController {
     }
 
     handleKeydown(event) {
+        // Let the active IME consume confirmation/navigation keys instead of
+        // treating them as autocomplete commands.
+        if (event.isComposing || event.keyCode === 229 || event.key === "Process") return;
         const open = !this.popup.hidden && this.suggestions.length > 0;
         if (event.key === "Escape" && open) {
             event.preventDefault();

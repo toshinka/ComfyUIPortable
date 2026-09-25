@@ -14,13 +14,26 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { GenerationService, GenerationServiceError } from "./generation_service.mjs";
 import { GenerationJournal, JournalError } from "./generation_journal.mjs";
+import { IsolatedScenePrepService, IsolatedScenePrepError } from "./isolated_scene_prep_service.mjs";
+import { PageCompositeStore, PageCompositeStoreError } from "./page_composite_store.mjs";
+import { PageCompositeIndex, PageCompositeIndexError } from "./page_composite_index.mjs";
+import { PageCompositorBridge, PageCompositorBridgeError } from "./page_compositor_bridge.mjs";
+import { PageCompositePersistService, PageCompositePersistError } from "./page_composite_persist_service.mjs";
+import { PageCompositeCurrentClassifier, PageCompositeCurrentError } from "./page_composite_current.mjs";
+import { preparePageComposition } from "./page_compositor_prep.mjs";
+import { SceneResultStore } from "./scene_result_store.mjs";
+import { SceneResultIndex } from "./scene_result_index.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const APP_DIR = path.resolve(__dirname, "..", "app");
+const REPO_ROOT = path.resolve(__dirname, "..", "..");
+const EMBEDDED_PYTHON = path.join(REPO_ROOT, "python_embeded", "python.exe");
+const ANALYZER_SCRIPT = path.join(__dirname, "reference_identity_analyzer.py");
 
 const PORT = parseInt(process.env.MANGA_WORKSPACE_PORT || "8191", 10);
 const HOST = "127.0.0.1";
@@ -59,10 +72,75 @@ export const ALLOWED_PROXY_PATHS = new Set([
     "/extensions/tegaki_manga_nodes/js/minimum_hand_scene_editor.js"
 ]);
 
-const generationService = new GenerationService({
+let generationService = new GenerationService({
     backendUrl: parsedBackend.origin,
     journal: new GenerationJournal(process.env.MANGA_GENERATION_JOURNAL_DIR || undefined)
 });
+
+let isolatedScenePrepService = new IsolatedScenePrepService({
+    backendUrl: parsedBackend.origin
+});
+
+generationService.isolatedScenePrepService = isolatedScenePrepService;
+
+export function setIsolatedScenePrepService(service) {
+    isolatedScenePrepService = service;
+    if (generationService) {
+        generationService.isolatedScenePrepService = service;
+    }
+}
+
+export function setGenerationService(service) {
+    generationService = service;
+}
+
+let sceneResultStore = new SceneResultStore();
+let sceneResultIndex = new SceneResultIndex({ store: sceneResultStore });
+let pageCompositeStore = new PageCompositeStore();
+let pageCompositeIndex = new PageCompositeIndex({ store: pageCompositeStore });
+let pageCompositorBridge = new PageCompositorBridge({
+    backendUrl: parsedBackend.origin,
+    store: sceneResultStore,
+    index: sceneResultIndex,
+    prepFn: preparePageComposition,
+});
+let pageCompositePersistService = new PageCompositePersistService({
+    bridge: pageCompositorBridge,
+    store: pageCompositeStore,
+    index: pageCompositeIndex,
+});
+let pageCompositeCurrentClassifier = new PageCompositeCurrentClassifier({
+    store: pageCompositeStore,
+    index: pageCompositeIndex,
+    prepFn: preparePageComposition,
+    sceneStore: sceneResultStore,
+    sceneIndex: sceneResultIndex,
+});
+
+export function setPageCompositeServices({
+    store = null,
+    index = null,
+    bridge = null,
+    persistService = null,
+    currentClassifier = null,
+    sceneStore = null,
+    sceneIndex = null,
+} = {}) {
+    if (store !== null) pageCompositeStore = store;
+    if (index !== null) pageCompositeIndex = index;
+    if (bridge !== null) pageCompositorBridge = bridge;
+    if (persistService !== null) pageCompositePersistService = persistService;
+    if (currentClassifier !== null) pageCompositeCurrentClassifier = currentClassifier;
+    if (sceneStore !== null) sceneResultStore = sceneStore;
+    if (sceneIndex !== null) sceneResultIndex = sceneIndex;
+}
+
+function sanitizeErrorMessage(msg) {
+    if (typeof msg !== "string") return "An error occurred";
+    return msg
+        .replace(/[A-Za-z]:\\[^ \t\n\r"'\)]+/g, "[redacted-path]")
+        .replace(/(?:\/[a-zA-Z0-9_\.\-]+){3,}/g, "[redacted-path]");
+}
 
 const server = http.createServer(async (req, res) => {
     // Restricted same-origin CORS: do not expose wildcard '*' (Card Section 5)
@@ -192,6 +270,377 @@ const server = http.createServer(async (req, res) => {
         }
         return;
     }
+
+    // Compile-only isolated Scene preparation endpoint (Card MANGA-ISOLATED-SCENE-COMPILE-HTTP1)
+    if (pathname === "/api/manga/generation/prepare-isolated-scene") {
+        const reply = (status, error_code, error) => {
+            res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
+            res.end(JSON.stringify({ ok: false, error_code, error }));
+        };
+        if (req.method !== "POST") {
+            reply(405, "METHOD_NOT_ALLOWED", "Use POST");
+            return;
+        }
+        if ((requestOrigin && !allowedLocalOrigins.has(requestOrigin)) ||
+            (req.headers["sec-fetch-site"] && !["same-origin", "none"].includes(req.headers["sec-fetch-site"]))) {
+            reply(403, "ORIGIN_FORBIDDEN", "Request origin is not the Manga workspace");
+            return;
+        }
+        if ((req.headers["content-type"] || "").split(";")[0].trim().toLowerCase() !== "application/json") {
+            reply(415, "INVALID_CONTENT_TYPE", "Content-Type must be application/json");
+            return;
+        }
+        const declaredLength = Number(req.headers["content-length"]);
+        if (req.headers["content-length"] && (!Number.isSafeInteger(declaredLength) || declaredLength > 256 * 1024)) {
+            reply(413, "REQUEST_TOO_LARGE", "Request exceeds 256 KiB");
+            return;
+        }
+        const chunks = [];
+        let received = 0;
+        for await (const chunk of req) {
+            received += chunk.length;
+            if (received > 256 * 1024) {
+                req.resume();
+                reply(413, "REQUEST_TOO_LARGE", "Request exceeds 256 KiB");
+                return;
+            }
+            chunks.push(chunk);
+        }
+        let parsed;
+        try {
+            parsed = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+            if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+                throw new Error("Expected JSON object");
+            }
+        } catch (err) {
+            reply(400, "INVALID_JSON", `Invalid JSON request: ${err.message}`);
+            return;
+        }
+
+        // Strict rejection of forbidden client-supplied fields (Card Section 4)
+        const FORBIDDEN_CLIENT_FIELDS = [
+            "backend_url", "backend_origin", "snapshot_id", "job_id",
+            "prompt_id", "manifest_id", "artifact_locator"
+        ];
+        const presentForbidden = FORBIDDEN_CLIENT_FIELDS.filter(f => f in parsed);
+        if (presentForbidden.length > 0) {
+            reply(400, "INVALID_REQUEST", `Forbidden client request fields: ${presentForbidden.join(", ")}`);
+            return;
+        }
+
+        const prepInput = {
+            authoring_document: parsed.authoring_document,
+            scene_id: parsed.scene_id,
+            generation_params: parsed.generation_params,
+        };
+        if (parsed.page_id !== undefined) prepInput.page_id = parsed.page_id;
+        if (parsed.page_index !== undefined) prepInput.page_index = parsed.page_index;
+        if (parsed.local_dimensions !== undefined) prepInput.local_dimensions = parsed.local_dimensions;
+        if (parsed.random_seed !== undefined) prepInput.random_seed = parsed.random_seed;
+
+        try {
+            const bundle = await isolatedScenePrepService.prepareIsolatedScene(prepInput);
+            res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+            res.end(JSON.stringify({ ok: true, ...bundle }));
+        } catch (error) {
+            if (error instanceof IsolatedScenePrepError) {
+                const status = Number.isInteger(error.status) && error.status >= 400 && error.status < 600
+                    ? error.status
+                    : 500;
+                reply(status, error.code || "PREPARATION_FAILED", sanitizeErrorMessage(error.message));
+            } else {
+                console.error(`[MangaWorkspaceServer] Isolated scene prep internal error: ${error?.stack || error}`);
+                reply(500, "PREPARATION_INTERNAL_ERROR", "Isolated scene preparation failed unexpectedly");
+            }
+        }
+        return;
+    }
+
+    // Isolated Scene Prompt Dispatch endpoint (Card MANGA-ISOLATED-SCENE-DISPATCH1)
+    if (pathname === "/api/manga/generation/dispatch-isolated-scene") {
+        const reply = (status, error_code, error) => {
+            res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
+            res.end(JSON.stringify({ ok: false, error_code, error }));
+        };
+        if (req.method !== "POST") {
+            reply(405, "METHOD_NOT_ALLOWED", "Use POST");
+            return;
+        }
+        if ((requestOrigin && !allowedLocalOrigins.has(requestOrigin)) ||
+            (req.headers["sec-fetch-site"] && !["same-origin", "none"].includes(req.headers["sec-fetch-site"]))) {
+            reply(403, "ORIGIN_FORBIDDEN", "Request origin is not the Manga workspace");
+            return;
+        }
+        if ((req.headers["content-type"] || "").split(";")[0].trim().toLowerCase() !== "application/json") {
+            reply(415, "INVALID_CONTENT_TYPE", "Content-Type must be application/json");
+            return;
+        }
+        const declaredLength = Number(req.headers["content-length"]);
+        if (req.headers["content-length"] && (!Number.isSafeInteger(declaredLength) || declaredLength > 256 * 1024)) {
+            reply(413, "REQUEST_TOO_LARGE", "Request exceeds 256 KiB");
+            return;
+        }
+        const chunks = [];
+        let received = 0;
+        for await (const chunk of req) {
+            received += chunk.length;
+            if (received > 256 * 1024) {
+                req.resume();
+                reply(413, "REQUEST_TOO_LARGE", "Request exceeds 256 KiB");
+                return;
+            }
+            chunks.push(chunk);
+        }
+        let parsed;
+        try {
+            parsed = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+            if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+                throw new Error("Expected JSON object");
+            }
+        } catch (err) {
+            reply(400, "INVALID_JSON", `Invalid JSON request: ${err.message}`);
+            return;
+        }
+        try {
+            const job = await generationService.createIsolatedSceneJob(parsed);
+            res.writeHead(202, { "Content-Type": "application/json; charset=utf-8" });
+            res.end(JSON.stringify({ ok: true, job }));
+        } catch (error) {
+            if (error instanceof GenerationServiceError || error instanceof JournalError) {
+                reply(error.status || 503, error.code, sanitizeErrorMessage(error.message));
+            } else {
+                console.error(`[MangaWorkspaceServer] Isolated scene dispatch internal error: ${error?.stack || error}`);
+                reply(500, "DISPATCH_INTERNAL_ERROR", "Isolated scene dispatch failed unexpectedly");
+            }
+        }
+        return;
+    }
+
+        // =========================================================================
+    // PAGE COMPOSITE HTTP ROUTES (Card MANGA-WORKSPACE-PAGE-COMPOSITE-HTTP1)
+    // =========================================================================
+
+    const PAGE_COMPOSITE_PREFIX = "/api/manga/page-composites";
+    if (pathname === PAGE_COMPOSITE_PREFIX || pathname.startsWith(PAGE_COMPOSITE_PREFIX + "/")) {
+        const reply = (status, error_code, error) => {
+            res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
+            res.end(JSON.stringify({ ok: false, error_code, error: sanitizeErrorMessage(error) }));
+        };
+
+        // Origin & sec-fetch-site policy (reuse existing server policy)
+        if ((requestOrigin && !allowedLocalOrigins.has(requestOrigin)) ||
+            (req.headers["sec-fetch-site"] && !["same-origin", "none"].includes(req.headers["sec-fetch-site"]))) {
+            reply(403, "ORIGIN_FORBIDDEN", "Request origin is not the Manga workspace");
+            return;
+        }
+
+        // Helper to parse JSON body with standard 256 KiB limit
+        const parseJsonBody = async () => {
+            if ((req.headers["content-type"] || "").split(";")[0].trim().toLowerCase() !== "application/json") {
+                reply(415, "INVALID_CONTENT_TYPE", "Content-Type must be application/json");
+                return null;
+            }
+            const declaredLength = Number(req.headers["content-length"]);
+            if (req.headers["content-length"] && (!Number.isSafeInteger(declaredLength) || declaredLength > 256 * 1024)) {
+                reply(413, "REQUEST_TOO_LARGE", "Request exceeds 256 KiB");
+                return null;
+            }
+            const chunks = [];
+            let received = 0;
+            for await (const chunk of req) {
+                received += chunk.length;
+                if (received > 256 * 1024) {
+                    req.resume();
+                    reply(413, "REQUEST_TOO_LARGE", "Request exceeds 256 KiB");
+                    return null;
+                }
+                chunks.push(chunk);
+            }
+            try {
+                const parsed = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+                if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+                    throw new Error("Expected JSON object");
+                }
+                return parsed;
+            } catch (err) {
+                reply(400, "INVALID_JSON", `Invalid JSON request: ${err.message}`);
+                return null;
+            }
+        };
+
+        const UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+        // A. COMPOSE + PERSIST: POST /api/manga/page-composites/compose
+        if (pathname === `${PAGE_COMPOSITE_PREFIX}/compose`) {
+            if (req.method !== "POST") {
+                reply(405, "METHOD_NOT_ALLOWED", "Use POST");
+                return;
+            }
+            const parsed = await parseJsonBody();
+            if (parsed === null) return;
+
+            // Strict Trust Boundary: Reject forbidden client fields (Card Section 8)
+            const FORBIDDEN_COMPOSE_FIELDS = [
+                "composition_plan", "composite_bytes", "composite_id",
+                "manifest", "artifact_ref", "content_digest",
+                "backend_url", "backend_origin", "output_path",
+                "store_root", "index_root"
+            ];
+            const presentForbidden = FORBIDDEN_COMPOSE_FIELDS.filter(f => f in parsed);
+            if (presentForbidden.length > 0) {
+                reply(400, "INVALID_REQUEST", `Forbidden client request fields: ${presentForbidden.join(", ")}`);
+                return;
+            }
+
+            try {
+                const result = await pageCompositePersistService.persistCurrentPageComposite(parsed);
+                res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+                res.end(JSON.stringify({ ok: true, ...result }));
+            } catch (error) {
+                let status = 500;
+                let code = error.code || "PERSIST_FAILED";
+                if (error instanceof PageCompositePersistError) {
+                    if (error.code === "INVALID_REQUEST" || error.code === "FORBIDDEN_CALLER_FIELD") {
+                        status = 400;
+                    } else if (error.code === "BRIDGE_COMPOSE_FAILED") {
+                        status = 502;
+                    } else if (error.code === "STORE_SAVE_FAILED" || error.code === "PERSISTED_COMPOSITE_INCONSISTENT" || error.code === "COMPOSITE_INDEX_PUBLICATION_FAILED") {
+                        status = 500;
+                    }
+                }
+                reply(status, code, error.message);
+            }
+            return;
+        }
+
+        // B. PAGE HISTORY: GET /api/manga/page-composites
+        if (pathname === PAGE_COMPOSITE_PREFIX) {
+            if (req.method !== "GET") {
+                reply(405, "METHOD_NOT_ALLOWED", "Use GET");
+                return;
+            }
+            const document_id = url.searchParams.get("document_id");
+            const page_id = url.searchParams.get("page_id");
+            const composition_plan_digest = url.searchParams.get("composition_plan_digest") || null;
+
+            if (!document_id || !page_id) {
+                reply(400, "INVALID_QUERY", "document_id and page_id query parameters are required");
+                return;
+            }
+
+            try {
+                const entries = await pageCompositeIndex.listByPage({
+                    document_id,
+                    page_id,
+                    composition_plan_digest: composition_plan_digest || undefined,
+                });
+                res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+                res.end(JSON.stringify({ ok: true, entries }));
+            } catch (error) {
+                reply(500, error.code || "HISTORY_LOOKUP_FAILED", error.message);
+            }
+            return;
+        }
+
+        // D. ARTIFACT: GET /api/manga/page-composites/:composite_id/artifact
+        const artifactMatch = pathname.match(/^\/api\/manga\/page-composites\/([^\/]+)\/artifact$/);
+        if (artifactMatch) {
+            if (req.method !== "GET") {
+                reply(405, "METHOD_NOT_ALLOWED", "Use GET");
+                return;
+            }
+            const compositeId = artifactMatch[1];
+            if (!UUID_V4_REGEX.test(compositeId)) {
+                reply(400, "INVALID_COMPOSITE_ID", `composite_id must be a valid UUIDv4 string, got '${compositeId}'`);
+                return;
+            }
+
+            try {
+                const bytes = await pageCompositeStore.getArtifactBytes(compositeId, { required: true });
+                res.writeHead(200, {
+                    "Content-Type": "image/png",
+                    "Content-Length": bytes.length,
+                });
+                res.end(bytes);
+            } catch (error) {
+                if (error instanceof PageCompositeStoreError) {
+                    if (error.code === "COMPOSITE_NOT_FOUND" || error.code === "ARTIFACT_NOT_FOUND") {
+                        reply(404, "ARTIFACT_NOT_FOUND", `Artifact for composite '${compositeId}' not found`);
+                        return;
+                    }
+                    if (error.code === "ARTIFACT_CORRUPT" || error.code === "COMPOSITE_CORRUPT") {
+                        reply(500, "ARTIFACT_CORRUPT", error.message);
+                        return;
+                    }
+                }
+                reply(500, error.code || "ARTIFACT_RETRIEVAL_FAILED", error.message);
+            }
+            return;
+        }
+
+        // E. CURRENTNESS: POST /api/manga/page-composites/:composite_id/currentness
+        const currentnessMatch = pathname.match(/^\/api\/manga\/page-composites\/([^\/]+)\/currentness$/);
+        if (currentnessMatch) {
+            if (req.method !== "POST") {
+                reply(405, "METHOD_NOT_ALLOWED", "Use POST");
+                return;
+            }
+            const compositeId = currentnessMatch[1];
+            if (!UUID_V4_REGEX.test(compositeId)) {
+                reply(400, "INVALID_COMPOSITE_ID", `composite_id must be a valid UUIDv4 string, got '${compositeId}'`);
+                return;
+            }
+            const parsed = await parseJsonBody();
+            if (parsed === null) return;
+
+            try {
+                const result = await pageCompositeCurrentClassifier.classifyCurrentPageComposite({
+                    composite_id: compositeId,
+                    authoring_document: parsed.authoring_document,
+                    generation_params: parsed.generation_params,
+                    page_id: parsed.page_id,
+                    page_index: parsed.page_index,
+                });
+                res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+                res.end(JSON.stringify({ ok: true, ...result }));
+            } catch (error) {
+                const status = (error instanceof PageCompositeCurrentError && (error.code === "INVALID_REQUEST" || error.code === "FORBIDDEN_CALLER_FIELD"))
+                    ? 400
+                    : 500;
+                reply(status, error.code || "CURRENTNESS_FAILED", error.message);
+            }
+            return;
+        }
+
+        // C. COMPOSITE METADATA: GET /api/manga/page-composites/:composite_id
+        const metadataMatch = pathname.match(/^\/api\/manga\/page-composites\/([^\/]+)$/);
+        if (metadataMatch) {
+            if (req.method !== "GET") {
+                reply(405, "METHOD_NOT_ALLOWED", "Use GET");
+                return;
+            }
+            const compositeId = metadataMatch[1];
+            if (!UUID_V4_REGEX.test(compositeId)) {
+                reply(400, "INVALID_COMPOSITE_ID", `composite_id must be a valid UUIDv4 string, got '${compositeId}'`);
+                return;
+            }
+
+            try {
+                const manifest = await pageCompositeStore.getManifest(compositeId, { required: true });
+                const entry = await pageCompositeIndex.getEntry(compositeId);
+                res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+                res.end(JSON.stringify({ ok: true, composite_id: compositeId, manifest, entry }));
+            } catch (error) {
+                if (error instanceof PageCompositeStoreError && error.code === "COMPOSITE_NOT_FOUND") {
+                    reply(404, "COMPOSITE_NOT_FOUND", `Composite '${compositeId}' not found`);
+                    return;
+                }
+                reply(500, error.code || "COMPOSITE_LOOKUP_FAILED", error.message);
+            }
+            return;
+        }
+    }
+
     // Manga Wildcard Discovery
     if (pathname === "/api/manga/wildcards") {
         if (req.method !== "GET") {
@@ -292,9 +741,12 @@ const server = http.createServer(async (req, res) => {
                     reply(400, "INVALID_JSON", "Manga job request is not valid JSON");
                     return;
                 }
-                const job = body?.settings?.mode === "scene"
-                    ? await generationService.createSceneJob(body)
-                    : await generationService.createJob(body);
+                const isIsolatedScene = body?.mode === "isolated_scene" || body?.settings?.mode === "isolated_scene";
+                const job = isIsolatedScene
+                    ? await generationService.createIsolatedSceneJob(body)
+                    : (body?.settings?.mode === "scene"
+                        ? await generationService.createSceneJob(body)
+                        : await generationService.createJob(body));
                 res.writeHead(202, { "Content-Type": "application/json; charset=utf-8" });
                 res.end(JSON.stringify({ ok: true, job }));
             } else if (result) {
@@ -670,7 +1122,180 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // 5. Static File Serving
+    // 5. Dedicated Reference-to-Identity Analysis Endpoint (Card MANGA-REFERENCE-TO-IDENTITY-INTEGRATION1)
+    if (pathname === "/api/reference-assets/analyze") {
+        if (req.method !== "POST") {
+            res.writeHead(405, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "Method Not Allowed" }));
+            return;
+        }
+
+        if (requestOrigin && !allowedLocalOrigins.has(requestOrigin)) {
+            res.writeHead(403, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: `Forbidden origin '${requestOrigin}'` }));
+            return;
+        }
+
+        // Read JSON body (max 64 KiB)
+        const MAX_BODY_BYTES = 64 * 1024;
+        let bodyBuffer = "";
+        let bodyTooLarge = false;
+
+        const bodyReadSuccess = await new Promise((resolve) => {
+            req.on("data", (chunk) => {
+                if (bodyTooLarge) return;
+                bodyBuffer += chunk.toString("utf8");
+                if (bodyBuffer.length > MAX_BODY_BYTES) {
+                    bodyTooLarge = true;
+                    res.writeHead(413, { "Connection": "close", "Content-Type": "application/json" });
+                    res.end(JSON.stringify({ ok: false, error: "Payload Too Large" }));
+                    req.resume();
+                    resolve(false);
+                }
+            });
+            req.on("end", () => {
+                if (!bodyTooLarge) resolve(true);
+            });
+            req.on("error", (err) => {
+                if (!bodyTooLarge) {
+                    res.writeHead(500, { "Content-Type": "application/json" });
+                    res.end(JSON.stringify({ ok: false, error: "Read error: " + err.message }));
+                    resolve(false);
+                }
+            });
+        });
+
+        if (!bodyReadSuccess) return;
+
+        let parsedBody = {};
+        if (bodyBuffer.trim()) {
+            try {
+                parsedBody = JSON.parse(bodyBuffer);
+            } catch (err) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ ok: false, error: "Invalid JSON body" }));
+                return;
+            }
+        }
+
+        const rawRef = parsedBody.asset_reference || parsedBody.ref || url.searchParams.get("ref") || "";
+        if (!rawRef) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "Missing required 'asset_reference' parameter" }));
+            return;
+        }
+
+        const expectedPrefix = "tegaki_manga_references/";
+        if (!rawRef.startsWith(expectedPrefix)) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: `Invalid ref: must start with '${expectedPrefix}'` }));
+            return;
+        }
+
+        const relativeName = rawRef.slice(expectedPrefix.length);
+        const basename = path.basename(relativeName);
+        if (
+            !basename ||
+            basename !== relativeName ||
+            basename.includes("/") ||
+            basename.includes("\\") ||
+            basename.includes("..") ||
+            /[\x00-\x1f\x7f]/.test(basename)
+        ) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "Invalid ref: path traversal detected" }));
+            return;
+        }
+
+        const ext = path.extname(basename).toLowerCase();
+        if (![".png", ".jpg", ".jpeg", ".webp"].includes(ext)) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "Unsupported image format: must be PNG, JPEG, or WEBP" }));
+            return;
+        }
+
+        const targetDir = path.join(REPO_ROOT, "ComfyUI", "input", "tegaki_manga_references");
+        const fullAssetPath = path.join(targetDir, basename);
+        if (!fs.existsSync(fullAssetPath)) {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "Character Reference asset not found" }));
+            return;
+        }
+
+        const pythonPath = fs.existsSync(EMBEDDED_PYTHON) ? EMBEDDED_PYTHON : (process.env.PYTHON_PATH || "python");
+
+        try {
+            const child = spawn(pythonPath, [ANALYZER_SCRIPT, "--asset", basename], {
+                cwd: REPO_ROOT,
+                windowsHide: true
+            });
+
+            let stdout = "";
+            let stderr = "";
+
+            child.stdout.on("data", (data) => {
+                stdout += data.toString("utf8");
+            });
+
+            child.stderr.on("data", (data) => {
+                stderr += data.toString("utf8");
+            });
+
+            const exitCode = await new Promise((resolve) => {
+                child.on("close", resolve);
+                child.on("error", (err) => {
+                    stderr += "\nSpawn error: " + err.message;
+                    resolve(-1);
+                });
+            });
+
+            if (exitCode !== 0) {
+                let errMsg = "Analysis subprocess failed";
+                try {
+                    const parsedErr = JSON.parse(stdout);
+                    if (parsedErr.error) errMsg = parsedErr.error;
+                } catch {
+                    if (stderr.trim()) errMsg = stderr.trim().split("\n")[0];
+                }
+                const sanitizedErr = errMsg.replace(/[A-Za-z]:\\[^ \t\n\r"'\)]+/g, "[redacted-path]");
+                res.writeHead(500, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ ok: false, error: sanitizedErr }));
+                return;
+            }
+
+            let resultJson;
+            try {
+                resultJson = JSON.parse(stdout);
+            } catch (err) {
+                res.writeHead(500, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ ok: false, error: "Failed to parse analyzer response" }));
+                return;
+            }
+
+            if (!resultJson.ok) {
+                const sanitizedErr = (resultJson.error || "Analysis error").replace(/[A-Za-z]:\\[^ \t\n\r"'\)]+/g, "[redacted-path]");
+                res.writeHead(500, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ ok: false, error: sanitizedErr }));
+                return;
+            }
+
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({
+                ok: true,
+                candidate: resultJson.candidate,
+                tags: resultJson.tags,
+                ratings: resultJson.ratings,
+                model: resultJson.model,
+                execution_provider: resultJson.execution_provider
+            }));
+        } catch (spawnErr) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "Failed to run analyzer: " + spawnErr.message.replace(/[A-Za-z]:\\[^ \t\n\r"'\)]+/g, "[redacted-path]") }));
+        }
+        return;
+    }
+
+    // 6. Static File Serving
     const safePath = path.normalize(path.join(APP_DIR, pathname));
     if (!safePath.startsWith(APP_DIR)) {
         res.writeHead(403);
@@ -695,4 +1320,4 @@ server.listen(PORT, HOST, () => {
     console.log(`[MangaWorkspaceServer] Serving on http://${HOST}:${PORT}`);
 });
 
-export { server, PORT, HOST };
+export { server, PORT, HOST, generationService };

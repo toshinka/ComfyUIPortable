@@ -30,6 +30,62 @@ export const STYLE_PRESETS = {
 };
 
 /**
+ * Generates a collision-resistant UUID string using platform crypto APIs.
+ */
+export function generateDocumentId() {
+    if (typeof globalThis.crypto?.randomUUID === "function") {
+        return globalThis.crypto.randomUUID();
+    }
+    if (typeof globalThis.crypto?.getRandomValues === "function") {
+        const bytes = new Uint8Array(16);
+        globalThis.crypto.getRandomValues(bytes);
+        bytes[6] = (bytes[6] & 0x0f) | 0x40; // RFC 4122 v4
+        bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant 10
+        const hex = Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
+        return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+    }
+    throw new Error("Platform crypto.randomUUID / crypto.getRandomValues is unavailable for secure document_id generation");
+}
+
+/**
+ * Validates whether an ID is a non-empty string.
+ * Accepts legacy IDs (e.g. doc_xxxxxxxx) and canonical UUIDs.
+ */
+export function isValidDocumentId(id) {
+    return typeof id === "string" && id.trim().length > 0;
+}
+
+/**
+ * Ingestion boundary helper: ensures a document has a valid document_id.
+ * If valid, preserves it verbatim. If missing or invalid, assigns a fresh UUID
+ * without mutating the caller's original object.
+ */
+export function ensureDocumentIdentity(doc) {
+    if (!doc || typeof doc !== "object") return doc;
+    if (isValidDocumentId(doc.document_id)) {
+        return doc;
+    }
+    return {
+        ...doc,
+        document_id: generateDocumentId()
+    };
+}
+
+/**
+ * Creates an independent duplicate of an authoring document with a new document_id,
+ * preserving all pages, scenes, cast, instances, frames, guides, and styling.
+ * Does not mutate sourceDoc.
+ */
+export function duplicateDocument(sourceDoc) {
+    if (!sourceDoc || typeof sourceDoc !== "object") {
+        throw new Error("Cannot duplicate: source document must be an object");
+    }
+    const cloned = cloneDocument(sourceDoc);
+    cloned.document_id = generateDocumentId();
+    return cloned;
+}
+
+/**
  * Creates a default canonical TEGAKI_AUTHORING_DOCUMENT 1.0.0
  * Pixel and semantic parity with reference M3B implementation.
  */
@@ -45,7 +101,7 @@ export function createDefaultAuthoringDocument({
     return {
         schema_id: SCHEMA_ID,
         schema_version: SCHEMA_VERSION,
-        document_id: documentId || ("doc_" + Math.random().toString(36).substring(2, 10)),
+        document_id: documentId || generateDocumentId(),
         pages: [
             {
                 page_id: "page_1",
@@ -336,6 +392,10 @@ export function validateAuthoringDocument(doc) {
 
     if (doc.schema_version !== SCHEMA_VERSION) {
         errors.push(`Invalid schema_version: expected '${SCHEMA_VERSION}', got '${doc.schema_version}'`);
+    }
+
+    if (doc.document_id !== undefined && !isValidDocumentId(doc.document_id)) {
+        errors.push("document_id must be a non-empty string when present");
     }
 
     if (!Array.isArray(doc.pages) || doc.pages.length === 0) {
