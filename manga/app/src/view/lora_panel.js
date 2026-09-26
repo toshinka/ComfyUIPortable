@@ -140,9 +140,25 @@ export async function fetchLoraFolder(dir, { engine = "illustrious", fetchImpl =
     return data;
 }
 
-/** Bounded preview route: addressed by canonical LoRA ID, never by a filesystem path. */
-export function loraPreviewUrl(id, { engine = "illustrious" } = {}) {
-    return `/api/manga/resources/lora/preview?engine=${encodeURIComponent(engine)}&id=${encodeURIComponent(id)}`;
+/** Bounded preview route: addressed by canonical LoRA ID + slot (1..3), never by a filesystem path. */
+export function loraPreviewUrl(id, { engine = "illustrious", slot = 1 } = {}) {
+    return `/api/manga/resources/lora/preview?engine=${encodeURIComponent(engine)}&id=${encodeURIComponent(id)}&slot=${Number(slot) || 1}`;
+}
+
+// Card MANGA-LORA-GRID-UX2: exactly three global preview slots (1 .preview / 2 _ani / 3 _man).
+export const LORA_PREVIEW_SLOTS = Object.freeze([1, 2, 3]);
+export const nextPreviewSlot = slot => (slot >= 3 ? 1 : slot + 1);
+
+/**
+ * Whether `lora` has an image for `slot`: true / false from folder-listing data
+ * (`previews` [s1,s2,s3], legacy `preview` for slot 1), or null when unknown
+ * (e.g. a search result whose folder was never listed).  A missing slot is never
+ * substituted by another slot.
+ */
+export function loraSlotAvailability(lora, slot) {
+    if (Array.isArray(lora?.previews) && lora.previews.length === 3) return lora.previews[slot - 1] === true;
+    if (slot === 1 && typeof lora?.preview === "boolean") return lora.preview;
+    return null;
 }
 
 function el(tag, className, text) {
@@ -168,14 +184,15 @@ export function searchLoraIndex(index, query, { limit = LORA_SEARCH_LIMIT, folde
         const folder = match.id.includes("/") ? match.id.slice(0, match.id.lastIndexOf("/")) : "";
         const listed = folderCache.get(folder)?.loras?.find(entry => entry.id === match.id);
         return { id: match.id, name: match.label, token: match.tag, folder, available: true,
-            preview: listed?.preview === true, fromSearch: true };
+            preview: listed ? listed.preview === true : undefined,
+            previews: Array.isArray(listed?.previews) ? listed.previews : undefined, fromSearch: true };
     });
     return { items, total: all.length };
 }
 
 export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folders, cards, count, prompt,
     bulkInput = null, bulkApply = null, bulkStatus = null, fetchFolder = fetchLoraFolder,
-    search = null, loadIndex = () => loadLoraCatalog() }) {
+    search = null, loadIndex = () => loadLoraCatalog(), viewControls = null }) {
     const cache = new Map();
     const draftStrength = new Map();
     let currentFolder = "";
@@ -187,6 +204,10 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
     let searchResult = null; // { items, total } while a search is active
     let searchSeq = 0;
     let searchTimer = null;
+    // Browser/UI state only (never written to the Authoring Document).
+    let previewSlot = 1;
+    let selectedFirst = true;
+    const missingSlots = new Set(); // `${id}|${slot}` that failed to load: no repeat requests
 
     const applyPrompt = (nextText) => {
         if (nextText === prompt.value) return;
@@ -274,24 +295,34 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
             card.classList.toggle("is-unavailable", lora.available === false);
             card.title = lora.token && lora.token !== lora.id ? `${lora.id} (inserts ${lora.token})` : lora.id;
             card.dataset.loraToken = lora.token || lora.id;
-            // Fixed-size image slot: preview when a sidecar exists, otherwise a subdued placeholder.
-            const placeholder = () => el("div", "mg-lora-card-thumb mg-lora-card-noimg", "NO PREVIEW");
-            let thumb;
-            if (lora.preview === true) {
-                // Sidecar <stem>.preview.png; loaded lazily and only for the opened folder.
+            // Fixed-size image slot showing the GLOBAL preview slot; a missing slot stays blank.
+            const placeholder = () => el("div", "mg-lora-card-thumb mg-lora-card-noimg", `NO PREVIEW ${previewSlot}`);
+            const slot = previewSlot;
+            const known = loraSlotAvailability(lora, slot);
+            let image;
+            if (known !== false && !missingSlots.has(`${lora.id}|${slot}`)) {
+                // Sidecar derived from the LoRA ID by the backend; loaded lazily for visible cards only.
                 card.classList.add("has-preview");
-                thumb = el("img", "mg-lora-card-thumb");
-                thumb.alt = "";
-                thumb.loading = "lazy";
-                thumb.decoding = "async";
-                thumb.src = loraPreviewUrl(lora.id);
-                thumb.onerror = () => {
+                image = el("img", "mg-lora-card-thumb");
+                image.alt = "";
+                image.loading = "lazy";
+                image.decoding = "async";
+                image.src = loraPreviewUrl(lora.id, { slot });
+                image.onerror = () => {
+                    missingSlots.add(`${lora.id}|${slot}`);
                     card.classList.remove("has-preview");
-                    thumb.replaceWith(placeholder());
+                    image.replaceWith(placeholder());
                 };
             } else {
-                thumb = placeholder();
+                image = placeholder();
             }
+            // The preview area is a shortcut for the SAME Add/Remove action as the button.
+            const thumb = el("button", "mg-lora-card-thumbbtn");
+            thumb.type = "button";
+            thumb.dataset.previewSlot = String(slot);
+            thumb.title = `${token ? "Remove" : "Add"} ${lora.name}`;
+            thumb.setAttribute("aria-label", thumb.title);
+            thumb.appendChild(image);
             const name = el("span", "mg-lora-card-name", lora.name);
             name.title = lora.id;
             // Duplicate basenames insert a canonical token; show the folder so they are distinguishable.
@@ -320,7 +351,9 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
             action.type = "button";
             action.setAttribute("aria-pressed", token ? "true" : "false");
             action.disabled = !enabled || (!token && lora.available === false);
-            action.onclick = () => {
+            // ONE mutation path for the button and the preview-area shortcut.
+            const toggleSelection = () => {
+                if (action.disabled) return;
                 if (token) {
                     applyPrompt(removeLoraToken(prompt.value, names));
                 } else {
@@ -329,6 +362,9 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
                     applyPrompt(addLoraToken(prompt.value, lora.token || lora.id, Number.isFinite(value) ? value : 1, names));
                 }
             };
+            action.onclick = toggleSelection;
+            thumb.onclick = toggleSelection;
+            thumb.disabled = action.disabled;
             const controls = el("div", "mg-lora-card-controls");
             controls.append(strength, action);
             card.append(thumb, name);
@@ -339,6 +375,56 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
         if (searching && searchResult && !items.length) cards.appendChild(el("div", "mg-hint mg-lora-empty", "No trusted LoRA matches this search."));
         else if (!searching && !items.length && listing) cards.appendChild(el("div", "mg-hint mg-lora-empty", "No LoRA files in this folder."));
     }
+
+    // --- global view controls: preview slot 1/2/3 and Selected-first ON/OFF (UI state only) ---
+    const slotButtons = [];
+    let selectedFirstButton = null;
+    const syncViewControls = () => {
+        for (const button of slotButtons) {
+            const active = Number(button.dataset.slot) === previewSlot;
+            button.classList.toggle("is-active", active);
+            button.setAttribute("aria-pressed", active ? "true" : "false");
+        }
+        if (selectedFirstButton) {
+            selectedFirstButton.textContent = `Selected first ${selectedFirst ? "ON" : "OFF"}`;
+            selectedFirstButton.setAttribute("aria-pressed", selectedFirst ? "true" : "false");
+        }
+        // Display-only ordering: CSS `order` on selected cards; DOM + prompt order never change.
+        cards.classList.toggle("is-selected-first", selectedFirst);
+    };
+    const setPreviewSlot = (slot) => {
+        const next = Number(slot);
+        if (!LORA_PREVIEW_SLOTS.includes(next) || next === previewSlot) return;
+        previewSlot = next;
+        syncViewControls();
+        renderCards();
+    };
+    const setSelectedFirst = (on) => {
+        selectedFirst = Boolean(on);
+        syncViewControls();
+    };
+    if (viewControls) {
+        viewControls.replaceChildren();
+        const slotLabel = el("span", "mg-lora-view-label", "Preview");
+        const group = el("div", "mg-lora-slot-group");
+        group.setAttribute("role", "group");
+        group.setAttribute("aria-label", "Preview slot for all LoRA cards");
+        for (const slot of LORA_PREVIEW_SLOTS) {
+            const button = el("button", "mg-lora-slot", String(slot));
+            button.type = "button";
+            button.dataset.slot = String(slot);
+            button.title = ["", "<name>.preview image", "<name>_ani image", "<name>_man image"][slot];
+            button.onclick = () => setPreviewSlot(slot);
+            slotButtons.push(button);
+            group.appendChild(button);
+        }
+        selectedFirstButton = el("button", "mg-lora-selected-first");
+        selectedFirstButton.type = "button";
+        selectedFirstButton.title = "Show added LoRAs before the others (display only)";
+        selectedFirstButton.onclick = () => setSelectedFirst(!selectedFirst);
+        viewControls.append(slotLabel, group, selectedFirstButton);
+    }
+    syncViewControls();
 
     // --- search: results span folders; clearing returns to the current folder view ---
     const setSearchMode = (on) => {
@@ -436,6 +522,10 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
         openFolder,
         setExpanded,
         search: runSearch,
+        setPreviewSlot,
+        setSelectedFirst,
+        get previewSlot() { return previewSlot; },
+        get selectedFirst() { return selectedFirst; },
         refresh: () => openFolder(currentFolder, { refresh: true }),
         // Called whenever the composer swaps the prompt target/value.
         sync({ enabled: nextEnabled = true, reason = "" } = {}) {

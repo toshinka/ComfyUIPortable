@@ -514,12 +514,12 @@ async def api_manga_resource_lora_browse(request: web.Request) -> web.Response:
         return _error("RESOURCE_BROWSE_FAILED", "LoRA browse failed", 500)
 
 
-def _comfy_lora_preview(engine: str, lora_id: str) -> str:
+def _comfy_lora_preview(engine: str, lora_id: str, slot: object = 1) -> str:
     import folder_paths
 
     return lora_preview_path(
         engine, lora_id, folder_paths.get_folder_paths("loras"),
-        extensions=folder_paths.supported_pt_extensions,
+        extensions=folder_paths.supported_pt_extensions, slot=slot,
     )
 
 
@@ -527,8 +527,9 @@ async def api_manga_resource_lora_preview(request: web.Request) -> web.Response:
     """Serve ONE <stem>.preview.png sidecar for a canonical LoRA ID (never a path)."""
     engine = request.match_info.get("engine", "")
     lora_id = request.query.get("id", "")
+    slot = request.query.get("slot", "1")  # 1 .preview / 2 _ani / 3 _man (Card MANGA-LORA-GRID-UX2)
     try:
-        path = _comfy_lora_preview(engine, lora_id)
+        path = _comfy_lora_preview(engine, lora_id, slot)
     except ResourceContractError as exc:
         return _error(exc.code, str(exc), RESOURCE_ERROR_STATUS.get(exc.code, 400))
     except Exception:

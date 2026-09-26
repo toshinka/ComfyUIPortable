@@ -45,6 +45,13 @@ ENGINE_RESOURCE_ROOTS = {
 DEFAULT_LORA_EXTENSIONS = (".safetensors",)
 # Owner-proven sidecar convention: <lora-stem>.preview.png beside the LoRA file.
 PREVIEW_SUFFIX = ".preview.png"
+# Card MANGA-LORA-GRID-UX2: exactly three preview slots, derived from the LoRA stem only.
+#   slot 1: <stem>.preview.<ext>   slot 2: <stem>_ani.<ext>   slot 3: <stem>_man.<ext>
+# Nothing else is a slot (<stem>_man2.webp, <stem>_foo.jpg ... are ignored).  When one
+# slot exists with several extensions, the first in PREVIEW_EXTENSIONS wins.  The
+# extension only locates the sidecar; the served type always comes from the bytes.
+PREVIEW_SLOT_SUFFIXES = {1: ".preview", 2: "_ani", 3: "_man"}
+PREVIEW_EXTENSIONS = (".png", ".webp", ".jpg", ".jpeg")
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 PREVIEW_SNIFF_BYTES = 12
 
@@ -177,13 +184,13 @@ def list_lora_directory(
         entries = list(os.scandir(directory))
     except OSError as exc:
         _fail("RESOURCE_PATH_UNREADABLE", f"LoRA folder '{folder}' cannot be read: {exc.strerror or exc}")
-    # Previews are detected from this one folder's names only (no extra walk/stat).
-    preview_names = {}
+    # Preview slots are detected from this one folder's names only (no extra walk/stat).
+    file_names = set()
     for entry in entries:
-        if entry.name.casefold().endswith(PREVIEW_SUFFIX):
+        if entry.name.casefold().endswith(PREVIEW_EXTENSIONS):
             try:
                 if entry.is_file():
-                    preview_names[entry.name[: -len(PREVIEW_SUFFIX)].casefold()] = True
+                    file_names.add(entry.name.casefold())
             except OSError:
                 continue
     for entry in entries:
@@ -215,8 +222,10 @@ def list_lora_directory(
             except Exception:
                 resolved = None
             available = bool(resolved) and _norm(resolved) == _norm(entry.path)
+        slots = [any(f"{stem}{suffix}{ext}".casefold() in file_names for ext in PREVIEW_EXTENSIONS)
+                 for suffix in PREVIEW_SLOT_SUFFIXES.values()]
         entry = {"id": child_id, "name": stem, "filename": name, "folder": folder, "available": available,
-                 "preview": stem.casefold() in preview_names}
+                 "preview": slots[0], "previews": slots}
         if token_for is not None:
             token = token_for(child_id)
             if token:
@@ -233,22 +242,32 @@ def resolve_lora_preview(
     lora_id: str,
     *,
     extensions: Iterable[str] = DEFAULT_LORA_EXTENSIONS,
+    slot: object = 1,
 ) -> str:
-    """Real path of the ``<stem>.preview.png`` sidecar for ONE canonical LoRA ID.
+    """Real path of preview ``slot`` (1..3) of ONE canonical LoRA ID.
 
-    Only the sidecar derived from a LoRA ID can be addressed; arbitrary files,
+    Only a sidecar derived from a LoRA ID can be addressed; arbitrary files,
     traversal, non-LoRA IDs and non-image content (PNG/JPEG/WebP by magic
-    bytes) fail closed.  Model files are never opened.
+    bytes) fail closed.  A missing slot is NOT_FOUND - never another slot.
+    At most four stat calls (one per extension); model files are never opened.
     """
+    if isinstance(slot, str) and slot.isdigit():
+        slot = int(slot)
+    if type(slot) is not int or slot not in PREVIEW_SLOT_SUFFIXES:
+        _fail("INVALID_REQUEST", "Preview slot must be 1, 2 or 3")
     canonical = normalize_relative_id(lora_id)
     parts = canonical.split("/")
     stem, ext = os.path.splitext(parts[-1])
     if not stem or ext.lower() not in {e.lower() for e in extensions}:
         _fail("RESOURCE_PREVIEW_UNSUPPORTED", "Previews are only served for LoRA files")
-    sidecar_id = "/".join(parts[:-1] + [stem + PREVIEW_SUFFIX])
-    path = resolve_within_root(root, sidecar_id)
-    if not os.path.isfile(path):
-        _fail("RESOURCE_PREVIEW_NOT_FOUND", "No preview sidecar for this LoRA")
+    path = None
+    for image_ext in PREVIEW_EXTENSIONS:
+        candidate = resolve_within_root(root, "/".join(parts[:-1] + [stem + PREVIEW_SLOT_SUFFIXES[slot] + image_ext]))
+        if os.path.isfile(candidate):
+            path = candidate
+            break
+    if path is None:
+        _fail("RESOURCE_PREVIEW_NOT_FOUND", f"No preview for slot {slot} of this LoRA")
     if os.path.getsize(path) > MAX_PREVIEW_BYTES:
         _fail("RESOURCE_PREVIEW_UNSUPPORTED", "Preview sidecar is too large")
     if preview_mime(path) is None:
@@ -269,10 +288,11 @@ def lora_preview_path(
     *,
     extensions: Iterable[str] = DEFAULT_LORA_EXTENSIONS,
     environ: Optional[dict] = None,
+    slot: object = 1,
 ) -> str:
     """HTTP-facing preview resolver; the returned path stays inside the backend."""
     root = resolve_resource_root(engine, "lora", registered_roots, environ=environ)
-    return resolve_lora_preview(root, lora_id, extensions=extensions)
+    return resolve_lora_preview(root, lora_id, extensions=extensions, slot=slot)
 
 
 def browse_lora_payload(

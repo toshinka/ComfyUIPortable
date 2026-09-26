@@ -385,6 +385,8 @@ const server = http.createServer(async (req, res) => {
         }
         const engine = url.searchParams.get("engine") || "illustrious";
         const id = url.searchParams.get("id") || "";
+        // Preview slot 1..3 (Card MANGA-LORA-GRID-UX2); the backend derives the sidecar name.
+        const slot = url.searchParams.get("slot") || "1";
         if (!["illustrious"].includes(engine)) {
             reply(404, "RESOURCE_UNSUPPORTED", `No LoRA resource is registered for engine '${engine}'`);
             return;
@@ -393,9 +395,13 @@ const server = http.createServer(async (req, res) => {
             reply(400, "INVALID_RESOURCE_ID", "LoRA ID is missing or too long");
             return;
         }
+        if (!["1", "2", "3"].includes(slot)) {
+            reply(400, "INVALID_REQUEST", "Preview slot must be 1, 2 or 3");
+            return;
+        }
         try {
             const backendRes = await fetch(
-                `${parsedBackend.origin}/tegaki/manga/resources/${engine}/lora/preview?id=${encodeURIComponent(id)}`,
+                `${parsedBackend.origin}/tegaki/manga/resources/${engine}/lora/preview?id=${encodeURIComponent(id)}&slot=${slot}`,
                 { method: "GET", signal: AbortSignal.timeout(10000) }
             );
             const chunks = [];

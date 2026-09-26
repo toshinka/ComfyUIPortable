@@ -242,6 +242,8 @@
                                         <button id="mg-lora-bulk-apply" type="button" class="mg-lora-card-action" disabled>Apply to added LoRAs</button>
                                         <span id="mg-lora-bulk-status" class="mg-hint" role="status" aria-live="polite"></span>
                                     </div>
+                                    <!-- Preview slot 1/2/3 + Selected-first (Card MANGA-LORA-GRID-UX2): UI state only -->
+                                    <div id="mg-lora-view-controls" class="mg-lora-view-controls" role="group" aria-label="LoRA grid view"></div>
                                     <div id="mg-lora-cards" class="mg-lora-cards" role="list" aria-label="LoRAs in this folder"></div>
                                 </div>
                                 <div id="mg-wildcard-body" class="mg-lora-body mg-wildcard-body" role="tabpanel" aria-labelledby="mg-assist-tab-wildcard" hidden>
@@ -798,6 +800,7 @@
             bulkApply: document.getElementById("mg-lora-bulk-apply"),
             bulkStatus: document.getElementById("mg-lora-bulk-status"),
             search: document.getElementById("mg-lora-search"),
+            viewControls: document.getElementById("mg-lora-view-controls"),
         });
         const loraPanel = mountPromptAssist({
             panel: document.getElementById("mg-lora-panel"),

@@ -31,7 +31,7 @@ test("preview availability only from already-loaded folder data; no paths", () =
     const folderCache = new Map([["styles", { loras: [{ id: "styles/InkWash.safetensors", preview: true }] }]]);
     const [ink] = searchLoraIndex(INDEX, "inkwash", { folderCache }).items;
     assert.equal(ink.preview, true);
-    assert.equal(searchLoraIndex(INDEX, "inkwash").items[0].preview, false);
+    assert.equal(searchLoraIndex(INDEX, "inkwash").items[0].preview, undefined, "unknown until the folder is listed");
     assert.ok(!/[A-Za-z]:[\\/]|Models/.test(JSON.stringify(searchLoraIndex(INDEX, "a").items)));
 });
 

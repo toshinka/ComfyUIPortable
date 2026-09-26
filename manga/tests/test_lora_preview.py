@@ -181,5 +181,112 @@ class PreviewContentTypeTests(unittest.TestCase):
         self.assertIsNone(res.sniff_preview_mime(b"<svg xmlns="))
 
 
+
+JPEG = b"\xff\xd8\xff\xe0JFIF-fixture"
+WEBP = b"RIFF\x10\x00\x00\x00WEBPVP8 fixture"
+
+
+class LoraPreviewSlotTests(unittest.TestCase):
+    """MANGA-LORA-GRID-UX2: three fixed preview slots derived from the LoRA stem."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.base = pathlib.Path(self._tmp.name)
+        self.root = self.base / "Lora"
+        d = self.root / "chars"
+        d.mkdir(parents=True)
+        for stem in ("only", "two", "three", "dupext", "legacy"):
+            (d / f"{stem}.safetensors").write_bytes(b"MODEL")
+        (d / "only.preview.png").write_bytes(PNG)
+        (d / "two.preview.png").write_bytes(PNG)
+        (d / "two_ani.webp").write_bytes(WEBP)
+        (d / "three.preview.jpg").write_bytes(JPEG)
+        (d / "three_ani.jpeg").write_bytes(JPEG)
+        (d / "three_man.png").write_bytes(PNG)
+        (d / "three_man2.webp").write_bytes(WEBP)      # not a slot
+        (d / "three_ani2.png").write_bytes(PNG)        # not a slot
+        (d / "three_foo.jpg").write_bytes(JPEG)        # not a slot
+        (d / "dupext.preview.jpg").write_bytes(JPEG)
+        (d / "dupext.preview.webp").write_bytes(WEBP)
+        (d / "dupext.preview.png").write_bytes(PNG)
+        (d / "legacy.preview.png").write_bytes(JPEG)   # legacy: JPEG bytes named .png
+        self.env = {"TEGAKI_ILLUSTRIOUS_LORA_ROOT": str(self.root)}
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def path(self, stem, slot):
+        return res.lora_preview_path("illustrious", f"chars/{stem}.safetensors", [str(self.root)], environ=self.env, slot=slot)
+
+    def missing(self, stem, slot):
+        with self.assertRaises(res.ResourceContractError) as ctx:
+            self.path(stem, slot)
+        self.assertEqual(ctx.exception.code, "RESOURCE_PREVIEW_NOT_FOUND")
+
+    def test_a_b_c_slot_names_and_d_e_f_formats(self):
+        self.assertTrue(self.path("three", 1).endswith("three.preview.jpg"))
+        self.assertTrue(self.path("three", 2).endswith("three_ani.jpeg"))
+        self.assertTrue(self.path("three", 3).endswith("three_man.png"))
+        self.assertTrue(self.path("two", 2).endswith("two_ani.webp"))
+        self.assertEqual([res.preview_mime(self.path("three", n)) for n in (1, 2, 3)],
+                         ["image/jpeg", "image/jpeg", "image/png"])
+        self.assertEqual(res.preview_mime(self.path("two", 2)), "image/webp")
+
+    def test_g_mime_comes_from_bytes(self):
+        path = self.path("legacy", 1)
+        self.assertTrue(path.endswith("legacy.preview.png"))
+        self.assertEqual(res.preview_mime(path), "image/jpeg")
+
+    def test_h_i_missing_slot_is_blank_never_another_slot(self):
+        self.missing("only", 2)
+        self.missing("only", 3)
+        self.missing("two", 3)
+        self.assertTrue(self.path("only", 1).endswith("only.preview.png"))
+
+    def test_j_other_suffixes_are_never_slots(self):
+        listing = {l["id"]: l for l in res.list_lora_directory(str(self.root), "chars")["loras"]}
+        self.assertEqual(listing["chars/three.safetensors"]["previews"], [True, True, True])
+        self.assertEqual(listing["chars/only.safetensors"]["previews"], [True, False, False])
+        self.assertEqual(listing["chars/two.safetensors"]["previews"], [True, True, False])
+        self.assertEqual(listing["chars/only.safetensors"]["preview"], True, "legacy flag = slot 1")
+        self.assertNotIn("chars/three_man2.safetensors", listing)
+        for bad in (4, 0, "4", "2x", None, 1.5):
+            with self.subTest(bad=bad), self.assertRaises(res.ResourceContractError) as ctx:
+                self.path("three", bad)
+            self.assertEqual(ctx.exception.code, "INVALID_REQUEST")
+
+    def test_m_duplicate_extensions_follow_fixed_precedence(self):
+        self.assertEqual(res.PREVIEW_EXTENSIONS, (".png", ".webp", ".jpg", ".jpeg"))
+        self.assertTrue(self.path("dupext", 1).endswith("dupext.preview.png"))
+        (self.root / "chars" / "dupext.preview.png").unlink()
+        self.assertTrue(self.path("dupext", 1).endswith("dupext.preview.webp"))
+
+    def test_k_slot_param_accepts_strings_and_defaults_to_one(self):
+        self.assertEqual(self.path("three", "3"), self.path("three", 3))
+        self.assertTrue(res.lora_preview_path("illustrious", "chars/three.safetensors", [str(self.root)],
+                                              environ=self.env).endswith("three.preview.jpg"))
+
+    def test_n_root_and_traversal_safety_unchanged(self):
+        outside = self.base / "outside"
+        outside.mkdir()
+        (outside / "evil.safetensors").write_bytes(b"x")
+        (outside / "evil_ani.png").write_bytes(PNG)
+        for bad in ("../outside/evil.safetensors", "/etc/passwd.safetensors", "chars/../../outside/evil.safetensors"):
+            for slot in (1, 2, 3):
+                with self.subTest(bad=bad, slot=slot), self.assertRaises(res.ResourceContractError) as ctx:
+                    res.resolve_lora_preview(str(self.root), bad, slot=slot)
+                self.assertEqual(ctx.exception.code, "RESOURCE_PATH_OUTSIDE_ROOT")
+        with self.assertRaises(res.ResourceContractError) as not_lora:
+            res.resolve_lora_preview(str(self.root), "chars/three_man.png", slot=3)
+        self.assertEqual(not_lora.exception.code, "RESOURCE_PREVIEW_UNSUPPORTED")
+        try:
+            os.symlink(outside / "evil_ani.png", self.root / "chars" / "only_ani.png")
+        except (OSError, NotImplementedError):
+            self.skipTest("symlinks unavailable")
+        with self.assertRaises(res.ResourceContractError) as link:
+            self.path("only", 2)
+        self.assertEqual(link.exception.code, "RESOURCE_PATH_OUTSIDE_ROOT")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

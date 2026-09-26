@@ -1155,7 +1155,7 @@ body.manga-embedded #generate-view { width: 100%; max-width: none; margin: 0; pa
     background: var(--manga-surface-inset); }
 /* Display-only: `order` lifts added cards above the rest while keeping catalog order inside
    each group; the DOM and the prompt's LoRA (generation) order are untouched. */
-#mg-lora-cards .mg-lora-card.is-selected { order: -1; }
+#mg-lora-cards.is-selected-first .mg-lora-card.is-selected { order: -1; }
 
 /* Wildcard source preview (Card MANGA-WILDCARD-AUTOCOMPLETE-PRODUCTION1): below the prompt, never over it. */
 .mg-wildcard-preview { display: flex; flex-direction: column; gap: 3px; padding: 5px 7px; border: 1px solid var(--manga-line-soft);
@@ -1181,3 +1181,25 @@ body.manga-embedded #generate-view { width: 100%; max-width: none; margin: 0; pa
 .mg-wildcard-preview-head .mg-wildcard-preview-expand + .mg-wildcard-preview-close { margin-left: 0; }
 .mg-lora-search { width: 100%; box-sizing: border-box; padding: 3px 6px; border: 1px solid var(--manga-line-soft); border-radius: 6px; background: var(--manga-surface); color: var(--manga-text); font: inherit; font-size: 11px; }
 .mg-lora-panel.is-searching .mg-lora-breadcrumb, .mg-lora-panel.is-searching .mg-lora-folders { display: none; }
+
+/* MANGA-LORA-GRID-UX2: global preview slot + Selected-first controls, image-click toggle, denser cards. */
+#mg-lora-body .mg-lora-view-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; font-size: 10px; color: var(--manga-muted); }
+.mg-lora-view-label { font-weight: 700; }
+.mg-lora-slot-group { display: inline-flex; border: 1px solid var(--manga-line); border-radius: 5px; overflow: hidden; }
+.mg-lora-slot { min-width: 22px; padding: 3px 7px; border: 0; border-left: 1px solid var(--manga-line); background: var(--manga-surface-raised);
+    color: var(--manga-text); font: inherit; font-size: 10px; font-weight: 700; cursor: pointer; }
+.mg-lora-slot:first-child { border-left: 0; }
+.mg-lora-slot.is-active { background: var(--manga-active-border); color: var(--manga-surface); }
+.mg-lora-selected-first { padding: 3px 8px; border: 1px solid var(--manga-line); border-radius: 5px; background: var(--manga-surface-raised);
+    color: var(--manga-text); font: inherit; font-size: 10px; font-weight: 700; cursor: pointer; }
+.mg-lora-selected-first[aria-pressed="true"] { border-color: var(--manga-active-border); }
+#mg-lora-cards { grid-template-columns: repeat(auto-fill, minmax(128px, 168px)); gap: 5px; }
+#mg-lora-cards .mg-lora-card, #mg-lora-cards .mg-lora-card.has-preview { gap: 3px; padding: 3px; }
+#mg-lora-cards .mg-lora-card-thumbbtn { display: block; width: 100%; padding: 0; border: 0; border-radius: 4px; background: transparent; cursor: pointer; }
+#mg-lora-cards .mg-lora-card-thumbbtn:disabled { cursor: not-allowed; }
+#mg-lora-cards .mg-lora-card-thumbbtn:focus-visible { outline: 2px solid var(--manga-active-border); outline-offset: 1px; }
+#mg-lora-cards .mg-lora-card-thumbbtn .mg-lora-card-thumb { width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: contain; }
+#mg-lora-cards .mg-lora-card-name { -webkit-line-clamp: 2; line-clamp: 2; height: calc(1.25em * 2); line-height: 1.25; font-size: 10.5px; text-overflow: ellipsis; }
+#mg-lora-cards .mg-lora-card-controls { gap: 3px; }
+#mg-lora-cards .mg-lora-card-controls .mg-lora-strength { flex: 0 0 52px; width: 52px; min-width: 0; padding: 1px 3px; height: 20px; box-sizing: border-box; font-size: 10.5px; }
+#mg-lora-cards .mg-lora-card-controls .mg-lora-card-action { flex: 1 1 auto; min-width: 0; padding: 1px 4px; height: 20px; box-sizing: border-box; font-size: 10px; line-height: 1; }
