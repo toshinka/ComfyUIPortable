@@ -59,7 +59,24 @@ SCENE_REFERENCE_REQUIRED_NODES = (
 SCENE_CONTROLNET_REQUIRED_NODES = (
     "ControlNetLoader", "ControlNetApplyAdvanced", "LoadImage",
 )
-CONTROLNET_DEFAULT_MODEL = r"CN-anytest_v4\CN-anytest4_illustrious2_A.safetensors"
+CONTROLNET_DEFAULT_BASENAME = "CN-anytest4_illustrious2_A.safetensors"
+
+
+def resolve_controlnet_model(basename: str, catalog_entries: list[str]) -> str | None:
+    """Resolve a logical ControlNet basename against the live catalog.
+
+    Returns the unique catalog entry whose basename matches, or None if
+    zero or more-than-one entries share the same basename (ambiguity is
+    fail-closed, never silently picks one).
+    """
+    import ntpath
+    matches = [
+        entry for entry in catalog_entries
+        if ntpath.basename(entry.replace("/", "\\")) == basename
+    ]
+    if len(matches) == 1:
+        return matches[0]
+    return None
 CONTROLNET_DEFAULT_STRENGTH = 0.35
 CONTROLNET_START_PERCENT = 0.0
 CONTROLNET_END_PERCENT = 1.0

@@ -14,7 +14,7 @@ from .basic_generation import (
     expand_wildcard_text,
 )
 from .scene_generation import (
-    CONTROLNET_DEFAULT_MODEL,
+    CONTROLNET_DEFAULT_BASENAME,
     CONTROLNET_DEFAULT_STRENGTH,
     CONTROLNET_END_PERCENT,
     CONTROLNET_START_PERCENT,
@@ -30,6 +30,7 @@ from .scene_generation import (
     SCENE_REFERENCE_REQUIRED_NODES,
     SCENE_REQUIRED_NODES,
     compile_scene,
+    resolve_controlnet_model,
 )
 try:
     from .isolated_scene_plan import (
@@ -147,13 +148,13 @@ def _live_catalog():
                 reference_assets.append(f"tegaki_manga_references/{name}")
 
     controlnet_model = None
-    for candidate in (
-        r"CN-anytest_v4\CN-anytest4_illustrious2_A.safetensors",
-        "CN-anytest4_illustrious2_A.safetensors",
-    ):
-        if model_available("controlnet", candidate):
-            controlnet_model = candidate
-            break
+    try:
+        controlnet_catalog = folder_paths.get_filename_list("controlnet")
+    except Exception:
+        controlnet_catalog = []
+    resolved = resolve_controlnet_model(CONTROLNET_DEFAULT_BASENAME, controlnet_catalog)
+    if resolved is not None and model_available("controlnet", resolved):
+        controlnet_model = resolved
 
     guide_assets = []
     guide_root = os.path.join(folder_paths.get_input_directory(), "tegaki_manga_guides")

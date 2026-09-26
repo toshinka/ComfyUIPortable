@@ -10,10 +10,8 @@ easy_reforge_models:
         E:/EasyReforge/Model/Lora
     vae: |
         E:/Data/Models/VAE
-        E:/EasyReforge/Model/VAE
     controlnet: |
         E:/Data/Models/ControlNet
-        E:/EasyReforge/Model/ControlNet
     embeddings: |
         E:/Data/Models/Embeddings
     upscale_models: |

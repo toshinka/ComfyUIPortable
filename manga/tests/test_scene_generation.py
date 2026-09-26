@@ -23,7 +23,7 @@ from custom_nodes_custom.tegaki_manga_nodes.authoring_contract import (
 from custom_nodes_custom.tegaki_manga_nodes.minimum_hand_scene_editor import create_default_m1_document
 from custom_nodes_custom.tegaki_manga_nodes.page_plan_adapter import TegakiMangaPagePlanFromJSON
 from custom_nodes_custom.tegaki_manga_nodes.scene_generation import (
-    CONTROLNET_DEFAULT_MODEL,
+    CONTROLNET_DEFAULT_BASENAME,
     CONTROLNET_DEFAULT_STRENGTH,
     CONTROLNET_END_PERCENT,
     CONTROLNET_START_PERCENT,
@@ -39,6 +39,7 @@ from custom_nodes_custom.tegaki_manga_nodes.scene_generation import (
     SCENE_CONTROLNET_REQUIRED_NODES,
     SCENE_REFERENCE_REQUIRED_NODES,
     compile_scene,
+    resolve_controlnet_model,
     _reference_character,
 )
 
@@ -116,7 +117,7 @@ class SceneGenerationTests(unittest.TestCase):
             __import__("json").dumps(self.catalog, sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest()
 
-    def add_controlnet_capability(self, asset="tegaki_manga_guides/rough_guide_test.png", model=CONTROLNET_DEFAULT_MODEL, strength=CONTROLNET_DEFAULT_STRENGTH):
+    def add_controlnet_capability(self, asset="tegaki_manga_guides/rough_guide_test.png", model=CONTROLNET_DEFAULT_BASENAME, strength=CONTROLNET_DEFAULT_STRENGTH):
         self.catalog["scene_generation"]["controlnet"] = {
             "available": True,
             "required_nodes": list(SCENE_CONTROLNET_REQUIRED_NODES),
@@ -665,7 +666,7 @@ class SceneGenerationTests(unittest.TestCase):
         self.assertEqual(graph[cnet_apply_id]["inputs"]["image"], [cnet_img_id, 0])
 
         # Card §11.C: Model and control image connected to final generation graph through correct nodes
-        self.assertEqual(graph[cnet_loader_id]["inputs"]["control_net_name"], CONTROLNET_DEFAULT_MODEL)
+        self.assertEqual(graph[cnet_loader_id]["inputs"]["control_net_name"], CONTROLNET_DEFAULT_BASENAME)
         self.assertEqual(graph[cnet_apply_id]["inputs"]["control_net"], [cnet_loader_id, 0])
         self.assertEqual(graph[cnet_apply_id]["inputs"]["vae"], ["1", 2])
         self.assertEqual(graph[cnet_apply_id]["inputs"]["strength"], 0.30)
