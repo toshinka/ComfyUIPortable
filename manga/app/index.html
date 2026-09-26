@@ -117,7 +117,16 @@
                 min-width: 70px;
             }
         }
-    </style>
+            /* LoRA diagnostics (Card MANGA-LORA-PORTABLE-COMPAT-DIAGNOSTICS1) */
+        .mg-lora-diagnostics { display: flex; flex-direction: column; gap: 3px; padding: 5px 7px; border: 1px solid var(--manga-line-soft); border-radius: 7px; background: var(--manga-surface-inset); font-size: 11px; }
+        .mg-lora-diag-head { color: var(--manga-muted); font-size: 10px; font-weight: 700; letter-spacing: .03em; }
+        .mg-lora-diag-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; max-height: 120px; overflow-y: auto; }
+        .mg-lora-diag-row { display: flex; flex-wrap: wrap; gap: 0 6px; color: var(--manga-text); }
+        .mg-lora-diag-row.is-problem .mg-lora-diag-main { color: var(--manga-danger-text); font-weight: 700; }
+        .mg-lora-diag-detail { color: var(--manga-muted); font-size: 10px; overflow-wrap: anywhere; }
+        .mg-lora-chain summary { cursor: pointer; color: var(--manga-muted); font-size: 10px; }
+        .mg-lora-chain-list { margin: 2px 0 0 18px; padding: 0; color: var(--manga-text); font-size: 10px; overflow-wrap: anywhere; }
+</style>
 </head>
 <body>
     <nav id="manga-mode-nav" aria-label="Manga workspace modes">
@@ -209,6 +218,8 @@
                                 <textarea id="scene-composer-prompt" rows="4" placeholder="Describe the page or scene…" aria-describedby="mg-global-prompt-syntax-help"></textarea>
                                 <p id="mg-global-prompt-syntax-help" class="mg-hint">Wildcards: __name__ · choices: {a|b}</p>
                             </div>
+                            <!-- LoRA status: backend-resolved diagnostics for the active prompt (Card MANGA-LORA-PORTABLE-COMPAT-DIAGNOSTICS1) -->
+                            <div id="mg-lora-diagnostics" class="mg-lora-diagnostics" aria-live="polite" hidden></div>
                             <!-- LoRA (Card MANGA-ILLUSTRIOUS-LORA-PRODUCTION1): directly below the Positive Prompt it edits -->
                             <section id="mg-lora-panel" class="scene-composer-field mg-lora-panel mg-prompt-assist" aria-label="Prompt Assist">
                                 <div class="scene-composer-field-head">
@@ -710,10 +721,10 @@
         import { SessionState } from "./src/state/session_state.js";
         import { renderMangaCanvas, hitTestCanvas } from "./src/view/canvas_renderer.js";
         import { MangaBackendClient, BACKEND_STATUS } from "./src/adapters/manga_backend_client.js";
-        import { mountGenerationView, buildSceneGenerationSettings } from "./src/view/generation_view.js";
+        import { mountGenerationView, buildSceneGenerationSettings, setLoraValidationProvider } from "./src/view/generation_view.js";
         import { createTagAutocomplete } from "./src/view/tag_autocomplete.js";
         import { setupNumericWheelControl } from "./src/view/numeric_wheel.js";
-        import { mountLoraPanel } from "./src/view/lora_panel.js";
+        import { mountLoraPanel, createLoraValidator, mountLoraDiagnostics, loraBlockReasonFromDiagnostics, sourcesHaveLora } from "./src/view/lora_panel.js";
         import { mountPromptAssist } from "./src/view/prompt_assist.js";
 
         const store = new AuthoringStore(createNewAuthoringSessionDocument());
@@ -787,6 +798,40 @@
             wildcardFolders: document.getElementById("mg-wildcard-folders"),
             wildcardEntries: document.getElementById("mg-wildcard-entries"),
         });
+        // LoRA diagnostics + Generate gate share ONE backend validator (generation resolver).
+        const loraValidator = createLoraValidator();
+        const loraDiagnosticSources = () => {
+            const page = store.getPage();
+            if (!page) return null;
+            const pagePositive = { source: "page_positive", text: page.style_prompt || "" };
+            const pageNegative = { source: "page_negative", text: page.style_negative_prompt || "" };
+            if (composerPromptTarget === "global") return [pagePositive, pageNegative];
+            if (composerPromptTarget.startsWith("cast_")) return null;
+            const scene = (page.scenes || []).find(item => item.scene_id === composerPromptTarget);
+            if (!scene) return null;
+            // Isolated-Scene application order: page positive, Scene positive (hoisted), page negative.
+            return [pagePositive, { source: "scene_positive", text: scene.prompt || "" }, pageNegative,
+                { source: "scene_negative", text: scene.negative_prompt || "", lora_allowed: false }];
+        };
+        const loraDiagnostics = mountLoraDiagnostics({
+            container: document.getElementById("mg-lora-diagnostics"),
+            validator: loraValidator,
+            getSources: loraDiagnosticSources,
+            onResult: () => updateAll(),
+        });
+        setLoraValidationProvider((positive, negative) => {
+            const sources = [{ source: "page_positive", text: positive }, { source: "page_negative", text: negative }];
+            if (!sourcesHaveLora(sources)) return "";
+            const result = loraValidator.peek(sources);
+            if (!result) {
+                loraValidator.request(sources).then(() => updateAll());
+                return "Checking LoRAs…";
+            }
+            return loraBlockReasonFromDiagnostics(result);
+        });
+        // Deferred so the existing oninput owners have written the store first.
+        composerPrompt.addEventListener("input", () => setTimeout(() => loraDiagnostics.refresh(), 0));
+        composerNegative.addEventListener("input", () => setTimeout(() => loraDiagnostics.refresh(), 0));
         const negativeToggle = document.getElementById("mg-negative-toggle");
         negativeToggle.addEventListener("click", () => {
             // Collapsing only hides the field; the Negative Prompt value is never touched.
@@ -1425,6 +1470,7 @@
             loraPanel.sync(isCast
                 ? { enabled: false, reason: "LoRA applies to Global or Scene prompts, not CAST identity prompts." }
                 : { enabled: true });
+            loraDiagnostics.refresh();
 
             // Render Contextual Character Reference Hub in Create
             if (sceneComposerCastRefWrap) {

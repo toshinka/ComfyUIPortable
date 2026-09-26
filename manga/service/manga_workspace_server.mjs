@@ -271,6 +271,87 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
+    // Trusted-root LoRA index (autocomplete) and batch prompt LoRA diagnostics
+    // (Card MANGA-LORA-PORTABLE-COMPAT-DIAGNOSTICS1). The backend resolver is authoritative.
+    if (pathname === "/api/manga/resources/lora/index" || pathname === "/api/manga/resources/lora/validate") {
+        const isValidate = pathname.endsWith("/validate");
+        const expectedMethod = isValidate ? "POST" : "GET";
+        const reply = (status, error_code, error) => {
+            res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
+            res.end(JSON.stringify({ ok: false, error_code, error }));
+        };
+        if (req.method !== expectedMethod) {
+            reply(405, "METHOD_NOT_ALLOWED", `Use ${expectedMethod}`);
+            return;
+        }
+        if ((requestOrigin && !allowedLocalOrigins.has(requestOrigin)) ||
+            (req.headers["sec-fetch-site"] && !["same-origin", "none"].includes(req.headers["sec-fetch-site"]))) {
+            reply(403, "ORIGIN_FORBIDDEN", "Request origin is not the Manga workspace");
+            return;
+        }
+        const engine = url.searchParams.get("engine") || "illustrious";
+        if (!["illustrious"].includes(engine)) {
+            reply(404, "RESOURCE_UNSUPPORTED", `No LoRA resource is registered for engine '${engine}'`);
+            return;
+        }
+        let body;
+        if (isValidate) {
+            if ((req.headers["content-type"] || "").split(";")[0].trim().toLowerCase() !== "application/json") {
+                reply(415, "INVALID_CONTENT_TYPE", "Content-Type must be application/json");
+                return;
+            }
+            const chunks = [];
+            let received = 0;
+            for await (const chunk of req) {
+                received += chunk.length;
+                if (received > 256 * 1024) {
+                    req.resume();
+                    reply(413, "REQUEST_TOO_LARGE", "Request exceeds 256 KiB");
+                    return;
+                }
+                chunks.push(chunk);
+            }
+            body = Buffer.concat(chunks);
+        }
+        try {
+            const backendRes = await fetch(
+                `${parsedBackend.origin}/tegaki/manga/resources/${engine}/lora/${isValidate ? "validate" : "index"}`,
+                { method: expectedMethod, body, headers: isValidate ? { "Content-Type": "application/json" } : undefined,
+                  signal: AbortSignal.timeout(20000) }
+            );
+            const chunks = [];
+            let size = 0;
+            for await (const chunk of backendRes.body) {
+                size += chunk.length;
+                if (size > 16 * 1024 * 1024) {
+                    reply(502, "BACKEND_INVALID_RESPONSE", "Backend response exceeds 16 MiB");
+                    return;
+                }
+                chunks.push(chunk);
+            }
+            let data;
+            try {
+                data = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+            } catch {
+                reply(502, "BACKEND_INVALID_RESPONSE", "Backend returned invalid JSON");
+                return;
+            }
+            const valid = data && typeof data === "object" && !Array.isArray(data) && (backendRes.ok
+                ? data.ok === true && Array.isArray(data.entries) && (!isValidate || Array.isArray(data.chain))
+                : data.ok === false && typeof data.error === "string");
+            if (!valid) {
+                reply(502, "BACKEND_INVALID_RESPONSE", "Backend response is missing required fields");
+                return;
+            }
+            res.writeHead(backendRes.status, { "Content-Type": "application/json; charset=utf-8" });
+            res.end(JSON.stringify(data));
+        } catch (err) {
+            reply(502, err.name === "TimeoutError" ? "BACKEND_TIMEOUT" : "BACKEND_UNAVAILABLE",
+                err.name === "TimeoutError" ? "Backend LoRA request timed out" : "Backend LoRA request failed");
+        }
+        return;
+    }
+
     // LoRA preview sidecar bytes (Card MANGA-PROMPT-ASSIST-PRODUCTION1).
     // Addressed by canonical LoRA ID only; the backend derives <stem>.preview.png inside the engine root.
     if (pathname === "/api/manga/resources/lora/preview") {

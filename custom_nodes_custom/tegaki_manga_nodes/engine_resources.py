@@ -24,9 +24,11 @@ from typing import Callable, Iterable, Optional
 
 
 class ResourceContractError(ValueError):
-    def __init__(self, code: str, message: str):
+    def __init__(self, code: str, message: str, candidates: Optional[list] = None):
         super().__init__(message)
         self.code = code
+        # Canonical relative IDs only (never physical paths), e.g. for LORA_AMBIGUOUS.
+        self.candidates = list(candidates or [])
 
 
 # engine -> resource -> ComfyUI folder name, root override env var, default root.
@@ -49,8 +51,8 @@ MAX_ID_LENGTH = 1024
 _FORBIDDEN_ID_CHARS = set('<>:"|?*')
 
 
-def _fail(code: str, message: str) -> None:
-    raise ResourceContractError(code, message)
+def _fail(code: str, message: str, candidates: Optional[list] = None) -> None:
+    raise ResourceContractError(code, message, candidates)
 
 
 def _norm(path: str) -> str:
@@ -138,8 +140,13 @@ def list_lora_directory(
     *,
     extensions: Iterable[str] = DEFAULT_LORA_EXTENSIONS,
     comfy_full_path: Optional[Callable[[str], Optional[str]]] = None,
+    token_for: Optional[Callable[[str], Optional[str]]] = None,
 ) -> dict:
     """List ONE folder: immediate child folders and LoRA files. Never recurses.
+
+    ``token_for`` (TrustedLoraIndex.token_for) supplies the name the UI should
+    write into ``<lora:NAME:W>``: the portable basename when unique in the
+    trusted root, otherwise the shortest unambiguous canonical form.
 
     ``comfy_full_path`` (ComfyUI ``folder_paths.get_full_path('loras', id)``) lets
     the listing mark an entry unavailable when ComfyUI would load a *different*
@@ -193,8 +200,13 @@ def list_lora_directory(
             except Exception:
                 resolved = None
             available = bool(resolved) and _norm(resolved) == _norm(entry.path)
-        loras.append({"id": child_id, "name": stem, "filename": name, "folder": folder, "available": available,
-                      "preview": stem.casefold() in preview_names})
+        entry = {"id": child_id, "name": stem, "filename": name, "folder": folder, "available": available,
+                 "preview": stem.casefold() in preview_names}
+        if token_for is not None:
+            token = token_for(child_id)
+            if token:
+                entry["token"] = token
+        loras.append(entry)
     folders.sort(key=lambda item: (item["name"].casefold(), item["name"]))
     loras.sort(key=lambda item: (item["name"].casefold(), item["id"]))
     parent = None if folder == "" else ("/".join(folder.split("/")[:-1]))
@@ -251,10 +263,12 @@ def browse_lora_payload(
     extensions: Iterable[str] = DEFAULT_LORA_EXTENSIONS,
     comfy_full_path: Optional[Callable[[str], Optional[str]]] = None,
     environ: Optional[dict] = None,
+    token_for: Optional[Callable[[str], Optional[str]]] = None,
 ) -> dict:
     """HTTP-facing payload. The physical root is never returned to the client."""
     root = resolve_resource_root(engine, "lora", registered_roots, environ=environ)
-    listing = list_lora_directory(root, relative_dir, extensions=extensions, comfy_full_path=comfy_full_path)
+    listing = list_lora_directory(root, relative_dir, extensions=extensions, comfy_full_path=comfy_full_path,
+                                  token_for=token_for)
     listing.update({"engine": engine, "resource": "lora"})
     return listing
 
@@ -317,6 +331,119 @@ def resolve_engine_lora(
         if not os.path.isdir(root_dir):
             _fail("RESOURCE_ROOT_UNAVAILABLE", f"{engine}/lora root is unavailable")
 
+    index = build_trusted_lora_index(catalog_loras, root_dir, comfy_full_path=comfy_full_path)
+    return index.resolve(name).comfy_id
+
+
+# ---------------------------------------------------------------------------
+# Trusted LoRA index: portable aliases + canonical IDs, root-bounded
+# ---------------------------------------------------------------------------
+
+PORTABLE_ALIAS_EXTENSION = ".safetensors"
+
+
+class TrustedLoraEntry:
+    __slots__ = ("comfy_id", "id", "id_noext", "basename", "stem", "ext", "folder")
+
+    def __init__(self, comfy_id: str, canonical: str):
+        path = PurePosixPath(canonical)
+        self.comfy_id = comfy_id              # exact ComfyUI LoraLoader choice
+        self.id = canonical                   # canonical relative identity ('/'-separated)
+        self.id_noext = path.with_suffix("").as_posix()
+        self.basename = path.name
+        self.stem = path.stem
+        self.ext = path.suffix.lower()
+        self.folder = path.parent.as_posix() if path.parent.as_posix() != "." else ""
+
+
+class TrustedLoraIndex:
+    """All LoRAs of ONE trusted engine root, with O(1) lookups per resolution stage.
+
+    Resolution order for a directive name (first stage with any match decides):
+      1. exact canonical relative path            characters/A/foo.safetensors
+      2. canonical relative path, extension omitted characters/A/foo
+      3. exact basename (names without '/')        foo.safetensors
+      4. stem with '.safetensors' omitted          foo
+    One candidate resolves; several fail LORA_AMBIGUOUS (with candidates);
+    none fails LORA_UNAVAILABLE.  Entries outside the root are never candidates.
+    """
+
+    def __init__(self, entries: list, outside_ids: list):
+        self.entries = entries
+        self.outside_ids = outside_ids
+        self._stages = ({}, {}, {}, {})
+        for entry in entries:
+            keys = (entry.id, entry.id_noext, entry.basename,
+                    entry.stem if entry.ext == PORTABLE_ALIAS_EXTENSION else None)
+            for stage, key in zip(self._stages, keys):
+                if key is not None:
+                    stage.setdefault(key, []).append(entry)
+        self._by_id = {entry.id: entry for entry in entries}
+
+    def candidates(self, name: str) -> list:
+        canonical = normalize_relative_id(name)
+        has_parent = "/" in canonical
+        for number, stage in enumerate(self._stages, start=1):
+            if has_parent and number > 2:
+                break
+            found = stage.get(canonical, [])
+            if found:
+                return sorted(found, key=lambda entry: entry.id)
+        return []
+
+    def resolve(self, name: str) -> TrustedLoraEntry:
+        if not isinstance(name, str) or not name or name.strip() != name:
+            _fail("INVALID_CATALOG_ID", "Catalog ID must be a non-empty relative name")
+        found = self.candidates(name)
+        if len(found) == 1:
+            return found[0]
+        if found:
+            ids = [entry.id for entry in found]
+            _fail("LORA_AMBIGUOUS", f"LoRA '{name}' matches multiple LoRAs: {', '.join(ids)}", ids)
+        _fail("LORA_UNAVAILABLE", f"LoRA '{name}' is unavailable")
+
+    def outside_matches(self, name: str) -> list:
+        """Relative IDs in OTHER registered roots matching the same stages (diagnostics only)."""
+        try:
+            canonical = normalize_relative_id(name)
+        except ResourceContractError:
+            return []
+        other = TrustedLoraIndex([TrustedLoraEntry(i, normalize_relative_id(i)) for i in self.outside_ids], [])
+        return [entry.id for entry in other.candidates(canonical)]
+
+    def token_for(self, canonical_id: str) -> Optional[str]:
+        """Shortest name that resolves back to exactly this LoRA (portable alias first)."""
+        entry = self._by_id.get(canonical_id)
+        if entry is None:
+            return None
+        forms = []
+        if entry.ext == PORTABLE_ALIAS_EXTENSION:
+            forms.append(entry.stem)
+        forms += [entry.basename, entry.id_noext, entry.id]
+        for form in forms:
+            found = self.candidates(form)
+            if len(found) == 1 and found[0] is entry:
+                return form
+        return entry.id
+
+
+_INDEX_CACHE: dict = {}
+
+
+def build_trusted_lora_index(
+    catalog_loras: Iterable,
+    root: str,
+    *,
+    comfy_full_path: Optional[Callable[[str], Optional[str]]] = None,
+) -> TrustedLoraIndex:
+    """Split ComfyUI's merged LoRA catalog into in-root entries and outside IDs.
+
+    Membership uses the same rule as before: the file ComfyUI would load (or,
+    without ComfyUI, the file at root/ID) must lie inside the trusted root.
+    Cached per (root, catalog names) so batch validation and browsing do not
+    re-stat the collection on every request.
+    """
+    root_dir = os.path.realpath(os.path.abspath(root))
     if comfy_full_path is None:
         try:
             import folder_paths
@@ -325,15 +452,23 @@ def resolve_engine_lora(
                 comfy_full_path = lambda item: folder_paths.get_full_path("loras", item)
         except Exception:
             pass
-
-    in_root_candidates: list[str] = []
+    names = []
     for entry in catalog_loras or ():
-        if not isinstance(entry, dict) or not entry.get("available"):
+        if isinstance(entry, dict):
+            if entry.get("available") and isinstance(entry.get("id"), str) and entry["id"]:
+                names.append(entry["id"])
+        elif isinstance(entry, str) and entry:
+            names.append(entry)
+    key = (os.path.normcase(root_dir), comfy_full_path is not None, hash(tuple(names)), len(names))
+    cached = _INDEX_CACHE.get("index")
+    if cached is not None and cached[0] == key:
+        return cached[1]
+    inside, outside = [], []
+    for entry_id in names:
+        try:
+            canonical = normalize_relative_id(entry_id)
+        except ResourceContractError:
             continue
-        entry_id = entry.get("id")
-        if not isinstance(entry_id, str) or not entry_id:
-            continue
-
         resolved_path = None
         if comfy_full_path is not None:
             try:
@@ -342,43 +477,151 @@ def resolve_engine_lora(
                 resolved_path = None
         else:
             try:
-                entry_canonical = normalize_relative_id(entry_id)
-                candidate_path = resolve_within_root(root_dir, entry_canonical)
+                candidate_path = resolve_within_root(root_dir, canonical)
                 if os.path.isfile(candidate_path):
                     resolved_path = candidate_path
             except ResourceContractError:
                 resolved_path = None
-
         if resolved_path and os.path.isfile(resolved_path) and is_path_within_root(root_dir, resolved_path):
-            in_root_candidates.append(entry_id)
+            inside.append(TrustedLoraEntry(entry_id, canonical))
+        else:
+            outside.append(entry_id)
+    index = TrustedLoraIndex(inside, outside)
+    _INDEX_CACHE["index"] = (key, index)
+    return index
 
-    if name in in_root_candidates:
-        return name
 
-    exact_matches = [
-        item for item in in_root_candidates
-        if item.replace("\\", "/") == canonical
-    ]
-    if len(exact_matches) == 1:
-        return exact_matches[0]
-    if len(exact_matches) > 1:
-        _fail("LORA_AMBIGUOUS", f"LoRA '{name}' matches multiple catalog IDs")
+# ---------------------------------------------------------------------------
+# Prompt LoRA diagnostics (batch, pre-generation; same resolver as generation)
+# ---------------------------------------------------------------------------
 
-    stem = PurePosixPath(canonical).stem
-    filename = PurePosixPath(canonical).name
-    has_parent = "/" in canonical
-    matches = []
-    for item in in_root_candidates:
-        item_norm = item.replace("\\", "/")
-        item_path = PurePosixPath(item_norm)
-        if has_parent:
-            if item_path.with_suffix("").as_posix() == canonical or item_path.as_posix() == canonical:
-                matches.append(item)
-        elif item_path.name == filename or (not PurePosixPath(canonical).suffix and item_path.stem == stem):
-            matches.append(item)
+DIAGNOSTIC_STATUSES = (
+    "RESOLVED", "LORA_UNAVAILABLE", "LORA_AMBIGUOUS", "INVALID_LORA_SYNTAX",
+    "INVALID_STRENGTH", "OUTSIDE_RESOURCE_ROOT", "LORA_DUPLICATE", "SCENE_LORA_UNSUPPORTED",
+)
+_LORA_FRAGMENT_START = "<lora"
 
-    if len(matches) == 1:
-        return matches[0]
-    if matches:
-        _fail("LORA_AMBIGUOUS", f"LoRA '{name}' matches multiple catalog IDs")
-    _fail("LORA_UNAVAILABLE", f"LoRA '{name}' is unavailable")
+
+def diagnose_lora_sources(sources: list, index: TrustedLoraIndex) -> dict:
+    """Report EVERY LoRA directive in prompt order, never stopping at the first problem.
+
+    ``sources`` is ordered as the compiler applies LoRAs, e.g. for an isolated
+    Scene: page positive, scene positive, page negative.  A source whose
+    ``lora_allowed`` is False (Scene negative) reports SCENE_LORA_UNSUPPORTED.
+    ``compiler_code`` is the code the generation compiler raises for the same
+    directive, so the UI reason and the compile failure never disagree.
+    """
+    try:
+        from .basic_generation import LORA_RE, TAG_RE
+    except (ImportError, ValueError):
+        from basic_generation import LORA_RE, TAG_RE
+    import math
+
+    entries, chain, seen = [], [], set()
+    has_wildcards = False
+    for source in sources:
+        label = str(source.get("source", ""))
+        text = source.get("text", "")
+        if not isinstance(text, str):
+            continue
+        has_wildcards = has_wildcards or ("__" in text)
+        allowed = source.get("lora_allowed", True) is not False
+        found = []
+        covered = []
+        for match in TAG_RE.finditer(text):
+            covered.append((match.start(), match.end()))
+            if match.group(0).lower().startswith(_LORA_FRAGMENT_START):
+                found.append((match.start(), match.group(0), True))
+        # Unclosed '<lora...' fragments are reported, not silently dropped.
+        position = text.lower().find(_LORA_FRAGMENT_START)
+        while position != -1:
+            if not any(start <= position < end for start, end in covered):
+                stop = len(text)
+                for delimiter in (",", "\n"):
+                    at = text.find(delimiter, position)
+                    if at != -1:
+                        stop = min(stop, at)
+                found.append((position, text[position:stop].strip(), False))
+            position = text.lower().find(_LORA_FRAGMENT_START, position + 1)
+        for position, raw, closed in sorted(found):
+            item = {"source": label, "raw": raw, "position": position}
+            tag = LORA_RE.fullmatch(raw) if closed else None
+            if tag is None:
+                item.update(status="INVALID_LORA_SYNTAX", compiler_code="UNSUPPORTED_PROMPT_TAG",
+                            message="Expected <lora:NAME:STRENGTH>")
+                entries.append(item)
+                continue
+            name, strength_text = tag.group(1), tag.group(2)
+            item.update(name=name, strength_text=strength_text)
+            strength = float(strength_text)
+            if name != name.strip():
+                item.update(status="INVALID_LORA_SYNTAX", compiler_code="INVALID_LORA",
+                            message="LoRA name must not have surrounding whitespace")
+            elif not math.isfinite(strength) or not -4 <= strength <= 4:
+                item.update(status="INVALID_STRENGTH", compiler_code="INVALID_LORA",
+                            message="LoRA strength must be within -4..4")
+            elif not allowed:
+                item.update(status="SCENE_LORA_UNSUPPORTED", compiler_code="SCENE_LORA_UNSUPPORTED",
+                            message="LoRA is not supported in the Scene negative prompt")
+            else:
+                item["strength"] = strength
+                try:
+                    resolved = index.resolve(name)
+                except ResourceContractError as exc:
+                    if exc.code in ("INVALID_CATALOG_ID", "RESOURCE_PATH_OUTSIDE_ROOT", "INVALID_RESOURCE_ID"):
+                        item.update(status="OUTSIDE_RESOURCE_ROOT", compiler_code="INVALID_CATALOG_ID",
+                                    message="LoRA name must be relative to the trusted LoRA root")
+                    elif exc.code == "LORA_UNAVAILABLE" and index.outside_matches(name):
+                        item.update(status="OUTSIDE_RESOURCE_ROOT", compiler_code="LORA_UNAVAILABLE",
+                                    message="Only found outside the trusted LoRA root",
+                                    candidates=index.outside_matches(name))
+                    else:
+                        item.update(status=exc.code, compiler_code=exc.code, message=str(exc))
+                        if exc.candidates:
+                            item["candidates"] = exc.candidates
+                else:
+                    item["resolved_id"] = resolved.id
+                    if resolved.id in seen:
+                        item.update(status="LORA_DUPLICATE", compiler_code="LORA_DUPLICATE",
+                                    message=f"{resolved.id} appears more than once")
+                    else:
+                        seen.add(resolved.id)
+                        item["status"] = "RESOLVED"
+                        chain.append({"order": len(chain) + 1, "source": label, "name": name,
+                                      "resolved_id": resolved.id, "strength": strength})
+            entries.append(item)
+    problems = [item for item in entries if item["status"] != "RESOLVED"]
+    return {"ok": True, "entries": entries, "chain": chain, "problems": len(problems),
+            "has_wildcards": has_wildcards}
+
+
+MAX_VALIDATE_SOURCES = 8
+MAX_VALIDATE_TEXT = 16000
+
+
+def validate_lora_request(engine: str, body: object, index: TrustedLoraIndex) -> dict:
+    """HTTP-facing batch validation: one request for every prompt source."""
+    resource_spec(engine, "lora")
+    sources = body.get("sources") if isinstance(body, dict) else None
+    if not isinstance(sources, list) or not sources or len(sources) > MAX_VALIDATE_SOURCES:
+        _fail("INVALID_REQUEST", f"sources must be a list of 1..{MAX_VALIDATE_SOURCES} prompt sources")
+    clean = []
+    for source in sources:
+        if (not isinstance(source, dict) or not isinstance(source.get("source"), str)
+                or len(source["source"]) > 32 or not isinstance(source.get("text"), str)
+                or len(source["text"]) > MAX_VALIDATE_TEXT
+                or not isinstance(source.get("lora_allowed", True), bool)):
+            _fail("INVALID_REQUEST", "Each source needs a short 'source' label and a 'text' prompt")
+        clean.append({"source": source["source"], "text": source["text"],
+                      "lora_allowed": source.get("lora_allowed", True)})
+    result = diagnose_lora_sources(clean, index)
+    result.update({"engine": engine, "resource": "lora"})
+    return result
+
+
+def lora_index_payload(engine: str, index: TrustedLoraIndex) -> dict:
+    """Trusted-root LoRAs for autocomplete: canonical ID, insertable token, folder. No paths."""
+    resource_spec(engine, "lora")
+    entries = [{"id": entry.id, "token": index.token_for(entry.id), "folder": entry.folder}
+               for entry in sorted(index.entries, key=lambda item: item.id)]
+    return {"ok": True, "engine": engine, "resource": "lora", "entries": entries}

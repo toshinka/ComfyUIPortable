@@ -55,9 +55,9 @@ except (ImportError, ValueError):
     from page_pixel_compositor import compose_page_pixels, PagePixelCompositorError
 
 try:
-    from .engine_resources import ResourceContractError, browse_lora_payload, lora_preview_path
+    from .engine_resources import ResourceContractError, browse_lora_payload, lora_preview_path, build_trusted_lora_index, lora_index_payload, resolve_resource_root, validate_lora_request
 except (ImportError, ValueError):
-    from engine_resources import ResourceContractError, browse_lora_payload, lora_preview_path
+    from engine_resources import ResourceContractError, browse_lora_payload, lora_preview_path, build_trusted_lora_index, lora_index_payload, resolve_resource_root, validate_lora_request
 
 MAX_REQUEST_BYTES = 256 * 1024
 
@@ -408,6 +408,7 @@ async def api_manga_page_composite(request: web.Request) -> web.Response:
 
 
 RESOURCE_ERROR_STATUS = {
+    "INVALID_REQUEST": 400,
     "RESOURCE_PREVIEW_NOT_FOUND": 404,
     "RESOURCE_PREVIEW_UNSUPPORTED": 404,
     "RESOURCE_UNSUPPORTED": 404,
@@ -418,17 +419,59 @@ RESOURCE_ERROR_STATUS = {
 }
 
 
+def _comfy_trusted_lora_index(engine: str):
+    """The same trusted-root index the generation resolver uses (cached per catalog)."""
+    import folder_paths
+
+    root = resolve_resource_root(engine, "lora", folder_paths.get_folder_paths("loras"))
+    return build_trusted_lora_index(
+        folder_paths.get_filename_list("loras"), root,
+        comfy_full_path=lambda item: folder_paths.get_full_path("loras", item),
+    )
+
+
 def _comfy_lora_browse(engine: str, relative_dir: str) -> dict:
     """Lazy one-folder LoRA listing for an engine, via ComfyUI's registered folders."""
     import folder_paths
 
+    index = _comfy_trusted_lora_index(engine)
     return browse_lora_payload(
         engine,
         relative_dir,
         folder_paths.get_folder_paths("loras"),
         extensions=folder_paths.supported_pt_extensions,
         comfy_full_path=lambda item: folder_paths.get_full_path("loras", item),
+        token_for=index.token_for,
     )
+
+
+async def api_manga_resource_lora_index(request: web.Request) -> web.Response:
+    engine = request.match_info.get("engine", "")
+    try:
+        return web.json_response(lora_index_payload(engine, _comfy_trusted_lora_index(engine)))
+    except ResourceContractError as exc:
+        return _error(exc.code, str(exc), RESOURCE_ERROR_STATUS.get(exc.code, 400))
+    except Exception:
+        logging.exception("[MangaBasicGenerationAPI] LoRA index failed")
+        return _error("RESOURCE_INDEX_FAILED", "LoRA index failed", 500)
+
+
+async def api_manga_resource_lora_validate(request: web.Request) -> web.Response:
+    """Batch pre-generation LoRA diagnostics through the generation resolver."""
+    engine = request.match_info.get("engine", "")
+    if request.content_length is not None and request.content_length > MAX_REQUEST_BYTES:
+        return _error("REQUEST_TOO_LARGE", "Request exceeds 256 KiB", 413)
+    try:
+        body = json.loads((await request.read()).decode("utf-8"))
+    except (UnicodeDecodeError, ValueError):
+        return _error("INVALID_JSON", "Request must be JSON", 400)
+    try:
+        return web.json_response(validate_lora_request(engine, body, _comfy_trusted_lora_index(engine)))
+    except ResourceContractError as exc:
+        return _error(exc.code, str(exc), RESOURCE_ERROR_STATUS.get(exc.code, 400))
+    except Exception:
+        logging.exception("[MangaBasicGenerationAPI] LoRA validation failed")
+        return _error("RESOURCE_VALIDATE_FAILED", "LoRA validation failed", 500)
 
 
 async def api_manga_resource_lora_browse(request: web.Request) -> web.Response:
@@ -472,6 +515,8 @@ async def api_manga_resource_lora_preview(request: web.Request) -> web.Response:
 if routes is not None:
     routes.get("/tegaki/manga/resources/{engine}/lora")(api_manga_resource_lora_browse)
     routes.get("/tegaki/manga/resources/{engine}/lora/preview")(api_manga_resource_lora_preview)
+    routes.get("/tegaki/manga/resources/{engine}/lora/index")(api_manga_resource_lora_index)
+    routes.post("/tegaki/manga/resources/{engine}/lora/validate")(api_manga_resource_lora_validate)
     routes.get("/tegaki/manga/generation/capabilities")(api_manga_basic_capabilities)
     routes.post("/tegaki/manga/generation/compile-basic")(api_manga_basic_compile)
     routes.post("/tegaki/manga/generation/compile-scene")(api_manga_scene_compile)

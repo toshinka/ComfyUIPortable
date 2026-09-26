@@ -29,7 +29,17 @@ function numericBound(catalog, field) {
         max: Math.min(Number(product?.max), Number(backend?.max)) };
 }
 
+// Backend-authoritative LoRA gate (Card MANGA-LORA-PORTABLE-COMPAT-DIAGNOSTICS1).
+// When the workspace installs a provider, it answers from the trusted-root
+// resolver used by generation; the browser-side merged-catalog guess below is
+// only the fallback for surfaces without that provider.
+let loraValidationProvider = null;
+export function setLoraValidationProvider(provider) {
+    loraValidationProvider = typeof provider === "function" ? provider : null;
+}
+
 function loraBlockReason(catalog, positive, negative) {
+    if (loraValidationProvider) return loraValidationProvider(String(positive || ""), String(negative || ""));
     if (!Array.isArray(catalog?.loras)) return "";
     const seen = new Set();
     for (const raw of [positive, negative]) {

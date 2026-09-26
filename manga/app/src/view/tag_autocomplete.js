@@ -14,7 +14,8 @@
  */
 
 const DEFAULT_CATALOG_URL = new URL("../../data/danbooru_tags.json", import.meta.url).href;
-const DEFAULT_LORA_URL = "/api/manga/generation/capabilities";
+// Trusted-root LoRA index (same resolver as generation); never the merged ComfyUI catalog.
+const DEFAULT_LORA_URL = "/api/manga/resources/lora/index?engine=illustrious";
 const DEFAULT_WILDCARD_URL = "/api/manga/wildcards";
 const DEFAULT_MIN_QUERY_LENGTH = 2;
 const DEFAULT_LIMIT = 10;
@@ -73,6 +74,20 @@ export function loadTagCatalog(url = DEFAULT_CATALOG_URL, fetchImpl = globalThis
 
 /** Normalize a list of LoRA names or catalog entries into a sorted, deduplicated string array. */
 export function normalizeLoraList(raw) {
+    // Already-normalized trusted entries (idempotent re-normalization in the controller).
+    if (Array.isArray(raw) && raw.some(item => item && typeof item === "object" && typeof item.tag === "string")) {
+        return raw.filter(item => item && typeof item === "object" && typeof item.tag === "string" && typeof item.id === "string");
+    }
+    // Trusted index payload: {entries: [{id, token, folder}]} -> insertable tokens with folder context.
+    if (Array.isArray(raw?.entries)) {
+        return raw.entries
+            .filter(item => item && typeof item.id === "string" && item.id && typeof item.token === "string" && item.token)
+            .map(item => ({
+                tag: item.token, id: item.id, folder: typeof item.folder === "string" ? item.folder : "",
+                label: item.id.split("/").pop().replace(/\.[^.]+$/, ""),
+            }))
+            .sort((a, b) => a.label.localeCompare(b.label) || a.id.localeCompare(b.id));
+    }
     const list = Array.isArray(raw) ? raw : (Array.isArray(raw?.loras) ? raw.loras : []);
     const result = new Set();
     for (const item of list) {
@@ -390,27 +405,35 @@ export function queryLoraCatalog(loras, query, { limit = DEFAULT_LIMIT } = {}) {
     if (!Array.isArray(loras) || loras.length === 0) return [];
     const normalizedQuery = String(query ?? "").trim().toLowerCase();
     const matches = [];
-    for (const name of loras) {
-        const lower = name.toLowerCase();
+    for (const item of loras) {
+        const isEntry = item && typeof item === "object";
+        const name = isEntry ? item.label : item;
+        const lower = String(name).toLowerCase();
+        const idLower = isEntry ? item.id.toLowerCase() : lower;
         let matchRank = -1;
         if (!normalizedQuery) {
             matchRank = 0;
         } else if (lower.startsWith(normalizedQuery)) {
             matchRank = 0;
-        } else if (boundaryPrefix(name, normalizedQuery)) {
+        } else if (boundaryPrefix(name, normalizedQuery) || boundaryPrefix(idLower, normalizedQuery)) {
             matchRank = 1;
-        } else if (lower.includes(normalizedQuery)) {
+        } else if (lower.includes(normalizedQuery) || idLower.includes(normalizedQuery)) {
             matchRank = 2;
         }
         if (matchRank === -1) continue;
-        matches.push({
+        matches.push(isEntry ? {
+            // Inserts the backend-chosen token: portable alias if unique, else canonical form.
+            tag: item.tag, label: item.label, id: item.id,
+            category: item.folder || "lora", type: "lora", matchRank
+        } : {
             tag: name,
             category: "lora",
             type: "lora",
             matchRank
         });
     }
-    matches.sort((a, b) => a.matchRank - b.matchRank || String(a.tag).localeCompare(String(b.tag)));
+    matches.sort((a, b) => a.matchRank - b.matchRank || String(a.label ?? a.tag).localeCompare(String(b.label ?? b.tag)) ||
+        String(a.id ?? "").localeCompare(String(b.id ?? "")));
     return matches.slice(0, Math.max(1, limit));
 }
 
@@ -786,7 +809,8 @@ export class TagAutocompleteController {
             option.dataset.tagIndex = String(index);
             const label = document.createElement("span");
             label.className = "tag-autocomplete-label";
-            label.textContent = entry.tag;
+            label.textContent = entry.label ?? entry.tag;
+            if (entry.id) option.title = `${entry.id} → inserts ${entry.tag}`;
             option.appendChild(label);
             if (entry.category) {
                 const badge = document.createElement("span");

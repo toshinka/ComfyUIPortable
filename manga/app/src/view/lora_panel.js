@@ -49,30 +49,44 @@ export function findLoraTokens(text) {
     return tokens;
 }
 
-export function addLoraToken(text, id, strength = LORA_STRENGTH_BOUNDS.default) {
+// A LoRA can appear under several names that resolve to it: its portable alias
+// ("foo"), canonical ID without extension, or full canonical ID.  Editing helpers
+// accept one name or a list of such names; resolution itself stays backend-side.
+const nameSet = ids => new Set(Array.isArray(ids) ? ids.filter(Boolean) : [ids]);
+
+export function loraNamesFor(lora) {
+    const id = String(lora?.id || "");
+    return [...new Set([lora?.token, id, id.replace(/\.[^./]+$/, "")].filter(Boolean))];
+}
+
+export function addLoraToken(text, id, strength = LORA_STRENGTH_BOUNDS.default, aliases = [id]) {
     const source = typeof text === "string" ? text : "";
     const token = formatLoraToken(id, strength);
-    if (findLoraTokens(source).some(item => item.id === id)) return source;
+    const names = nameSet([id, ...aliases]);
+    if (findLoraTokens(source).some(item => names.has(item.id))) return source;
     let separator = ", ";
     if (source === "" || /\s$/.test(source)) separator = "";
     else if (/,$/.test(source)) separator = " ";
     return source + separator + token;
 }
 
-export function updateLoraTokenStrength(text, id, strength) {
+export function updateLoraTokenStrength(text, ids, strength) {
     const source = typeof text === "string" ? text : "";
-    const token = formatLoraToken(id, strength);
+    const names = nameSet(ids);
+    formatLoraStrength(strength);
     let result = source;
-    for (const item of findLoraTokens(source).filter(entry => entry.id === id).reverse()) {
-        result = result.slice(0, item.start) + token + result.slice(item.end);
+    for (const item of findLoraTokens(source).filter(entry => names.has(entry.id)).reverse()) {
+        // Keep the name the Owner (or asset) wrote; only the strength changes.
+        result = result.slice(0, item.start) + formatLoraToken(item.id, strength) + result.slice(item.end);
     }
     return result;
 }
 
-export function removeLoraToken(text, id) {
+export function removeLoraToken(text, ids) {
     const source = typeof text === "string" ? text : "";
+    const names = nameSet(ids);
     let result = source;
-    for (const item of findLoraTokens(source).filter(entry => entry.id === id).reverse()) {
+    for (const item of findLoraTokens(source).filter(entry => names.has(entry.id)).reverse()) {
         let start = item.start;
         let end = item.end;
         if (result.slice(start - 2, start) === ", ") start -= 2;
@@ -166,16 +180,18 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
     function renderCards() {
         renderCount();
         cards.replaceChildren();
-        const selected = new Map(findLoraTokens(prompt.value).map(item => [item.id, item]));
+        const tokens = findLoraTokens(prompt.value);
         const items = (listing && listing.loras) || [];
         for (const lora of items) {
-            const token = selected.get(lora.id);
+            const names = loraNamesFor(lora);
+            const token = tokens.find(item => names.includes(item.id));
             const card = el("div", "mg-lora-card");
             card.setAttribute("role", "listitem");
             card.dataset.loraId = lora.id;
             card.classList.toggle("is-selected", Boolean(token));
             card.classList.toggle("is-unavailable", lora.available === false);
-            card.title = lora.id;
+            card.title = lora.token && lora.token !== lora.id ? `${lora.id} (inserts ${lora.token})` : lora.id;
+            card.dataset.loraToken = lora.token || lora.id;
             let thumb = null;
             if (lora.preview === true) {
                 // Sidecar <stem>.preview.png; loaded lazily and only for the opened folder.
@@ -207,7 +223,7 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
                     return;
                 }
                 draftStrength.set(lora.id, formatLoraStrength(value));
-                if (selected.has(lora.id)) applyPrompt(updateLoraTokenStrength(prompt.value, lora.id, value));
+                if (token) applyPrompt(updateLoraTokenStrength(prompt.value, names, value));
                 else renderCards();
             };
             const action = el("button", "mg-lora-card-action", token ? "Remove" : "Add");
@@ -215,11 +231,12 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
             action.setAttribute("aria-pressed", token ? "true" : "false");
             action.disabled = !enabled || (!token && lora.available === false);
             action.onclick = () => {
-                if (selected.has(lora.id)) {
-                    applyPrompt(removeLoraToken(prompt.value, lora.id));
+                if (token) {
+                    applyPrompt(removeLoraToken(prompt.value, names));
                 } else {
+                    // Portable alias when unique in the trusted root, else the canonical form (backend-chosen).
                     const value = Number(strength.value);
-                    applyPrompt(addLoraToken(prompt.value, lora.id, Number.isFinite(value) ? value : 1));
+                    applyPrompt(addLoraToken(prompt.value, lora.token || lora.id, Number.isFinite(value) ? value : 1, names));
                 }
             };
             if (thumb) card.append(thumb);
@@ -282,4 +299,137 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
             renderCards();
         },
     };
+}
+
+
+// ---------------------------------------------------------------------------
+// LoRA diagnostics (Card MANGA-LORA-PORTABLE-COMPAT-DIAGNOSTICS1).
+// The browser only gathers prompt text; the backend resolver (the one used for
+// generation) decides resolved / missing / ambiguous / out-of-root.
+// ---------------------------------------------------------------------------
+
+const STATUS_LABEL = {
+    RESOLVED: "OK", LORA_UNAVAILABLE: "NOT FOUND", LORA_AMBIGUOUS: "AMBIGUOUS",
+    INVALID_LORA_SYNTAX: "INVALID SYNTAX", INVALID_STRENGTH: "INVALID STRENGTH",
+    OUTSIDE_RESOURCE_ROOT: "OUTSIDE LORA ROOT", LORA_DUPLICATE: "DUPLICATE",
+    SCENE_LORA_UNSUPPORTED: "NOT ALLOWED HERE",
+};
+const SOURCE_LABEL = { page_positive: "Global", scene_positive: "Scene", page_negative: "Global negative", scene_negative: "Scene negative" };
+
+export function sourcesHaveLora(sources) {
+    return Array.isArray(sources) && sources.some(source => /<lora/i.test(String(source?.text || "")));
+}
+
+export function createLoraValidator({ engine = "illustrious", fetchImpl = (...args) => globalThis.fetch(...args) } = {}) {
+    const cache = new Map();
+    const inflight = new Map();
+    const keyOf = sources => JSON.stringify(sources);
+    return {
+        peek(sources) {
+            return cache.get(keyOf(sources)) ?? null;
+        },
+        request(sources) {
+            const key = keyOf(sources);
+            if (cache.has(key)) return Promise.resolve(cache.get(key));
+            if (inflight.has(key)) return inflight.get(key);
+            const promise = Promise.resolve().then(() => fetchImpl(
+                `/api/manga/resources/lora/validate?engine=${encodeURIComponent(engine)}`,
+                { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sources }) },
+            )).then(async res => {
+                const data = await res.json().catch(() => null);
+                return data && typeof data === "object" ? data : { ok: false, error: `LoRA validation failed (${res.status})` };
+            }).catch(err => ({ ok: false, error: err?.message || "LoRA validation unavailable" })).then(result => {
+                cache.set(key, result);
+                if (cache.size > 24) cache.delete(cache.keys().next().value);
+                inflight.delete(key);
+                return result;
+            });
+            inflight.set(key, promise);
+            return promise;
+        },
+    };
+}
+
+/** Generate-gate reason from a backend validation result ("" when nothing blocks). */
+export function loraBlockReasonFromDiagnostics(result) {
+    if (!result || result.ok !== true || !Array.isArray(result.entries)) return "";
+    const problems = result.entries.filter(entry => entry.status !== "RESOLVED");
+    if (!problems.length) return "";
+    const first = problems[0];
+    const more = problems.length > 1 ? ` (+${problems.length - 1} more)` : "";
+    return `Generate disabled — unresolved LoRA: ${first.name || first.raw} ${STATUS_LABEL[first.status] || first.status}${more}. See LoRA status under the prompt.`;
+}
+
+export function mountLoraDiagnostics({ container, validator, getSources, onResult = () => {} }) {
+    let timer = null;
+    let currentKey = "";
+
+    const render = (result) => {
+        container.replaceChildren();
+        if (!result) {
+            container.appendChild(el("div", "mg-hint", "LoRA status: checking…"));
+            return;
+        }
+        if (result.ok !== true) {
+            container.appendChild(el("div", "mg-hint mg-lora-status-error", `LoRA status unavailable: ${result.error || "validation failed"}`));
+            return;
+        }
+        const head = el("div", "mg-lora-diag-head", `LoRA status${result.problems ? ` · ${result.problems} problem${result.problems > 1 ? "s" : ""}` : " · all resolved"}`);
+        const list = el("ul", "mg-lora-diag-list");
+        for (const entry of result.entries) {
+            const ok = entry.status === "RESOLVED";
+            const row = el("li", `mg-lora-diag-row ${ok ? "is-ok" : "is-problem"}`);
+            row.dataset.status = entry.status;
+            row.dataset.loraName = entry.name || entry.raw;
+            const main = el("span", "mg-lora-diag-main",
+                `${ok ? "✓" : "✕"} ${entry.name || entry.raw}${entry.strength_text ? ` ${entry.strength_text}` : ""}${ok ? "" : ` — ${STATUS_LABEL[entry.status] || entry.status}`}`);
+            row.appendChild(main);
+            let detail = "";
+            if (ok) detail = `→ ${entry.resolved_id}`;
+            else if (entry.candidates?.length) detail = `${entry.status === "LORA_AMBIGUOUS" ? "matches" : "found outside the LoRA root as"}: ${entry.candidates.join(", ")}`;
+            else if (entry.message) detail = entry.message;
+            if (detail) row.appendChild(el("span", "mg-lora-diag-detail", detail));
+            row.title = `${SOURCE_LABEL[entry.source] || entry.source}: ${entry.raw}${ok ? `\nresolved to ${entry.resolved_id}` : `\n${entry.status}${entry.message ? ` — ${entry.message}` : ""}`}`;
+            list.appendChild(row);
+        }
+        const chain = el("details", "mg-lora-chain");
+        chain.appendChild(el("summary", "", `Resolved LoRA chain (${result.chain.length}) — generation order`));
+        const ol = el("ol", "mg-lora-chain-list");
+        for (const link of result.chain) {
+            const li = el("li", "", `${link.name} → ${link.resolved_id} · ${Number(link.strength).toFixed(2)}`);
+            li.dataset.resolvedId = link.resolved_id;
+            li.title = SOURCE_LABEL[link.source] || link.source;
+            ol.appendChild(li);
+        }
+        chain.appendChild(ol);
+        container.append(head, list, chain);
+        if (result.has_wildcards) {
+            container.appendChild(el("div", "mg-hint", "Wildcards present: LoRAs they emit are resolved the same way at generation time."));
+        }
+    };
+
+    const refresh = () => {
+        const sources = getSources();
+        if (!sources || !sourcesHaveLora(sources)) {
+            currentKey = "";
+            container.hidden = true;
+            container.replaceChildren();
+            return;
+        }
+        container.hidden = false;
+        const key = JSON.stringify(sources);
+        currentKey = key;
+        const cached = validator.peek(sources);
+        render(cached);
+        if (cached) return;
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            validator.request(sources).then(result => {
+                if (currentKey === key) render(result);
+                onResult(result);
+            });
+        }, 250);
+    };
+
+    return { refresh };
 }

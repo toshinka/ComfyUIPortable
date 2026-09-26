@@ -1,5 +1,6 @@
 // MANGA Prompt Assist UI acceptance (offline): LoRA panel (MANGA-ILLUSTRIOUS-LORA-PRODUCTION1)
-// plus autocomplete stability, Wildcard browser and LoRA previews (MANGA-PROMPT-ASSIST-PRODUCTION1).
+// plus autocomplete stability, Wildcard browser and LoRA previews (MANGA-PROMPT-ASSIST-PRODUCTION1),
+// plus portable aliases, diagnostics and trusted-root autocomplete (MANGA-LORA-PORTABLE-COMPAT-DIAGNOSTICS1).
 //
 // Real manga_workspace_server.mjs + real app + real Danbooru catalog, backed by a loopback stub
 // that serves ONLY the LoRA browse/preview routes through the production engine_resources
@@ -22,6 +23,8 @@ const WORKSPACE_PORT = BACKEND_PORT + 600;
 const SCRATCH = process.env.TEGAKI_VERIFY_SCRATCH || path.resolve("scratch");
 const A = "characters/series_a/alice_v3.safetensors";
 const B = "characters/series_b/alice_v3.safetensors";
+const A_TOKEN = "characters/series_a/alice_v3"; // duplicate basename -> canonical token
+const B_TOKEN = "characters/series_b/alice_v3";
 // 1x1 PNG
 const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
 
@@ -46,6 +49,13 @@ function makeTree() {
     return root;
 }
 
+function makeOutsideRoot() {
+    // Another ComfyUI-registered LoRA root (EasyReforge-like): never a candidate.
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "tegaki-lora-outside-"));
+    fs.writeFileSync(path.join(dir, "outside_only.safetensors"), "NOT-A-REAL-MODEL");
+    return dir;
+}
+
 function makeWildcards() {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "tegaki-wildcards-"));
     fs.writeFileSync(path.join(dir, "simple.txt"), "red\nblue\n");
@@ -58,13 +68,20 @@ const STUB = `
 import json, sys, types
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit, parse_qs
-repo, root, port = sys.argv[1], sys.argv[2], int(sys.argv[3])
+repo, root, port, outside = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4]
 sys.path.insert(0, repo)
 pkg = types.ModuleType("custom_nodes_custom.tegaki_manga_nodes")
 pkg.__path__ = [repo + "/custom_nodes_custom/tegaki_manga_nodes"]
 sys.modules["custom_nodes_custom.tegaki_manga_nodes"] = pkg
-from custom_nodes_custom.tegaki_manga_nodes.engine_resources import browse_lora_payload, lora_preview_path, ResourceContractError
+import os
+from custom_nodes_custom.tegaki_manga_nodes.engine_resources import (browse_lora_payload, lora_preview_path,
+    ResourceContractError, build_trusted_lora_index, lora_index_payload, validate_lora_request)
 ENV = {"TEGAKI_ILLUSTRIOUS_LORA_ROOT": root}
+def walk(base):
+    return [os.path.relpath(os.path.join(d, f), base).replace(os.sep, "/") for d, _, fs in os.walk(base)
+            for f in fs if f.endswith(".safetensors")]
+# Stand-in for ComfyUI's merged get_filename_list("loras"): trusted root + another registered root.
+INDEX = build_trusted_lora_index(sorted(walk(root) + walk(outside)), root)
 class H(BaseHTTPRequestHandler):
     def log_message(self, *a): pass
     def send(self, status, payload, ctype="application/json"):
@@ -78,7 +95,13 @@ class H(BaseHTTPRequestHandler):
         parts = url.path.strip("/").split("/")
         try:
             if self.command == "GET" and parts[:3] == ["tegaki", "manga", "resources"] and parts[4:] == ["lora"]:
-                return self.send(200, browse_lora_payload(parts[3], query.get("dir", [""])[0], [root], environ=ENV))
+                return self.send(200, browse_lora_payload(parts[3], query.get("dir", [""])[0], [root], environ=ENV,
+                                                          token_for=INDEX.token_for))
+            if self.command == "GET" and parts[:3] == ["tegaki", "manga", "resources"] and parts[4:] == ["lora", "index"]:
+                return self.send(200, lora_index_payload(parts[3], INDEX))
+            if self.command == "POST" and parts[:3] == ["tegaki", "manga", "resources"] and parts[4:] == ["lora", "validate"]:
+                body = json.loads(self.rfile.read(int(self.headers.get("Content-Length") or 0)) or b"{}")
+                return self.send(200, validate_lora_request(parts[3], body, INDEX))
             if self.command == "GET" and parts[:3] == ["tegaki", "manga", "resources"] and parts[4:] == ["lora", "preview"]:
                 path = lora_preview_path(parts[3], query.get("id", [""])[0], [root], environ=ENV)
                 return self.send(200, open(path, "rb").read(), "image/png")
@@ -108,8 +131,9 @@ async function main() {
     fs.mkdirSync(SCRATCH, { recursive: true });
     const root = makeTree();
     const wildcards = makeWildcards();
+    const outside = makeOutsideRoot();
     const backendLog = [];
-    const backend = spawn(PYTHON, ["-c", STUB, REPO, root, String(BACKEND_PORT)], { stdio: ["ignore", "pipe", "inherit"] });
+    const backend = spawn(PYTHON, ["-c", STUB, REPO, root, String(BACKEND_PORT), outside], { stdio: ["ignore", "pipe", "inherit"] });
     backend.stdout.on("data", chunk => String(chunk).split("\n").filter(Boolean).forEach(l => backendLog.push(JSON.parse(l))));
     const workspace = spawn(process.execPath, [path.join(REPO, "manga", "service", "manga_workspace_server.mjs")], {
         env: { ...process.env, MANGA_WORKSPACE_PORT: String(WORKSPACE_PORT), MANGA_BACKEND_URL: `http://127.0.0.1:${BACKEND_PORT}`,
@@ -131,7 +155,8 @@ async function main() {
             null, { timeout: 30000 });
         const prompt = page.locator("#scene-composer-prompt");
         const popup = page.locator("#scene-composer-prompt-wrap .tag-autocomplete-popup");
-        const loraCalls = () => backendLog.filter(e => e.path.startsWith("/tegaki/manga/resources/")).length;
+        // Folder browse requests only (the autocomplete's trusted-index load is not a browse).
+        const loraCalls = () => backendLog.filter(e => /^\/tegaki\/manga\/resources\/[^/]+\/lora$/.test(e.path)).length;
         const labels = () => popup.locator(".tag-autocomplete-label").allTextContents();
         const doc = () => page.evaluate(() => {
             const pageDoc = window.__tegakiManga.store.getPage();
@@ -277,6 +302,12 @@ async function main() {
             assert.deepEqual(root0.folders, ["bulk", "characters", "styles"]);
             assert.deepEqual(root0.cards, ["root_level.safetensors"]);
         });
+        await page.locator('.mg-lora-card[data-lora-id="root_level.safetensors"] .mg-lora-card-action').click();
+        const uniqueInsert = await prompt.inputValue();
+        await page.locator('.mg-lora-card[data-lora-id="root_level.safetensors"] .mg-lora-card-action').click();
+        const uniqueRemoved = await prompt.inputValue();
+        check("unique LoRA card inserts the portable basename token", () =>
+            assert.equal(uniqueInsert, "masterpiece, clean lines, <lora:root_level:1.0>"));
         const browseBody = await page.evaluate(async () => (await fetch("/api/manga/resources/lora?dir=characters/series_a")).text());
         check("physical LoRA root is not exposed to the browser", () => assert.ok(!browseBody.includes(root), browseBody));
 
@@ -309,9 +340,11 @@ async function main() {
         await cardA.locator(".mg-lora-strength").dispatchEvent("change");
         const afterStrength = await prompt.inputValue();
         check("LoRA selection still updates Positive Prompt", () =>
-            assert.equal(afterAdd, `masterpiece, clean lines, <lora:${A}:1.0>`));
+            assert.equal(afterAdd, `masterpiece, clean lines, <lora:${A_TOKEN}:1.0>`));
+        check("ambiguous-basename LoRA card inserts the canonical token", () =>
+            assert.equal(afterAdd, `masterpiece, clean lines, <lora:${A_TOKEN}:1.0>`));
         check("Strength still updates the token", () =>
-            assert.equal(afterStrength, `masterpiece, clean lines, <lora:${A}:0.7>`));
+            assert.equal(afterStrength, `masterpiece, clean lines, <lora:${A_TOKEN}:0.7>`));
 
         await page.click('#mg-lora-breadcrumb [data-folder="characters"]');
         await page.click('#mg-lora-folders [data-folder="characters/series_b"]');
@@ -323,14 +356,81 @@ async function main() {
         const count = await page.locator("#mg-lora-count").textContent();
         check("No-preview LoRA falls back to the text card and stays usable", () => {
             assert.equal(bThumbs, 0);
-            assert.equal(both, `masterpiece, clean lines, <lora:${A}:0.7>, <lora:${B}:1.0>`);
+            assert.equal(both, `masterpiece, clean lines, <lora:${A_TOKEN}:0.7>, <lora:${B_TOKEN}:1.0>`);
             assert.equal(count, "(2)");
         });
+        await page.click('#mg-lora-breadcrumb [data-folder="characters"]');
+        await page.click('#mg-lora-folders [data-folder="characters/series_a"]');
+        await page.locator(`.mg-lora-card[data-lora-id="${A}"] .mg-lora-card-action`).click();
+        const afterRemove = await prompt.inputValue();
+        check("Remove deletes only that LoRA token; unrelated text preserved", () => {
+            assert.equal(uniqueRemoved, "masterpiece, clean lines");
+            assert.equal(afterRemove, `masterpiece, clean lines, <lora:${B_TOKEN}:1.0>`);
+        });
+        await page.waitForSelector('#mg-lora-diagnostics .mg-lora-diag-row[data-status="RESOLVED"]');
+        const chainOk = await page.locator("#mg-lora-diagnostics .mg-lora-chain-list li").evaluateAll(els => els.map(e => e.dataset.resolvedId));
+        check("valid LoRA appears resolved with its canonical ID in the chain", () => assert.deepEqual(chainOk, [B]));
+
+        // ---------------- Diagnostics: mixed legacy prompt ----------------
+        await prompt.fill("masterpiece, <lora:root_level:0.2>, <lora:missing_style:0.3>, <lora:alice_v3:0.5>, <lora:outside_only:1>, <lora:bulk/style_01:9>");
+        await prompt.press("Escape");
+        await page.waitForSelector('#mg-lora-diagnostics .mg-lora-diag-row[data-status="LORA_AMBIGUOUS"]');
+        const diag = await page.evaluate(() => ({
+            rows: [...document.querySelectorAll("#mg-lora-diagnostics .mg-lora-diag-row")].map(r => [r.dataset.loraName, r.dataset.status, r.textContent]),
+            chain: [...document.querySelectorAll("#mg-lora-diagnostics .mg-lora-chain-list li")].map(li => li.dataset.resolvedId),
+            text: document.getElementById("mg-lora-diagnostics").textContent,
+        }));
+        check("diagnostics report each LoRA individually (valid/missing/ambiguous/outside/strength)", () =>
+            assert.deepEqual(diag.rows.map(([n, st]) => [n, st]), [["root_level", "RESOLVED"], ["missing_style", "LORA_UNAVAILABLE"],
+                ["alice_v3", "LORA_AMBIGUOUS"], ["outside_only", "OUTSIDE_RESOURCE_ROOT"], ["bulk/style_01", "INVALID_STRENGTH"]]));
+        check("missing LoRA shows a clear problem", () => assert.match(diag.rows[1][2], /missing_style.*NOT FOUND/));
+        check("ambiguous LoRA shows candidate relative IDs", () => {
+            assert.match(diag.rows[2][2], /AMBIGUOUS/);
+            assert.ok(diag.rows[2][2].includes(A) && diag.rows[2][2].includes(B), diag.rows[2][2]);
+        });
+        check("valid LoRA resolves to its canonical relative ID; no physical path shown", () => {
+            assert.ok(diag.rows[0][2].includes("→ root_level.safetensors"), diag.rows[0][2]);
+            assert.deepEqual(diag.chain, ["root_level.safetensors"]);
+            assert.ok(!diag.text.includes(root) && !diag.text.includes(outside));
+        });
+        const gate = await page.evaluate(async () => {
+            const mod = await import("/src/view/generation_view.js");
+            const state = { catalog: { checkpoints: [{ id: "ck", available: true }], samplers: ["euler"], schedulers: ["normal"],
+                product_bounds: { steps: { min: 1, max: 100 }, cfg: { min: 0, max: 30 }, width: { min: 256, max: 2048 },
+                    height: { min: 256, max: 2048 }, max_pixels: 2097152 },
+                backend_bounds: { steps: { min: 1, max: 100 }, cfg: { min: 0, max: 30 }, width: { min: 256, max: 2048 },
+                    height: { min: 256, max: 2048 } }, revision: "r" },
+                draft: { checkpoint_id: "ck", sampler_id: "euler", scheduler_id: "normal", steps: "20", cfg: "7",
+                    width: "1024", height: "1024", seed_requested: "1" } };
+            try {
+                await mod.compileGlobalGeneration(state, window.__tegakiManga.store, { compile: async () => ({}) });
+                return "compiled";
+            } catch (err) { return err.message; }
+        });
+        check("Generate-disabled LoRA reason is discoverable (backend diagnostics)", () =>
+            assert.equal(gate, "Generate disabled — unresolved LoRA: missing_style NOT FOUND (+3 more). See LoRA status under the prompt."));
+
+        // ---------------- Autocomplete: trusted root only ----------------
+        await prompt.fill("1girl, <lora:outside_on");
+        await page.waitForTimeout(400);
+        const outsideLabels = await popup.isVisible() ? await labels() : [];
+        await prompt.fill("1girl, <lora:alice");
+        await popup.waitFor({ state: "visible", timeout: 5000 });
+        const aliceOptions = await popup.locator("[role=option]").evaluateAll(els => els.map(e => e.textContent));
+        await prompt.press("Enter");
+        const aliceInsert = await prompt.inputValue();
+        check("autocomplete does not suggest out-of-root-only LoRAs", () => assert.deepEqual(outsideLabels, []));
+        check("autocomplete shows folder context for duplicate basenames and inserts canonical token", () => {
+            assert.deepEqual(aliceOptions, ["alice_v3characters/series_a", "alice_v3characters/series_b"]);
+            assert.equal(aliceInsert, `1girl, <lora:${A_TOKEN}:1>`);
+        });
+        await prompt.fill("masterpiece");
+        await prompt.press("Escape"); // tag suggestion popup would cover the Prompt Assist toggle
         await page.screenshot({ path: path.join(SCRATCH, "prompt_assist_lora_preview.png"), fullPage: false });
 
         const previewRequests = backendLog.filter(e => e.path.endsWith("/lora/preview")).map(e => decodeURIComponent(e.query));
         check("previews are requested only for the opened folder", () =>
-            assert.deepEqual(previewRequests, [`id=${A}`]));
+            assert.deepEqual([...new Set(previewRequests)], [`id=${A}`]));
         const traversal = await page.evaluate(async () => Promise.all([
             "../x.safetensors", "characters/series_a/alice_v3.preview.png", "characters/readme.txt", "C:/Windows/x.safetensors",
         ].map(async id => {
@@ -362,6 +462,7 @@ async function main() {
         backend.kill();
         fs.rmSync(root, { recursive: true, force: true });
         fs.rmSync(wildcards, { recursive: true, force: true });
+        fs.rmSync(outside, { recursive: true, force: true });
     }
     const failed = results.filter(([, s]) => s !== "PASS").length;
     console.log(`\n${results.length - failed}/${results.length} UI acceptance checks passed`);
