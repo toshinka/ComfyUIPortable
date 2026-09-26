@@ -96,6 +96,35 @@ export function removeLoraToken(text, ids) {
     return result;
 }
 
+/**
+ * Bulk strength (Card MANGA-LORA-UX-PRODUCTION1): set ONE strength on every valid
+ * LoRA directive already in the given prompt text.  Names (portable alias or
+ * canonical ID), order and all other text are kept byte-for-byte; directives the
+ * token contract rejects (bad name spacing, out-of-range strength) and malformed
+ * `<lora...>` text are left untouched for diagnostics to report.
+ */
+export function applyBulkLoraStrength(text, strength) {
+    const source = typeof text === "string" ? text : "";
+    formatLoraStrength(strength);
+    let result = source;
+    let count = 0;
+    for (const item of findLoraTokens(source).reverse()) {
+        if (item.strength < LORA_STRENGTH_BOUNDS.min || item.strength > LORA_STRENGTH_BOUNDS.max) continue;
+        let token;
+        try { token = formatLoraToken(item.id, strength); } catch { continue; }
+        result = result.slice(0, item.start) + token + result.slice(item.end);
+        count += 1;
+    }
+    return { value: result, count };
+}
+
+export function countBulkEditableLoras(text) {
+    return findLoraTokens(text).filter(item => {
+        if (item.strength < LORA_STRENGTH_BOUNDS.min || item.strength > LORA_STRENGTH_BOUNDS.max) return false;
+        try { formatLoraToken(item.id, 1); return true; } catch { return false; }
+    }).length;
+}
+
 export async function fetchLoraFolder(dir, { engine = "illustrious", fetchImpl = globalThis.fetch } = {}) {
     const url = `/api/manga/resources/lora?engine=${encodeURIComponent(engine)}&dir=${encodeURIComponent(dir || "")}`;
     const res = await fetchImpl(url, { headers: { Accept: "application/json" } });
@@ -121,7 +150,8 @@ function el(tag, className, text) {
     return node;
 }
 
-export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folders, cards, count, prompt, fetchFolder = fetchLoraFolder }) {
+export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folders, cards, count, prompt,
+    bulkInput = null, bulkApply = null, bulkStatus = null, fetchFolder = fetchLoraFolder }) {
     const cache = new Map();
     const draftStrength = new Map();
     let currentFolder = "";
@@ -145,7 +175,30 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
     const renderCount = () => {
         const n = findLoraTokens(prompt.value).length;
         count.textContent = n ? `(${n})` : "";
+        if (bulkApply) {
+            const editable = countBulkEditableLoras(prompt.value);
+            bulkApply.disabled = !enabled || editable === 0;
+            bulkApply.title = editable ? `Set this strength on the ${editable} LoRA(s) in the active prompt`
+                : "No LoRAs added to the active prompt";
+        }
     };
+
+    if (bulkApply && bulkInput) {
+        bulkApply.addEventListener("click", () => {
+            const value = Number(bulkInput.value);
+            if (bulkInput.value.trim() === "" || !Number.isFinite(value) ||
+                value < LORA_STRENGTH_BOUNDS.min || value > LORA_STRENGTH_BOUNDS.max) {
+                if (bulkStatus) bulkStatus.textContent = "Strength must be between -4 and 4.";
+                return;
+            }
+            const { value: next, count: changed } = applyBulkLoraStrength(prompt.value, value);
+            const text = formatLoraStrength(value);
+            bulkInput.value = text;
+            if (bulkStatus) bulkStatus.textContent = changed ? `Applied ${text} to ${changed} LoRA${changed > 1 ? "s" : ""}` : "No LoRAs to update";
+            if (changed) applyPrompt(next);
+        });
+        bulkInput.addEventListener("input", () => { if (bulkStatus) bulkStatus.textContent = ""; });
+    }
 
     const renderBreadcrumb = () => {
         breadcrumb.replaceChildren();
@@ -192,7 +245,9 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
             card.classList.toggle("is-unavailable", lora.available === false);
             card.title = lora.token && lora.token !== lora.id ? `${lora.id} (inserts ${lora.token})` : lora.id;
             card.dataset.loraToken = lora.token || lora.id;
-            let thumb = null;
+            // Fixed-size image slot: preview when a sidecar exists, otherwise a subdued placeholder.
+            const placeholder = () => el("div", "mg-lora-card-thumb mg-lora-card-noimg", "NO PREVIEW");
+            let thumb;
             if (lora.preview === true) {
                 // Sidecar <stem>.preview.png; loaded lazily and only for the opened folder.
                 card.classList.add("has-preview");
@@ -203,10 +258,16 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
                 thumb.src = loraPreviewUrl(lora.id);
                 thumb.onerror = () => {
                     card.classList.remove("has-preview");
-                    thumb.remove();
+                    thumb.replaceWith(placeholder());
                 };
+            } else {
+                thumb = placeholder();
             }
             const name = el("span", "mg-lora-card-name", lora.name);
+            name.title = lora.id;
+            // Duplicate basenames insert a canonical token; show the folder so they are distinguishable.
+            const context = lora.token && lora.token !== lora.name && lora.folder
+                ? el("span", "mg-lora-card-folder", lora.folder) : null;
             const strength = el("input", "mg-lora-strength");
             strength.type = "number";
             strength.min = String(LORA_STRENGTH_BOUNDS.min);
@@ -239,8 +300,11 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
                     applyPrompt(addLoraToken(prompt.value, lora.token || lora.id, Number.isFinite(value) ? value : 1, names));
                 }
             };
-            if (thumb) card.append(thumb);
-            card.append(name, strength, action);
+            const controls = el("div", "mg-lora-card-controls");
+            controls.append(strength, action);
+            card.append(thumb, name);
+            if (context) card.append(context);
+            card.append(controls);
             cards.appendChild(card);
         }
         if (!items.length && listing) cards.appendChild(el("div", "mg-hint mg-lora-empty", "No LoRA files in this folder."));

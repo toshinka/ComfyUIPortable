@@ -132,5 +132,54 @@ class LoraPreviewTests(unittest.TestCase):
                          {"id": "style/plain.safetensors", "name": "plain", "available": True, "preview": False})
 
 
+class PreviewContentTypeTests(unittest.TestCase):
+    """Owner correction: validity and MIME come from the bytes, not the '.png' name."""
+
+    JPEG = b"\xff\xd8\xff\xe0\x00\x10JFIF\x00jpeg-fixture"
+    WEBP = b"RIFF\x10\x00\x00\x00WEBPVP8 webp-fixture"
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = pathlib.Path(self._tmp.name) / "Lora"
+        (self.root / "style").mkdir(parents=True)
+        for stem, data in (("Jujutsu_Kaisen_Cover_Style_JJK_Manga", PNG), ("HELLSING_illustrious_v1-000020", self.JPEG),
+                           ("webp_style", self.WEBP), ("text_style", b"GIF89a-not-allowed"), ("empty_style", b"")):
+            (self.root / "style" / f"{stem}.safetensors").write_bytes(b"MODEL")
+            (self.root / "style" / f"{stem}.preview.png").write_bytes(data)
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def served(self, stem):
+        path = res.resolve_lora_preview(str(self.root), f"style/{stem}.safetensors")
+        return res.preview_mime(path)
+
+    def test_a_real_png_preview_is_served_as_png(self):
+        self.assertEqual(self.served("Jujutsu_Kaisen_Cover_Style_JJK_Manga"), "image/png")
+
+    def test_b_c_jpeg_bytes_under_preview_png_are_served_as_jpeg(self):
+        self.assertEqual(self.served("HELLSING_illustrious_v1-000020"), "image/jpeg")
+        self.assertEqual(self.served("webp_style"), "image/webp")
+
+    def test_d_non_image_sidecar_rejected(self):
+        for stem in ("text_style", "empty_style"):
+            with self.subTest(stem=stem), self.assertRaises(res.ResourceContractError) as ctx:
+                res.resolve_lora_preview(str(self.root), f"style/{stem}.safetensors")
+            self.assertEqual(ctx.exception.code, "RESOURCE_PREVIEW_UNSUPPORTED")
+
+    def test_e_boundary_unchanged_for_jpeg_content(self):
+        outside = pathlib.Path(self._tmp.name) / "outside"
+        outside.mkdir()
+        (outside / "x.preview.png").write_bytes(self.JPEG)
+        for bad in ("../outside/x.safetensors", "style/HELLSING_illustrious_v1-000020.preview.png"):
+            with self.subTest(bad=bad), self.assertRaises(res.ResourceContractError):
+                res.resolve_lora_preview(str(self.root), bad)
+
+    def test_sniff_reads_magic_bytes_only(self):
+        self.assertEqual(res.sniff_preview_mime(PNG[:12]), "image/png")
+        self.assertEqual(res.sniff_preview_mime(self.JPEG[:12]), "image/jpeg")
+        self.assertIsNone(res.sniff_preview_mime(b"<svg xmlns="))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

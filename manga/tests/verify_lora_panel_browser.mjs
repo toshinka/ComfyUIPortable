@@ -1,6 +1,8 @@
 // MANGA Prompt Assist UI acceptance (offline): LoRA panel (MANGA-ILLUSTRIOUS-LORA-PRODUCTION1)
 // plus autocomplete stability, Wildcard browser and LoRA previews (MANGA-PROMPT-ASSIST-PRODUCTION1),
-// plus portable aliases, diagnostics and trusted-root autocomplete (MANGA-LORA-PORTABLE-COMPAT-DIAGNOSTICS1).
+// plus portable aliases, diagnostics and trusted-root autocomplete (MANGA-LORA-PORTABLE-COMPAT-DIAGNOSTICS1),
+// plus the compact card grid and bulk strength (MANGA-LORA-UX-PRODUCTION1),
+// plus content-typed previews, portrait slots and selected-first order (MANGA-LORA-UX-OWNER-CORRECTION1).
 //
 // Real manga_workspace_server.mjs + real app + real Danbooru catalog, backed by a loopback stub
 // that serves ONLY the LoRA browse/preview routes through the production engine_resources
@@ -25,8 +27,11 @@ const A = "characters/series_a/alice_v3.safetensors";
 const B = "characters/series_b/alice_v3.safetensors";
 const A_TOKEN = "characters/series_a/alice_v3"; // duplicate basename -> canonical token
 const B_TOKEN = "characters/series_b/alice_v3";
+const LONG = "an_extremely_long_lora_filename_for_layout_testing_with_many_many_words_v1234567890abcdef";
 // 1x1 PNG
-const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
+// 60x80 portrait fixtures. JPEG_AS_PNG mirrors the Owner's legacy HELLSING sidecar: JPEG bytes named *.preview.png.
+const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAADwAAABQCAIAAADKqIEEAAAAkklEQVR4nO3bIQ6DUBRFwdKgqlkWmkWiWURXVF3RBE0qDvnJjLry5Pk3Le/lMZrn3QH/GDJ6PtexvW7suGLdP78x5KVFV0RXRFdEV0RXRFdEV0RXRFdEV0RXRFdEV0RXRFdEV0RXRFdEV0RXRFdEV0RXRFdEV0RXRFdEV0RXRFdEV0RXRFdEV0RXRFcmD2eRIaO/WRAFgUBingwAAAAASUVORK5CYII=", "base64");
+const JPEG_AS_PNG = Buffer.from("/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCABQADwDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDF1jU5rK5WOJYypQN8wPqff2qj/b11/wA84fyP+NHib/j/AI/+uQ/mayK+SoUKcqabR9Hw1w1lWKyqhWrUIylKOr7mv/b11/zzh/I/40f29df884fyP+NZFFa/VqX8p7n+qWTf9A0TX/t66/55w/kf8aP7euv+ecP5H/Gsiij6tS/lD/VLJv8AoGia/wDb11/zzh/I/wCNdDayGW2hkbAZ0DHHuK4eu10//jwtv+uS/wAhXHjaUIRXKrH594g5Ngcuw9GeEpKDcne3oYPib/j/AI/+uQ/mayK1/E3/AB/x/wDXIfzNZFdmG/hRP0HhL/kTYb/CFFFFbn0QUUUUAFdrp/8Ax4W3/XJf5CuKrtdP/wCPC2/65L/IV5+P+FH5f4of7rQ/xP8AIwfE3/H/AB/9ch/M1kVr+Jv+P+P/AK5D+ZrIrpw38KJ9dwl/yJsN/hCiiitz6IKKKKACu10//jwtv+uS/wAhXFV2un/8eFt/1yX+Qrz8f8KPy/xQ/wB1of4n+Rg+Jv8Aj/j/AOuQ/mayK1/E3/H/AB/9ch/M1kV04b+FE+u4S/5E2G/whRRRW59EFFFFABXa6f8A8eFt/wBcl/kK4qu10/8A48Lb/rkv8hXn4/4Ufl/ih/utD/E/yMHxN/x/x/8AXIfzNZFdLrGmTXtyskTRhQgX5ifU+3vVH+wbr/npD+Z/wrShXpxppNnpcNcS5VhcqoUa1eMZRjquxkUVr/2Ddf8APSH8z/hR/YN1/wA9IfzP+Fa/WaX8x7n+tuTf9BMTIorX/sG6/wCekP5n/Cj+wbr/AJ6Q/mf8KPrNL+YP9bcm/wCgmJkV2un/APHhbf8AXJf5CsH+wbr/AJ6Q/mf8K6G1jMVtDG2CyIFOPYVx42rCcVyu5+feIOc4HMcPRhhKqm1J3t6H/9k=", "base64");
 
 function getPlaywrightChromium() {
     if (process.env.TEGAKI_PLAYWRIGHT_MODULE) return require(process.env.TEGAKI_PLAYWRIGHT_MODULE).chromium;
@@ -38,14 +43,14 @@ function getPlaywrightChromium() {
 
 function makeTree() {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "tegaki-lora-"));
-    const files = [A, B, "styles/ink.safetensors", "root_level.safetensors", "characters/readme.txt"];
+    const files = [A, B, "styles/ink.safetensors", `styles/${LONG}.safetensors`, "root_level.safetensors", "characters/readme.txt"];
     for (let i = 0; i < 40; i++) files.push(`bulk/style_${String(i).padStart(2, "0")}.safetensors`);
     for (const rel of files) {
         fs.mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
         fs.writeFileSync(path.join(root, rel), "NOT-A-REAL-MODEL");
     }
     fs.writeFileSync(path.join(root, "characters/series_a/alice_v3.preview.png"), PNG);
-    fs.writeFileSync(path.join(root, "styles/ink.preview.png"), PNG); // unopened folder: must not load
+    fs.writeFileSync(path.join(root, "styles/ink.preview.png"), JPEG_AS_PNG); // unopened folder: must not load
     return root;
 }
 
@@ -74,7 +79,7 @@ pkg = types.ModuleType("custom_nodes_custom.tegaki_manga_nodes")
 pkg.__path__ = [repo + "/custom_nodes_custom/tegaki_manga_nodes"]
 sys.modules["custom_nodes_custom.tegaki_manga_nodes"] = pkg
 import os
-from custom_nodes_custom.tegaki_manga_nodes.engine_resources import (browse_lora_payload, lora_preview_path,
+from custom_nodes_custom.tegaki_manga_nodes.engine_resources import (browse_lora_payload, lora_preview_path, preview_mime,
     ResourceContractError, build_trusted_lora_index, lora_index_payload, validate_lora_request)
 ENV = {"TEGAKI_ILLUSTRIOUS_LORA_ROOT": root}
 def walk(base):
@@ -104,7 +109,7 @@ class H(BaseHTTPRequestHandler):
                 return self.send(200, validate_lora_request(parts[3], body, INDEX))
             if self.command == "GET" and parts[:3] == ["tegaki", "manga", "resources"] and parts[4:] == ["lora", "preview"]:
                 path = lora_preview_path(parts[3], query.get("id", [""])[0], [root], environ=ENV)
-                return self.send(200, open(path, "rb").read(), "image/png")
+                return self.send(200, open(path, "rb").read(), preview_mime(path))
         except ResourceContractError as exc:
             return self.send(404, {"ok": False, "error_code": exc.code, "error": str(exc)})
         return self.send(404, {"ok": False, "error_code": "NOT_IN_STUB", "error": "not served by stub"})
@@ -439,6 +444,186 @@ async function main() {
         })));
         check("preview route fails closed for traversal and non-sidecar requests", () =>
             traversal.forEach(([status, type]) => assert.ok(status >= 400 && type === "application/json", JSON.stringify(traversal))));
+
+        // ---------------- Compact card grid (MANGA-LORA-UX-PRODUCTION1) ----------------
+        await page.click('#mg-lora-breadcrumb [data-folder=""]');
+        await page.click('#mg-lora-folders [data-folder="styles"]');
+        await page.waitForSelector(`.mg-lora-card[data-lora-id="styles/${LONG}.safetensors"]`);
+        await page.waitForFunction(() => document.querySelector('.mg-lora-card[data-lora-id="styles/ink.safetensors"] img')?.naturalWidth > 0);
+        const grid = await page.evaluate(long => {
+            const cards = document.getElementById("mg-lora-cards");
+            const ink = cards.querySelector('.mg-lora-card[data-lora-id="styles/ink.safetensors"]');
+            const lng = cards.querySelector(`.mg-lora-card[data-lora-id="styles/${long}.safetensors"]`);
+            const box = el => el.getBoundingClientRect();
+            const name = lng.querySelector(".mg-lora-card-name");
+            const lineHeight = parseFloat(getComputedStyle(name).lineHeight);
+            return {
+                display: getComputedStyle(cards).display,
+                columns: getComputedStyle(cards).gridTemplateColumns.split(" ").length,
+                sameRow: Math.abs(box(ink).top - box(lng).top) < 1,
+                equalCards: Math.abs(box(ink).height - box(lng).height) < 1.5,
+                inkSlot: box(ink.querySelector(".mg-lora-card-thumb")).height,
+                noPreviewSlot: box(lng.querySelector(".mg-lora-card-noimg")).height,
+                noPreviewText: lng.querySelector(".mg-lora-card-noimg")?.textContent,
+                nameLines: (() => {
+                    const range = document.createRange();
+                    range.selectNodeContents(name);
+                    return new Set([...range.getClientRects()].map(r => Math.round(r.top))).size;
+                })(),
+                nameVisibleLines: Math.round(box(name).height / lineHeight),
+                nameTitle: name.title,
+                controlsVisible: [ink, lng].every(card => {
+                    const r = box(card.querySelector(".mg-lora-card-controls"));
+                    return r.height >= 18 && r.bottom <= box(card).bottom + 0.5;
+                }),
+                strengthWidth: box(lng.querySelector(".mg-lora-strength")).width,
+                cardWidth: box(ink).width,
+                inkSlotWidth: box(ink.querySelector(".mg-lora-card-thumb")).width,
+                noPreviewSlotWidth: box(lng.querySelector(".mg-lora-card-noimg")).width,
+                inkFit: getComputedStyle(ink.querySelector("img.mg-lora-card-thumb")).objectFit,
+                inkNatural: [ink.querySelector("img").naturalWidth, ink.querySelector("img").naturalHeight],
+            };
+        }, LONG);
+        check("UX A/B/I. responsive grid, >=2 compact cards per row, cards do not stretch past 200px", () => {
+            assert.equal(grid.display, "grid");
+            assert.ok(grid.columns >= 2, JSON.stringify(grid));
+            assert.equal(grid.sameRow, true);
+            assert.ok(grid.cardWidth >= 150 && grid.cardWidth <= 200.5, JSON.stringify(grid));
+        });
+        check("OC F/G. portrait 3:4 preview slot with non-distorting full-image fit", () => {
+            assert.ok(Math.abs(grid.inkSlot / grid.inkSlotWidth - 4 / 3) < 0.02, JSON.stringify(grid));
+            assert.equal(grid.inkFit, "contain");
+            assert.deepEqual(grid.inkNatural, [60, 80]);
+        });
+        check("OC H / UX C/D. NO PREVIEW placeholder uses the same portrait slot", () => {
+            assert.equal(grid.noPreviewSlot, grid.inkSlot);
+            assert.equal(grid.noPreviewSlotWidth, grid.inkSlotWidth);
+            assert.equal(grid.noPreviewText, "NO PREVIEW");
+            assert.equal(grid.equalCards, true);
+        });
+        const mimes = await page.evaluate(async ids => Promise.all(ids.map(async id => {
+            const r = await fetch(`/api/manga/resources/lora/preview?id=${encodeURIComponent(id)}`);
+            return [r.status, r.headers.get("content-type")];
+        })), ["characters/series_a/alice_v3.safetensors", "styles/ink.safetensors"]);
+        check("OC A/B/C. PNG preview served as image/png; JPEG bytes in *.preview.png served as image/jpeg and render", () =>
+            assert.deepEqual(mimes, [[200, "image/png"], [200, "image/jpeg"]]));
+        const displayOrder = () => page.evaluate(() => [...document.querySelectorAll("#mg-lora-cards .mg-lora-card")]
+            .map(card => ({ id: card.dataset.loraId.split("/").pop(), r: card.getBoundingClientRect() }))
+            .sort((a, b) => (a.r.top - b.r.top) || (a.r.left - b.r.left)).map(item => item.id));
+        const orderUnselected = await displayOrder();
+        check("UX E. long name wraps to multiple lines, clamps at 3, keeps card geometry, full ID in title", () => {
+            assert.ok(grid.nameLines >= 2 && grid.nameVisibleLines === 3, JSON.stringify(grid));
+            assert.equal(grid.nameTitle, `styles/${LONG}.safetensors`);
+        });
+        check("UX F. strength + Add/Remove remain reachable in every card", () => {
+            assert.equal(grid.controlsVisible, true);
+            assert.ok(grid.strengthWidth >= 56, JSON.stringify(grid));
+        });
+
+        // ---------------- Bulk strength ----------------
+        const sceneId = await page.evaluate(() => window.__tegakiManga.store.getPage().scenes[0].scene_id);
+        const storeState = () => page.evaluate(id => {
+            const pg = window.__tegakiManga.store.getPage();
+            return { global: pg.style_prompt, negative: pg.style_negative_prompt,
+                scene: pg.scenes.find(s => s.scene_id === id).prompt };
+        }, sceneId);
+        await prompt.fill("masterpiece");
+        await prompt.press("Escape");
+        const zeroDisabled = await page.locator("#mg-lora-bulk-apply").isDisabled();
+        check("UX bulk K. no added LoRAs: Apply is disabled (no mutation)", () => assert.equal(zeroDisabled, true));
+        const mixed = `masterpiece, <lora:root_level:1.0>, clean lines, <lora:ink:0.7>, <lora:${B_TOKEN}:0.4>, <lora:broken>`;
+        await prompt.fill(mixed);
+        await prompt.press("Escape");
+        await page.locator("#scene-composer-negative").fill("blurry, <lora:ink:0.9>");
+        const beforeBulk = await storeState();
+        await page.locator("#mg-lora-bulk-strength").fill("0.2");
+        await page.click("#mg-lora-bulk-apply");
+        const afterBulk = { prompt: await prompt.inputValue(), status: await page.locator("#mg-lora-bulk-status").textContent(),
+            store: await storeState() };
+        check("UX H/I. bulk 0.2 changes all 3 added LoRAs; names, order, text kept; malformed untouched", () => {
+            assert.equal(afterBulk.prompt, `masterpiece, <lora:root_level:0.2>, clean lines, <lora:ink:0.2>, <lora:${B_TOKEN}:0.2>, <lora:broken>`);
+            assert.equal(afterBulk.status, "Applied 0.2 to 3 LoRAs");
+            assert.equal(afterBulk.store.global, afterBulk.prompt);
+        });
+        check("UX bulk: Negative Prompt and the Scene prompt are untouched by a Global bulk apply", () => {
+            assert.equal(afterBulk.store.negative, "blurry, <lora:ink:0.9>");
+            assert.equal(afterBulk.store.scene, beforeBulk.scene);
+        });
+        const orderAfterBulk = await displayOrder();
+        check("OC J/M. selected card displays first; prompt LoRA order unchanged by display order", () => {
+            assert.deepEqual(orderUnselected, [`${LONG}.safetensors`, "ink.safetensors"]);
+            assert.deepEqual(orderAfterBulk, ["ink.safetensors", `${LONG}.safetensors`]);
+            assert.deepEqual([...afterBulk.prompt.matchAll(/<lora:([^:<>]+):/g)].map(m => m[1]), ["root_level", "ink", B_TOKEN]);
+        });
+        await page.waitForFunction(() => {
+            const items = [...document.querySelectorAll("#mg-lora-diagnostics .mg-lora-chain-list li")];
+            return items.length === 3 && items.every(li => li.textContent.endsWith("· 0.20"));
+        }, null, { timeout: 5000 }).then(() => true, () => false).then(ok => check("UX L. diagnostics refresh after bulk update (chain shows 0.20; malformed still reported)", () => assert.equal(ok, true)));
+        const malformedReported = await page.locator('#mg-lora-diagnostics .mg-lora-diag-row[data-status="INVALID_LORA_SYNTAX"]').count();
+        check("UX bulk: malformed directive still reported by diagnostics", () => assert.equal(malformedReported, 1));
+
+        const inkCard = page.locator('.mg-lora-card[data-lora-id="styles/ink.safetensors"]');
+        await inkCard.locator(".mg-lora-strength").fill("0.5");
+        await inkCard.locator(".mg-lora-strength").dispatchEvent("change");
+        const afterIndividual = await prompt.inputValue();
+        const selection = await page.evaluate(long => {
+            const cs = sel => getComputedStyle(document.querySelector(sel));
+            const on = cs('.mg-lora-card[data-lora-id="styles/ink.safetensors"]');
+            const off = cs(`.mg-lora-card[data-lora-id="styles/${long}.safetensors"]`);
+            return { selected: document.querySelector('.mg-lora-card[data-lora-id="styles/ink.safetensors"]').classList.contains("is-selected"),
+                differs: on.borderColor !== off.borderColor && on.backgroundColor !== off.backgroundColor };
+        }, LONG);
+        check("UX J. individual strength still editable after bulk apply", () =>
+            assert.equal(afterIndividual, `masterpiece, <lora:root_level:0.2>, clean lines, <lora:ink:0.5>, <lora:${B_TOKEN}:0.2>, <lora:broken>`));
+        check("UX I(grid). selected card is visibly distinct (border and background)", () =>
+            assert.deepEqual(selection, { selected: true, differs: true }));
+        await inkCard.locator(".mg-lora-card-action").click();
+        const afterInkRemove = await prompt.inputValue();
+        const orderAfterRemove = await displayOrder();
+        const longCard = page.locator(`.mg-lora-card[data-lora-id="styles/${LONG}.safetensors"]`);
+        await longCard.locator(".mg-lora-card-action").click();
+        const afterLongAdd = await prompt.inputValue();
+        check("UX G/H/K. grid card Add and Remove work; Remove preserves unrelated text", () => {
+            assert.equal(afterInkRemove, `masterpiece, <lora:root_level:0.2>, clean lines, <lora:${B_TOKEN}:0.2>, <lora:broken>`);
+            assert.equal(afterLongAdd, `${afterInkRemove}, <lora:${LONG}:1.0>`);
+        });
+        await longCard.locator(".mg-lora-card-action").click();
+        await inkCard.locator(".mg-lora-card-action").click();
+        const afterInkReAdd = await prompt.inputValue();
+        const orderAfterReAdd = await displayOrder();
+        check("OC L. Remove returns the card to its stable catalog position", () =>
+            assert.deepEqual(orderAfterRemove, [`${LONG}.safetensors`, "ink.safetensors"]));
+        check("OC K/M. Add moves the card first visually; the prompt appends it without reordering", () => {
+            assert.deepEqual(orderAfterReAdd, ["ink.safetensors", `${LONG}.safetensors`]);
+            assert.equal(afterInkReAdd, `${afterInkRemove}, <lora:ink:0.5>`);
+        });
+
+        // Scene target: bulk touches only the active Scene prompt.
+        await page.locator("#scene-prompt-scene-group button").first().click();
+        await page.waitForFunction(() => window.__tegakiManga.getComposerPromptTarget() !== "global");
+        await prompt.fill("blue_eyes, <lora:root_level:1.0>, <lora:ink:0.8>");
+        await prompt.press("Escape");
+        const globalBeforeScene = (await storeState()).global;
+        await page.locator("#mg-lora-bulk-strength").fill("0.3");
+        await page.click("#mg-lora-bulk-apply");
+        const sceneAfter = await storeState();
+        check("UX bulk G. active Scene bulk apply does not mutate Global or Negative", () => {
+            assert.equal(sceneAfter.scene, "blue_eyes, <lora:root_level:0.3>, <lora:ink:0.3>");
+            assert.equal(sceneAfter.global, globalBeforeScene);
+            assert.equal(sceneAfter.negative, "blurry, <lora:ink:0.9>");
+        });
+        await page.click("#scene-prompt-tab-global");
+        await page.waitForFunction(() => window.__tegakiManga.getComposerPromptTarget() === "global");
+        const cardsScroll = await page.evaluate(() => {
+            const cards = document.getElementById("mg-lora-cards");
+            return getComputedStyle(cards).overflowY;
+        });
+        const folderNavWorks = await page.locator('#mg-lora-breadcrumb [data-folder=""]').isVisible();
+        check("UX M/K(folders). internal card scrolling and folder navigation still available", () => {
+            assert.equal(cardsScroll, "auto");
+            assert.equal(folderNavWorks, true);
+        });
+        await page.screenshot({ path: path.join(SCRATCH, "lora_ux_grid.png"), fullPage: false });
 
         await page.click("#mg-lora-toggle");
         const collapsed = { lora: await page.locator("#mg-lora-body").isHidden(), wildcard: await page.locator("#mg-wildcard-body").isHidden() };

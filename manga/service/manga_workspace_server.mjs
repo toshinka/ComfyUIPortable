@@ -396,12 +396,17 @@ const server = http.createServer(async (req, res) => {
             const body = Buffer.concat(chunks);
             const type = (backendRes.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
             if (backendRes.ok) {
-                const isPng = body.length >= 8 && body.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
-                if (type !== "image/png" || !isPng) {
-                    reply(502, "BACKEND_INVALID_RESPONSE", "Backend preview is not a PNG image");
+                // The sidecar is named *.preview.png but legacy assets may hold JPEG bytes:
+                // the type must match the actual bytes, and must agree with the backend's.
+                const sniffed = body.length >= 8 && body.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) ? "image/png"
+                    : body.length >= 3 && body[0] === 0xff && body[1] === 0xd8 && body[2] === 0xff ? "image/jpeg"
+                    : body.length >= 12 && body.subarray(0, 4).toString("latin1") === "RIFF" && body.subarray(8, 12).toString("latin1") === "WEBP" ? "image/webp"
+                    : null;
+                if (!sniffed || type !== sniffed) {
+                    reply(502, "BACKEND_INVALID_RESPONSE", "Backend preview is not a PNG, JPEG or WebP image");
                     return;
                 }
-                res.writeHead(200, { "Content-Type": "image/png", "Cache-Control": "private, max-age=300",
+                res.writeHead(200, { "Content-Type": sniffed, "Cache-Control": "private, max-age=300",
                     "X-Content-Type-Options": "nosniff" });
                 res.end(body);
                 return;

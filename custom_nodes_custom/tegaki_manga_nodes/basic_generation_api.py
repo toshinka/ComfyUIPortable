@@ -55,9 +55,9 @@ except (ImportError, ValueError):
     from page_pixel_compositor import compose_page_pixels, PagePixelCompositorError
 
 try:
-    from .engine_resources import ResourceContractError, browse_lora_payload, lora_preview_path, build_trusted_lora_index, lora_index_payload, resolve_resource_root, validate_lora_request
+    from .engine_resources import ResourceContractError, browse_lora_payload, lora_preview_path, preview_mime, build_trusted_lora_index, lora_index_payload, resolve_resource_root, validate_lora_request
 except (ImportError, ValueError):
-    from engine_resources import ResourceContractError, browse_lora_payload, lora_preview_path, build_trusted_lora_index, lora_index_payload, resolve_resource_root, validate_lora_request
+    from engine_resources import ResourceContractError, browse_lora_payload, lora_preview_path, preview_mime, build_trusted_lora_index, lora_index_payload, resolve_resource_root, validate_lora_request
 
 MAX_REQUEST_BYTES = 256 * 1024
 
@@ -506,8 +506,9 @@ async def api_manga_resource_lora_preview(request: web.Request) -> web.Response:
     except Exception:
         logging.exception("[MangaBasicGenerationAPI] LoRA preview failed")
         return _error("RESOURCE_PREVIEW_FAILED", "LoRA preview failed", 500)
+    # Content type follows the actual bytes: a legacy "*.preview.png" may be JPEG.
     return web.FileResponse(path, headers={
-        "Content-Type": "image/png", "Cache-Control": "private, max-age=300",
+        "Content-Type": preview_mime(path) or "application/octet-stream", "Cache-Control": "private, max-age=300",
         "X-Content-Type-Options": "nosniff",
     })
 

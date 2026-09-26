@@ -46,6 +46,21 @@ DEFAULT_LORA_EXTENSIONS = (".safetensors",)
 # Owner-proven sidecar convention: <lora-stem>.preview.png beside the LoRA file.
 PREVIEW_SUFFIX = ".preview.png"
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+PREVIEW_SNIFF_BYTES = 12
+
+
+def sniff_preview_mime(head: bytes) -> Optional[str]:
+    """MIME type from the image's magic bytes (never from the filename).
+
+    Legacy/ReForge sidecars named ``*.preview.png`` may hold JPEG bytes.
+    """
+    if head.startswith(PNG_SIGNATURE):
+        return "image/png"
+    if head.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if len(head) >= 12 and head[:4] == b"RIFF" and head[8:12] == b"WEBP":
+        return "image/webp"
+    return None
 MAX_PREVIEW_BYTES = 16 * 1024 * 1024
 MAX_ID_LENGTH = 1024
 _FORBIDDEN_ID_CHARS = set('<>:"|?*')
@@ -222,8 +237,8 @@ def resolve_lora_preview(
     """Real path of the ``<stem>.preview.png`` sidecar for ONE canonical LoRA ID.
 
     Only the sidecar derived from a LoRA ID can be addressed; arbitrary files,
-    traversal, non-LoRA IDs and non-PNG content fail closed.  Model files are
-    never opened.
+    traversal, non-LoRA IDs and non-image content (PNG/JPEG/WebP by magic
+    bytes) fail closed.  Model files are never opened.
     """
     canonical = normalize_relative_id(lora_id)
     parts = canonical.split("/")
@@ -236,10 +251,15 @@ def resolve_lora_preview(
         _fail("RESOURCE_PREVIEW_NOT_FOUND", "No preview sidecar for this LoRA")
     if os.path.getsize(path) > MAX_PREVIEW_BYTES:
         _fail("RESOURCE_PREVIEW_UNSUPPORTED", "Preview sidecar is too large")
-    with open(path, "rb") as handle:
-        if handle.read(len(PNG_SIGNATURE)) != PNG_SIGNATURE:
-            _fail("RESOURCE_PREVIEW_UNSUPPORTED", "Preview sidecar is not a PNG image")
+    if preview_mime(path) is None:
+        _fail("RESOURCE_PREVIEW_UNSUPPORTED", "Preview sidecar is not a PNG, JPEG or WebP image")
     return path
+
+
+def preview_mime(path: str) -> Optional[str]:
+    """Actual image type of an already root-resolved sidecar (reads 12 bytes)."""
+    with open(path, "rb") as handle:
+        return sniff_preview_mime(handle.read(PREVIEW_SNIFF_BYTES))
 
 
 def lora_preview_path(

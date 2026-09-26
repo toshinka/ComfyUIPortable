@@ -233,6 +233,12 @@
                                     <div id="mg-lora-status" class="mg-hint mg-lora-status" role="status" aria-live="polite"></div>
                                     <nav id="mg-lora-breadcrumb" class="mg-lora-breadcrumb" aria-label="LoRA folder path"></nav>
                                     <div id="mg-lora-folders" class="mg-lora-folders" role="list" aria-label="LoRA subfolders"></div>
+                                    <div class="mg-lora-bulk" role="group" aria-label="Bulk LoRA strength">
+                                        <label for="mg-lora-bulk-strength">Bulk strength</label>
+                                        <input id="mg-lora-bulk-strength" class="mg-lora-strength" type="number" min="-4" max="4" step="0.05" value="0.2">
+                                        <button id="mg-lora-bulk-apply" type="button" class="mg-lora-card-action" disabled>Apply to added LoRAs</button>
+                                        <span id="mg-lora-bulk-status" class="mg-hint" role="status" aria-live="polite"></span>
+                                    </div>
                                     <div id="mg-lora-cards" class="mg-lora-cards" role="list" aria-label="LoRAs in this folder"></div>
                                 </div>
                                 <div id="mg-wildcard-body" class="mg-lora-body mg-wildcard-body" role="tabpanel" aria-labelledby="mg-assist-tab-wildcard" hidden>
@@ -785,6 +791,9 @@
             cards: document.getElementById("mg-lora-cards"),
             count: document.getElementById("mg-lora-count"),
             prompt: composerPrompt,
+            bulkInput: document.getElementById("mg-lora-bulk-strength"),
+            bulkApply: document.getElementById("mg-lora-bulk-apply"),
+            bulkStatus: document.getElementById("mg-lora-bulk-status"),
         });
         const loraPanel = mountPromptAssist({
             panel: document.getElementById("mg-lora-panel"),
