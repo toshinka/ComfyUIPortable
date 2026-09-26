@@ -27,6 +27,7 @@ import { PageCompositeCurrentClassifier, PageCompositeCurrentError } from "./pag
 import { preparePageComposition } from "./page_compositor_prep.mjs";
 import { SceneResultStore } from "./scene_result_store.mjs";
 import { SceneResultIndex } from "./scene_result_index.mjs";
+import { MangaOutputService, MangaOutputError } from "./manga_output_service.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -107,6 +108,15 @@ export function setIsolatedScenePrepService(service) {
 
 export function setGenerationService(service) {
     generationService = service;
+    if (mangaOutputService) mangaOutputService.generationService = service;
+}
+
+// Card MANGA-EXPERIMENT-OUTPUT-PRODUCTION1: named copies, Grid artifacts, fixed folder shortcut.
+// The output directory is fixed server-side (same formula as MangaDomainRuntime); no browser path.
+let mangaOutputService = new MangaOutputService({ generationService });
+
+export function setMangaOutputService(service) {
+    mangaOutputService = service;
 }
 
 let sceneResultStore = new SceneResultStore();
@@ -1069,6 +1079,90 @@ const server = http.createServer(async (req, res) => {
         }
         return;
     }
+    if (/^\/api\/manga\/output\//.test(pathname)) {
+        const reply = (status, error_code, error) => {
+            res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
+            res.end(JSON.stringify({ ok: false, error_code, error }));
+        };
+        const routes = new Set(["/api/manga/output/filename-preview", "/api/manga/output/named-copy",
+            "/api/manga/output/grid", "/api/manga/output/open-folder"]);
+        if (!routes.has(pathname)) {
+            reply(404, "ROUTE_NOT_FOUND", "Unknown Manga output route");
+            return;
+        }
+        if (req.method !== "POST") {
+            reply(405, "METHOD_NOT_ALLOWED", "Use POST");
+            return;
+        }
+        if ((requestOrigin && !allowedLocalOrigins.has(requestOrigin)) ||
+            (req.headers["sec-fetch-site"] && !["same-origin", "none"].includes(req.headers["sec-fetch-site"]))) {
+            reply(403, "ORIGIN_FORBIDDEN", "Request origin is not the Manga workspace");
+            return;
+        }
+        const isGrid = pathname === "/api/manga/output/grid";
+        const isOpen = pathname === "/api/manga/output/open-folder";
+        // The folder shortcut takes no parameters at all: no path, no command, no query.
+        if (url.search && !isGrid) {
+            req.resume();
+            reply(400, "UNEXPECTED_PARAMETERS", "This output route takes no query parameters");
+            return;
+        }
+        const contentType = (req.headers["content-type"] || "").split(";")[0].trim().toLowerCase();
+        const limit = isGrid ? 64 * 1024 * 1024 : 16 * 1024;
+        if (isGrid ? contentType !== "image/png" : (!isOpen && contentType !== "application/json")) {
+            req.resume();
+            reply(415, "INVALID_CONTENT_TYPE", isGrid ? "Content-Type must be image/png" : "Content-Type must be application/json");
+            return;
+        }
+        const chunks = [];
+        let received = 0;
+        for await (const chunk of req) {
+            received += chunk.length;
+            if (received > limit) {
+                req.resume();
+                reply(413, "REQUEST_TOO_LARGE", "Request is too large");
+                return;
+            }
+            chunks.push(chunk);
+        }
+        const body = Buffer.concat(chunks);
+        if (isOpen && body.length && body.toString("utf8").trim() !== "{}") {
+            reply(400, "UNEXPECTED_PARAMETERS", "The output-folder shortcut takes no parameters");
+            return;
+        }
+        let input = null;
+        if (!isGrid && !isOpen) {
+            try {
+                input = JSON.parse(body.toString("utf8"));
+                if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("Expected JSON object");
+            } catch (err) {
+                reply(400, "INVALID_JSON", `Invalid JSON request: ${err.message}`);
+                return;
+            }
+        }
+        try {
+            let data;
+            if (pathname === "/api/manga/output/filename-preview") data = mangaOutputService.preview(input);
+            else if (pathname === "/api/manga/output/named-copy") data = await mangaOutputService.namedCopy(input);
+            else if (isGrid) {
+                const label = url.searchParams.get("label") ?? "";
+                if ([...url.searchParams.keys()].some(key => key !== "label")) {
+                    reply(400, "UNEXPECTED_PARAMETERS", "Grid upload accepts only a label");
+                    return;
+                }
+                data = mangaOutputService.saveGrid(body, label);
+            } else data = await mangaOutputService.openFolder();
+            res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
+            res.end(JSON.stringify({ ok: true, ...data }));
+        } catch (err) {
+            if (err instanceof MangaOutputError || err instanceof GenerationServiceError) {
+                reply(err.status || 400, err.code, sanitizeErrorMessage(err.message));
+            } else {
+                reply(500, "OUTPUT_FAILED", sanitizeErrorMessage(err?.message || "Output action failed"));
+            }
+        }
+        return;
+    }
     // PLAY1b: Manga-owned job API; graph, backend URL, and output paths are never client inputs.
     if (/^\/api\/manga\/generation\/jobs(?:\/|$)/.test(pathname)) {
         const pieces = pathname.split("/").filter(Boolean);
@@ -1702,4 +1796,4 @@ server.listen(PORT, HOST, () => {
     console.log(`[MangaWorkspaceServer] Serving on http://${HOST}:${PORT}`);
 });
 
-export { server, PORT, HOST, generationService };
+export { server, PORT, HOST, generationService, mangaOutputService };

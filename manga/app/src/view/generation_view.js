@@ -181,7 +181,8 @@ export async function compileGlobalGeneration(state, authoringStore, client) {
 }
 
 export function mountGenerationView(root, { state = new GenerationState(), client = new MangaGenerationClient(),
-    authoringStore = null, session = null, getPromptTarget = null, setPromptTarget = null, pollMs = 1500, onCatalogChange = null } = {}) {
+    authoringStore = null, session = null, getPromptTarget = null, setPromptTarget = null, pollMs = 1500, onCatalogChange = null,
+    onJobSucceeded = null } = {}) {
     state.authoringStore = authoringStore;
     state.session = session;
     state.sceneDraft = state.sceneDraft || {};
@@ -228,6 +229,16 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
     let presentationMode = "glance";
     let resultAspectRatio = null;
     let lastDraftAspectRatio = null;
+    // Jobs submitted by THIS page's Generate button.  Only these may trigger onJobSucceeded
+    // (e.g. a named output copy); jobs restored from history on load never do.
+    const submittedHere = new Set();
+    const succeededNotified = new Set();
+    function notifySucceeded(job) {
+        if (!onJobSucceeded || job?.state !== "SUCCEEDED" || !submittedHere.has(job.job_id) ||
+            succeededNotified.has(job.job_id)) return;
+        succeededNotified.add(job.job_id);
+        try { Promise.resolve(onJobSucceeded(job)).catch(() => {}); } catch {}
+    }
 
     function hasSpatialStageContent(page = authoringStore?.getPage?.(0)) {
         return ["scenes", "character_instances", "visual_frames", "guides"]
@@ -578,7 +589,7 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
             state.setJob(job);
             renderStatus();
             renderHistory();
-            if (job.state === "SUCCEEDED") await showResult(job);
+            if (job.state === "SUCCEEDED") { notifySucceeded(job); await showResult(job); }
             if (ACTIVE_JOB_STATES.has(job.state)) schedulePoll(jobId);
         } catch (cause) {
             state.error = `Job observation unavailable: ${cause.message}`;
@@ -1092,10 +1103,11 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
             submitStarted = true;
             const job = await client.createJob(settings, compiled);
             if (!job || !JOB_ID.test(job.job_id)) throw new Error("Manga job response is invalid");
+            submittedHere.add(job.job_id);
             state.setJob(job);
             renderStatus();
             renderHistory();
-            if (job.state === "SUCCEEDED") await showResult(job);
+            if (job.state === "SUCCEEDED") { notifySucceeded(job); await showResult(job); }
             if (ACTIVE_JOB_STATES.has(job.state)) schedulePoll(job.job_id, 0);
         } catch (cause) {
             state.endAttempt();
@@ -2056,6 +2068,25 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
         ready,
         generateOne,
         generateGlobal,
+        /** Experiment/Output: the exact Global settings Generate would use (derived copy). */
+        getGlobalBaseSettings: () => buildGlobalGenerationSettings(state, authoringStore),
+        /** Reason the Global Generate path is blocked right now ("" when ready). */
+        getBlockReason: (source = "global") => generationBlockReason(state, authoringStore, source),
+        /** Apply sampler/scheduler through the real controls' state; returns the fields changed. */
+        applySampling(changes = {}) {
+            const applied = {};
+            for (const field of ["sampler_id", "scheduler_id"]) {
+                if (typeof changes[field] !== "string") continue;
+                if (!state.catalog?.[field === "sampler_id" ? "samplers" : "schedulers"]?.includes(changes[field])) {
+                    throw new Error(`${changes[field]} is not in the runtime catalog`);
+                }
+                state.setDraft(field, changes[field]);
+                applied[field] = changes[field];
+            }
+            renderForm();
+            renderStatus();
+            return applied;
+        },
         getGenerationScope: () => generationScope,
         setGenerationScope,
         refresh: renderStatus,

@@ -708,6 +708,8 @@ body.manga-embedded #generate-view { width: 100%; max-width: none; margin: 0; pa
     .manga-mode-tabs button { padding: 4px 8px; font-size: 10px; }
     .mg-preview-controls { align-items: flex-end; flex-wrap: wrap; }
     .mg-presentation-toggle { order: 2; margin-left: auto; }
+    .mg-open-output { order: 3; }
+    .mg-open-output-status { order: 4; }
     .mg-create-head { align-items: flex-start; }
     .mg-create-title { align-items: flex-start; flex-direction: column; gap: 2px; }
     .mg-catalog-note { max-width: 100%; }
@@ -1214,3 +1216,40 @@ body.manga-embedded #generate-view { width: 100%; max-width: none; margin: 0; pa
     color: var(--manga-text); font: inherit; font-size: 10px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 .mg-pp-btn:disabled { opacity: .5; cursor: not-allowed; }
 .mg-prompt-presets-status:empty { display: none; }
+
+/* MANGA-EXPERIMENT-OUTPUT-PRODUCTION1: output-folder shortcut + compact Experiment / Output panel */
+.mg-open-output { flex: 0 0 auto; min-height: 26px; min-width: 30px; border: 1px solid var(--manga-line); border-radius: 6px; padding: 0 6px; background: var(--manga-surface-raised); color: var(--manga-text); font-size: 13px; cursor: pointer; }
+.mg-open-output:hover { background: var(--manga-selection); }
+.mg-open-output:disabled { opacity: 0.6; cursor: progress; }
+.mg-open-output-status { flex: 0 1 auto; max-width: 260px; font-size: 10px; line-height: 1.3; color: var(--manga-success-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mg-open-output-status[data-state="error"] { color: var(--manga-danger-text); }
+.mg-experiment-output { margin-top: 12px; border-top: 1px solid var(--manga-line); padding-top: 9px; font-size: 11px; }
+.mg-experiment-output > summary { cursor: pointer; font-weight: 700; color: var(--manga-text); }
+.mg-experiment-body { display: grid; gap: 10px; padding-top: 8px; }
+.mg-xo-block { display: grid; gap: 5px; padding: 7px; border: 1px solid var(--manga-line-soft); border-radius: 6px; background: var(--manga-surface-inset); }
+.mg-xo-heading { font-weight: 700; color: var(--manga-muted); letter-spacing: 0.03em; }
+.mg-xo-row { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.mg-xo-row select, .mg-xo-row button { min-height: 24px; }
+#mg-xo-preset { flex: 1 1 180px; min-width: 0; }
+.mg-xo-field { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 5px; align-items: center; }
+.mg-xo-field input { min-width: 0; }
+.mg-xo-check { display: flex; gap: 6px; align-items: center; }
+#mg-create .mg-xo-check input[type="checkbox"] { display: inline-block; flex: 0 0 auto; width: auto; min-width: 0; margin: 0; padding: 0; }
+.mg-xo-check span { display: inline; flex: 1 1 auto; }
+.mg-xo-status { margin: 0; overflow-wrap: anywhere; }
+#mg-xo-preset-status[data-status="PARTIALLY SUPPORTED"] { color: var(--manga-warning-text); }
+#mg-xo-preset-status[data-status="UNAVAILABLE"] { color: var(--manga-danger-text); }
+.mg-xo-name-preview { margin: 0; padding: 3px 5px; border-radius: 4px; background: var(--manga-surface); font-family: ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
+.mg-xo-name-preview[data-state="error"] { color: var(--manga-danger-text); }
+.mg-xo-axis { display: grid; grid-template-columns: 16px 104px minmax(0, 1fr); gap: 5px; align-items: start; }
+.mg-xo-axis-key { font-weight: 700; padding-top: 4px; }
+.mg-xo-axis-values { display: grid; gap: 4px; min-width: 0; }
+.mg-xo-axis-values select, .mg-xo-axis-values input, .mg-xo-axis-values textarea { width: 100%; min-width: 0; box-sizing: border-box; }
+.mg-xo-counts { margin: 0; font-weight: 700; }
+.mg-xo-counts[data-over="true"] { color: var(--manga-danger-text); }
+.mg-xo-sr-preview, .mg-xo-cells { margin: 0; padding-left: 18px; max-height: 160px; overflow: auto; overflow-wrap: anywhere; }
+.mg-xo-sr-preview li.is-error, .mg-xo-cells li[data-status="INVALID"], .mg-xo-cells li[data-status="FAILED"] { color: var(--manga-danger-text); }
+.mg-xo-cells li[data-status="SUCCEEDED"], .mg-xo-cells li[data-status="VALID"] { color: var(--manga-success-text); }
+#mg-xo-run[data-confirm="true"] { background: var(--manga-danger-background); border-color: var(--manga-danger-border); color: var(--manga-danger-text); }
+.mg-xo-grid-view { display: grid; gap: 6px; }
+.mg-xo-grid-canvas { width: 100%; height: auto; border: 1px solid var(--manga-line); background: #ffffee; }
