@@ -1203,3 +1203,14 @@ body.manga-embedded #generate-view { width: 100%; max-width: none; margin: 0; pa
 #mg-lora-cards .mg-lora-card-controls { gap: 3px; }
 #mg-lora-cards .mg-lora-card-controls .mg-lora-strength { flex: 0 0 52px; width: 52px; min-width: 0; padding: 1px 3px; height: 20px; box-sizing: border-box; font-size: 10.5px; }
 #mg-lora-cards .mg-lora-card-controls .mg-lora-card-action { flex: 1 1 auto; min-width: 0; padding: 1px 4px; height: 20px; box-sizing: border-box; font-size: 10px; line-height: 1; }
+
+/* MANGA-PROMPT-PRODUCTION-UX1: compact, collapsible Prompt presets / default controls. */
+.mg-prompt-presets { margin-top: 3px; font-size: 10px; color: var(--manga-muted); }
+.mg-prompt-presets-summary { cursor: pointer; font-weight: 700; font-size: 10px; }
+.mg-prompt-presets-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 4px; }
+.mg-prompt-preset-select, .mg-prompt-preset-name { min-width: 0; flex: 1 1 110px; height: 22px; box-sizing: border-box; padding: 1px 4px;
+    border: 1px solid var(--manga-line-soft); border-radius: 5px; background: var(--manga-surface); color: var(--manga-text); font: inherit; font-size: 10.5px; }
+.mg-pp-btn { height: 22px; padding: 1px 7px; border: 1px solid var(--manga-line); border-radius: 5px; background: var(--manga-surface-raised);
+    color: var(--manga-text); font: inherit; font-size: 10px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.mg-pp-btn:disabled { opacity: .5; cursor: not-allowed; }
+.mg-prompt-presets-status:empty { display: none; }

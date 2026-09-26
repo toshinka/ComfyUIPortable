@@ -216,7 +216,9 @@
                             <div id="scene-composer-prompt-wrap" class="scene-composer-field">
                                 <label for="scene-composer-prompt">Prompt</label>
                                 <textarea id="scene-composer-prompt" rows="4" placeholder="Describe the page or scene…" aria-describedby="mg-global-prompt-syntax-help"></textarea>
-                                <p id="mg-global-prompt-syntax-help" class="mg-hint">Wildcards: __name__ · choices: {a|b}</p>
+                                <p id="mg-global-prompt-syntax-help" class="mg-hint">Wildcards: __name__ · choices: {a|b} · Ctrl+↑/↓ weight</p>
+                                <!-- Prompt presets / default (Card MANGA-PROMPT-PRODUCTION-UX1): user preferences, not document data -->
+                                <details id="mg-prompt-presets" class="mg-prompt-presets"></details>
                             </div>
                             <!-- Wildcard source preview: read-only, outside the prompt textarea, dismissed by outside click / scroll / × / target change (Card MANGA-WILDCARD-AUTOCOMPLETE-PRODUCTION1) -->
                             <div id="mg-wildcard-preview" class="mg-wildcard-preview" aria-live="polite" hidden></div>
@@ -737,8 +739,16 @@
         import { setupNumericWheelControl } from "./src/view/numeric_wheel.js";
         import { mountLoraPanel, createLoraValidator, mountLoraDiagnostics, loraBlockReasonFromDiagnostics, sourcesHaveLora } from "./src/view/lora_panel.js";
         import { expandWildcardInPrompt, mountPromptAssist, mountWildcardPreview } from "./src/view/prompt_assist.js";
+        import { applyDefaultToNewDocument, attachWeightKeys, createPromptPrefs, mountPromptPresets, replaceTextareaValue } from "./src/view/prompt_production.js";
+        import { STYLE_PRESETS } from "./src/domain/authoring_document.js";
 
         const store = new AuthoringStore(createNewAuthoringSessionDocument());
+        // Prompt presets + custom default are user preferences (browser-local), never document data
+        // (Card MANGA-PROMPT-PRODUCTION-UX1).  The custom default is applied only here, to the
+        // brand-new session document this page just created, and only while it is still pristine.
+        const promptPrefs = createPromptPrefs();
+        applyDefaultToNewDocument(store, promptPrefs, {
+            positive: STYLE_PRESETS["Manga Monochrome"].prompt, negative: STYLE_PRESETS["Manga Monochrome"].negative });
         const session = new SessionState();
         session.selectScene(null);
         const client = new MangaBackendClient("http://127.0.0.1:8189");
@@ -786,6 +796,10 @@
         const composerPrompt = document.getElementById("scene-composer-prompt");
         const composerNegative = document.getElementById("scene-composer-negative");
         const composerTagAutocomplete = createTagAutocomplete(composerPrompt);
+        // Ctrl+ArrowUp/Down weight editing; the autocomplete keeps ownership of keys while open.
+        attachWeightKeys(composerPrompt, {
+            isAutocompleteOpen: () => !composerTagAutocomplete.popup.hidden && composerTagAutocomplete.suggestions.length > 0 });
+        attachWeightKeys(composerNegative);
         const loraPanelView = mountLoraPanel({
             panel: document.getElementById("mg-lora-panel"),
             toggle: null, // owned by Prompt Assist
@@ -815,6 +829,24 @@
             wildcardEntries: document.getElementById("mg-wildcard-entries"),
         });
         // Wildcard source preview after a Wildcard is inserted (autocomplete or Wildcard tab).
+        mountPromptPresets({
+            container: document.getElementById("mg-prompt-presets"),
+            prefs: promptPrefs,
+            getGlobalPair: () => {
+                const page = store.getPage();
+                return { positive: page?.style_prompt || "", negative: page?.style_negative_prompt || "" };
+            },
+            // Global pair only.  While Global is the visible target, edit the textareas (undoable,
+            // same input->store path); otherwise write the Global fields through the store.
+            applyGlobalPair: ({ positive, negative }) => {
+                if (composerPromptTarget === "global") {
+                    replaceTextareaValue(composerPrompt, positive);
+                    replaceTextareaValue(composerNegative, negative);
+                } else {
+                    store.setStyleMetadata({ stylePrompt: positive, styleNegativePrompt: negative });
+                }
+            },
+        });
         let wildcardPreviewTarget = null;
         const wildcardPreview = mountWildcardPreview({ container: document.getElementById("mg-wildcard-preview"),
             keepOpenWithin: [document.getElementById("mg-lora-panel"), composerPrompt],
