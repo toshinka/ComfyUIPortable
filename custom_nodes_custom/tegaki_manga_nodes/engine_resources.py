@@ -441,7 +441,13 @@ class TrustedLoraIndex:
             forms.append(entry.stem)
         forms += [entry.basename, entry.id_noext, entry.id]
         for form in forms:
-            found = self.candidates(form)
+            # A shortened form can be an invalid directive name even when the canonical
+            # ID is valid (e.g. 'foo .safetensors' has the stem 'foo ' with a trailing
+            # space).  Such a form can never resolve, so it is skipped, not fatal.
+            try:
+                found = self.candidates(form)
+            except ResourceContractError:
+                continue
             if len(found) == 1 and found[0] is entry:
                 return form
         return entry.id
@@ -518,8 +524,41 @@ def build_trusted_lora_index(
 DIAGNOSTIC_STATUSES = (
     "RESOLVED", "LORA_UNAVAILABLE", "LORA_AMBIGUOUS", "INVALID_LORA_SYNTAX",
     "INVALID_STRENGTH", "OUTSIDE_RESOURCE_ROOT", "LORA_DUPLICATE", "SCENE_LORA_UNSUPPORTED",
+    "DYNAMIC_LORA",
 )
 _LORA_FRAGMENT_START = "<lora"
+# Characters that make a directive's final text depend on dynamic-prompt expansion.
+# "__" is NOT one: LoRA names are literal inside <lora:...> (the generation compiler
+# protects valid directives from wildcard parsing), e.g. Miki_Hoshii__The_iDOLM_STER_2011__epoch_8.
+_DYNAMIC_MARKERS = ("{", "}", "|")
+
+
+def _choice_group_spans(text: str) -> list:
+    """Spans of unescaped top-level ``{...}`` choice groups (dynamic-prompt variants).
+
+    Only used to label directives as *conditional*: generation expands the prompt
+    first and applies just the chosen alternative, so a raw-prompt check must not
+    treat alternatives as all applied (duplicates) at once.  Expansion itself stays
+    with dynamicprompts in the generation compiler.
+    """
+    spans, depth, start, index = [], 0, 0, 0
+    while index < len(text):
+        char = text[index]
+        if char == "\\" and index + 1 < len(text) and text[index + 1] in "{}":
+            index += 2
+            continue
+        if char == "{":
+            if depth == 0:
+                start = index
+            depth += 1
+        elif char == "}" and depth:
+            depth -= 1
+            if depth == 0:
+                spans.append((start, index + 1))
+        index += 1
+    if depth:
+        spans.append((start, len(text)))
+    return spans
 
 
 def diagnose_lora_sources(sources: list, index: TrustedLoraIndex) -> dict:
@@ -544,7 +583,7 @@ def diagnose_lora_sources(sources: list, index: TrustedLoraIndex) -> dict:
         text = source.get("text", "")
         if not isinstance(text, str):
             continue
-        has_wildcards = has_wildcards or ("__" in text)
+        has_wildcards = has_wildcards or ("__" in TAG_RE.sub("", text))
         allowed = source.get("lora_allowed", True) is not False
         found = []
         covered = []
@@ -563,8 +602,19 @@ def diagnose_lora_sources(sources: list, index: TrustedLoraIndex) -> dict:
                         stop = min(stop, at)
                 found.append((position, text[position:stop].strip(), False))
             position = text.lower().find(_LORA_FRAGMENT_START, position + 1)
+        choice_spans = _choice_group_spans(text)
         for position, raw, closed in sorted(found):
             item = {"source": label, "raw": raw, "position": position}
+            conditional = any(start <= position < end for start, end in choice_spans)
+            if conditional:
+                item["conditional"] = True
+            if closed and any(marker in raw for marker in _DYNAMIC_MARKERS):
+                # e.g. <lora:{a|b}:0.5> or <lora:__name__:1>: the concrete directive only
+                # exists after expansion; the generation compile validates it (fail closed).
+                item.update(status="DYNAMIC_LORA", blocking=False,
+                            message="Resolved after dynamic-prompt expansion at generation")
+                entries.append(item)
+                continue
             tag = LORA_RE.fullmatch(raw) if closed else None
             if tag is None:
                 item.update(status="INVALID_LORA_SYNTAX", compiler_code="UNSUPPORTED_PROMPT_TAG",
@@ -601,7 +651,10 @@ def diagnose_lora_sources(sources: list, index: TrustedLoraIndex) -> dict:
                             item["candidates"] = exc.candidates
                 else:
                     item["resolved_id"] = resolved.id
-                    if resolved.id in seen:
+                    if conditional:
+                        # One alternative of a {a|b} group: valid, but only applied when chosen.
+                        item["status"] = "RESOLVED"
+                    elif resolved.id in seen:
                         item.update(status="LORA_DUPLICATE", compiler_code="LORA_DUPLICATE",
                                     message=f"{resolved.id} appears more than once")
                     else:
@@ -609,8 +662,12 @@ def diagnose_lora_sources(sources: list, index: TrustedLoraIndex) -> dict:
                         item["status"] = "RESOLVED"
                         chain.append({"order": len(chain) + 1, "source": label, "name": name,
                                       "resolved_id": resolved.id, "strength": strength})
+            if conditional and item.get("status") != "RESOLVED":
+                # Reported, but it only fails generation if this alternative is chosen;
+                # the generation compile still fails closed on the expanded prompt.
+                item["blocking"] = False
             entries.append(item)
-    problems = [item for item in entries if item["status"] != "RESOLVED"]
+    problems = [item for item in entries if item["status"] != "RESOLVED" and item.get("blocking", True)]
     return {"ok": True, "entries": entries, "chain": chain, "problems": len(problems),
             "has_wildcards": has_wildcards}
 

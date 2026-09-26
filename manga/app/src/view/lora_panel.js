@@ -6,6 +6,8 @@
 // the backend compiler (basic_generation._compile_prompt) is the one parser that
 // resolves them against the trusted catalog.  The pattern mirrors LORA_RE there.
 
+import { LOAD_FAILED, loadLoraCatalog, queryLoraCatalog } from "./tag_autocomplete.js";
+
 const LORA_TOKEN_SOURCE = "<lora:([^:<>]+):([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+))>";
 
 export const LORA_STRENGTH_BOUNDS = Object.freeze({ min: -4, max: 4, step: 0.05, default: 1 });
@@ -150,8 +152,30 @@ function el(tag, className, text) {
     return node;
 }
 
+export const LORA_SEARCH_LIMIT = 60;
+
+/**
+ * LoRA search (Card MANGA-PROMPT-VALIDATION-COHERENCE1) over the already-loaded TRUSTED
+ * index (/api/manga/resources/lora/index — the resolver generation uses).  No disk scan,
+ * no safetensors reads, no other ComfyUI roots.  Case-insensitive for display only.
+ * Preview availability comes from folder listings already loaded (existing data).
+ */
+export function searchLoraIndex(index, query, { limit = LORA_SEARCH_LIMIT, folderCache = new Map() } = {}) {
+    const q = String(query ?? "").trim();
+    if (!q || !Array.isArray(index)) return { items: [], total: 0 };
+    const all = queryLoraCatalog(index, q, { limit: Number.MAX_SAFE_INTEGER });
+    const items = all.slice(0, limit).map(match => {
+        const folder = match.id.includes("/") ? match.id.slice(0, match.id.lastIndexOf("/")) : "";
+        const listed = folderCache.get(folder)?.loras?.find(entry => entry.id === match.id);
+        return { id: match.id, name: match.label, token: match.tag, folder, available: true,
+            preview: listed?.preview === true, fromSearch: true };
+    });
+    return { items, total: all.length };
+}
+
 export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folders, cards, count, prompt,
-    bulkInput = null, bulkApply = null, bulkStatus = null, fetchFolder = fetchLoraFolder }) {
+    bulkInput = null, bulkApply = null, bulkStatus = null, fetchFolder = fetchLoraFolder,
+    search = null, loadIndex = () => loadLoraCatalog() }) {
     const cache = new Map();
     const draftStrength = new Map();
     let currentFolder = "";
@@ -159,6 +183,10 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
     let enabled = true;
     let disabledReason = "";
     let loadSeq = 0;
+    let searchQuery = "";
+    let searchResult = null; // { items, total } while a search is active
+    let searchSeq = 0;
+    let searchTimer = null;
 
     const applyPrompt = (nextText) => {
         if (nextText === prompt.value) return;
@@ -234,7 +262,8 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
         renderCount();
         cards.replaceChildren();
         const tokens = findLoraTokens(prompt.value);
-        const items = (listing && listing.loras) || [];
+        const searching = Boolean(searchQuery);
+        const items = searching ? (searchResult?.items || []) : ((listing && listing.loras) || []);
         for (const lora of items) {
             const names = loraNamesFor(lora);
             const token = tokens.find(item => names.includes(item.id));
@@ -266,7 +295,7 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
             const name = el("span", "mg-lora-card-name", lora.name);
             name.title = lora.id;
             // Duplicate basenames insert a canonical token; show the folder so they are distinguishable.
-            const context = lora.token && lora.token !== lora.name && lora.folder
+            const context = (lora.fromSearch || (lora.token && lora.token !== lora.name)) && lora.folder
                 ? el("span", "mg-lora-card-folder", lora.folder) : null;
             const strength = el("input", "mg-lora-strength");
             strength.type = "number";
@@ -307,7 +336,59 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
             card.append(controls);
             cards.appendChild(card);
         }
-        if (!items.length && listing) cards.appendChild(el("div", "mg-hint mg-lora-empty", "No LoRA files in this folder."));
+        if (searching && searchResult && !items.length) cards.appendChild(el("div", "mg-hint mg-lora-empty", "No trusted LoRA matches this search."));
+        else if (!searching && !items.length && listing) cards.appendChild(el("div", "mg-hint mg-lora-empty", "No LoRA files in this folder."));
+    }
+
+    // --- search: results span folders; clearing returns to the current folder view ---
+    const setSearchMode = (on) => {
+        panel.classList.toggle("is-searching", on);
+        breadcrumb.hidden = on;
+        if (on) folders.hidden = true;
+        else renderFolders();
+    };
+
+    async function runSearch(query) {
+        searchQuery = String(query ?? "").trim();
+        const seq = ++searchSeq;
+        if (!searchQuery) {
+            searchResult = null;
+            setSearchMode(false);
+            setStatus(enabled ? "" : disabledReason);
+            renderCards();
+            return;
+        }
+        setSearchMode(true);
+        setStatus("Searching trusted LoRAs…");
+        const index = await loadIndex();
+        if (seq !== searchSeq) return; // a newer query (or a clear) won
+        if (!Array.isArray(index) || index[LOAD_FAILED]) {
+            searchResult = { items: [], total: 0 };
+            setStatus("LoRA index is unavailable; search needs the trusted index.", true);
+            renderCards();
+            return;
+        }
+        searchResult = searchLoraIndex(index, searchQuery, { folderCache: cache });
+        const shown = searchResult.items.length;
+        setStatus(enabled ? (searchResult.total > shown
+            ? `Search: ${shown} of ${searchResult.total} matches — refine to narrow`
+            : `Search: ${searchResult.total} match${searchResult.total === 1 ? "" : "es"} across folders`) : disabledReason);
+        renderCards();
+    }
+
+    if (search) {
+        search.addEventListener("input", () => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => runSearch(search.value), 120);
+        });
+        search.addEventListener("keydown", event => {
+            if (event.key === "Escape" && search.value) {
+                event.preventDefault();
+                search.value = "";
+                clearTimeout(searchTimer);
+                runSearch("");
+            }
+        });
     }
 
     async function openFolder(folderId, { refresh = false } = {}) {
@@ -332,6 +413,7 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
                 return;
             }
         }
+        if (searchQuery) return; // folder data arrived while searching; keep the search view
         setStatus(enabled ? "" : disabledReason);
         renderFolders();
         renderCards();
@@ -353,6 +435,7 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
     return {
         openFolder,
         setExpanded,
+        search: runSearch,
         refresh: () => openFolder(currentFolder, { refresh: true }),
         // Called whenever the composer swaps the prompt target/value.
         sync({ enabled: nextEnabled = true, reason = "" } = {}) {
@@ -379,22 +462,58 @@ const STATUS_LABEL = {
     SCENE_LORA_UNSUPPORTED: "NOT ALLOWED HERE",
 };
 const SOURCE_LABEL = { page_positive: "Global", scene_positive: "Scene", page_negative: "Global negative", scene_negative: "Scene negative" };
+STATUS_LABEL.DYNAMIC_LORA = "RESOLVED AT GENERATION";
+
+/** Only definite problems block; {a|b}-conditional or dynamic directives are reported, not blocking. */
+export function isBlockingProblem(entry) {
+    return entry?.status !== "RESOLVED" && entry?.blocking !== false;
+}
+
+/** Wildcard references (`__name__`) in LoRA-bearing sources: their LoRAs exist only after expansion. */
+export function sourcesHaveWildcards(sources) {
+    // "__" inside a <lora:...> name is literal, never a Wildcard reference.
+    return Array.isArray(sources) && sources.some(source => source?.lora_allowed !== false &&
+        /__[^_\s,][^\s,]*?__/.test(String(source?.text || "").replace(/<lora:[^<>]*>/gi, " ")));
+}
 
 export function sourcesHaveLora(sources) {
     return Array.isArray(sources) && sources.some(source => /<lora/i.test(String(source?.text || "")));
 }
 
-export function createLoraValidator({ engine = "illustrious", fetchImpl = (...args) => globalThis.fetch(...args) } = {}) {
+/**
+ * ONE authoritative LoRA validation snapshot per exact prompt-source content
+ * (Card MANGA-PROMPT-VALIDATION-COHERENCE1).  The key IS the prompt state (source
+ * labels + texts), so a late reply for an older prompt can only fill its own entry —
+ * it can never answer, overwrite or block a newer prompt.  Every settle calls
+ * `onSettled` so BOTH consumers (LoRA status and the Generate gate) re-read the
+ * snapshot for the CURRENT prompt; transport failures expire so they are retried.
+ */
+export function createLoraValidator({ engine = "illustrious", fetchImpl = (...args) => globalThis.fetch(...args),
+    onSettled = () => {}, failureTtlMs = 5000, now = () => Date.now() } = {}) {
     const cache = new Map();
     const inflight = new Map();
     const keyOf = sources => JSON.stringify(sources);
+    const fresh = key => {
+        const hit = cache.get(key);
+        if (!hit) return null;
+        if (hit.result?.ok !== true && now() - hit.at > failureTtlMs) {
+            cache.delete(key);
+            return null;
+        }
+        return hit.result;
+    };
     return {
+        keyOf,
         peek(sources) {
-            return cache.get(keyOf(sources)) ?? null;
+            return fresh(keyOf(sources));
+        },
+        pending(sources) {
+            return inflight.has(keyOf(sources));
         },
         request(sources) {
             const key = keyOf(sources);
-            if (cache.has(key)) return Promise.resolve(cache.get(key));
+            const hit = fresh(key);
+            if (hit) return Promise.resolve(hit);
             if (inflight.has(key)) return inflight.get(key);
             const promise = Promise.resolve().then(() => fetchImpl(
                 `/api/manga/resources/lora/validate?engine=${encodeURIComponent(engine)}`,
@@ -403,9 +522,10 @@ export function createLoraValidator({ engine = "illustrious", fetchImpl = (...ar
                 const data = await res.json().catch(() => null);
                 return data && typeof data === "object" ? data : { ok: false, error: `LoRA validation failed (${res.status})` };
             }).catch(err => ({ ok: false, error: err?.message || "LoRA validation unavailable" })).then(result => {
-                cache.set(key, result);
+                cache.set(key, { result, at: now() });
                 if (cache.size > 24) cache.delete(cache.keys().next().value);
                 inflight.delete(key);
+                try { onSettled(result, sources); } catch { /* a consumer error must not poison the snapshot */ }
                 return result;
             });
             inflight.set(key, promise);
@@ -417,36 +537,69 @@ export function createLoraValidator({ engine = "illustrious", fetchImpl = (...ar
 /** Generate-gate reason from a backend validation result ("" when nothing blocks). */
 export function loraBlockReasonFromDiagnostics(result) {
     if (!result || result.ok !== true || !Array.isArray(result.entries)) return "";
-    const problems = result.entries.filter(entry => entry.status !== "RESOLVED");
+    const problems = result.entries.filter(isBlockingProblem);
     if (!problems.length) return "";
     const first = problems[0];
     const more = problems.length > 1 ? ` (+${problems.length - 1} more)` : "";
     return `Generate disabled — unresolved LoRA: ${first.name || first.raw} ${STATUS_LABEL[first.status] || first.status}${more}. See LoRA status under the prompt.`;
 }
 
-export function mountLoraDiagnostics({ container, validator, getSources, onResult = () => {} }) {
+export function loraStatusSummary(result, { wildcardsOnly = false } = {}) {
+    if (wildcardsOnly) return "LoRA status · Wildcards may add LoRAs (resolved at generation)";
+    if (!result) return "LoRA status · checking…";
+    if (result.ok !== true) return "LoRA status · unavailable";
+    const blocking = (result.entries || []).filter(isBlockingProblem).length;
+    const notes = (result.entries || []).filter(entry => entry.status !== "RESOLVED" && entry.blocking === false).length;
+    return `LoRA status${blocking ? ` · ${blocking} problem${blocking > 1 ? "s" : ""}` : " · all resolved"}${notes ? ` · ${notes} conditional` : ""}`;
+}
+
+export function mountLoraDiagnostics({ container, validator, getSources, onResult = () => {}, expanded = true }) {
     let timer = null;
     let currentKey = "";
+    let isExpanded = Boolean(expanded);
 
-    const render = (result) => {
+    // Collapsible (the header always states the result); collapsing never stops validation.
+    const frame = (summary, bodyNodes, { problem = false } = {}) => {
         container.replaceChildren();
+        const head = el("button", `mg-lora-diag-head mg-lora-diag-toggle${problem ? " has-problem" : ""}`, summary);
+        head.type = "button";
+        head.setAttribute("aria-expanded", isExpanded ? "true" : "false");
+        head.onclick = () => {
+            isExpanded = !isExpanded;
+            head.setAttribute("aria-expanded", isExpanded ? "true" : "false");
+            body.hidden = !isExpanded;
+            container.classList.toggle("is-collapsed", !isExpanded);
+        };
+        const body = el("div", "mg-lora-diag-body");
+        body.append(...bodyNodes);
+        body.hidden = !isExpanded;
+        container.classList.toggle("is-collapsed", !isExpanded);
+        container.append(head, body);
+    };
+
+    const render = (result, { wildcardsOnly = false, hasWildcards = false } = {}) => {
+        const summary = loraStatusSummary(result, { wildcardsOnly });
+        if (wildcardsOnly) {
+            frame(summary, [el("div", "mg-hint", "The prompt has Wildcards but no explicit LoRA. LoRAs a Wildcard emits are resolved when generation expands it; use Expand in the Wildcard preview to inspect them here.")]);
+            return;
+        }
         if (!result) {
-            container.appendChild(el("div", "mg-hint", "LoRA status: checking…"));
+            frame(summary, [el("div", "mg-hint", "LoRA status: checking…")]);
             return;
         }
         if (result.ok !== true) {
-            container.appendChild(el("div", "mg-hint mg-lora-status-error", `LoRA status unavailable: ${result.error || "validation failed"}`));
+            frame(summary, [el("div", "mg-hint mg-lora-status-error", `LoRA status unavailable: ${result.error || "validation failed"}`)], { problem: true });
             return;
         }
-        const head = el("div", "mg-lora-diag-head", `LoRA status${result.problems ? ` · ${result.problems} problem${result.problems > 1 ? "s" : ""}` : " · all resolved"}`);
         const list = el("ul", "mg-lora-diag-list");
         for (const entry of result.entries) {
             const ok = entry.status === "RESOLVED";
-            const row = el("li", `mg-lora-diag-row ${ok ? "is-ok" : "is-problem"}`);
+            const row = el("li", `mg-lora-diag-row ${ok ? "is-ok" : isBlockingProblem(entry) ? "is-problem" : "is-note"}`);
+            if (entry.conditional) row.dataset.conditional = "true";
             row.dataset.status = entry.status;
             row.dataset.loraName = entry.name || entry.raw;
             const main = el("span", "mg-lora-diag-main",
-                `${ok ? "✓" : "✕"} ${entry.name || entry.raw}${entry.strength_text ? ` ${entry.strength_text}` : ""}${ok ? "" : ` — ${STATUS_LABEL[entry.status] || entry.status}`}`);
+                `${ok ? "✓" : isBlockingProblem(entry) ? "✕" : "…"} ${entry.name || entry.raw}${entry.strength_text ? ` ${entry.strength_text}` : ""}${ok ? "" : ` — ${STATUS_LABEL[entry.status] || entry.status}`}${entry.conditional ? " (only if this {…|…} choice is picked)" : ""}`);
             row.appendChild(main);
             let detail = "";
             if (ok) detail = `→ ${entry.resolved_id}`;
@@ -466,34 +619,42 @@ export function mountLoraDiagnostics({ container, validator, getSources, onResul
             ol.appendChild(li);
         }
         chain.appendChild(ol);
-        container.append(head, list, chain);
-        if (result.has_wildcards) {
-            container.appendChild(el("div", "mg-hint", "Wildcards present: LoRAs they emit are resolved the same way at generation time."));
+        const nodes = [list, chain];
+        if (result.has_wildcards || hasWildcards) {
+            nodes.push(el("div", "mg-hint", "Wildcards present: LoRAs they emit are resolved the same way at generation time (Expand a Wildcard to inspect them here)."));
         }
+        frame(summary, nodes, { problem: (result.entries || []).some(isBlockingProblem) });
     };
 
     const refresh = () => {
         const sources = getSources();
         if (!sources || !sourcesHaveLora(sources)) {
+            clearTimeout(timer);
             currentKey = "";
+            if (sources && sourcesHaveWildcards(sources)) {
+                container.hidden = false;
+                render(null, { wildcardsOnly: true });
+                return;
+            }
             container.hidden = true;
             container.replaceChildren();
             return;
         }
         container.hidden = false;
-        const key = JSON.stringify(sources);
+        const key = validator.keyOf ? validator.keyOf(sources) : JSON.stringify(sources);
         currentKey = key;
         const cached = validator.peek(sources);
-        render(cached);
+        render(cached, { hasWildcards: sourcesHaveWildcards(sources) });
         if (cached) return;
         clearTimeout(timer);
         timer = setTimeout(() => {
             validator.request(sources).then(result => {
-                if (currentKey === key) render(result);
+                // Latest wins: a reply for an older prompt never renders over the current one.
+                if (currentKey === key) render(result, { hasWildcards: sourcesHaveWildcards(sources) });
                 onResult(result);
             });
         }, 250);
     };
 
-    return { refresh };
+    return { refresh, get expanded() { return isExpanded; } };
 }

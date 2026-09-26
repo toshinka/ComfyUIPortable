@@ -158,10 +158,37 @@ export function loadWildcardCatalog(url = DEFAULT_WILDCARD_URL, fetchImpl = glob
 export function findActivePromptToken(text, caret) {
     const value = String(text ?? "");
     const position = Math.max(0, Math.min(value.length, Number.isFinite(caret) ? caret : value.length));
-    const commaBefore = value.lastIndexOf(",", Math.max(0, position - 1));
-    const commaAfter = value.indexOf(",", position);
-    const start = commaBefore + 1;
-    const end = commaAfter === -1 ? value.length : commaAfter;
+    // Tokens are delimited by commas AND line breaks.  Owner prompts are often
+    // multi-line; with commas only, "…eyes\nsmi" became one unmatched query and
+    // completion vanished for the whole new line (reproduced in the live workspace).
+    const back = Math.max(0, position - 1);
+    const commaBefore = Math.max(value.lastIndexOf(",", back), value.lastIndexOf("\n", back));
+    const afterComma = value.indexOf(",", position);
+    const afterNewline = value.indexOf("\n", position);
+    const commaAfter = afterComma === -1 ? afterNewline
+        : afterNewline === -1 ? afterComma : Math.min(afterComma, afterNewline);
+    let start = commaBefore + 1;
+    let end = commaAfter === -1 ? value.length : commaAfter;
+    // Prompt syntax sharing the comma segment must not become part of the tag query,
+    // nor be replaced by an inserted tag: "(smi", "[smi", "<lora:x:1> smi", "__w__ smi",
+    // "(tag:1.2) smi".  Only the plain text after the last syntax boundary is the token.
+    const head = value.slice(start, position);
+    let cut = -1;
+    let opener = false;
+    for (let index = head.length - 1; index >= 0; index -= 1) {
+        const char = head[index];
+        if (char === "(" || char === "[") { cut = index; opener = true; break; }
+        if (char === ">" || char === ")" || char === "]" || char === "\u3001") { cut = index; break; }
+    }
+    for (const match of head.matchAll(/__[^_\s,][^\s,]*?__/g)) {
+        const last = match.index + match[0].length - 1;
+        if (last > cut) { cut = last; opener = false; }
+    }
+    if (cut !== -1) start += cut + 1;
+    const tail = value.slice(position, end);
+    const stop = tail.search(/[()[\]<:]/);
+    const syntaxAfter = stop !== -1;
+    if (syntaxAfter) end = position + stop;
     const raw = value.slice(start, end);
     const leading = raw.match(/^\s*/)?.[0] || "";
     const trailing = raw.match(/\s*$/)?.[0] || "";
@@ -175,7 +202,9 @@ export function findActivePromptToken(text, caret) {
         leading,
         trailing,
         query: token,
-        caret: position
+        caret: position,
+        // Inside "(…" / "[…" or right before ")", ":" etc.: insert the bare tag, no ", ".
+        syntaxBounded: opener || syntaxAfter
     };
 }
 
@@ -357,7 +386,29 @@ export function detectPromptCompletionContext(text, caret) {
         }
     }
 
-    // 4. Ordinary Tag context (comma-delimited)
+    // 4. Single "_" Wildcard discovery: a word that STARTS with one "_" at a token
+    //    boundary (prompt start, whitespace, comma, newline).  "long_" stays a tag.
+    //    Accepting inserts the canonical "__name__" token (discovery UX only).
+    let wordStart = pos;
+    while (wordStart > 0 && !/[\s,]/.test(value[wordStart - 1])) wordStart -= 1;
+    let wordEnd = pos;
+    while (wordEnd < value.length && !/[\s,]/.test(value[wordEnd])) wordEnd += 1;
+    const word = value.slice(wordStart, wordEnd);
+    if (/^_(?!_)[^<>{}|_][^<>{}|]*$|^_$/.test(word)) {
+        return {
+            type: "wildcard",
+            discovery: true,
+            start: wordStart,
+            end: wordEnd,
+            nameStart: wordStart + 1,
+            nameEnd: wordEnd,
+            hasClosingDelimiter: false,
+            query: value.slice(wordStart + 1, pos),
+            caret: pos
+        };
+    }
+
+    // 5. Ordinary Tag context (comma / line delimited)
     const active = findActivePromptToken(value, pos);
     return {
         type: "tag",
@@ -478,7 +529,7 @@ export function insertPromptTag(text, caret, tag) {
     const replacementTag = String(tag).trim();
     const after = value.slice(active.end);
     const hasFollowingComma = /^\s*,/.test(after);
-    const replacement = hasFollowingComma
+    const replacement = hasFollowingComma || active.syntaxBounded
         ? `${active.leading}${replacementTag}${active.trailing}`
         : `${active.leading}${replacementTag}, `;
     const nextValue = value.slice(0, active.start) + replacement + after;
@@ -896,9 +947,21 @@ export class TagAutocompleteController {
             result = insertPromptTag(this.textarea.value, this.textarea.selectionStart, entry.tag);
         }
         if (!result) return false;
+        // Capture the accepted context BEFORE emitting "input": this controller's own input
+        // handler recomputes (and may clear) activeContext synchronously.  Reading it afterwards
+        // threw "Cannot read properties of null (reading 'type')" in the live workspace, which
+        // aborted every accept before close() and suppressed the Wildcard preview event.
+        const accepted = this.activeContext;
         this.textarea.value = result.value;
         this.textarea.setSelectionRange(result.caret, result.caret);
         this.textarea.dispatchEvent(new Event("input", { bubbles: true }));
+        if (accepted.type === "wildcard") {
+            // Informational (Wildcard source preview outside the textarea).  `start` is where the
+            // inserted __name__ occurrence begins, so an explicit Expand replaces exactly it.
+            const tokenStart = accepted.hasClosingDelimiter ? accepted.nameStart - 2 : accepted.start;
+            this.textarea.dispatchEvent(new CustomEvent("tegaki:wildcard-inserted",
+                { bubbles: true, detail: { name: String(entry.tag).trim().replaceAll("\\", "/"), start: tokenStart } }));
+        }
         this.close();
         this.textarea.focus();
         return true;

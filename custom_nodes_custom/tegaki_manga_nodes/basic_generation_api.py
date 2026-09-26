@@ -10,7 +10,8 @@ from aiohttp import web
 
 from .basic_generation import (
     CORE_NODES, NODE_IDENTITY, WILDCARD_ENV, GenerationContractError,
-    _digest, _dynamic_prompt_api, _wildcard_root, build_catalog, compile_basic,
+    _digest, _dynamic_prompt_api, _safe_wildcard_name, _wildcard_root, build_catalog, compile_basic,
+    expand_wildcard_text,
 )
 from .scene_generation import (
     CONTROLNET_DEFAULT_MODEL,
@@ -60,6 +61,33 @@ except (ImportError, ValueError):
     from engine_resources import ResourceContractError, browse_lora_payload, lora_preview_path, preview_mime, build_trusted_lora_index, lora_index_payload, resolve_resource_root, validate_lora_request
 
 MAX_REQUEST_BYTES = 256 * 1024
+
+
+def package_source_digest(directory: str | None = None) -> str:
+    """sha256 over this package's top-level *.py files (name + bytes), sorted by name.
+
+    Computed once at import so /tegaki/manga/runtime/source-identity reports the
+    source this process actually loaded.  run_manga.mjs computes the same digest
+    from disk and refuses to reuse a backend whose loaded source is stale.
+    """
+    import hashlib
+
+    folder = os.path.realpath(directory or os.path.dirname(os.path.abspath(__file__)))
+    digest = hashlib.sha256()
+    for name in sorted(n for n in os.listdir(folder) if n.endswith(".py")):
+        path = os.path.join(folder, name)
+        if not os.path.isfile(path):
+            continue
+        with open(path, "rb") as handle:
+            data = handle.read()
+        digest.update(name.encode("utf-8") + b"\0" + data + b"\0")
+    return digest.hexdigest()
+
+
+try:
+    LOADED_SOURCE_DIGEST = package_source_digest()
+except OSError:
+    LOADED_SOURCE_DIGEST = None
 
 try:
     from server import PromptServer
@@ -513,7 +541,51 @@ async def api_manga_resource_lora_preview(request: web.Request) -> web.Response:
     })
 
 
+async def api_manga_runtime_source_identity(request: web.Request) -> web.Response:
+    """Which package source this backend process loaded (launcher freshness check)."""
+    return web.json_response({"ok": True, "service": "tegaki_manga_nodes", "pid": os.getpid(),
+                              "source_digest": LOADED_SOURCE_DIGEST}, headers={"Cache-Control": "no-store"})
+
+
+def expand_one_wildcard(name: object) -> dict:
+    """ONE concrete expansion of ``__name__`` through the existing dynamicprompts owner.
+
+    Explicit Owner action (Wildcard preview "Expand").  Uses expand_wildcard_text,
+    i.e. the same trusted root, sampler and validation as generation; never writes.
+    """
+    if not isinstance(name, str) or any(mark in name for mark in ("{", "}", "|", "__")):
+        raise GenerationContractError("INVALID_WILDCARD_PATH", "Wildcard identifier must be a plain relative name")
+    canonical = _safe_wildcard_name(name)
+    result = expand_wildcard_text(f"__{canonical}__", domain="expand")
+    if not result.get("ok"):
+        error = (result.get("errors") or [{}])[0]
+        raise GenerationContractError(error.get("code", "WILDCARD_EXPAND_FAILED"),
+                                      error.get("message", "Wildcard expansion failed"))
+    # No physical root or seeds leave the backend; the text is what the Owner edits.
+    return {"ok": True, "name": canonical, "token": f"__{canonical}__",
+            "expanded_text": result["expanded_text"], "used_wildcards": result.get("used_wildcards", [])}
+
+
+async def api_manga_wildcard_expand(request: web.Request) -> web.Response:
+    if request.content_length is not None and request.content_length > MAX_REQUEST_BYTES:
+        return _error("REQUEST_TOO_LARGE", "Request exceeds 256 KiB", 413)
+    try:
+        body = json.loads((await request.read()).decode("utf-8"))
+    except (UnicodeDecodeError, ValueError):
+        return _error("INVALID_JSON", "Request must be JSON", 400)
+    try:
+        return web.json_response(expand_one_wildcard(body.get("name") if isinstance(body, dict) else None),
+                                 headers={"Cache-Control": "no-store"})
+    except GenerationContractError as exc:
+        return _error(exc.code, str(exc), 404 if exc.code == "WILDCARD_NOT_FOUND" else 400)
+    except Exception:
+        logging.exception("[MangaBasicGenerationAPI] Wildcard expand failed")
+        return _error("WILDCARD_EXPAND_FAILED", "Wildcard expansion failed", 500)
+
+
 if routes is not None:
+    routes.get("/tegaki/manga/runtime/source-identity")(api_manga_runtime_source_identity)
+    routes.post("/tegaki/manga/wildcards/expand")(api_manga_wildcard_expand)
     routes.get("/tegaki/manga/resources/{engine}/lora")(api_manga_resource_lora_browse)
     routes.get("/tegaki/manga/resources/{engine}/lora/preview")(api_manga_resource_lora_preview)
     routes.get("/tegaki/manga/resources/{engine}/lora/index")(api_manga_resource_lora_index)

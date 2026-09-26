@@ -38,6 +38,21 @@ const ANALYZER_SCRIPT = path.join(__dirname, "reference_identity_analyzer.py");
 const PORT = parseInt(process.env.MANGA_WORKSPACE_PORT || "8191", 10);
 const HOST = "127.0.0.1";
 
+// Runtime freshness (Card MANGA-PROMPT-VALIDATION-COHERENCE1): the server-side source this
+// process LOADED.  Static app files are read from disk per request and always look current,
+// so run_manga.mjs compares this digest (same formula) with disk before reusing a process.
+function workspaceSourceDigest(dir = __dirname) {
+    const hash = crypto.createHash("sha256");
+    for (const name of fs.readdirSync(dir).filter(item => item.endsWith(".mjs")).sort()) {
+        const file = path.join(dir, name);
+        if (!fs.statSync(file).isFile()) continue;
+        hash.update(Buffer.concat([Buffer.from(name, "utf8"), Buffer.from([0]), fs.readFileSync(file), Buffer.from([0])]));
+    }
+    return hash.digest("hex");
+}
+let LOADED_SOURCE_DIGEST = null;
+try { LOADED_SOURCE_DIGEST = workspaceSourceDigest(); } catch { LOADED_SOURCE_DIGEST = null; }
+
 const MIME_TYPES = {
     ".html": "text/html; charset=utf-8",
     ".js": "text/javascript; charset=utf-8",
@@ -860,6 +875,146 @@ const server = http.createServer(async (req, res) => {
         }
     }
 
+    // Wildcard source preview (Card MANGA-WILDCARD-AUTOCOMPLETE-PRODUCTION1).
+    // Read-only, bounded, addressed by the same canonical name the listing emits
+    // ("nested/leaf" -> <root>/nested/leaf.txt). Never expands, never writes.
+    // Explicit Wildcard Expand (Card MANGA-PROMPT-VALIDATION-COHERENCE1): ONE concrete expansion
+    // produced by the backend's existing dynamicprompts owner; the workspace never parses wildcards.
+    if (pathname === "/api/manga/wildcards/expand") {
+        const reply = (status, error_code, error) => {
+            res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
+            res.end(JSON.stringify({ ok: false, error_code, error }));
+        };
+        if (req.method !== "POST") {
+            reply(405, "METHOD_NOT_ALLOWED", "Use POST");
+            return;
+        }
+        if ((requestOrigin && !allowedLocalOrigins.has(requestOrigin)) ||
+            (req.headers["sec-fetch-site"] && !["same-origin", "none"].includes(req.headers["sec-fetch-site"]))) {
+            reply(403, "ORIGIN_FORBIDDEN", "Request origin is not the Manga workspace");
+            return;
+        }
+        if ((req.headers["content-type"] || "").split(";")[0].trim().toLowerCase() !== "application/json") {
+            reply(415, "INVALID_CONTENT_TYPE", "Content-Type must be application/json");
+            return;
+        }
+        const chunks = [];
+        let received = 0;
+        for await (const chunk of req) {
+            received += chunk.length;
+            if (received > 16 * 1024) {
+                req.resume();
+                reply(413, "REQUEST_TOO_LARGE", "Request exceeds 16 KiB");
+                return;
+            }
+            chunks.push(chunk);
+        }
+        let name;
+        try { name = JSON.parse(Buffer.concat(chunks).toString("utf8"))?.name; } catch { name = undefined; }
+        if (typeof name !== "string" || !name || name.length > 512) {
+            reply(400, "INVALID_WILDCARD_NAME", "Wildcard name is required");
+            return;
+        }
+        try {
+            const backendRes = await fetch(`${parsedBackend.origin}/tegaki/manga/wildcards/expand`, {
+                method: "POST", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name }), signal: AbortSignal.timeout(20000),
+            });
+            const text = await backendRes.text();
+            if (text.length > 1024 * 1024) {
+                reply(502, "BACKEND_INVALID_RESPONSE", "Backend response exceeds 1 MiB");
+                return;
+            }
+            let data;
+            try { data = JSON.parse(text); } catch {
+                reply(backendRes.status === 404 ? 503 : 502, "BACKEND_INVALID_RESPONSE",
+                    backendRes.status === 404 ? "Backend does not provide Wildcard expansion (restart the Manga backend)" : "Backend returned invalid JSON");
+                return;
+            }
+            const valid = data && typeof data === "object" && (backendRes.ok
+                ? data.ok === true && typeof data.expanded_text === "string" && typeof data.name === "string"
+                : data.ok === false && typeof data.error === "string");
+            if (!valid) {
+                reply(502, "BACKEND_INVALID_RESPONSE", "Backend response is missing required fields");
+                return;
+            }
+            res.writeHead(backendRes.status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
+            res.end(JSON.stringify(backendRes.ok
+                ? { ok: true, name: data.name, token: `__${data.name}__`, expanded_text: data.expanded_text,
+                    used_wildcards: Array.isArray(data.used_wildcards) ? data.used_wildcards : [] }
+                : { ok: false, error_code: data.error_code, error: data.error }));
+        } catch (err) {
+            reply(502, err.name === "TimeoutError" ? "BACKEND_TIMEOUT" : "BACKEND_UNAVAILABLE",
+                err.name === "TimeoutError" ? "Backend Wildcard expansion timed out" : "Backend Wildcard expansion failed");
+        }
+        return;
+    }
+
+    if (pathname === "/api/manga/wildcards/preview") {
+        const reply = (status, error_code, error) => {
+            res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
+            res.end(JSON.stringify({ ok: false, error_code, error }));
+        };
+        if (req.method !== "GET") {
+            reply(405, "METHOD_NOT_ALLOWED", "Use GET");
+            return;
+        }
+        if ((requestOrigin && !allowedLocalOrigins.has(requestOrigin)) ||
+            (req.headers["sec-fetch-site"] && !["same-origin", "none"].includes(req.headers["sec-fetch-site"]))) {
+            reply(403, "ORIGIN_FORBIDDEN", "Request origin is not the Manga workspace");
+            return;
+        }
+        const name = (url.searchParams.get("name") || "").replaceAll("\\", "/");
+        // Same name rule as the listing below; anything else fails closed.
+        if (!name || name.length > 512 || name.startsWith("/") ||
+            name.split("/").some(part => !part || part === "." || part === "..") ||
+            /[\x00-\x1f\x7f<>#$:*?\[\]]/.test(name)) {
+            reply(400, "INVALID_WILDCARD_NAME", "Wildcard name must be a canonical relative name");
+            return;
+        }
+        try {
+            const configured = (process.env.TEGAKI_MANGA_WILDCARDS_DIR || "").trim();
+            const root = fs.realpathSync(configured ? path.resolve(configured) : path.resolve(__dirname, "..", "wildcards"));
+            const candidate = path.resolve(root, ...name.split("/")) + ".txt";
+            if (!fs.existsSync(candidate)) {
+                reply(404, "WILDCARD_NOT_FOUND", `Wildcard '${name}' does not exist`);
+                return;
+            }
+            const real = fs.realpathSync(candidate);
+            const rel = path.relative(root, real);
+            if (!rel || rel.startsWith("..") || path.isAbsolute(rel) || !fs.statSync(real).isFile()) {
+                reply(400, "INVALID_WILDCARD_NAME", "Wildcard is outside the wildcard root");
+                return;
+            }
+            const MAX_BYTES = 1024 * 1024;
+            const size = fs.statSync(real).size;
+            const handle = fs.openSync(real, "r");
+            let text;
+            try {
+                const buffer = Buffer.alloc(Math.min(size, MAX_BYTES));
+                fs.readSync(handle, buffer, 0, buffer.length, 0);
+                text = buffer.toString("utf8");
+            } finally {
+                fs.closeSync(handle);
+            }
+            const truncated = size > MAX_BYTES;
+            // Usable entries follow dynamicprompts' text-wildcard rule: one entry per
+            // line, stripped, skipping blank lines and '#' comment lines.
+            const entries = text.replace(/^﻿/, "").split(/\r?\n/).map(line => line.trim())
+                .filter(line => line && !line.startsWith("#"));
+            if (truncated && entries.length) entries.pop(); // a cut-off last line is not an entry
+            // Every usable entry within the read cap is returned (no sample limit); the
+            // UI shows them all.  Past the cap the true total is unknown -> null.
+            res.writeHead(200, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
+            res.end(JSON.stringify({ ok: true, name, token: `__${name}__`, entries,
+                shown: entries.length, total: truncated ? null : entries.length, truncated,
+                max_bytes: MAX_BYTES }));
+        } catch (err) {
+            reply(500, "WILDCARD_PREVIEW_FAILED", "Failed to read wildcard preview");
+        }
+        return;
+    }
+
     // Manga Wildcard Discovery
     if (pathname === "/api/manga/wildcards") {
         if (req.method !== "GET") {
@@ -1336,7 +1491,9 @@ const server = http.createServer(async (req, res) => {
             version: "1.0.0",
             domain: "manga",
             authoring_schema: "1.0.0",
-            backend_target: parsedBackend.origin
+            backend_target: parsedBackend.origin,
+            pid: process.pid,
+            source_digest: LOADED_SOURCE_DIGEST
         }));
         return;
     }

@@ -263,6 +263,59 @@ def _restore_escaped_braces(value: str) -> str:
     return value.replace(ESCAPED_OPEN, "{").replace(ESCAPED_CLOSE, "}")
 
 
+# LoRA directives are literal to the dynamic-prompt layer (Card
+# MANGA-WILDCARD-LORA-DOUBLE-UNDERSCORE-COLLISION1).  A valid <lora:NAME:W> may
+# legitimately contain "__" in NAME (e.g. Miki_Hoshii__The_iDOLM_STER_2011__epoch_8);
+# dynamicprompts would read that as a __wildcard__.  Each directive that LORA_RE
+# (the one LoRA grammar) accepts is swapped for an opaque placeholder before parsing
+# and restored byte-for-byte afterwards; wildcard *values* get the same treatment so
+# a LoRA emitted by a wildcard file survives too.  Directives whose NAME carries
+# choice syntax ({ } |) are left to dynamicprompts, as before.
+LORA_SPAN_OPEN = "\ue002"
+LORA_SPAN_CLOSE = "\ue003"
+_LORA_SPAN_RE = re.compile(r"<lora:[^<>]*>")
+_LORA_PLACEHOLDER_RE = re.compile(LORA_SPAN_OPEN + r"(\d+)" + LORA_SPAN_CLOSE)
+
+
+class _LoraSpanGuard:
+    def __init__(self):
+        self.spans: list[str] = []
+
+    def protect(self, text: str) -> str:
+        if LORA_SPAN_OPEN in text or LORA_SPAN_CLOSE in text:
+            _fail("INVALID_PROMPT_SYNTAX", "Prompt contains reserved dynamic-prompt markers")
+
+        def swap(match):
+            token = match.group(0)
+            tag = LORA_RE.fullmatch(token)
+            if tag is None or any(mark in tag.group(1) for mark in "{}|"):
+                return token
+            self.spans.append(token)
+            return f"{LORA_SPAN_OPEN}{len(self.spans) - 1}{LORA_SPAN_CLOSE}"
+
+        return _LORA_SPAN_RE.sub(swap, text)
+
+    def restore(self, text: str) -> str:
+        return _LORA_PLACEHOLDER_RE.sub(lambda match: self.spans[int(match.group(1))], text)
+
+    def guard_manager(self, manager: Any) -> Any:
+        """Protect LoRA directives inside wildcard values served by ``manager``."""
+        from dataclasses import replace
+
+        original = manager.get_values
+
+        def get_values(name):
+            values = original(name)
+            items = tuple(
+                self.protect(item) if isinstance(item, str) else replace(item, content=self.protect(item.content))
+                for item in values
+            )
+            return type(values).from_items(items)
+
+        manager.get_values = get_values
+        return manager
+
+
 WILDCARD_SYNTAX = ("__wildcard__", "{a|b}", "nested", "weighted", "escaped_braces")
 
 
@@ -548,7 +601,9 @@ def validate_wildcard_text(
         resolved_root = _wildcard_root(root if root is not None else catalog_root)
         manager = manager_type(resolved_root)
         _assert_bounded_collections(manager, resolved_root)
-        parsed = parse(_protect_escaped_braces(text))
+        guard = _LoraSpanGuard()
+        guard.guard_manager(manager)
+        parsed = parse(_protect_escaped_braces(guard.protect(text)))
         result["wildcards"] = _validate_wildcard_commands(parsed, wildcard_type, manager, resolved_root)
         result["dynamicprompts_version"] = version
         result["wildcard_root"] = str(resolved_root)
@@ -711,7 +766,9 @@ def expand_wildcard_text(
         resolved_root = _wildcard_root(supplied.get("root"))
         manager = manager_type(resolved_root)
         _assert_bounded_collections(manager, resolved_root)
-        protected = _protect_escaped_braces(text)
+        guard = _LoraSpanGuard()
+        guard.guard_manager(manager)
+        protected = _protect_escaped_braces(guard.protect(text))
         try:
             parsed = parse(protected)
         except Exception as exc:
@@ -727,7 +784,7 @@ def expand_wildcard_text(
         _validate_wildcard_commands(expanded_parsed, wildcard_type, manager, resolved_root)
         if WILDCARD_TOKEN_RE.search(expanded_protected):
             _fail("WILDCARD_NOT_FOUND", "Expanded prompt still contains an unresolved wildcard")
-        expanded_text = _restore_escaped_braces(expanded_protected)
+        expanded_text = guard.restore(_restore_escaped_braces(expanded_protected))
         result.update({
             "ok": True,
             "expanded_text": expanded_text,
@@ -756,7 +813,9 @@ def _expand_dynamic_prompt(raw: str, effective_seed: int, domain: str) -> tuple[
     _dynamic, _Command, wildcard_type, generator_type, parse, manager_type, version = _dynamic_prompt_api()
     root = _wildcard_root()
     manager = manager_type(root)
-    protected = _protect_escaped_braces(raw)
+    guard = _LoraSpanGuard()
+    guard.guard_manager(manager)
+    protected = _protect_escaped_braces(guard.protect(raw))
     try:
         parsed = parse(protected)
     except Exception as exc:
@@ -794,7 +853,7 @@ def _expand_dynamic_prompt(raw: str, effective_seed: int, domain: str) -> tuple[
     validate_commands(expanded_parsed)
     if WILDCARD_TOKEN_RE.search(expanded_protected):
         _fail("WILDCARD_NOT_FOUND", "Expanded prompt still contains an unresolved wildcard")
-    return _restore_escaped_braces(expanded_protected), str(root), version
+    return guard.restore(_restore_escaped_braces(expanded_protected)), str(root), version
 
 
 def _compile_prompt(raw: str, catalog: dict) -> tuple[str, list[dict]]:

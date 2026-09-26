@@ -1156,3 +1156,28 @@ body.manga-embedded #generate-view { width: 100%; max-width: none; margin: 0; pa
 /* Display-only: `order` lifts added cards above the rest while keeping catalog order inside
    each group; the DOM and the prompt's LoRA (generation) order are untouched. */
 #mg-lora-cards .mg-lora-card.is-selected { order: -1; }
+
+/* Wildcard source preview (Card MANGA-WILDCARD-AUTOCOMPLETE-PRODUCTION1): below the prompt, never over it. */
+.mg-wildcard-preview { display: flex; flex-direction: column; gap: 3px; padding: 5px 7px; border: 1px solid var(--manga-line-soft);
+    border-radius: 7px; background: var(--manga-surface-inset); font-size: 11px; }
+.mg-wildcard-preview[hidden] { display: none; }
+.mg-wildcard-preview-head { display: flex; align-items: center; gap: 6px; color: var(--manga-muted); font-size: 10px; font-weight: 700; }
+.mg-wildcard-preview-token { color: var(--manga-text); font-size: 11px; overflow-wrap: anywhere; }
+.mg-wildcard-preview-close { margin-left: auto; padding: 0 6px; border: 0; background: transparent; color: var(--manga-muted); font: inherit; font-size: 13px; cursor: pointer; }
+/* Owner UX: entries wrap in full (no ellipsis); natural height, internal scroll only for very large content. */
+.mg-wildcard-preview-list { margin: 0; padding-left: 16px; max-height: 320px; overflow-y: auto; overscroll-behavior: contain; color: var(--manga-text); }
+.mg-wildcard-preview-list li { white-space: pre-wrap; overflow-wrap: anywhere; word-break: normal; line-height: 1.4; }
+/* MANGA-PROMPT-VALIDATION-COHERENCE1: collapsible LoRA status, Wildcard Expand, LoRA search. */
+.mg-lora-diag-toggle { display: flex; align-items: center; gap: 6px; width: 100%; padding: 0; border: 0; background: transparent; text-align: left; font: inherit; font-size: 10px; font-weight: 700; color: var(--manga-muted); cursor: pointer; }
+.mg-lora-diag-toggle::before { content: "▾"; font-size: 10px; }
+.mg-lora-diag-toggle[aria-expanded="false"]::before { content: "▸"; }
+.mg-lora-diag-toggle.has-problem { color: var(--manga-danger-text); }
+.mg-lora-diag-body { display: flex; flex-direction: column; gap: 3px; }
+.mg-lora-diag-body[hidden] { display: none; }
+.mg-lora-diag-row.is-note { color: var(--manga-muted); }
+.mg-wildcard-preview-expand { padding: 1px 8px; border: 1px solid var(--manga-line-soft); border-radius: 5px; background: var(--manga-surface); color: var(--manga-text); font: inherit; font-size: 10px; font-weight: 700; cursor: pointer; }
+.mg-wildcard-preview-expand:disabled { opacity: .55; cursor: progress; }
+.mg-wildcard-preview-head .mg-wildcard-preview-expand { margin-left: auto; }
+.mg-wildcard-preview-head .mg-wildcard-preview-expand + .mg-wildcard-preview-close { margin-left: 0; }
+.mg-lora-search { width: 100%; box-sizing: border-box; padding: 3px 6px; border: 1px solid var(--manga-line-soft); border-radius: 6px; background: var(--manga-surface); color: var(--manga-text); font: inherit; font-size: 11px; }
+.mg-lora-panel.is-searching .mg-lora-breadcrumb, .mg-lora-panel.is-searching .mg-lora-folders { display: none; }

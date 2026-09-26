@@ -218,6 +218,8 @@
                                 <textarea id="scene-composer-prompt" rows="4" placeholder="Describe the page or scene…" aria-describedby="mg-global-prompt-syntax-help"></textarea>
                                 <p id="mg-global-prompt-syntax-help" class="mg-hint">Wildcards: __name__ · choices: {a|b}</p>
                             </div>
+                            <!-- Wildcard source preview: read-only, outside the prompt textarea, dismissed by outside click / scroll / × / target change (Card MANGA-WILDCARD-AUTOCOMPLETE-PRODUCTION1) -->
+                            <div id="mg-wildcard-preview" class="mg-wildcard-preview" aria-live="polite" hidden></div>
                             <!-- LoRA status: backend-resolved diagnostics for the active prompt (Card MANGA-LORA-PORTABLE-COMPAT-DIAGNOSTICS1) -->
                             <div id="mg-lora-diagnostics" class="mg-lora-diagnostics" aria-live="polite" hidden></div>
                             <!-- LoRA (Card MANGA-ILLUSTRIOUS-LORA-PRODUCTION1): directly below the Positive Prompt it edits -->
@@ -231,6 +233,7 @@
                                 </div>
                                 <div id="mg-lora-body" class="mg-lora-body" hidden>
                                     <div id="mg-lora-status" class="mg-hint mg-lora-status" role="status" aria-live="polite"></div>
+                                    <input id="mg-lora-search" class="mg-lora-search" type="search" placeholder="Search LoRAs (name or folder)…" aria-label="Search trusted LoRAs across folders" autocomplete="off" spellcheck="false">
                                     <nav id="mg-lora-breadcrumb" class="mg-lora-breadcrumb" aria-label="LoRA folder path"></nav>
                                     <div id="mg-lora-folders" class="mg-lora-folders" role="list" aria-label="LoRA subfolders"></div>
                                     <div class="mg-lora-bulk" role="group" aria-label="Bulk LoRA strength">
@@ -731,7 +734,7 @@
         import { createTagAutocomplete } from "./src/view/tag_autocomplete.js";
         import { setupNumericWheelControl } from "./src/view/numeric_wheel.js";
         import { mountLoraPanel, createLoraValidator, mountLoraDiagnostics, loraBlockReasonFromDiagnostics, sourcesHaveLora } from "./src/view/lora_panel.js";
-        import { mountPromptAssist } from "./src/view/prompt_assist.js";
+        import { expandWildcardInPrompt, mountPromptAssist, mountWildcardPreview } from "./src/view/prompt_assist.js";
 
         const store = new AuthoringStore(createNewAuthoringSessionDocument());
         const session = new SessionState();
@@ -794,6 +797,7 @@
             bulkInput: document.getElementById("mg-lora-bulk-strength"),
             bulkApply: document.getElementById("mg-lora-bulk-apply"),
             bulkStatus: document.getElementById("mg-lora-bulk-status"),
+            search: document.getElementById("mg-lora-search"),
         });
         const loraPanel = mountPromptAssist({
             panel: document.getElementById("mg-lora-panel"),
@@ -807,8 +811,27 @@
             wildcardFolders: document.getElementById("mg-wildcard-folders"),
             wildcardEntries: document.getElementById("mg-wildcard-entries"),
         });
+        // Wildcard source preview after a Wildcard is inserted (autocomplete or Wildcard tab).
+        let wildcardPreviewTarget = null;
+        const wildcardPreview = mountWildcardPreview({ container: document.getElementById("mg-wildcard-preview"),
+            keepOpenWithin: [document.getElementById("mg-lora-panel"), composerPrompt],
+            // Explicit Expand: only while the preview still belongs to the active prompt target.
+            expand: (name, start) => wildcardPreviewTarget !== composerPromptTarget
+                ? Promise.resolve({ ok: false, message: "The prompt target changed; nothing was replaced." })
+                : expandWildcardInPrompt({ prompt: composerPrompt, name, start }) });
+        composerPrompt.addEventListener("tegaki:wildcard-inserted", event => {
+            wildcardPreviewTarget = composerPromptTarget;
+            wildcardPreview.show(event.detail.name, { start: event.detail.start });
+        });
         // LoRA diagnostics + Generate gate share ONE backend validator (generation resolver).
-        const loraValidator = createLoraValidator();
+        // ONE snapshot per exact prompt content; every settle re-renders BOTH consumers for the
+        // CURRENT prompt (the Generate gate lives in the generation view, which updateAll() does
+        // not render — that omission left "Checking LoRAs…" until an unrelated store edit).
+        const onLoraValidationSettled = () => {
+            updateAll();
+            try { generation?.refresh?.(); } catch { /* generation view not mounted yet */ }
+        };
+        const loraValidator = createLoraValidator({ onSettled: onLoraValidationSettled });
         const loraDiagnosticSources = () => {
             const page = store.getPage();
             if (!page) return null;
@@ -826,14 +849,14 @@
             container: document.getElementById("mg-lora-diagnostics"),
             validator: loraValidator,
             getSources: loraDiagnosticSources,
-            onResult: () => updateAll(),
         });
         setLoraValidationProvider((positive, negative) => {
             const sources = [{ source: "page_positive", text: positive }, { source: "page_negative", text: negative }];
             if (!sourcesHaveLora(sources)) return "";
             const result = loraValidator.peek(sources);
             if (!result) {
-                loraValidator.request(sources).then(() => updateAll());
+                // Pending ONLY for this exact prompt content; the settle refreshes the gate.
+                loraValidator.request(sources);
                 return "Checking LoRAs…";
             }
             return loraBlockReasonFromDiagnostics(result);
@@ -1480,6 +1503,8 @@
                 ? { enabled: false, reason: "LoRA applies to Global or Scene prompts, not CAST identity prompts." }
                 : { enabled: true });
             loraDiagnostics.refresh();
+            // A different prompt target is a different context: drop a stale Wildcard preview.
+            if (wildcardPreview.visible && wildcardPreviewTarget !== composerPromptTarget) wildcardPreview.hide();
 
             // Render Contextual Character Reference Hub in Create
             if (sceneComposerCastRefWrap) {

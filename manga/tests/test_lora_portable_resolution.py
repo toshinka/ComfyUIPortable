@@ -247,5 +247,62 @@ class PortableLoraTests(unittest.TestCase):
         self.assertNotIn(str(self.root), repr(payload) + repr(listing))
 
 
+
+# MANGA-WILDCARD-AUTOCOMPLETE-RUNTIME-CLOSE1: live catalog names (Windows separators) whose file
+# stem ends with a space before '.safetensors'.  The canonical ID is valid; only the shortened
+# stem alias is not a valid directive name.  token_for must skip that form instead of failing the
+# whole index / browse payload with RESOURCE_PATH_OUTSIDE_ROOT.
+SPACED_RAW = ("!!!Cha\\Cha0\u2606\\SSSS\u30fb\u30ad\u30e5\u30a2\\morialuluka_v1.1_IL .safetensors",
+              "!!!kawaii\\0\\Onono_Imoko .safetensors")
+
+
+class SpacedStemIndexTests(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        base = pathlib.Path(self._tmp.name)
+        self.root = base / "Lora"
+        self.other = base / "Other"
+        self.canon = [raw.replace("\\", "/") for raw in SPACED_RAW]
+        for rel in self.canon + [FOO, DUP_A, DUP_B]:
+            (self.root / rel).parent.mkdir(parents=True, exist_ok=True)
+            (self.root / rel).write_bytes(b"MODEL")
+        self.other.mkdir()
+        (self.other / "Onono_Imoko .safetensors").write_bytes(b"MODEL")
+        catalog = list(SPACED_RAW) + [FOO, DUP_A, DUP_B, "outside/Onono_Imoko .safetensors", "../escape .safetensors"]
+        self.index = res.build_trusted_lora_index(catalog, str(self.root))
+        self.env = {"TEGAKI_ILLUSTRIOUS_LORA_ROOT": str(self.root)}
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def test_index_payload_succeeds_and_keeps_spaced_loras(self):
+        payload = res.lora_index_payload("illustrious", self.index)
+        by_id = {e["id"]: e for e in payload["entries"]}
+        self.assertEqual(sorted(by_id), sorted(self.canon + [FOO, DUP_A, DUP_B]))
+        self.assertEqual(by_id[self.canon[0]]["token"], "morialuluka_v1.1_IL .safetensors")
+        self.assertEqual(by_id[self.canon[1]]["token"], "Onono_Imoko .safetensors")
+        for cid in self.canon:
+            self.assertEqual(self.index.resolve(by_id[cid]["token"]).id, cid, "token resolves back to the same LoRA")
+        # unchanged: portable alias and duplicate-basename behaviour
+        self.assertEqual(by_id[FOO]["token"], "foo")
+        self.assertEqual(by_id[DUP_B]["token"], "styles/dup")
+        self.assertNotIn(str(self.root), repr(payload))
+
+    def test_browse_folder_with_spaced_lora_succeeds(self):
+        listing = res.browse_lora_payload("illustrious", "!!!kawaii/0", [str(self.root)], environ=self.env,
+                                          token_for=self.index.token_for)
+        self.assertEqual([(l["id"], l["token"]) for l in listing["loras"]],
+                         [(self.canon[1], "Onono_Imoko .safetensors")])
+
+    def test_trust_boundary_unchanged(self):
+        self.assertEqual(sorted(self.index.outside_ids), ["outside/Onono_Imoko .safetensors"])
+        with self.assertRaises(res.ResourceContractError) as stem:
+            self.index.resolve("Onono_Imoko ")
+        self.assertEqual(stem.exception.code, "INVALID_CATALOG_ID")
+        for bad in ("../escape .safetensors", "/abs/x.safetensors", "!!!kawaii/../../x.safetensors"):
+            with self.subTest(bad=bad), self.assertRaises(res.ResourceContractError) as ctx:
+                self.index.resolve(bad)
+            self.assertEqual(ctx.exception.code, "RESOURCE_PATH_OUTSIDE_ROOT")
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
