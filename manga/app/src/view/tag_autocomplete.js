@@ -19,6 +19,11 @@ const DEFAULT_WILDCARD_URL = "/api/manga/wildcards";
 const DEFAULT_MIN_QUERY_LENGTH = 2;
 const DEFAULT_LIMIT = 10;
 
+const RETRY_AFTER_FAILURE_MS = 3000;
+// Marks an empty list produced by a failed load so the controller can retry
+// instead of treating "backend not ready yet" as "no entries" forever.
+export const LOAD_FAILED = Symbol("tag-autocomplete-load-failed");
+
 const catalogPromises = new Map();
 const loraPromises = new Map();
 const wildcardPromises = new Map();
@@ -61,6 +66,7 @@ export function loadTagCatalog(url = DEFAULT_CATALOG_URL, fetchImpl = globalThis
         }
         return normalizeTagCatalog(payload);
     });
+    promise.catch(() => catalogPromises.delete(url));
     catalogPromises.set(url, promise);
     return promise;
 }
@@ -89,10 +95,13 @@ export function loadLoraCatalog(url = DEFAULT_LORA_URL, fetchImpl = globalThis.f
         if (typeof fetchImpl !== "function") return [];
         return fetchImpl(url, { cache: "no-cache" });
     }).then(async response => {
-        if (!response?.ok) return [];
+        if (!response?.ok) throw new Error(`LoRA catalog unavailable (${response?.status || "request failed"})`);
         const payload = await response.json();
         return normalizeLoraList(payload);
-    }).catch(() => []);
+    }).catch(() => {
+        loraPromises.delete(url);
+        return Object.assign([], { [LOAD_FAILED]: true });
+    });
     loraPromises.set(url, promise);
     return promise;
 }
@@ -117,10 +126,13 @@ export function loadWildcardCatalog(url = DEFAULT_WILDCARD_URL, fetchImpl = glob
         if (typeof fetchImpl !== "function") return [];
         return fetchImpl(url, { cache: "no-cache" });
     }).then(async response => {
-        if (!response?.ok) return [];
+        if (!response?.ok) throw new Error(`Wildcard catalog unavailable (${response?.status || "request failed"})`);
         const payload = await response.json();
         return normalizeWildcardList(payload);
-    }).catch(() => []);
+    }).catch(() => {
+        wildcardPromises.delete(url);
+        return Object.assign([], { [LOAD_FAILED]: true });
+    });
     wildcardPromises.set(url, promise);
     return promise;
 }
@@ -350,7 +362,9 @@ function boundaryPrefix(tag, query) {
  * then substring matches. Ranking breaks ties.
  */
 export function queryTagCatalog(catalog, query, { limit = DEFAULT_LIMIT, minQueryLength = DEFAULT_MIN_QUERY_LENGTH } = {}) {
-    const normalizedQuery = String(query ?? "").trim().toLowerCase();
+    // The Danbooru catalog spells multi-word tags with underscores ("long_hair");
+    // Owners often type spaces ("long h"), which previously matched nothing.
+    const normalizedQuery = String(query ?? "").trim().toLowerCase().replace(/\s+/g, "_");
     if (normalizedQuery.length < minQueryLength || !Array.isArray(catalog)) return [];
     const matches = [];
     for (const entry of catalog) {
@@ -472,6 +486,35 @@ export function insertPromptLora(text, context, loraName) {
     };
 }
 
+/** The one visible wildcard token format (compiler: basic_generation.WILDCARD_TOKEN_RE `__(.+?)__`). */
+export function formatWildcardToken(name) {
+    const value = String(name ?? "").trim().replaceAll("\\", "/");
+    if (!value || value.includes("__") || /[\r\n,<>{}|]/.test(value)) {
+        throw new TypeError(`Invalid wildcard name: ${JSON.stringify(name)}`);
+    }
+    return `__${value}__`;
+}
+
+/**
+ * Insert a wildcard token at the caret/selection without touching other text.
+ * Adds ", " separators only where the neighbouring text is not already delimited.
+ */
+export function insertWildcardAtCursor(text, selectionStart, selectionEnd, name) {
+    const value = String(text ?? "");
+    const token = formatWildcardToken(name);
+    const clamp = n => Math.max(0, Math.min(value.length, Number.isFinite(n) ? n : value.length));
+    const start = clamp(selectionStart);
+    const end = Math.max(start, clamp(selectionEnd ?? selectionStart));
+    const before = value.slice(0, start);
+    const after = value.slice(end);
+    const head = before.trimEnd();
+    // Separator only where the preceding/following text is not already comma-delimited.
+    const prefix = head === "" ? "" : head.endsWith(",") ? (before === head ? " " : "") : ", ";
+    const suffix = after.trim() === "" || /^\s*,/.test(after) ? "" : (/^\s/.test(after) ? "," : ", ");
+    const insertion = `${prefix}${token}${suffix}`;
+    return { value: before + insertion + after, caret: start + prefix.length + token.length, token };
+}
+
 /**
  * Insert a Wildcard name inside __NAME__, without duplicating delimiters.
  */
@@ -488,7 +531,7 @@ export function insertPromptWildcard(text, context, wildcardName) {
         nextValue = value.slice(0, context.nameStart) + replacement + value.slice(context.nameEnd);
         nextCaret = context.nameStart + replacement.length + 2;
     } else {
-        replacement = `__${name}__`;
+        replacement = formatWildcardToken(name);
         nextValue = value.slice(0, context.start) + replacement + value.slice(context.end);
         nextCaret = context.start + replacement.length;
     }
@@ -550,8 +593,28 @@ export class TagAutocompleteController {
         this.activeToken = null;
         this.popup = createPopup(textarea);
 
-        this._onInput = () => this.refresh();
+        this.composing = false;
+        this.contextValue = null;
+        this._retryAt = { catalog: 0, loras: 0, wildcards: 0 };
+        this._loaders = { catalogLoader, catalogUrl, loraLoader, loraUrl, wildcardLoader, wildcardUrl };
+        this._onInput = event => {
+            // Never complete against uncommitted IME text.
+            if (event?.isComposing || this.composing) {
+                this.close();
+                return;
+            }
+            this.refresh();
+        };
         this._onFocus = () => this.refresh();
+        this._onBlur = () => this.close();
+        this._onCompositionStart = () => {
+            this.composing = true;
+            this.close();
+        };
+        this._onCompositionEnd = () => {
+            this.composing = false;
+            this.refresh();
+        };
         this._onKeydown = event => this.handleKeydown(event);
         this._onOutsidePointer = event => {
             if (event.target !== this.textarea && !this.popup.contains(event.target)) this.close();
@@ -561,63 +624,93 @@ export class TagAutocompleteController {
         textarea.addEventListener("focus", this._onFocus);
         textarea.addEventListener("click", this._onFocus);
         textarea.addEventListener("keydown", this._onKeydown);
+        textarea.addEventListener("blur", this._onBlur);
+        textarea.addEventListener("compositionstart", this._onCompositionStart);
+        textarea.addEventListener("compositionend", this._onCompositionEnd);
         document.addEventListener("pointerdown", this._onOutsidePointer);
 
         textarea.dataset.tagAutocompleteState = this.catalog ? "ready" : "loading";
 
         // Load Tag catalog
         if (!this.catalog) {
-            this.catalogPromise = Promise.resolve().then(() => catalogLoader
-                ? catalogLoader()
-                : loadTagCatalog(catalogUrl)).then(value => {
-                this.catalog = normalizeTagCatalog(value);
-                this.catalogError = "";
-                this.textarea.dataset.tagAutocompleteState = "ready";
-                this.refresh();
-                return this.catalog;
-            }).catch(error => {
-                this.catalogError = error?.message || "Tag catalog unavailable";
-                this.textarea.dataset.tagAutocompleteState = "unavailable";
-                this.close();
-                return null;
-            });
+            this._loadCatalog();
         } else {
             this.catalogPromise = Promise.resolve(this.catalog);
         }
 
         // Load LoRA catalog if not provided
         if (loras == null) {
-            this.loraPromise = Promise.resolve().then(() => loraLoader
-                ? loraLoader()
-                : loadLoraCatalog(loraUrl)).then(list => {
-                this.loras = normalizeLoraList(list);
-                this.loraError = "";
-                return this.loras;
-            }).catch(error => {
-                this.loraError = error?.message || "LoRA catalog unavailable";
-                this.loras = [];
-                return [];
-            });
+            this._loadList("loras");
         } else {
             this.loraPromise = Promise.resolve(this.loras);
         }
 
         // Load Wildcard catalog if not provided
         if (wildcards == null) {
-            this.wildcardPromise = Promise.resolve().then(() => wildcardLoader
-                ? wildcardLoader()
-                : loadWildcardCatalog(wildcardUrl)).then(list => {
-                this.wildcards = normalizeWildcardList(list);
-                this.wildcardError = "";
-                return this.wildcards;
-            }).catch(error => {
-                this.wildcardError = error?.message || "Wildcard catalog unavailable";
-                this.wildcards = [];
-                return [];
-            });
+            this._loadList("wildcards");
         } else {
             this.wildcardPromise = Promise.resolve(this.wildcards);
         }
+    }
+
+    _loadCatalog() {
+        const { catalogLoader, catalogUrl } = this._loaders;
+        this.catalogLoading = true;
+        this.catalogPromise = Promise.resolve().then(() => catalogLoader
+            ? catalogLoader()
+            : loadTagCatalog(catalogUrl)).then(value => {
+            this.catalog = normalizeTagCatalog(value);
+            this.catalogError = "";
+            this.textarea.dataset.tagAutocompleteState = "ready";
+            return this.catalog;
+        }).catch(error => {
+            this.catalogError = error?.message || "Tag catalog unavailable";
+            this._retryAt.catalog = Date.now() + RETRY_AFTER_FAILURE_MS;
+            this.textarea.dataset.tagAutocompleteState = "unavailable";
+            return null;
+        }).finally(() => {
+            this.catalogLoading = false;
+            this.refresh();
+        });
+        return this.catalogPromise;
+    }
+
+    // LoRA / Wildcard lists: a failed load is retried on demand (see refresh),
+    // never cached as a permanent empty list.
+    _loadList(kind) {
+        const isLora = kind === "loras";
+        const { loraLoader, loraUrl, wildcardLoader, wildcardUrl } = this._loaders;
+        const loader = isLora ? loraLoader : wildcardLoader;
+        const normalize = isLora ? normalizeLoraList : normalizeWildcardList;
+        const errorKey = isLora ? "loraError" : "wildcardError";
+        this[`${kind}Loading`] = true;
+        const promise = Promise.resolve().then(() => loader
+            ? loader()
+            : (isLora ? loadLoraCatalog(loraUrl) : loadWildcardCatalog(wildcardUrl))).then(list => {
+            if (list && list[LOAD_FAILED]) throw new Error(`${isLora ? "LoRA" : "Wildcard"} catalog unavailable`);
+            this[kind] = normalize(list);
+            this[errorKey] = "";
+            return this[kind];
+        }).catch(error => {
+            this[errorKey] = error?.message || `${kind} catalog unavailable`;
+            this._retryAt[kind] = Date.now() + RETRY_AFTER_FAILURE_MS;
+            this[kind] = [];
+            return [];
+        }).finally(() => {
+            this[`${kind}Loading`] = false;
+            if (this.activeContext && this.activeContext.type === (isLora ? "lora" : "wildcard")) this.refresh();
+        });
+        if (isLora) this.loraPromise = promise;
+        else this.wildcardPromise = promise;
+        return promise;
+    }
+
+    _retryIfFailed(kind) {
+        const failed = kind === "catalog" ? (!this.catalog && this.catalogError)
+            : (kind === "loras" ? this.loraError : this.wildcardError);
+        if (!failed || this[`${kind}Loading`] || Date.now() < this._retryAt[kind]) return;
+        if (kind === "catalog") this._loadCatalog();
+        else this._loadList(kind);
     }
 
     setLoras(loras) {
@@ -631,11 +724,21 @@ export class TagAutocompleteController {
     }
 
     refresh() {
+        // Only the focused, non-composing textarea may show suggestions; a late
+        // catalog load must not pop up on a prompt the Owner has left.
+        if (this.composing || (typeof document !== "undefined" && document.activeElement !== this.textarea)) {
+            this.close();
+            return [];
+        }
         const caret = Number.isFinite(this.textarea.selectionStart)
             ? this.textarea.selectionStart : this.textarea.value.length;
         const context = detectPromptCompletionContext(this.textarea.value, caret);
         this.activeContext = context;
+        this.contextValue = this.textarea.value;
         this.activeToken = context.type === "tag" ? context : null;
+        if (context.type === "lora") this._retryIfFailed("loras");
+        else if (context.type === "wildcard") this._retryIfFailed("wildcards");
+        else if (context.type === "tag") this._retryIfFailed("catalog");
 
         if (context.type === "suppressed") {
             this.close();
@@ -715,6 +818,7 @@ export class TagAutocompleteController {
         this.suggestions = [];
         this.activeToken = null;
         this.activeContext = null;
+        this.contextValue = null;
         this.popup.hidden = true;
         this.textarea.setAttribute("aria-expanded", "false");
         this.textarea.removeAttribute("aria-activedescendant");
@@ -753,6 +857,12 @@ export class TagAutocompleteController {
     accept(index = this.selectedIndex) {
         const entry = this.suggestions[index];
         if (!entry || !this.activeContext) return false;
+        // The value was replaced since these suggestions were computed (e.g. the
+        // prompt target switched): never apply stale offsets to different text.
+        if (this.textarea.value !== this.contextValue) {
+            this.refresh();
+            return false;
+        }
         let result = null;
         if (this.activeContext.type === "lora") {
             result = insertPromptLora(this.textarea.value, this.activeContext, entry.tag);
@@ -775,6 +885,9 @@ export class TagAutocompleteController {
         this.textarea.removeEventListener("focus", this._onFocus);
         this.textarea.removeEventListener("click", this._onFocus);
         this.textarea.removeEventListener("keydown", this._onKeydown);
+        this.textarea.removeEventListener("blur", this._onBlur);
+        this.textarea.removeEventListener("compositionstart", this._onCompositionStart);
+        this.textarea.removeEventListener("compositionend", this._onCompositionEnd);
         document.removeEventListener("pointerdown", this._onOutsidePointer);
         this.popup.remove();
         this.textarea.removeAttribute("aria-controls");

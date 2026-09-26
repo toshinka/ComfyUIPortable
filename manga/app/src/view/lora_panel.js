@@ -95,6 +95,11 @@ export async function fetchLoraFolder(dir, { engine = "illustrious", fetchImpl =
     return data;
 }
 
+/** Bounded preview route: addressed by canonical LoRA ID, never by a filesystem path. */
+export function loraPreviewUrl(id, { engine = "illustrious" } = {}) {
+    return `/api/manga/resources/lora/preview?engine=${encodeURIComponent(engine)}&id=${encodeURIComponent(id)}`;
+}
+
 function el(tag, className, text) {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -171,6 +176,20 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
             card.classList.toggle("is-selected", Boolean(token));
             card.classList.toggle("is-unavailable", lora.available === false);
             card.title = lora.id;
+            let thumb = null;
+            if (lora.preview === true) {
+                // Sidecar <stem>.preview.png; loaded lazily and only for the opened folder.
+                card.classList.add("has-preview");
+                thumb = el("img", "mg-lora-card-thumb");
+                thumb.alt = "";
+                thumb.loading = "lazy";
+                thumb.decoding = "async";
+                thumb.src = loraPreviewUrl(lora.id);
+                thumb.onerror = () => {
+                    card.classList.remove("has-preview");
+                    thumb.remove();
+                };
+            }
             const name = el("span", "mg-lora-card-name", lora.name);
             const strength = el("input", "mg-lora-strength");
             strength.type = "number";
@@ -203,6 +222,7 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
                     applyPrompt(addLoraToken(prompt.value, lora.id, Number.isFinite(value) ? value : 1));
                 }
             };
+            if (thumb) card.append(thumb);
             card.append(name, strength, action);
             cards.appendChild(card);
         }
@@ -237,19 +257,21 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
     }
 
     const setExpanded = (expanded) => {
-        toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+        if (toggle) toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
         body.hidden = !expanded;
         panel.classList.toggle("is-expanded", expanded);
         if (expanded && listing === null) openFolder(currentFolder);
     };
 
-    toggle.addEventListener("click", () => setExpanded(toggle.getAttribute("aria-expanded") !== "true"));
+    // When a Prompt Assist host owns the toggle, it drives setExpanded instead.
+    if (toggle) toggle.addEventListener("click", () => setExpanded(toggle.getAttribute("aria-expanded") !== "true"));
     prompt.addEventListener("input", () => renderCards());
     setExpanded(false);
     renderCount();
 
     return {
         openFolder,
+        setExpanded,
         refresh: () => openFolder(currentFolder, { refresh: true }),
         // Called whenever the composer swaps the prompt target/value.
         sync({ enabled: nextEnabled = true, reason = "" } = {}) {

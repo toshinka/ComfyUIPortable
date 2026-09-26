@@ -41,6 +41,10 @@ ENGINE_RESOURCE_ROOTS = {
 }
 
 DEFAULT_LORA_EXTENSIONS = (".safetensors",)
+# Owner-proven sidecar convention: <lora-stem>.preview.png beside the LoRA file.
+PREVIEW_SUFFIX = ".preview.png"
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+MAX_PREVIEW_BYTES = 16 * 1024 * 1024
 MAX_ID_LENGTH = 1024
 _FORBIDDEN_ID_CHARS = set('<>:"|?*')
 
@@ -151,6 +155,15 @@ def list_lora_directory(
         entries = list(os.scandir(directory))
     except OSError as exc:
         _fail("RESOURCE_PATH_UNREADABLE", f"LoRA folder '{folder}' cannot be read: {exc.strerror or exc}")
+    # Previews are detected from this one folder's names only (no extra walk/stat).
+    preview_names = {}
+    for entry in entries:
+        if entry.name.casefold().endswith(PREVIEW_SUFFIX):
+            try:
+                if entry.is_file():
+                    preview_names[entry.name[: -len(PREVIEW_SUFFIX)].casefold()] = True
+            except OSError:
+                continue
     for entry in entries:
         name = entry.name
         child_id = f"{folder}/{name}" if folder else name
@@ -180,11 +193,54 @@ def list_lora_directory(
             except Exception:
                 resolved = None
             available = bool(resolved) and _norm(resolved) == _norm(entry.path)
-        loras.append({"id": child_id, "name": stem, "filename": name, "folder": folder, "available": available})
+        loras.append({"id": child_id, "name": stem, "filename": name, "folder": folder, "available": available,
+                      "preview": stem.casefold() in preview_names})
     folders.sort(key=lambda item: (item["name"].casefold(), item["name"]))
     loras.sort(key=lambda item: (item["name"].casefold(), item["id"]))
     parent = None if folder == "" else ("/".join(folder.split("/")[:-1]))
     return {"ok": True, "folder": folder, "parent": parent, "folders": folders, "loras": loras}
+
+
+def resolve_lora_preview(
+    root: str,
+    lora_id: str,
+    *,
+    extensions: Iterable[str] = DEFAULT_LORA_EXTENSIONS,
+) -> str:
+    """Real path of the ``<stem>.preview.png`` sidecar for ONE canonical LoRA ID.
+
+    Only the sidecar derived from a LoRA ID can be addressed; arbitrary files,
+    traversal, non-LoRA IDs and non-PNG content fail closed.  Model files are
+    never opened.
+    """
+    canonical = normalize_relative_id(lora_id)
+    parts = canonical.split("/")
+    stem, ext = os.path.splitext(parts[-1])
+    if not stem or ext.lower() not in {e.lower() for e in extensions}:
+        _fail("RESOURCE_PREVIEW_UNSUPPORTED", "Previews are only served for LoRA files")
+    sidecar_id = "/".join(parts[:-1] + [stem + PREVIEW_SUFFIX])
+    path = resolve_within_root(root, sidecar_id)
+    if not os.path.isfile(path):
+        _fail("RESOURCE_PREVIEW_NOT_FOUND", "No preview sidecar for this LoRA")
+    if os.path.getsize(path) > MAX_PREVIEW_BYTES:
+        _fail("RESOURCE_PREVIEW_UNSUPPORTED", "Preview sidecar is too large")
+    with open(path, "rb") as handle:
+        if handle.read(len(PNG_SIGNATURE)) != PNG_SIGNATURE:
+            _fail("RESOURCE_PREVIEW_UNSUPPORTED", "Preview sidecar is not a PNG image")
+    return path
+
+
+def lora_preview_path(
+    engine: str,
+    lora_id: str,
+    registered_roots: Iterable[str],
+    *,
+    extensions: Iterable[str] = DEFAULT_LORA_EXTENSIONS,
+    environ: Optional[dict] = None,
+) -> str:
+    """HTTP-facing preview resolver; the returned path stays inside the backend."""
+    root = resolve_resource_root(engine, "lora", registered_roots, environ=environ)
+    return resolve_lora_preview(root, lora_id, extensions=extensions)
 
 
 def browse_lora_payload(

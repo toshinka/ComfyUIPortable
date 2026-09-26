@@ -210,15 +210,25 @@
                                 <p id="mg-global-prompt-syntax-help" class="mg-hint">Wildcards: __name__ · choices: {a|b}</p>
                             </div>
                             <!-- LoRA (Card MANGA-ILLUSTRIOUS-LORA-PRODUCTION1): directly below the Positive Prompt it edits -->
-                            <section id="mg-lora-panel" class="scene-composer-field mg-lora-panel" aria-label="LoRA">
+                            <section id="mg-lora-panel" class="scene-composer-field mg-lora-panel mg-prompt-assist" aria-label="Prompt Assist">
                                 <div class="scene-composer-field-head">
-                                    <button id="mg-lora-toggle" type="button" class="mg-collapse-toggle" aria-expanded="false" aria-controls="mg-lora-body">LoRA <span id="mg-lora-count" class="mg-lora-count"></span></button>
+                                    <button id="mg-lora-toggle" type="button" class="mg-collapse-toggle" aria-expanded="false" aria-controls="mg-lora-body mg-wildcard-body">Prompt Assist <span id="mg-lora-count" class="mg-lora-count"></span></button>
+                                    <div class="mg-assist-tabs" role="tablist" aria-label="Prompt Assist mode">
+                                        <button id="mg-assist-tab-lora" type="button" class="mg-assist-tab" role="tab" data-assist-tab="lora" aria-controls="mg-lora-body" aria-selected="true">LoRA</button>
+                                        <button id="mg-assist-tab-wildcard" type="button" class="mg-assist-tab" role="tab" data-assist-tab="wildcard" aria-controls="mg-wildcard-body" aria-selected="false">Wildcard</button>
+                                    </div>
                                 </div>
                                 <div id="mg-lora-body" class="mg-lora-body" hidden>
                                     <div id="mg-lora-status" class="mg-hint mg-lora-status" role="status" aria-live="polite"></div>
                                     <nav id="mg-lora-breadcrumb" class="mg-lora-breadcrumb" aria-label="LoRA folder path"></nav>
                                     <div id="mg-lora-folders" class="mg-lora-folders" role="list" aria-label="LoRA subfolders"></div>
                                     <div id="mg-lora-cards" class="mg-lora-cards" role="list" aria-label="LoRAs in this folder"></div>
+                                </div>
+                                <div id="mg-wildcard-body" class="mg-lora-body mg-wildcard-body" role="tabpanel" aria-labelledby="mg-assist-tab-wildcard" hidden>
+                                    <div id="mg-wildcard-status" class="mg-hint mg-lora-status" role="status" aria-live="polite"></div>
+                                    <nav id="mg-wildcard-breadcrumb" class="mg-lora-breadcrumb" aria-label="Wildcard folder path"></nav>
+                                    <div id="mg-wildcard-folders" class="mg-lora-folders" role="list" aria-label="Wildcard subfolders"></div>
+                                    <div id="mg-wildcard-entries" class="mg-lora-cards mg-wildcard-entries" role="list" aria-label="Wildcards in this folder"></div>
                                 </div>
                             </section>
                             <div id="scene-composer-negative-wrap" class="scene-composer-field">
@@ -704,6 +714,7 @@
         import { createTagAutocomplete } from "./src/view/tag_autocomplete.js";
         import { setupNumericWheelControl } from "./src/view/numeric_wheel.js";
         import { mountLoraPanel } from "./src/view/lora_panel.js";
+        import { mountPromptAssist } from "./src/view/prompt_assist.js";
 
         const store = new AuthoringStore(createNewAuthoringSessionDocument());
         const session = new SessionState();
@@ -753,9 +764,9 @@
         const composerPrompt = document.getElementById("scene-composer-prompt");
         const composerNegative = document.getElementById("scene-composer-negative");
         const composerTagAutocomplete = createTagAutocomplete(composerPrompt);
-        const loraPanel = mountLoraPanel({
+        const loraPanelView = mountLoraPanel({
             panel: document.getElementById("mg-lora-panel"),
-            toggle: document.getElementById("mg-lora-toggle"),
+            toggle: null, // owned by Prompt Assist
             body: document.getElementById("mg-lora-body"),
             status: document.getElementById("mg-lora-status"),
             breadcrumb: document.getElementById("mg-lora-breadcrumb"),
@@ -763,6 +774,18 @@
             cards: document.getElementById("mg-lora-cards"),
             count: document.getElementById("mg-lora-count"),
             prompt: composerPrompt,
+        });
+        const loraPanel = mountPromptAssist({
+            panel: document.getElementById("mg-lora-panel"),
+            toggle: document.getElementById("mg-lora-toggle"),
+            tabs: [...document.querySelectorAll("#mg-lora-panel [data-assist-tab]")],
+            loraPanel: loraPanelView,
+            prompt: composerPrompt,
+            wildcardBody: document.getElementById("mg-wildcard-body"),
+            wildcardStatus: document.getElementById("mg-wildcard-status"),
+            wildcardBreadcrumb: document.getElementById("mg-wildcard-breadcrumb"),
+            wildcardFolders: document.getElementById("mg-wildcard-folders"),
+            wildcardEntries: document.getElementById("mg-wildcard-entries"),
         });
         const negativeToggle = document.getElementById("mg-negative-toggle");
         negativeToggle.addEventListener("click", () => {

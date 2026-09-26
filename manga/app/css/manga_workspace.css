@@ -1110,3 +1110,15 @@ body.manga-embedded #generate-view { width: 100%; max-width: none; margin: 0; pa
 .mg-lora-card-action { padding: 2px 8px; border: 1px solid var(--manga-line); border-radius: 5px; background: var(--manga-surface-raised); color: var(--manga-text); font: inherit; font-size: 10px; cursor: pointer; }
 .mg-lora-card.is-selected .mg-lora-card-action { border-color: var(--manga-danger-border); background: var(--manga-danger-background); color: var(--manga-danger-text); }
 .mg-lora-card-action:disabled { cursor: not-allowed; opacity: 0.6; }
+
+/* Prompt Assist tabs, Wildcard browser, LoRA previews (Card MANGA-PROMPT-ASSIST-PRODUCTION1) */
+.mg-assist-tabs { display: inline-flex; gap: 3px; margin-left: 4px; }
+.mg-assist-tab { padding: 1px 8px; border: 1px solid var(--manga-line); border-radius: 10px; background: transparent; color: var(--manga-muted); font: inherit; font-size: 10px; font-weight: 700; cursor: pointer; }
+.mg-prompt-assist.is-expanded .mg-assist-tab[aria-selected="true"] { background: var(--manga-selection); border-color: var(--manga-active-border); color: var(--manga-text); }
+.mg-assist-tab:focus-visible { outline: 2px solid var(--manga-active-border); outline-offset: 1px; }
+.mg-wildcard-entries { flex-direction: row; flex-wrap: wrap; align-content: flex-start; }
+.mg-wildcard-entry { max-width: 100%; padding: 2px 7px; border: 1px solid var(--manga-line-soft); border-radius: 5px; background: var(--manga-surface); color: var(--manga-text); font: inherit; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.mg-wildcard-entry:hover { background: var(--manga-maroon-hover); }
+.mg-wildcard-entry:disabled { cursor: not-allowed; opacity: 0.6; }
+.mg-lora-card.has-preview { grid-template-columns: 56px minmax(0, 1fr) 58px auto; }
+.mg-lora-card-thumb { width: 56px; height: 56px; object-fit: cover; border-radius: 4px; background: var(--manga-surface-inset); }

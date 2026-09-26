@@ -55,9 +55,9 @@ except (ImportError, ValueError):
     from page_pixel_compositor import compose_page_pixels, PagePixelCompositorError
 
 try:
-    from .engine_resources import ResourceContractError, browse_lora_payload
+    from .engine_resources import ResourceContractError, browse_lora_payload, lora_preview_path
 except (ImportError, ValueError):
-    from engine_resources import ResourceContractError, browse_lora_payload
+    from engine_resources import ResourceContractError, browse_lora_payload, lora_preview_path
 
 MAX_REQUEST_BYTES = 256 * 1024
 
@@ -408,6 +408,8 @@ async def api_manga_page_composite(request: web.Request) -> web.Response:
 
 
 RESOURCE_ERROR_STATUS = {
+    "RESOURCE_PREVIEW_NOT_FOUND": 404,
+    "RESOURCE_PREVIEW_UNSUPPORTED": 404,
     "RESOURCE_UNSUPPORTED": 404,
     "RESOURCE_PATH_NOT_FOUND": 404,
     "RESOURCE_ROOT_UNAVAILABLE": 503,
@@ -441,8 +443,35 @@ async def api_manga_resource_lora_browse(request: web.Request) -> web.Response:
         return _error("RESOURCE_BROWSE_FAILED", "LoRA browse failed", 500)
 
 
+def _comfy_lora_preview(engine: str, lora_id: str) -> str:
+    import folder_paths
+
+    return lora_preview_path(
+        engine, lora_id, folder_paths.get_folder_paths("loras"),
+        extensions=folder_paths.supported_pt_extensions,
+    )
+
+
+async def api_manga_resource_lora_preview(request: web.Request) -> web.Response:
+    """Serve ONE <stem>.preview.png sidecar for a canonical LoRA ID (never a path)."""
+    engine = request.match_info.get("engine", "")
+    lora_id = request.query.get("id", "")
+    try:
+        path = _comfy_lora_preview(engine, lora_id)
+    except ResourceContractError as exc:
+        return _error(exc.code, str(exc), RESOURCE_ERROR_STATUS.get(exc.code, 400))
+    except Exception:
+        logging.exception("[MangaBasicGenerationAPI] LoRA preview failed")
+        return _error("RESOURCE_PREVIEW_FAILED", "LoRA preview failed", 500)
+    return web.FileResponse(path, headers={
+        "Content-Type": "image/png", "Cache-Control": "private, max-age=300",
+        "X-Content-Type-Options": "nosniff",
+    })
+
+
 if routes is not None:
     routes.get("/tegaki/manga/resources/{engine}/lora")(api_manga_resource_lora_browse)
+    routes.get("/tegaki/manga/resources/{engine}/lora/preview")(api_manga_resource_lora_preview)
     routes.get("/tegaki/manga/generation/capabilities")(api_manga_basic_capabilities)
     routes.post("/tegaki/manga/generation/compile-basic")(api_manga_basic_compile)
     routes.post("/tegaki/manga/generation/compile-scene")(api_manga_scene_compile)
