@@ -124,3 +124,35 @@ test("Manga Workspace Server: /api/manga/wildcards/preview is bounded, read-only
         await fs.rm(outside, { recursive: true, force: true }).catch(() => {});
     }
 });
+
+test("G: /api/manga/wildcards lists and previews '!Quality/manga' with the bang intact", async () => {
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "manga-wildcard-bang-"));
+    await fs.mkdir(path.join(tmpDir, "!Quality"), { recursive: true });
+    await fs.mkdir(path.join(tmpDir, "Quality"), { recursive: true });
+    await fs.writeFile(path.join(tmpDir, "!Quality", "manga.txt"), "bang quality\n", "utf-8");
+    await fs.writeFile(path.join(tmpDir, "Quality", "manga.txt"), "plain quality\n", "utf-8");
+    const oldEnv = process.env.TEGAKI_MANGA_WILDCARDS_DIR;
+    const oldPort = process.env.MANGA_WORKSPACE_PORT;
+    process.env.TEGAKI_MANGA_WILDCARDS_DIR = tmpDir;
+    process.env.MANGA_WORKSPACE_PORT = "0";
+    const { server: workspace } = await import(`../service/manga_workspace_server.mjs?bang=${Date.now()}`);
+    if (!workspace.listening) await new Promise(resolve => workspace.once("listening", resolve));
+    const origin = `http://127.0.0.1:${workspace.address().port}`;
+    try {
+        const list = await (await fetch(`${origin}/api/manga/wildcards`)).json();
+        assert.ok(list.wildcards.includes("!Quality/manga") && list.wildcards.includes("Quality/manga"));
+        const bang = await (await fetch(`${origin}/api/manga/wildcards/preview?name=${encodeURIComponent("!Quality/manga")}`)).json();
+        assert.deepEqual([bang.name, bang.token, bang.entries], ["!Quality/manga", "__!Quality/manga__", ["bang quality"]]);
+        const plain = await (await fetch(`${origin}/api/manga/wildcards/preview?name=Quality/manga`)).json();
+        assert.deepEqual(plain.entries, ["plain quality"]);
+        for (const bad of ["../!x", "!Quality/../../x", "/!x", "C:/!x"]) {
+            const r = await fetch(`${origin}/api/manga/wildcards/preview?name=${encodeURIComponent(bad)}`);
+            assert.equal(r.status, 400, bad);
+        }
+    } finally {
+        await close(workspace);
+        if (oldEnv === undefined) delete process.env.TEGAKI_MANGA_WILDCARDS_DIR; else process.env.TEGAKI_MANGA_WILDCARDS_DIR = oldEnv;
+        if (oldPort === undefined) delete process.env.MANGA_WORKSPACE_PORT; else process.env.MANGA_WORKSPACE_PORT = oldPort;
+        await fs.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+    }
+});

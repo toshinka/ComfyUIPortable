@@ -201,6 +201,66 @@ class LoraDoubleUnderscoreCollisionTests(unittest.TestCase):
             self.expand("x \ue0020\ue003")
 
 
+class WildcardLeadingBangPathTests(unittest.TestCase):
+    """MANGA-WILDCARD-LEADING-BANG-PATH1: a leading '!' is a literal name character, not a
+    dynamicprompts sampling prefix; nested identities stay folder/name."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = pathlib.Path(self._tmp.name) / "wildcards"
+        for rel, text in {"!Quality/manga.txt": "bang quality\n", "Quality/manga.txt": "plain quality\n",
+                          "folder/!manga.txt": "folder bang\n", "lora_!MAN_L.txt": "man l\n",
+                          "uses_bang.txt": "__!Quality/manga__, nested\n"}.items():
+            (self.root / rel).parent.mkdir(parents=True, exist_ok=True)
+            (self.root / rel).write_text(text, encoding="utf-8")
+        self.before = {p.relative_to(self.root).as_posix(): p.read_bytes() for p in self.root.rglob("*.txt")}
+        self._env = os.environ.get(bg.WILDCARD_ENV)
+        os.environ[bg.WILDCARD_ENV] = str(self.root)
+
+    def tearDown(self):
+        if self._env is None:
+            os.environ.pop(bg.WILDCARD_ENV, None)
+        else:
+            os.environ[bg.WILDCARD_ENV] = self._env
+        self._tmp.cleanup()
+
+    def compile_expand(self, raw):  # the generation compile path
+        return bg._expand_dynamic_prompt(raw, 11, "global:positive")[0]
+
+    def test_a_i_leading_bang_resolves_the_bang_file_in_generation(self):
+        self.assertEqual(self.compile_expand("x, __!Quality/manga__"), "x, bang quality")
+        self.assertEqual(self.compile_expand("__uses_bang__"), "bang quality, nested", "bang inside wildcard values too")
+
+    def test_b_identity_and_errors_keep_the_bang(self):
+        checked = bg.validate_wildcard_text("__!Quality/manga__")
+        self.assertTrue(checked["ok"], checked["errors"])
+        self.assertEqual([w["name"] for w in checked["wildcards"]], ["!Quality/manga"])
+        with self.assertRaises(bg.GenerationContractError) as missing:
+            self.compile_expand("__!Missing/one__")
+        self.assertIn("'!Missing/one'", str(missing.exception))
+
+    def test_c_d_e_other_shapes_unchanged(self):
+        self.assertEqual(self.compile_expand("__Quality/manga__"), "plain quality")
+        self.assertEqual(self.compile_expand("__folder/!manga__"), "folder bang")
+        self.assertEqual(self.compile_expand("__lora_!MAN_L__"), "man l")
+        self.assertEqual(self.compile_expand("{a|a}, <lora:x__!y__z:1>"), "a, <lora:x__!y__z:1>", "LoRA names untouched")
+
+    def test_h_expand_action_uses_the_same_identity(self):
+        out = api.expand_one_wildcard("!Quality/manga")
+        self.assertEqual((out["name"], out["token"], out["expanded_text"]), ("!Quality/manga", "__!Quality/manga__", "bang quality"))
+        self.assertEqual(api.expand_one_wildcard("folder\\!manga")["expanded_text"], "folder bang")
+
+    def test_j_k_path_safety_unchanged(self):
+        for bad in ("__!../secret__", "__../!x__", "__/abs/!x__", "__C:/!x__", "__!Quality/../../x__"):
+            with self.subTest(bad=bad), self.assertRaises(bg.GenerationContractError):
+                self.compile_expand(bad)
+        for bad in ("!../secret", "../!x", "/abs/!x", "C:/!x"):
+            with self.subTest(bad=bad), self.assertRaises(bg.GenerationContractError):
+                api.expand_one_wildcard(bad)
+        after = {p.relative_to(self.root).as_posix(): p.read_bytes() for p in self.root.rglob("*.txt")}
+        self.assertEqual(after, self.before, "wildcard files unchanged")
+
+
 class RuntimeSourceIdentityTests(unittest.TestCase):
     def test_backend_digest_matches_the_launcher_formula(self):
         folder = ROOT / "custom_nodes_custom" / "tegaki_manga_nodes"

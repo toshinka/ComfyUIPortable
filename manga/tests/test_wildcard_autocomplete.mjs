@@ -109,3 +109,16 @@ test("accept() survives its own input handler clearing activeContext and still r
         assert.deepEqual(inserted ? inserted.detail : null, expectEvent);
     }
 });
+
+// MANGA-WILDCARD-LEADING-BANG-PATH1: a leading "!" is part of the canonical nested identity.
+test("F: autocomplete keeps a leading '!' and nested folders in the inserted token", async () => {
+    const { detectPromptCompletionContext: detect, insertPromptWildcard, queryWildcardCatalog } = await import("../app/src/view/tag_autocomplete.js");
+    const names = ["!Quality/manga", "Quality/manga", "folder/!manga", "lora_!MAN_L"];
+    for (const [text, expected] of [["1girl, __!Qua", "1girl, __!Quality/manga__"], ["_!Qua", "__!Quality/manga__"],
+        ["__folder/!m", "__folder/!manga__"], ["__lora_!M", "__lora_!MAN_L__"]]) {
+        const ctx = detect(text, text.length);
+        assert.equal(ctx.type, "wildcard", text);
+        const [top] = queryWildcardCatalog(names, ctx.query);
+        assert.equal(insertPromptWildcard(text, ctx, top.tag).value, expected);
+    }
+});

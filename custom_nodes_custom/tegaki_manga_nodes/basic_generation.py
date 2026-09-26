@@ -277,6 +277,19 @@ _LORA_SPAN_RE = re.compile(r"<lora:[^<>]*>")
 _LORA_PLACEHOLDER_RE = re.compile(LORA_SPAN_OPEN + r"(\d+)" + LORA_SPAN_CLOSE)
 
 
+# Card MANGA-WILDCARD-LEADING-BANG-PATH1: dynamicprompts reads a leading "!" after the "__"
+# opener as its COMBINATORIAL sampling prefix, so "__!Quality/manga__" was looked up as
+# "Quality/manga".  Manga wildcard identities treat "!" as a literal file/folder character,
+# so the opener is rewritten to the explicit RANDOM prefix ("__~!Quality/manga__"): the
+# parser then keeps the whole name "!Quality/manga", and RANDOM is exactly the sampling
+# the Manga generators already use by default.  "~"/"@" prefixes are left untouched.
+_LEADING_BANG_WILDCARD_RE = re.compile(r"(?<![A-Za-z0-9_])__!(?=[^\s!_,{}|<>])")
+
+
+def _literal_leading_bang(text: str) -> str:
+    return _LEADING_BANG_WILDCARD_RE.sub("__~!", text)
+
+
 class _LoraSpanGuard:
     def __init__(self):
         self.spans: list[str] = []
@@ -293,7 +306,7 @@ class _LoraSpanGuard:
             self.spans.append(token)
             return f"{LORA_SPAN_OPEN}{len(self.spans) - 1}{LORA_SPAN_CLOSE}"
 
-        return _LORA_SPAN_RE.sub(swap, text)
+        return _literal_leading_bang(_LORA_SPAN_RE.sub(swap, text))
 
     def restore(self, text: str) -> str:
         return _LORA_PLACEHOLDER_RE.sub(lambda match: self.spans[int(match.group(1))], text)
