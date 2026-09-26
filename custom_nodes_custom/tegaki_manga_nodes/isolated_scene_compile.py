@@ -19,6 +19,7 @@ try:
         REFERENCE_SUPPORTED_CHECKPOINT,
     )
     from .isolated_scene_plan import IsolatedScenePlanError
+    from .basic_generation import split_lora_directives
 except (ImportError, ValueError):
     from scene_generation import (
         compile_scene,
@@ -27,6 +28,7 @@ except (ImportError, ValueError):
         REFERENCE_SUPPORTED_CHECKPOINT,
     )
     from isolated_scene_plan import IsolatedScenePlanError
+    from basic_generation import split_lora_directives
 
 
 class IsolatedSceneCompileError(GenerationContractError):
@@ -181,11 +183,24 @@ def compile_isolated_scene_plan(
     scene_id = scene["scene_id"]
     page_context = plan.get("page_context", {})
 
+    # An isolated Scene owns the whole local graph, so LoRA directives written
+    # in its positive prompt apply to the whole MODEL/CLIP chain.  Hoist them
+    # onto the page-level (global) prompt so the ONE canonical LoRA path in
+    # compile_scene resolves them (catalog lookup, fail-closed, LoraLoader
+    # chain before CLIP encoding).  Page-style LoRAs keep precedence in chain
+    # order; Scene directives follow in prompt order.  No-LoRA text is unchanged.
+    scene_prompt = scene.get("prompt", "")
+    style_prompt = page_context.get("style_prompt", "")
+    if isinstance(scene_prompt, str) and isinstance(style_prompt, str):
+        scene_prompt, scene_lora_directives = split_lora_directives(scene_prompt)
+        if scene_lora_directives:
+            style_prompt = style_prompt + "".join(scene_lora_directives)
+
     local_page = {
         "page_id": page_context.get("page_id") or "page_isolated",
         "width_px": width,
         "height_px": height,
-        "style_prompt": page_context.get("style_prompt", ""),
+        "style_prompt": style_prompt,
         "style_negative_prompt": page_context.get("style_negative_prompt", ""),
         "scenes": [
             {
@@ -193,7 +208,7 @@ def compile_isolated_scene_plan(
                 "order": 1,
                 "name": scene.get("name", scene_id),
                 "input_mode": scene.get("input_mode", "simple"),
-                "prompt": scene.get("prompt", ""),
+                "prompt": scene_prompt,
                 "negative_prompt": scene.get("negative_prompt", ""),
                 "area": {
                     "shape_type": "rect",

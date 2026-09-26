@@ -209,8 +209,23 @@
                                 <textarea id="scene-composer-prompt" rows="4" placeholder="Describe the page or scene…" aria-describedby="mg-global-prompt-syntax-help"></textarea>
                                 <p id="mg-global-prompt-syntax-help" class="mg-hint">Wildcards: __name__ · choices: {a|b}</p>
                             </div>
+                            <!-- LoRA (Card MANGA-ILLUSTRIOUS-LORA-PRODUCTION1): directly below the Positive Prompt it edits -->
+                            <section id="mg-lora-panel" class="scene-composer-field mg-lora-panel" aria-label="LoRA">
+                                <div class="scene-composer-field-head">
+                                    <button id="mg-lora-toggle" type="button" class="mg-collapse-toggle" aria-expanded="false" aria-controls="mg-lora-body">LoRA <span id="mg-lora-count" class="mg-lora-count"></span></button>
+                                </div>
+                                <div id="mg-lora-body" class="mg-lora-body" hidden>
+                                    <div id="mg-lora-status" class="mg-hint mg-lora-status" role="status" aria-live="polite"></div>
+                                    <nav id="mg-lora-breadcrumb" class="mg-lora-breadcrumb" aria-label="LoRA folder path"></nav>
+                                    <div id="mg-lora-folders" class="mg-lora-folders" role="list" aria-label="LoRA subfolders"></div>
+                                    <div id="mg-lora-cards" class="mg-lora-cards" role="list" aria-label="LoRAs in this folder"></div>
+                                </div>
+                            </section>
                             <div id="scene-composer-negative-wrap" class="scene-composer-field">
-                                <label for="scene-composer-negative">Negative Prompt</label>
+                                <div class="scene-composer-field-head">
+                                    <button id="mg-negative-toggle" type="button" class="mg-collapse-toggle mg-collapse-toggle-icon" aria-expanded="true" aria-controls="scene-composer-negative" aria-label="Collapse Negative Prompt"></button>
+                                    <label for="scene-composer-negative">Negative Prompt</label>
+                                </div>
                                 <textarea id="scene-composer-negative" rows="2" placeholder="What should be excluded…"></textarea>
                             </div>
                             <!-- Contextual Character Reference Hub in Create -->
@@ -688,6 +703,7 @@
         import { mountGenerationView, buildSceneGenerationSettings } from "./src/view/generation_view.js";
         import { createTagAutocomplete } from "./src/view/tag_autocomplete.js";
         import { setupNumericWheelControl } from "./src/view/numeric_wheel.js";
+        import { mountLoraPanel } from "./src/view/lora_panel.js";
 
         const store = new AuthoringStore(createNewAuthoringSessionDocument());
         const session = new SessionState();
@@ -737,6 +753,25 @@
         const composerPrompt = document.getElementById("scene-composer-prompt");
         const composerNegative = document.getElementById("scene-composer-negative");
         const composerTagAutocomplete = createTagAutocomplete(composerPrompt);
+        const loraPanel = mountLoraPanel({
+            panel: document.getElementById("mg-lora-panel"),
+            toggle: document.getElementById("mg-lora-toggle"),
+            body: document.getElementById("mg-lora-body"),
+            status: document.getElementById("mg-lora-status"),
+            breadcrumb: document.getElementById("mg-lora-breadcrumb"),
+            folders: document.getElementById("mg-lora-folders"),
+            cards: document.getElementById("mg-lora-cards"),
+            count: document.getElementById("mg-lora-count"),
+            prompt: composerPrompt,
+        });
+        const negativeToggle = document.getElementById("mg-negative-toggle");
+        negativeToggle.addEventListener("click", () => {
+            // Collapsing only hides the field; the Negative Prompt value is never touched.
+            const expanded = negativeToggle.getAttribute("aria-expanded") !== "true";
+            negativeToggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+            negativeToggle.setAttribute("aria-label", expanded ? "Collapse Negative Prompt" : "Expand Negative Prompt");
+            composerNegative.hidden = !expanded;
+        });
 
         // Create-side Character Reference Hub elements
         const sceneComposerCastRefWrap = document.getElementById("scene-composer-cast-reference-wrap");
@@ -1363,6 +1398,10 @@
                     if (document.activeElement !== composerNegative) composerNegative.value = page.style_negative_prompt || "";
                 }
             }
+            // CAST -> LoRA default attachments are a later phase; LoRA edits Global/Scene prompts only.
+            loraPanel.sync(isCast
+                ? { enabled: false, reason: "LoRA applies to Global or Scene prompts, not CAST identity prompts." }
+                : { enabled: true });
 
             // Render Contextual Character Reference Hub in Create
             if (sceneComposerCastRefWrap) {

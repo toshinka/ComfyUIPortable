@@ -271,6 +271,70 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
+    // Engine-scoped LoRA browse (Card MANGA-ILLUSTRIOUS-LORA-PRODUCTION1).
+    // One folder per request; the backend owns the root and canonical IDs.
+    if (pathname === "/api/manga/resources/lora") {
+        const reply = (status, error_code, error) => {
+            res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
+            res.end(JSON.stringify({ ok: false, error_code, error }));
+        };
+        if (req.method !== "GET") {
+            reply(405, "METHOD_NOT_ALLOWED", "Use GET");
+            return;
+        }
+        if ((requestOrigin && !allowedLocalOrigins.has(requestOrigin)) ||
+            (req.headers["sec-fetch-site"] && !["same-origin", "none"].includes(req.headers["sec-fetch-site"]))) {
+            reply(403, "ORIGIN_FORBIDDEN", "Request origin is not the Manga workspace");
+            return;
+        }
+        const engine = url.searchParams.get("engine") || "illustrious";
+        const dir = url.searchParams.get("dir") || "";
+        if (!["illustrious"].includes(engine)) {
+            reply(404, "RESOURCE_UNSUPPORTED", `No LoRA resource is registered for engine '${engine}'`);
+            return;
+        }
+        if (dir.length > 1024) {
+            reply(400, "INVALID_RESOURCE_ID", "Folder ID is too long");
+            return;
+        }
+        try {
+            const backendRes = await fetch(
+                `${parsedBackend.origin}/tegaki/manga/resources/${engine}/lora?dir=${encodeURIComponent(dir)}`,
+                { method: "GET", signal: AbortSignal.timeout(10000) }
+            );
+            const chunks = [];
+            let size = 0;
+            for await (const chunk of backendRes.body) {
+                size += chunk.length;
+                if (size > 4 * 1024 * 1024) {
+                    reply(502, "BACKEND_INVALID_RESPONSE", "Backend response exceeds 4 MiB");
+                    return;
+                }
+                chunks.push(chunk);
+            }
+            let data;
+            try {
+                data = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+            } catch {
+                reply(502, "BACKEND_INVALID_RESPONSE", "Backend returned invalid JSON");
+                return;
+            }
+            const valid = data && typeof data === "object" && !Array.isArray(data) && (backendRes.ok
+                ? data.ok === true && Array.isArray(data.folders) && Array.isArray(data.loras) && typeof data.folder === "string"
+                : data.ok === false && typeof data.error === "string");
+            if (!valid) {
+                reply(502, "BACKEND_INVALID_RESPONSE", "Backend response is missing required fields");
+                return;
+            }
+            res.writeHead(backendRes.status, { "Content-Type": "application/json; charset=utf-8" });
+            res.end(JSON.stringify(data));
+        } catch (err) {
+            reply(502, err.name === "TimeoutError" ? "BACKEND_TIMEOUT" : "BACKEND_UNAVAILABLE",
+                err.name === "TimeoutError" ? "Backend LoRA browse timed out" : "Backend LoRA browse failed");
+        }
+        return;
+    }
+
     // Compile-only isolated Scene preparation endpoint (Card MANGA-ISOLATED-SCENE-COMPILE-HTTP1)
     if (pathname === "/api/manga/generation/prepare-isolated-scene") {
         const reply = (status, error_code, error) => {

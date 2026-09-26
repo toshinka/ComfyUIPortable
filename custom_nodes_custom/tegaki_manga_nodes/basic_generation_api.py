@@ -54,6 +54,11 @@ try:
 except (ImportError, ValueError):
     from page_pixel_compositor import compose_page_pixels, PagePixelCompositorError
 
+try:
+    from .engine_resources import ResourceContractError, browse_lora_payload
+except (ImportError, ValueError):
+    from engine_resources import ResourceContractError, browse_lora_payload
+
 MAX_REQUEST_BYTES = 256 * 1024
 
 try:
@@ -402,7 +407,42 @@ async def api_manga_page_composite(request: web.Request) -> web.Response:
         return _error("IMAGE_COMPOSITE_FAILED", "Page pixel composition failed", 500)
 
 
+RESOURCE_ERROR_STATUS = {
+    "RESOURCE_UNSUPPORTED": 404,
+    "RESOURCE_PATH_NOT_FOUND": 404,
+    "RESOURCE_ROOT_UNAVAILABLE": 503,
+    "RESOURCE_ROOT_UNREGISTERED": 503,
+    "RESOURCE_PATH_UNREADABLE": 503,
+}
+
+
+def _comfy_lora_browse(engine: str, relative_dir: str) -> dict:
+    """Lazy one-folder LoRA listing for an engine, via ComfyUI's registered folders."""
+    import folder_paths
+
+    return browse_lora_payload(
+        engine,
+        relative_dir,
+        folder_paths.get_folder_paths("loras"),
+        extensions=folder_paths.supported_pt_extensions,
+        comfy_full_path=lambda item: folder_paths.get_full_path("loras", item),
+    )
+
+
+async def api_manga_resource_lora_browse(request: web.Request) -> web.Response:
+    engine = request.match_info.get("engine", "")
+    relative_dir = request.query.get("dir", "")
+    try:
+        return web.json_response(_comfy_lora_browse(engine, relative_dir))
+    except ResourceContractError as exc:
+        return _error(exc.code, str(exc), RESOURCE_ERROR_STATUS.get(exc.code, 400))
+    except Exception:
+        logging.exception("[MangaBasicGenerationAPI] LoRA browse failed")
+        return _error("RESOURCE_BROWSE_FAILED", "LoRA browse failed", 500)
+
+
 if routes is not None:
+    routes.get("/tegaki/manga/resources/{engine}/lora")(api_manga_resource_lora_browse)
     routes.get("/tegaki/manga/generation/capabilities")(api_manga_basic_capabilities)
     routes.post("/tegaki/manga/generation/compile-basic")(api_manga_basic_compile)
     routes.post("/tegaki/manga/generation/compile-scene")(api_manga_scene_compile)

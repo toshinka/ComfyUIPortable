@@ -170,31 +170,20 @@ def _check_int(value: Any, label: str, lower: int, upper: int, step: int = 1) ->
 
 def _resolve_lora(name: str, catalog: dict) -> str:
     _safe_catalog_id(name)
-    available = [entry["id"] for entry in catalog["loras"] if entry["available"]]
-    if name in available:
-        return name
-    normalized = name.replace("\\", "/")
-    exact_path = [item for item in available if item.replace("\\", "/") == normalized]
-    if len(exact_path) == 1:
-        return exact_path[0]
-    if len(exact_path) > 1:
-        _fail("LORA_AMBIGUOUS", f"LoRA '{name}' matches multiple catalog IDs")
-    stem = PurePosixPath(normalized).stem
-    filename = PurePosixPath(normalized).name
-    has_parent = "/" in normalized
-    matches = []
-    for item in available:
-        item_path = PurePosixPath(item.replace("\\", "/"))
-        if has_parent:
-            if item_path.with_suffix("").as_posix() == normalized or item_path.as_posix() == normalized:
-                matches.append(item)
-        elif item_path.name == filename or (not PurePosixPath(normalized).suffix and item_path.stem == stem):
-            matches.append(item)
-    if len(matches) == 1:
-        return matches[0]
-    if matches:
-        _fail("LORA_AMBIGUOUS", f"LoRA '{name}' matches multiple catalog IDs")
-    _fail("LORA_UNAVAILABLE", f"LoRA '{name}' is unavailable")
+    try:
+        from .engine_resources import resolve_engine_lora, ResourceContractError
+    except (ImportError, ValueError):
+        from engine_resources import resolve_engine_lora, ResourceContractError
+    try:
+        return resolve_engine_lora(
+            name,
+            catalog.get("loras", []),
+            root=catalog.get("lora_root"),
+            registered_roots=catalog.get("registered_roots"),
+            comfy_full_path=catalog.get("comfy_full_path"),
+        )
+    except ResourceContractError as exc:
+        _fail(exc.code, str(exc))
 
 
 def _wildcard_root(override: Path | str | None = None) -> Path:
@@ -831,6 +820,47 @@ def _compile_prompt(raw: str, catalog: dict) -> tuple[str, list[dict]]:
     if any(char in clean for char in "<>"):
         _fail("UNSUPPORTED_PROMPT_TAG", "Malformed or unsupported angle-bracket tag")
     return clean, resolved
+
+
+def format_lora_strength(strength: Any) -> str:
+    """Canonical visible strength text (1 -> '1.0', 0.85 -> '0.85'); mirrors the UI."""
+    if type(strength) not in (int, float) or not math.isfinite(strength) or not -4 <= strength <= 4:
+        _fail("INVALID_LORA", "LoRA weight must be finite and within -4..4")
+    value = float(strength) or 0.0
+    text = ("%.4f" % value).rstrip("0")
+    return text + "0" if text.endswith(".") else text
+
+
+def format_lora_directive(canonical_id: str, strength: Any = 1.0) -> str:
+    """Visible prompt directive for one canonical LoRA selection.
+
+    This is the reusable selection -> prompt representation (Owner UI today,
+    CAST default attachments later).  Parsing/resolution stays in
+    ``_compile_prompt``; the result is guaranteed to round-trip through LORA_RE.
+    """
+    _safe_catalog_id(canonical_id)
+    directive = f"<lora:{canonical_id}:{format_lora_strength(strength)}>"
+    if LORA_RE.fullmatch(directive) is None:
+        _fail("INVALID_LORA", f"LoRA ID cannot be expressed as a prompt directive: {canonical_id!r}")
+    return directive
+
+
+def split_lora_directives(raw: str) -> tuple[str, list[str]]:
+    """Separate well-formed LoRA directives from ordinary prompt text.
+
+    Text without directives is returned unchanged.  When directives are
+    removed, only the empty comma separators they leave behind are collapsed.
+    Malformed ``<...>`` tags stay in place so the canonical compiler rejects them.
+    """
+    if not isinstance(raw, str):
+        _fail("INVALID_DOCUMENT", "Prompt must be a string")
+    directives = [match.group(0) for match in LORA_RE.finditer(raw)]
+    if not directives:
+        return raw, []
+    text = LORA_RE.sub("", raw)
+    text = re.sub(r"[ \t]*,(?:[ \t]*,)+", ",", text)
+    text = re.sub(r"^[\s,]+|[\s,]+$", "", text)
+    return text, directives
 
 
 def compile_basic(request: dict, catalog: dict, random_seed: Callable[[], int] | None = None) -> dict:

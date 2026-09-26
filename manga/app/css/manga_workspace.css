@@ -1082,3 +1082,31 @@ body.manga-embedded #generate-view { width: 100%; max-width: none; margin: 0; pa
 }
 
 
+
+/* LoRA panel + collapsible Negative Prompt (Card MANGA-ILLUSTRIOUS-LORA-PRODUCTION1) */
+.scene-composer-field-head { display: flex; align-items: center; gap: 6px; min-height: 18px; }
+.mg-collapse-toggle { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: 0; background: transparent; color: var(--manga-text); font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+.mg-collapse-toggle::before { content: "▶"; font-size: 8px; color: var(--manga-muted); transition: transform 0.12s ease; }
+.mg-collapse-toggle[aria-expanded="true"]::before { transform: rotate(90deg); }
+.mg-collapse-toggle:focus-visible { outline: 2px solid var(--manga-active-border); outline-offset: 2px; border-radius: 3px; }
+.mg-lora-count { color: var(--manga-muted); font-weight: 600; }
+.mg-lora-panel.is-disabled .mg-lora-cards { opacity: 0.55; }
+.mg-lora-body { display: flex; flex-direction: column; gap: 5px; padding: 6px; border: 1px solid var(--manga-line-soft); border-radius: 7px; background: var(--manga-surface-inset); }
+.mg-lora-status:empty { display: none; }
+.mg-lora-status-error { color: var(--manga-danger-text); }
+.mg-lora-breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; font-size: 10px; }
+.mg-lora-crumb { padding: 1px 4px; border: 0; border-radius: 4px; background: transparent; color: var(--manga-muted); font: inherit; cursor: pointer; }
+.mg-lora-crumb[aria-current="location"] { color: var(--manga-text); font-weight: 700; }
+.mg-lora-crumb-sep { color: var(--manga-muted); }
+.mg-lora-folders { display: flex; flex-wrap: wrap; gap: 4px; max-height: 76px; overflow-y: auto; }
+.mg-lora-folder { max-width: 100%; padding: 2px 7px; border: 1px solid var(--manga-line); border-radius: 10px; background: var(--manga-surface); color: var(--manga-text); font: inherit; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.mg-lora-folder:hover, .mg-lora-crumb:hover { background: var(--manga-maroon-hover); color: var(--manga-text); }
+.mg-lora-cards { display: flex; flex-direction: column; gap: 3px; max-height: 190px; overflow-y: auto; overscroll-behavior: contain; }
+.mg-lora-card { display: grid; grid-template-columns: minmax(0, 1fr) 58px auto; align-items: center; gap: 5px; padding: 3px 5px; border: 1px solid var(--manga-line-soft); border-radius: 6px; background: var(--manga-surface); }
+.mg-lora-card.is-selected { border-color: var(--manga-active-border); background: var(--manga-selection); }
+.mg-lora-card.is-unavailable { opacity: 0.6; }
+.mg-lora-card-name { overflow: hidden; color: var(--manga-text); font-size: 11px; white-space: nowrap; text-overflow: ellipsis; }
+.scene-composer-field .mg-lora-strength { width: 58px; padding: 2px 4px; font-size: 11px; }
+.mg-lora-card-action { padding: 2px 8px; border: 1px solid var(--manga-line); border-radius: 5px; background: var(--manga-surface-raised); color: var(--manga-text); font: inherit; font-size: 10px; cursor: pointer; }
+.mg-lora-card.is-selected .mg-lora-card-action { border-color: var(--manga-danger-border); background: var(--manga-danger-background); color: var(--manga-danger-text); }
+.mg-lora-card-action:disabled { cursor: not-allowed; opacity: 0.6; }
