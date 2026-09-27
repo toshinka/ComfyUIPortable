@@ -110,12 +110,23 @@ def _live_catalog():
     inputs = {name: registry[name].INPUT_TYPES() for name in required}
     checkpoints = folder_paths.get_filename_list("checkpoints")
     loras = folder_paths.get_filename_list("loras")
+    vae_loader = registry.get("VAELoader")
+    vae_choices = []
+    if vae_loader is not None:
+        vae_inputs = vae_loader.INPUT_TYPES()
+        vae_field = (vae_inputs.get("required") or {}).get("vae_name") if isinstance(vae_inputs, dict) else None
+        if isinstance(vae_field, (list, tuple)) and vae_field and isinstance(vae_field[0], (list, tuple)):
+            vae_choices = list(dict.fromkeys(name for name in vae_field[0] if isinstance(name, str) and name))
 
     def is_available(kind, name):
         resolved = folder_paths.get_full_path(kind, name)
         return resolved is not None and os.path.isfile(resolved)
 
     catalog = build_catalog(checkpoints, loras, inputs, is_available)
+    # The VAELoader's current combo is the catalog authority, including built-in
+    # entries that are not model files and must remain valid exact identities.
+    catalog["vaes"] = [{"id": name, "available": True} for name in vae_choices]
+    catalog["vae_catalog_scope"] = "comfyui_vaeloader"
     # Dynamic Prompt capability is part of Manga's backend contract.  The
     # package/root are checked here as well as at compile time so a missing
     # runtime asset cannot present a misleading READY catalog.
@@ -201,6 +212,52 @@ def _live_catalog():
     return catalog
 
 
+def _compile_with_vae(candidate: dict, catalog: dict, compiler) -> dict:
+    """Apply an optional logical VAE selection at the shared graph boundary."""
+    if not isinstance(candidate, dict):
+        return compiler(candidate, catalog)
+    vae_id = candidate.get("vae_id", "")
+    if not isinstance(vae_id, str):
+        raise GenerationContractError("INVALID_VAE_SELECTION", "vae_id must be a catalog ID or empty")
+    if vae_id and not any(isinstance(entry, dict) and entry.get("id") == vae_id and entry.get("available") is True
+                          for entry in catalog.get("vaes", [])):
+        raise GenerationContractError("VAE_UNAVAILABLE", f"Selected VAE '{vae_id}' is unavailable")
+
+    compiler_request = dict(candidate)
+    compiler_request.pop("vae_id", None)
+    compiled = compiler(compiler_request, catalog)
+    graph = compiled.get("graph") if isinstance(compiled, dict) else None
+    if not vae_id:
+        return compiled
+    if not isinstance(graph, dict):
+        raise GenerationContractError("VAE_GRAPH_UNAVAILABLE", "Compiler did not return a graph for the selected VAE")
+
+    consumers = []
+    for node in graph.values():
+        inputs = node.get("inputs") if isinstance(node, dict) else None
+        if isinstance(inputs, dict) and "vae" in inputs:
+            consumers.append(inputs)
+    if not consumers:
+        raise GenerationContractError("VAE_GRAPH_INPUT_UNAVAILABLE", "Compiled graph has no VAE input to bind")
+
+    numeric_ids = [int(node_id) for node_id in graph if isinstance(node_id, str) and node_id.isdigit()]
+    loader_id = str(max(numeric_ids, default=0) + 1)
+    graph[loader_id] = {"class_type": "VAELoader", "inputs": {"vae_name": vae_id}}
+    for inputs in consumers:
+        inputs["vae"] = [loader_id, 0]
+    graph_digest = _digest(graph)
+    compiled["graph_digest"] = graph_digest
+    compiled["selected_vae_id"] = vae_id
+    audit = compiled.get("audit_trail")
+    if isinstance(audit, dict):
+        audit["graph_digest"] = graph_digest
+        audit["selected_vae_id"] = vae_id
+    normalized = compiled.get("normalized_request")
+    if isinstance(normalized, dict):
+        normalized["vae_id"] = vae_id
+    return compiled
+
+
 def _error(code, message, status, request_value=None):
     payload = {"ok": False, "error_code": code, "error": message}
     if request_value is not None:
@@ -245,7 +302,7 @@ async def api_manga_basic_compile(request: web.Request) -> web.Response:
         return _error("INVALID_JSON", str(exc), 400)
     try:
         catalog = _live_catalog()
-        return web.json_response(compile_basic(candidate, catalog))
+        return web.json_response(_compile_with_vae(candidate, catalog, compile_basic))
     except GenerationContractError as exc:
         return _error(exc.code, str(exc), 422 if exc.code != "BACKEND_CAPABILITY_UNAVAILABLE" else 503, candidate)
     except Exception:
@@ -281,7 +338,7 @@ async def api_manga_scene_compile(request: web.Request) -> web.Response:
         return _error("INVALID_JSON", str(exc), 400)
     try:
         catalog = _live_catalog()
-        return web.json_response(compile_scene(candidate, catalog))
+        return web.json_response(_compile_with_vae(candidate, catalog, compile_scene))
     except GenerationContractError as exc:
         return _error(exc.code, str(exc), 422 if exc.code != "BACKEND_CAPABILITY_UNAVAILABLE" else 503, candidate)
     except Exception:

@@ -2,7 +2,7 @@
 export const ACTIVE_JOB_STATES = new Set(["VALIDATING", "SUBMITTING", "QUEUED", "RUNNING", "UNKNOWN"]);
 const STORAGE_KEY = "tegaki.manga.play1c.jobIds";
 const FIELDS = ["checkpoint_id", "positive_raw", "negative_raw", "sampler_id", "scheduler_id",
-    "steps", "cfg", "width", "height", "seed_requested"];
+    "steps", "cfg", "width", "height", "seed_requested", "vae_id"];
 
 export class GenerationState {
     constructor(storage = globalThis.sessionStorage) {
@@ -11,8 +11,9 @@ export class GenerationState {
         this.catalogError = "";
         this.draft = {
             checkpoint_id: "", positive_raw: "", negative_raw: "", sampler_id: "", scheduler_id: "",
-            steps: "20", cfg: "7", width: "832", height: "1216", seed_requested: "0"
+            steps: "20", cfg: "7", width: "832", height: "1216", seed_requested: "0", vae_id: ""
         };
+        this.listeners = new Set();
         this.mode = "basic";
         this.sceneDraft = { mask_feather: "16", panel_strength: "1" };
         this.touched = new Set();
@@ -39,6 +40,17 @@ export class GenerationState {
         this.draft[field] = String(value);
         this.touched.add(field);
         if (!this.submitUnconfirmed) this.error = "";
+        this._notify();
+    }
+
+    subscribe(listener) {
+        if (typeof listener !== "function") throw new TypeError("Generation state listener must be a function");
+        this.listeners.add(listener);
+        return () => this.listeners.delete(listener);
+    }
+
+    _notify() {
+        for (const listener of this.listeners) listener(this);
     }
 
     setMode(mode) {
@@ -75,6 +87,7 @@ export class GenerationState {
             if (field === "width" || field === "height") value = Math.ceil(value / 8) * 8;
             if (Number.isFinite(value) && value >= low && value <= high) this.draft[field] = String(value);
         }
+        this._notify();
     }
 
     beginAttempt() {
@@ -106,20 +119,25 @@ export class GenerationState {
                 this.draft[field] = String(settings[field]);
                 this.touched.add(field);
             }
+            this.draft.vae_id = String(settings.vae_id || "");
+            this.touched.add("vae_id");
             for (const field of ["mask_feather", "panel_strength"]) {
                 if (!Object.hasOwn(settings, field)) throw new Error(`Recorded Scene job lacks ${field}`);
                 this.sceneDraft[field] = String(settings[field]);
             }
             this.mode = "scene";
         } else {
-            for (const field of FIELDS) {
+            for (const field of FIELDS.filter(field => field !== "vae_id")) {
                 if (!Object.hasOwn(settings, field)) throw new Error(`Recorded job lacks ${field}`);
                 this.draft[field] = String(settings[field]);
                 this.touched.add(field);
             }
+            this.draft.vae_id = String(settings.vae_id || "");
+            this.touched.add("vae_id");
             this.mode = "basic";
         }
         this.error = "";
+        this._notify();
     }
 
     setPreview(jobId, url) { this.preview = { jobId, url }; }

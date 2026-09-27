@@ -15,6 +15,7 @@ if str(ROOT) not in __import__("sys").path:
     __import__("sys").path.insert(0, str(ROOT))
 
 from custom_nodes_custom.tegaki_manga_nodes.basic_generation import build_catalog
+from custom_nodes_custom.tegaki_manga_nodes.basic_generation_api import _compile_with_vae
 from custom_nodes_custom.tegaki_manga_nodes.authoring_contract import (
     create_cast_entry,
     create_character_instance,
@@ -249,15 +250,24 @@ class SceneGenerationTests(unittest.TestCase):
     def test_global_lora_resolves_but_scene_lora_is_rejected(self):
         document = copy.deepcopy(self.document)
         document["pages"][0]["style_prompt"] = "page <lora:styles/ink:0.7>"
+        catalog = copy.deepcopy(self.catalog)
+        selected_vae = "minimaxH3\\minimax_h3_video_vae_fp16.safetensors"
+        catalog["vaes"] = [{"id": selected_vae, "available": True}]
         # This test covers the Scene-local LoRA guard; isolate the independent
         # trusted-root lookup used to resolve the page-level LoRA.
         with patch(
             "custom_nodes_custom.tegaki_manga_nodes.engine_resources.resolve_engine_lora",
             return_value="styles/ink.safetensors",
         ):
-            result = compile_scene(self.request(document), self.catalog)
+            result = _compile_with_vae({**self.request(document), "vae_id": selected_vae}, catalog, compile_scene)
         self.assertEqual(result["resolved_loras"][0]["id"], "styles/ink.safetensors")
         self.assertEqual(sum(n["class_type"] == "LoraLoader" for n in result["graph"].values()), 1)
+        checkpoint = next(node for node in result["graph"].values()
+                          if node["class_type"] == "CheckpointLoaderSimple")
+        self.assertEqual(checkpoint["inputs"]["ckpt_name"], self.request()["checkpoint_id"])
+        loader = next(node for node in result["graph"].values() if node["class_type"] == "VAELoader")
+        self.assertEqual(loader["inputs"]["vae_name"], selected_vae)
+        self.assertEqual(result["audit_trail"]["graph_digest"], result["graph_digest"])
         bad = copy.deepcopy(self.document)
         bad["pages"][0]["scenes"][0]["prompt"] = "top <lora:styles/ink:0.7>"
         self.expect_code("SCENE_LORA_UNSUPPORTED", self.request(bad))
@@ -1228,7 +1238,27 @@ class SceneGenerationTests(unittest.TestCase):
         # weight > 2.0
         self.expect_code("INVALID_PARAMETER", self.request(doc, reference_weight=2.5))
 
+    def test_vae_catalog_choice_reaches_scene_decode_and_controlnet(self):
+        guide_asset = "tegaki_manga_guides/rough_guide_test.png"
+        self.add_controlnet_capability(asset=guide_asset)
+        catalog = copy.deepcopy(self.catalog)
+        selected_vae = "taesdxl"
+        catalog["vaes"] = [{"id": selected_vae, "available": True}]
+        document = self.guide_fixture_document(asset=guide_asset)
+        default = _compile_with_vae(self.request(document), catalog, compile_scene)
+        default_consumers = [node["inputs"]["vae"] for node in default["graph"].values()
+                             if isinstance(node.get("inputs"), dict) and "vae" in node["inputs"]]
+        self.assertEqual(default_consumers, [["1", 2], ["1", 2]])
+        self.assertFalse(any(node["class_type"] == "VAELoader" for node in default["graph"].values()))
+        result = _compile_with_vae({**self.request(document), "vae_id": selected_vae}, catalog, compile_scene)
+        loader_id = next(node_id for node_id, node in result["graph"].items()
+                         if node["class_type"] == "VAELoader")
+        consumers = [node["inputs"]["vae"] for node in result["graph"].values()
+                     if isinstance(node.get("inputs"), dict) and "vae" in node["inputs"]]
+        self.assertEqual(len(consumers), 2)
+        self.assertTrue(all(link == [loader_id, 0] for link in consumers))
+        self.assertEqual(result["graph"][loader_id]["inputs"]["vae_name"], selected_vae)
+
 
 if __name__ == "__main__":
     unittest.main()
-

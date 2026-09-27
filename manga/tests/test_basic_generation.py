@@ -625,5 +625,38 @@ class BasicApiTests(unittest.TestCase):
             rejected = asyncio.run(self.api.api_manga_basic_compile(Request(json.dumps({**request(self.catalog["revision"]), "positive_raw": "<lora:missing:1>"}).encode())))
             self.assertEqual(rejected.status, 422)
             self.assertEqual(json.loads(rejected.text)["error_code"], "LORA_UNAVAILABLE")
+
+    def test_vae_graph_binding_preserves_default_and_exact_catalog_identity(self):
+        catalog = dict(self.catalog)
+        catalog["vaes"] = [
+            {"id": "Illustrious\\XlVaeC_f2.safetensors", "available": True},
+            {"id": "minimaxH3\\minimax_h3_video_vae_fp16.safetensors", "available": True},
+            {"id": "taesdxl", "available": True},
+        ]
+        candidate = {**request(catalog["revision"]), "positive_raw": "plain manga prompt", "negative_raw": ""}
+        default = self.api._compile_with_vae(candidate, catalog, basic.compile_basic)
+        legacy = basic.compile_basic(candidate, catalog)
+        self.assertEqual(default["graph"], legacy["graph"])
+        self.assertFalse(any(node["class_type"] == "VAELoader" for node in default["graph"].values()))
+        default_decode = next(node for node in default["graph"].values() if node["class_type"] == "VAEDecode")
+        self.assertEqual(default_decode["inputs"]["vae"], ["1", 2])
+
+        for vae_id in (catalog["vaes"][0]["id"], catalog["vaes"][1]["id"], catalog["vaes"][2]["id"]):
+            selected = self.api._compile_with_vae({**candidate, "vae_id": vae_id}, catalog, basic.compile_basic)
+            loader_id = next(node_id for node_id, node in selected["graph"].items()
+                             if node["class_type"] == "VAELoader")
+            self.assertEqual(selected["graph"][loader_id]["inputs"]["vae_name"], vae_id)
+            self.assertEqual(selected["selected_vae_id"], vae_id)
+            checkpoint_node = next(node for node in selected["graph"].values()
+                                   if node["class_type"] == "CheckpointLoaderSimple")
+            self.assertEqual(checkpoint_node["inputs"]["ckpt_name"], candidate["checkpoint_id"])
+            consumers = [node["inputs"]["vae"] for node in selected["graph"].values()
+                         if isinstance(node.get("inputs"), dict) and "vae" in node["inputs"]]
+            self.assertTrue(consumers)
+            self.assertTrue(all(link == [loader_id, 0] for link in consumers))
+
+        with self.assertRaises(basic.GenerationContractError) as raised:
+            self.api._compile_with_vae({**candidate, "vae_id": "missing.vae"}, catalog, basic.compile_basic)
+        self.assertEqual(raised.exception.code, "VAE_UNAVAILABLE")
 if __name__ == "__main__":
     unittest.main()

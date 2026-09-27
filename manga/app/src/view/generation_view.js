@@ -39,6 +39,14 @@ export function filterCheckpointEntries(entries, query = "") {
     });
 }
 
+export function filterVaeEntries(entries, query = "") {
+    const term = String(query || "").trim().toLocaleLowerCase().replaceAll("\\", "/");
+    const values = Array.isArray(entries) ? entries : [];
+    return values.map(entry => typeof entry === "string" ? { id: entry, available: true } : entry)
+        .filter(entry => entry && typeof entry.id === "string" && entry.available !== false)
+        .filter(entry => !term || entry.id.replaceAll("\\", "/").toLocaleLowerCase().includes(term));
+}
+
 function checkpointPathSegments(id) {
     return String(id || "").replaceAll("\\", "/").split("/").filter(Boolean);
 }
@@ -329,6 +337,77 @@ export function mountCheckpointBrowser({ select, getEntries, getSelected, doc = 
     return { root, details, search, breadcrumb, folders, cards, clearButton, previewButtons: slotButtons, render };
 }
 
+function mountVaeSelector({ after, getEntries, getSelected, onChange, doc = after?.ownerDocument }) {
+    if (!after || !doc) throw new TypeError("VAE selector requires a generation resource anchor");
+    const root = doc.createElement("section");
+    root.className = "mg-vae-resource";
+    root.style.margin = "0.45rem 0 0.75rem";
+    root.style.minWidth = "0";
+
+    const label = doc.createElement("label");
+    label.textContent = "VAE (optional)";
+    label.style.display = "block";
+    label.style.fontWeight = "700";
+    label.style.marginBottom = "0.25rem";
+    const selected = doc.createElement("div");
+    selected.className = "mg-hint mg-vae-selected";
+    selected.setAttribute("aria-live", "polite");
+    selected.style.overflowWrap = "anywhere";
+    const search = doc.createElement("input");
+    search.type = "search";
+    search.className = "mg-lora-search mg-vae-search";
+    search.placeholder = "Search VAEs by catalog ID";
+    search.setAttribute("aria-label", "Search VAEs by catalog ID");
+    search.style.boxSizing = "border-box";
+    search.style.width = "100%";
+    search.style.margin = "0.35rem 0";
+    const select = doc.createElement("select");
+    select.className = "mg-vae-select";
+    select.id = "mg-vae_id";
+    select.setAttribute("aria-label", "VAE selection");
+    select.style.boxSizing = "border-box";
+    select.style.width = "100%";
+    const scope = doc.createElement("p");
+    scope.className = "mg-hint mg-vae-scope";
+    scope.textContent = "ComfyUI VAELoader catalog · used by Manga when selected";
+    scope.style.margin = "0.25rem 0 0";
+    label.htmlFor = select.id;
+    root.append(label, selected, search, select, scope);
+    after.insertAdjacentElement("afterend", root);
+
+    function render() {
+        const all = Array.isArray(getEntries?.()) ? getEntries() : [];
+        const selectedId = String(getSelected?.() || "");
+        const filtered = filterVaeEntries(all, search.value);
+        const allById = new Map(all.map(entry => {
+            const item = typeof entry === "string" ? { id: entry, available: true } : entry;
+            return [item?.id, item];
+        }).filter(([id]) => typeof id === "string"));
+        const visible = filtered.slice();
+        if (selectedId && !visible.some(entry => entry.id === selectedId)) {
+            visible.unshift(allById.get(selectedId) || { id: selectedId, available: false });
+        }
+        select.replaceChildren();
+        const defaultOption = doc.createElement("option");
+        defaultOption.value = "";
+        defaultOption.textContent = "Use checkpoint default";
+        select.append(defaultOption);
+        for (const entry of visible) {
+            const option = doc.createElement("option");
+            option.value = entry.id;
+            option.textContent = entry.available === false ? `${entry.id} · unavailable` : entry.id;
+            option.disabled = entry.available === false && entry.id !== selectedId;
+            select.append(option);
+        }
+        select.value = selectedId;
+        selected.textContent = selectedId ? `Selected VAE: ${selectedId}` : "Selected VAE: checkpoint default";
+    }
+
+    search.addEventListener("input", render);
+    select.addEventListener("change", () => onChange?.(select.value));
+    return { root, search, select, selected, render };
+}
+
 const SCENE_PALETTE = [
     { hex: "#e53935", rgb: [229, 57, 53] },
     { hex: "#1e88e5", rgb: [30, 136, 229] },
@@ -343,6 +422,15 @@ function numericBound(catalog, field) {
     const backend = catalog.backend_bounds?.[field];
     return { min: Math.max(Number(product?.min), Number(backend?.min)),
         max: Math.min(Number(product?.max), Number(backend?.max)) };
+}
+
+function selectedVaeId(catalog, value) {
+    const id = String(value || "");
+    if (!id) return "";
+    if (!Array.isArray(catalog?.vaes) || !catalog.vaes.some(entry => entry?.id === id && entry.available !== false)) {
+        throw new Error(`VAE unavailable: ${id}`);
+    }
+    return id;
 }
 
 // Backend-authoritative LoRA gate (Card MANGA-LORA-PORTABLE-COMPAT-DIAGNOSTICS1).
@@ -468,8 +556,10 @@ export function buildGenerationSettings(state, promptValues = null) {
     if (seed !== "-1" && (!INTEGER.test(seed) || Number(seed) > 4294967295)) {
         throw new Error("Seed must be -1 or 0..4294967295");
     }
+    const vaeId = selectedVaeId(catalog, draft.vae_id);
     return {
         mode: "txt2img", checkpoint_id: draft.checkpoint_id,
+        vae_id: vaeId,
         positive_raw: promptValues?.positive_raw ?? draft.positive_raw,
         negative_raw: promptValues?.negative_raw ?? draft.negative_raw,
         sampler_id: draft.sampler_id, scheduler_id: draft.scheduler_id,
@@ -657,6 +747,8 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
     }
 
     let checkpointBrowser = null;
+    let vaeSelector = null;
+    let unsubscribeGenerationState = null;
 
     function setOptions(select, entries, current) {
         select.replaceChildren();
@@ -724,6 +816,7 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
             catalogNote.textContent = state.catalogError || "Loading Manga capabilities…";
         }
         checkpointBrowser?.render();
+        vaeSelector?.render();
         renderMode();
     }
 
@@ -1486,7 +1579,19 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
         getEntries: () => state.catalog?.checkpoints || [],
         getSelected: () => state.draft.checkpoint_id
     });
+    vaeSelector = mountVaeSelector({
+        after: checkpointBrowser.root,
+        getEntries: () => state.catalog?.vaes || [],
+        getSelected: () => state.draft.vae_id,
+        onChange: value => state.setDraft("vae_id", value),
+        doc: root.ownerDocument
+    });
+    unsubscribeGenerationState = state.subscribe?.(() => {
+        renderForm();
+        renderStatus();
+    });
     checkpointBrowser.render();
+    vaeSelector.render();
     generate.addEventListener("click", () => generateOne({ source: generationScope }));
     generationScopeGlobal?.addEventListener("click", () => setGenerationScope("global"));
     generationScopeScenes?.addEventListener("click", () => setGenerationScope("scenes"));
@@ -2412,6 +2517,12 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
             renderStatus();
             return applied;
         },
+        applyVaeSelection(vaeId) {
+            const id = String(vaeId || "");
+            selectedVaeId(state.catalog, id);
+            state.setDraft("vae_id", id);
+            return id;
+        },
         getGenerationScope: () => generationScope,
         setGenerationScope,
         refresh: renderStatus,
@@ -2428,6 +2539,7 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
         setRegionsVisible: (val) => { regionsVisible = Boolean(val); syncPreviewGeometry(); renderStatus(); renderStageOverlay(); },
         dispose() {
             if (pollTimer) clearTimeout(pollTimer);
+            unsubscribeGenerationState?.();
             if (state.preview.url) URL.revokeObjectURL(state.preview.url);
         }
     };
@@ -2545,6 +2657,7 @@ export function buildSceneGenerationSettings(state, authoringStore = state.autho
     }
     return {
         mode: "scene", checkpoint_id: state.draft.checkpoint_id,
+        vae_id: selectedVaeId(catalog, state.draft.vae_id),
         authoring_document: document, page_index: 0,
         sampler_id: state.draft.sampler_id, scheduler_id: state.draft.scheduler_id,
         steps, cfg, seed_requested: seed, capability_revision: catalog.revision,
