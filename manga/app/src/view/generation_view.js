@@ -63,7 +63,7 @@ export function mountCheckpointBrowser({ select, getEntries, getSelected, doc = 
     selectedBar.append(selectedText, clearButton);
 
     const details = doc.createElement("details");
-    details.open = true;
+    details.open = false;
     details.style.border = "1px solid rgba(220, 184, 224, 0.28)";
     details.style.borderRadius = "0.45rem";
     details.style.padding = "0.45rem";

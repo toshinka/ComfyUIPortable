@@ -194,6 +194,28 @@ test("checkpoint cards, search, native selection and clear share the existing se
     assert.equal(browser.clearButton.disabled, true);
 });
 
+test("checkpoint browser starts collapsed and disclosure toggles preserve its state", () => {
+    const { browser, state } = makeFixture();
+    assert.equal(browser.details.open, false);
+
+    browser.search.value = "nested";
+    browser.search.dispatchEvent(new FakeEvent("input"));
+    browser.previewButtons[2].dispatchEvent(new FakeEvent("click"));
+    assert.equal(browser.cards.children.length, 1);
+    assert.equal(state.selected, "models/nested/Example.safetensors");
+
+    browser.details.open = true;
+    assert.equal(browser.details.open, true);
+    browser.details.open = false;
+    assert.equal(browser.details.open, false);
+
+    assert.equal(browser.search.value, "nested");
+    assert.equal(browser.previewButtons[2].getAttribute("aria-pressed"), "true");
+    assert.equal(state.selected, "models/nested/Example.safetensors");
+    assert.equal(browser.cards.children.length, 1);
+    assert.match(browser.cards.children[0].children[0].src, /slot=3$/);
+});
+
 test("four neutral preview slots switch the single card thumbnail without changing selection", () => {
     assert.deepEqual(CHECKPOINT_PREVIEW_SLOTS.map(item => item.label), ["Preview 1", "Preview 2", "Preview 3", "Preview 4"]);
     const { browser, state } = makeFixture();
