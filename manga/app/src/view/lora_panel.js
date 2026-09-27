@@ -7,6 +7,7 @@
 // resolves them against the trusted catalog.  The pattern mirrors LORA_RE there.
 
 import { LOAD_FAILED, loadLoraCatalog, queryLoraCatalog } from "./tag_autocomplete.js";
+import { bindStagePreviewHover, clearStagePreview } from "./stage_resource_preview.js";
 
 const LORA_TOKEN_SOURCE = "<lora:([^:<>]+):([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+))>";
 
@@ -281,6 +282,7 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
 
     function renderCards() {
         renderCount();
+        clearStagePreview();
         cards.replaceChildren();
         const tokens = findLoraTokens(prompt.value);
         const searching = Boolean(searchQuery);
@@ -323,6 +325,8 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
             thumb.title = `${token ? "Remove" : "Add"} ${lora.name}`;
             thumb.setAttribute("aria-label", thumb.title);
             thumb.appendChild(image);
+            // Hover inspection: mirror THIS card's currently displayed image in the Stage.
+            bindStagePreviewHover(thumb, { getImage: () => image, label: lora.name });
             const name = el("span", "mg-lora-card-name", lora.name);
             name.title = lora.id;
             // Duplicate basenames insert a canonical token; show the folder so they are distinguishable.
@@ -508,6 +512,7 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
     const setExpanded = (expanded) => {
         if (toggle) toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
         body.hidden = !expanded;
+        if (!expanded) clearStagePreview();
         panel.classList.toggle("is-expanded", expanded);
         if (expanded && listing === null) openFolder(currentFolder);
     };

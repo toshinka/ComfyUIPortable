@@ -3,6 +3,7 @@ import { GenerationState, ACTIVE_JOB_STATES } from "../state/generation_state.js
 import { MangaGenerationClient } from "../adapters/manga_generation_client.js";
 import { validateAuthoringDocument } from "../domain/authoring_document.js";
 import { setupNumericWheelControl } from "./numeric_wheel.js";
+import { bindStagePreviewHover, clearStagePreview } from "./stage_resource_preview.js";
 
 const FIELDS = ["checkpoint_id", "sampler_id", "scheduler_id", "steps", "cfg", "width", "height", "seed_requested"];
 const SELECTS = new Set(["checkpoint_id", "sampler_id", "scheduler_id"]);
@@ -64,6 +65,7 @@ export function mountCheckpointBrowser({ select, getEntries, getSelected, doc = 
 
     const details = doc.createElement("details");
     details.open = false;
+    details.addEventListener("toggle", () => clearStagePreview());
     details.style.border = "1px solid rgba(220, 184, 224, 0.28)";
     details.style.borderRadius = "0.45rem";
     details.style.padding = "0.45rem";
@@ -155,6 +157,7 @@ export function mountCheckpointBrowser({ select, getEntries, getSelected, doc = 
             (Array.isArray(allEntries) ? allEntries : []).map(entry => [entry?.id, entry?.available === true])]);
         if (signature === lastSignature) return;
         lastSignature = signature;
+        clearStagePreview();
         const ordered = [...filtered].sort((a, b) => Number(b.id === selected) - Number(a.id === selected));
         const availableCount = (Array.isArray(allEntries) ? allEntries : []).filter(entry => entry?.available === true).length;
         summary.textContent = `Browse checkpoints · ${availableCount} available`;
@@ -187,6 +190,10 @@ export function mountCheckpointBrowser({ select, getEntries, getSelected, doc = 
                     preview.replaceWith(makePlaceholder());
                 }, { once: true });
                 preview.src = url;
+                // Hover inspection: the Stage mirrors this displayed thumbnail (same URL/slot).
+                const shown = preview;
+                bindStagePreviewHover(shown, { getImage: () => shown,
+                    label: String(entry.name || entry.filename || entry.id) });
             } else {
                 preview = makePlaceholder();
             }

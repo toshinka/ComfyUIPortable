@@ -4,6 +4,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { findLoraTokens, loraSlotAvailability, mountLoraPanel, nextPreviewSlot } from "../app/src/view/lora_panel.js";
+import { mountStageResourcePreview, resetStageResourcePreview } from "../app/src/view/stage_resource_preview.js";
 
 const LISTING = { folders: [], loras: [
     { id: "chars/a.safetensors", name: "a", token: "a", folder: "chars", available: true, preview: true, previews: [true, false, false] },
@@ -130,6 +131,45 @@ test("compact card CSS: 2-line name with ellipsis, slim readable strength row, p
     assert.match(media, /object-fit: contain/);
     const src = fs.readFileSync(new URL("../app/src/view/lora_panel.js", import.meta.url), "utf8");
     assert.match(src, /name\.title = lora\.id;/, "full name/ID stays available as a tooltip");
+});
+
+test("Stage hover preview: LoRA thumbnail mirrors the displayed slot, leaves cleanly, mutates nothing", async () => {
+    const t = await mount("1girl, <lora:a:1.0>");
+    const stage = mountStageResourcePreview(document.createElement("div"), { doc: document });
+    try {
+        t.slotButtons()[1].onclick();                       // global slot 2 (_ani)
+        const [a, b, c, d] = ["a", "b", "c", "d"].map(t.card);
+        for (const card of [b, c]) Object.assign(t.media(card), { complete: true, naturalWidth: 512 });
+        const before = { prompt: t.prompt.value, slot: t.view.previewSlot };
+        const enter = el => t.thumb(el).dispatchEvent(new Event("pointerenter"));
+        const leave = el => t.thumb(el).dispatchEvent(new Event("pointerleave"));
+
+        enter(b);
+        assert.equal(stage.layer.hidden, false, "hover publishes the visible preview");
+        assert.equal(stage.image.src, t.media(b).src, "same URL the card displays");
+        assert.equal(new URL(stage.image.src, "http://x").searchParams.get("slot"), "2", "respects the global slot; no fallback to 1");
+        assert.equal(stage.label.textContent, "b");
+        enter(c);
+        leave(b);
+        assert.equal(stage.image.src, t.media(c).src, "hover A -> B shows B; stale A never lingers");
+        leave(c);
+        assert.equal(stage.layer.hidden, true, "leave clears the temporary preview");
+
+        enter(a);                                            // slot 2 missing for a -> NO PREVIEW placeholder
+        assert.equal(t.media(a).tagName, "div");
+        assert.equal(stage.layer.hidden, true, "missing preview does nothing");
+        enter(c);
+        enter(d);
+        assert.equal(stage.layer.hidden, true, "moving onto a missing preview clears, never blanks the Stage");
+
+        assert.deepEqual({ prompt: t.prompt.value, slot: t.view.previewSlot }, before, "hover adds/removes no LoRA and keeps the slot");
+        enter(c);
+        t.thumb(c).onclick();
+        assert.equal(t.prompt.value, "1girl, <lora:a:1.0>, <lora:c:1.0>", "normal thumbnail click still adds");
+        assert.equal(stage.layer.hidden, true, "re-render after click drops the preview of the removed thumbnail");
+    } finally {
+        resetStageResourcePreview();
+    }
 });
 
 // --- minimal DOM stand-in -------------------------------------------------------------

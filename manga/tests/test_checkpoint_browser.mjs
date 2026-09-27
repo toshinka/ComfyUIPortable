@@ -7,6 +7,7 @@ import {
     filterCheckpointEntries,
     mountCheckpointBrowser
 } from "../app/src/view/generation_view.js";
+import { mountStageResourcePreview, resetStageResourcePreview } from "../app/src/view/stage_resource_preview.js";
 
 class FakeEvent {
     constructor(type, init = {}) {
@@ -253,4 +254,56 @@ test("four neutral preview slots switch the single card thumbnail without changi
     assert.equal(unavailable.disabled, true);
     assert.equal(unavailable.children[0].classList.contains("mg-lora-card-noimg"), true);
     assert.equal(unavailable.children[0].src ?? "", "", "unavailable checkpoints request nothing");
+});
+
+test("Stage hover preview mirrors the displayed checkpoint thumbnail and never changes state", () => {
+    const { doc, browser, state, select } = makeFixture();
+    const host = doc.createElement("div");
+    const stage = mountStageResourcePreview(host, { doc });
+    try {
+        assert.equal(browser.details.open, false, "Browse checkpoints stays default-collapsed");
+        browser.details.open = true;
+        browser.previewButtons[2].dispatchEvent(new FakeEvent("click"));
+        const cardA = browser.cards.children.find(card => card.title === "models/nested/Example.safetensors");
+        const cardB = browser.cards.children.find(card => card.title === "models/Other.safetensors");
+        const [imgA, imgB] = [cardA.children[0], cardB.children[0]];
+        for (const img of [imgA, imgB]) Object.assign(img, { complete: true, naturalWidth: 832 });
+        const before = { selected: state.selected, value: select.value, search: browser.search.value,
+            slot: browser.previewButtons.map(button => button.getAttribute("aria-pressed")), open: browser.details.open };
+
+        imgA.dispatchEvent(new FakeEvent("pointerenter"));
+        assert.equal(stage.layer.hidden, false, "hover publishes the preview");
+        assert.equal(stage.image.src, imgA.src, "same URL as the visible card thumbnail");
+        assert.match(stage.image.src, /slot=3$/, "respects the current Preview slot; no fallback to 1");
+        imgB.dispatchEvent(new FakeEvent("pointerenter"));
+        imgA.dispatchEvent(new FakeEvent("pointerleave"));
+        assert.equal(stage.image.src, imgB.src, "hover A -> B shows B; a late leave of A does not clear B");
+        imgB.dispatchEvent(new FakeEvent("pointerleave"));
+        assert.equal(stage.layer.hidden, true, "leave clears the temporary preview");
+
+        imgA.dispatchEvent(new FakeEvent("pointerenter"));
+        browser.details.open = false;
+        browser.details.dispatchEvent(new FakeEvent("toggle"));
+        assert.equal(stage.layer.hidden, true, "closing Browse checkpoints clears a lingering preview");
+        browser.details.open = true;
+
+        const loading = doc.createElement("img");
+        Object.assign(loading, { src: imgA.src, complete: false, naturalWidth: 0 });
+        assert.equal(stage.show(loading, "x"), false, "a not-yet-displayed image does nothing");
+        Object.assign(imgA, { naturalWidth: 0 });           // a failed image has no pixels (as in a browser)
+        imgA.dispatchEvent(new FakeEvent("error"));
+        const placeholder = browser.cards.children.find(card => card.title === "models/nested/Example.safetensors").children[0];
+        imgA.dispatchEvent(new FakeEvent("pointerenter"));
+        placeholder.dispatchEvent(new FakeEvent("pointerenter"));
+        assert.equal(stage.layer.hidden, true, "missing / failed preview does not blank or replace the Stage");
+
+        assert.deepEqual({ selected: state.selected, value: select.value, search: browser.search.value,
+            slot: browser.previewButtons.map(button => button.getAttribute("aria-pressed")), open: browser.details.open }, before,
+            "hover changed no checkpoint selection, search, slot or disclosure");
+
+        cardB.dispatchEvent(new FakeEvent("click"));
+        assert.equal(select.value, "models/Other.safetensors", "normal card click still selects");
+    } finally {
+        resetStageResourcePreview();
+    }
 });

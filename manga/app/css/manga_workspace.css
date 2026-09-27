@@ -1260,3 +1260,11 @@ body.manga-embedded #generate-view { width: 100%; max-width: none; margin: 0; pa
 #mg-xo-run[data-confirm="true"] { background: var(--manga-danger-background); border-color: var(--manga-danger-border); color: var(--manga-danger-text); }
 .mg-xo-grid-view { display: grid; gap: 6px; }
 .mg-xo-grid-canvas { width: 100%; height: auto; border: 1px solid var(--manga-line); background: #ffffee; }
+
+/* MANGA-RESOURCE-STAGE-HOVER-PREVIEW1: transient resource preview layer above the untouched Stage */
+#mg-stage { position: relative; }
+.mg-stage-resource-preview { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; padding: 6px; box-sizing: border-box; background: var(--manga-surface-inset); border-radius: inherit; pointer-events: none; }
+.mg-stage-resource-preview[hidden] { display: none; }
+.mg-stage-resource-preview-image { display: block; width: 100%; height: 100%; object-fit: contain; }
+.mg-stage-resource-preview-label { position: absolute; left: 10px; bottom: 8px; max-width: calc(100% - 20px); padding: 2px 7px; border-radius: 4px; background: rgba(52, 20, 24, 0.78); color: var(--manga-text); font-size: 11px; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mg-stage-resource-preview-label[hidden] { display: none; }

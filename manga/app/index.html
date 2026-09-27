@@ -744,6 +744,9 @@
         import { expandWildcardInPrompt, mountPromptAssist, mountWildcardPreview } from "./src/view/prompt_assist.js";
         import { applyDefaultToNewDocument, attachWeightKeys, createPromptPrefs, mountPromptPresets, replaceTextareaValue } from "./src/view/prompt_production.js";
         import { STYLE_PRESETS } from "./src/domain/authoring_document.js";
+        import { mountStageResourcePreview } from "./src/view/stage_resource_preview.js";
+        // Transient LoRA/Checkpoint hover preview: one overlay layer above the untouched Stage.
+        mountStageResourcePreview(document.getElementById("mg-stage"));
         import { mountExperimentPanel, mountOutputFolderButton } from "./src/view/experiment_panel.js";
 
         const store = new AuthoringStore(createNewAuthoringSessionDocument());
