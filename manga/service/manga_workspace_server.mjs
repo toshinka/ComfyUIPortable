@@ -457,6 +457,78 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
+    // Checkpoint preview sidecars (Card MANGA-CHECKPOINT-BROWSER-PRODUCTION1).
+    // The backend resolves the exact catalog ID inside its registered checkpoint roots.
+    if (pathname === "/api/manga/resources/checkpoint/preview") {
+        const reply = (status, error_code, error) => {
+            res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
+            res.end(JSON.stringify({ ok: false, error_code, error }));
+        };
+        if (req.method !== "GET") {
+            reply(405, "METHOD_NOT_ALLOWED", "Use GET");
+            return;
+        }
+        if ((requestOrigin && !allowedLocalOrigins.has(requestOrigin)) ||
+            (req.headers["sec-fetch-site"] && !["same-origin", "none"].includes(req.headers["sec-fetch-site"]))) {
+            reply(403, "ORIGIN_FORBIDDEN", "Request origin is not the Manga workspace");
+            return;
+        }
+        const id = url.searchParams.get("id") || "";
+        const slot = url.searchParams.get("slot") || "1";
+        if (!id || id.length > 1024) {
+            reply(400, "INVALID_RESOURCE_ID", "Checkpoint ID is missing or too long");
+            return;
+        }
+        if (!["1", "2", "3", "4"].includes(slot)) {
+            reply(400, "INVALID_REQUEST", "Checkpoint preview slot must be 1, 2, 3 or 4");
+            return;
+        }
+        try {
+            const backendRes = await fetch(
+                `${parsedBackend.origin}/tegaki/manga/resources/checkpoint/preview?id=${encodeURIComponent(id)}&slot=${slot}`,
+                { method: "GET", signal: AbortSignal.timeout(10000) }
+            );
+            const chunks = [];
+            let size = 0;
+            for await (const chunk of backendRes.body) {
+                size += chunk.length;
+                if (size > 16 * 1024 * 1024) {
+                    reply(502, "BACKEND_INVALID_RESPONSE", "Preview exceeds 16 MiB");
+                    return;
+                }
+                chunks.push(chunk);
+            }
+            const body = Buffer.concat(chunks);
+            const type = (backendRes.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+            if (backendRes.ok) {
+                const sniffed = body.length >= 8 && body.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) ? "image/png"
+                    : body.length >= 3 && body[0] === 0xff && body[1] === 0xd8 && body[2] === 0xff ? "image/jpeg"
+                    : body.length >= 12 && body.subarray(0, 4).toString("latin1") === "RIFF" && body.subarray(8, 12).toString("latin1") === "WEBP" ? "image/webp"
+                    : null;
+                if (!sniffed || type !== sniffed) {
+                    reply(502, "BACKEND_INVALID_RESPONSE", "Backend preview is not a PNG, JPEG or WebP image");
+                    return;
+                }
+                res.writeHead(200, { "Content-Type": sniffed, "Cache-Control": "private, max-age=300",
+                    "X-Content-Type-Options": "nosniff" });
+                res.end(body);
+                return;
+            }
+            let data = null;
+            try { data = JSON.parse(body.toString("utf8")); } catch { /* handled below */ }
+            if (!data || data.ok !== false || typeof data.error !== "string") {
+                reply(502, "BACKEND_INVALID_RESPONSE", "Backend response is missing required fields");
+                return;
+            }
+            res.writeHead(backendRes.status, { "Content-Type": "application/json; charset=utf-8" });
+            res.end(JSON.stringify({ ok: false, error_code: data.error_code || "BACKEND_REJECTED", error: data.error }));
+        } catch (err) {
+            reply(502, err.name === "TimeoutError" ? "BACKEND_TIMEOUT" : "BACKEND_UNAVAILABLE",
+                err.name === "TimeoutError" ? "Backend checkpoint preview timed out" : "Backend checkpoint preview failed");
+        }
+        return;
+    }
+
     // Engine-scoped LoRA browse (Card MANGA-ILLUSTRIOUS-LORA-PRODUCTION1).
     // One folder per request; the backend owns the root and canonical IDs.
     if (pathname === "/api/manga/resources/lora") {

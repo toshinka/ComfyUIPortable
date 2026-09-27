@@ -57,9 +57,9 @@ except (ImportError, ValueError):
     from page_pixel_compositor import compose_page_pixels, PagePixelCompositorError
 
 try:
-    from .engine_resources import ResourceContractError, browse_lora_payload, lora_preview_path, preview_mime, build_trusted_lora_index, lora_index_payload, resolve_resource_root, validate_lora_request
+    from .engine_resources import ResourceContractError, browse_lora_payload, lora_preview_path, preview_mime, build_trusted_lora_index, lora_index_payload, resolve_resource_root, validate_lora_request, resolve_checkpoint_preview
 except (ImportError, ValueError):
-    from engine_resources import ResourceContractError, browse_lora_payload, lora_preview_path, preview_mime, build_trusted_lora_index, lora_index_payload, resolve_resource_root, validate_lora_request
+    from engine_resources import ResourceContractError, browse_lora_payload, lora_preview_path, preview_mime, build_trusted_lora_index, lora_index_payload, resolve_resource_root, validate_lora_request, resolve_checkpoint_preview
 
 MAX_REQUEST_BYTES = 256 * 1024
 
@@ -438,6 +438,7 @@ async def api_manga_page_composite(request: web.Request) -> web.Response:
 
 RESOURCE_ERROR_STATUS = {
     "INVALID_REQUEST": 400,
+    "CHECKPOINT_UNAVAILABLE": 404,
     "RESOURCE_PREVIEW_NOT_FOUND": 404,
     "RESOURCE_PREVIEW_UNSUPPORTED": 404,
     "RESOURCE_UNSUPPORTED": 404,
@@ -543,6 +544,34 @@ async def api_manga_resource_lora_preview(request: web.Request) -> web.Response:
     })
 
 
+def _comfy_checkpoint_preview(checkpoint_id: str, slot: object = 1) -> str:
+    import folder_paths
+
+    checkpoint_names = folder_paths.get_filename_list("checkpoints")
+    checkpoint_path = folder_paths.get_full_path("checkpoints", checkpoint_id) if checkpoint_id in checkpoint_names else None
+    return resolve_checkpoint_preview(
+        checkpoint_id, checkpoint_path, folder_paths.get_folder_paths("checkpoints"),
+        extensions=folder_paths.supported_pt_extensions, slot=slot,
+    )
+
+
+async def api_manga_resource_checkpoint_preview(request: web.Request) -> web.Response:
+    """Serve one checkpoint sidecar for its exact live catalog ID."""
+    checkpoint_id = request.query.get("id", "")
+    slot = request.query.get("slot", "1")
+    try:
+        path = _comfy_checkpoint_preview(checkpoint_id, slot)
+    except ResourceContractError as exc:
+        return _error(exc.code, str(exc), RESOURCE_ERROR_STATUS.get(exc.code, 400))
+    except Exception:
+        logging.exception("[MangaBasicGenerationAPI] Checkpoint preview failed")
+        return _error("RESOURCE_PREVIEW_FAILED", "Checkpoint preview failed", 500)
+    return web.FileResponse(path, headers={
+        "Content-Type": preview_mime(path) or "application/octet-stream", "Cache-Control": "private, max-age=300",
+        "X-Content-Type-Options": "nosniff",
+    })
+
+
 async def api_manga_runtime_source_identity(request: web.Request) -> web.Response:
     """Which package source this backend process loaded (launcher freshness check)."""
     return web.json_response({"ok": True, "service": "tegaki_manga_nodes", "pid": os.getpid(),
@@ -590,6 +619,7 @@ if routes is not None:
     routes.post("/tegaki/manga/wildcards/expand")(api_manga_wildcard_expand)
     routes.get("/tegaki/manga/resources/{engine}/lora")(api_manga_resource_lora_browse)
     routes.get("/tegaki/manga/resources/{engine}/lora/preview")(api_manga_resource_lora_preview)
+    routes.get("/tegaki/manga/resources/checkpoint/preview")(api_manga_resource_checkpoint_preview)
     routes.get("/tegaki/manga/resources/{engine}/lora/index")(api_manga_resource_lora_index)
     routes.post("/tegaki/manga/resources/{engine}/lora/validate")(api_manga_resource_lora_validate)
     routes.get("/tegaki/manga/generation/capabilities")(api_manga_basic_capabilities)
@@ -597,4 +627,3 @@ if routes is not None:
     routes.post("/tegaki/manga/generation/compile-scene")(api_manga_scene_compile)
     routes.post("/tegaki/manga/generation/compile-isolated-scene")(api_manga_isolated_scene_compile)
     routes.post("/tegaki/manga/page/composite")(api_manga_page_composite)
-

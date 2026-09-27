@@ -13,6 +13,218 @@ const LORA_TAG = /^<lora:([^:<>]+):([+-]?(?:\d+(?:\.\d*)?|\.\d+))>$/;
 const ANGLE_TAG = /<[^<>]*>/g;
 const SCENE_LORA_TAG = /<lora:/i;
 
+export const CHECKPOINT_PREVIEW_SLOTS = Object.freeze([
+    // Positional sidecar slots (.preview, _ani, _man, _illust).  Labels stay neutral: the
+    // Owner may use the auxiliary slots for any evaluation image.
+    { slot: 1, label: "Preview 1" },
+    { slot: 2, label: "Preview 2" },
+    { slot: 3, label: "Preview 3" },
+    { slot: 4, label: "Preview 4" }
+]);
+
+export function checkpointPreviewUrl(checkpointId, slot) {
+    if (typeof checkpointId !== "string" || !checkpointId || !CHECKPOINT_PREVIEW_SLOTS.some(item => item.slot === slot)) return "";
+    return `/api/manga/resources/checkpoint/preview?id=${encodeURIComponent(checkpointId)}&slot=${slot}`;
+}
+
+export function filterCheckpointEntries(entries, query = "") {
+    const term = String(query || "").trim().toLocaleLowerCase().replaceAll("\\", "/");
+    if (!term) return Array.isArray(entries) ? entries.filter(entry => entry && typeof entry.id === "string") : [];
+    return (Array.isArray(entries) ? entries : []).filter(entry => {
+        if (!entry || typeof entry.id !== "string") return false;
+        const identity = entry.id.replaceAll("\\", "/").toLocaleLowerCase();
+        const visibleName = String(entry.name || entry.filename || "").toLocaleLowerCase();
+        return identity.includes(term) || visibleName.includes(term);
+    });
+}
+
+export function mountCheckpointBrowser({ select, getEntries, getSelected, doc = select?.ownerDocument }) {
+    if (!select || !doc) throw new TypeError("Checkpoint browser requires the existing checkpoint selector");
+    const root = doc.createElement("section");
+    root.className = "mg-checkpoint-browser";
+    root.style.margin = "0.55rem 0 0.8rem";
+
+    const selectedBar = doc.createElement("div");
+    selectedBar.style.display = "flex";
+    selectedBar.style.alignItems = "center";
+    selectedBar.style.justifyContent = "space-between";
+    selectedBar.style.gap = "0.5rem";
+    selectedBar.style.marginBottom = "0.45rem";
+    const selectedText = doc.createElement("span");
+    selectedText.setAttribute("aria-live", "polite");
+    selectedText.style.minWidth = "0";
+    selectedText.style.overflowWrap = "anywhere";
+    const clearButton = doc.createElement("button");
+    clearButton.type = "button";
+    clearButton.className = "mg-lora-card-action";
+    clearButton.style.flexShrink = "0";
+    clearButton.textContent = "Clear selection";
+    clearButton.setAttribute("aria-label", "Clear checkpoint selection");
+    selectedBar.append(selectedText, clearButton);
+
+    const details = doc.createElement("details");
+    details.open = true;
+    details.style.border = "1px solid rgba(220, 184, 224, 0.28)";
+    details.style.borderRadius = "0.45rem";
+    details.style.padding = "0.45rem";
+    const summary = doc.createElement("summary");
+    summary.style.cursor = "pointer";
+    summary.style.fontWeight = "700";
+    const search = doc.createElement("input");
+    search.type = "search";
+    search.className = "mg-lora-search";
+    search.placeholder = "Search checkpoints by name or path";
+    search.setAttribute("aria-label", "Search checkpoints by name or path");
+    search.style.boxSizing = "border-box";
+    search.style.width = "100%";
+    search.style.margin = "0.5rem 0";
+    const viewControls = doc.createElement("div");
+    viewControls.className = "mg-lora-view-controls mg-checkpoint-view-controls";
+    const viewLabel = doc.createElement("span");
+    viewLabel.className = "mg-lora-view-label";
+    viewLabel.textContent = "Preview";
+    const slotGroup = doc.createElement("div");
+    slotGroup.className = "mg-lora-slot-group";
+    slotGroup.setAttribute("role", "group");
+    slotGroup.setAttribute("aria-label", "Preview slot for all checkpoints");
+    const slotButtons = [];
+    let previewSlot = CHECKPOINT_PREVIEW_SLOTS[0].slot;
+    for (const { slot, label } of CHECKPOINT_PREVIEW_SLOTS) {
+        const button = doc.createElement("button");
+        button.type = "button";
+        button.className = "mg-lora-slot";
+        button.textContent = String(slot);
+        button.title = label;
+        button.setAttribute("aria-label", label);
+        button.setAttribute("aria-pressed", "false");
+        button.addEventListener("click", () => {
+            if (previewSlot === slot) return;
+            previewSlot = slot;
+            syncPreviewControls();
+            render();
+        });
+        slotButtons.push(button);
+        slotGroup.append(button);
+    }
+    viewControls.append(viewLabel, slotGroup);
+    const cards = doc.createElement("div");
+    cards.className = "mg-lora-cards mg-checkpoint-cards";
+    const empty = doc.createElement("p");
+    empty.className = "mg-hint mg-lora-empty";
+    empty.hidden = true;
+    details.append(summary, viewControls, search, cards, empty);
+    root.append(selectedBar, details);
+
+    const hint = select.nextElementSibling;
+    if (hint?.classList?.contains("mg-hint")) {
+        hint.textContent = "The live catalog defines available checkpoints; missing selections stay visible.";
+    }
+    const anchor = hint?.classList?.contains("mg-hint") ? hint : select;
+    anchor.insertAdjacentElement("afterend", root);
+
+    const makeChangeEvent = () => {
+        const EventType = doc.defaultView?.Event || globalThis.Event;
+        return new EventType("change", { bubbles: true });
+    };
+    const availableOptions = () => Array.from(select.options || select.children || []);
+    // Missing sidecars are remembered so re-renders never re-request them, and an unchanged
+    // catalog/selection/search does not rebuild the cards (renderForm runs on every edit).
+    const failedPreviews = new Set();
+    let lastSignature = null;
+
+    function syncPreviewControls() {
+        slotButtons.forEach((button, index) => {
+            const active = CHECKPOINT_PREVIEW_SLOTS[index].slot === previewSlot;
+            button.className = `mg-lora-slot${active ? " is-active" : ""}`;
+            button.setAttribute("aria-pressed", String(active));
+        });
+    }
+
+    const makePlaceholder = () => {
+        const placeholder = doc.createElement("div");
+        placeholder.className = "mg-lora-card-thumb mg-lora-card-noimg";
+        placeholder.textContent = `NO PREVIEW ${previewSlot}`;
+        return placeholder;
+    };
+
+    function render() {
+        const allEntries = typeof getEntries === "function" ? getEntries() : [];
+        const filtered = filterCheckpointEntries(allEntries, search.value);
+        const selected = String(typeof getSelected === "function" ? (getSelected() || "") : (select.value || ""));
+        const signature = JSON.stringify([selected, search.value, previewSlot,
+            (Array.isArray(allEntries) ? allEntries : []).map(entry => [entry?.id, entry?.available === true])]);
+        if (signature === lastSignature) return;
+        lastSignature = signature;
+        const ordered = [...filtered].sort((a, b) => Number(b.id === selected) - Number(a.id === selected));
+        const availableCount = (Array.isArray(allEntries) ? allEntries : []).filter(entry => entry?.available === true).length;
+        summary.textContent = `Browse checkpoints · ${availableCount} available`;
+        selectedText.textContent = selected ? `Selected: ${selected}` : "No checkpoint selected";
+        clearButton.disabled = !selected;
+        cards.replaceChildren();
+
+        for (const entry of ordered) {
+            const isAvailable = entry.available === true;
+            const isSelected = entry.id === selected;
+            const card = doc.createElement("button");
+            card.type = "button";
+            card.className = `mg-lora-card mg-checkpoint-card${isSelected ? " is-selected" : ""}${isAvailable ? "" : " is-unavailable"}`;
+            card.disabled = !isAvailable;
+            card.setAttribute("aria-pressed", String(isSelected));
+            card.setAttribute("aria-label", `${isAvailable ? "Select" : "Unavailable"} checkpoint ${entry.id}`);
+            card.title = entry.id;
+            const url = isAvailable ? checkpointPreviewUrl(entry.id, previewSlot) : "";
+            let preview;
+            if (url && !failedPreviews.has(url)) {
+                card.className += " has-preview";
+                preview = doc.createElement("img");
+                preview.className = "mg-lora-card-thumb";
+                preview.alt = "";
+                preview.loading = "lazy";
+                preview.decoding = "async";
+                preview.addEventListener("error", () => {
+                    failedPreviews.add(url);
+                    card.className = card.className.replace(" has-preview", "");
+                    preview.replaceWith(makePlaceholder());
+                }, { once: true });
+                preview.src = url;
+            } else {
+                preview = makePlaceholder();
+            }
+            const title = doc.createElement("span");
+            title.className = "mg-lora-card-name";
+            const visibleName = String(entry.name || entry.filename || entry.id);
+            title.textContent = isAvailable ? visibleName : `Unavailable · ${visibleName}`;
+            title.title = entry.id;
+            card.append(preview, title);
+            card.addEventListener("click", () => {
+                if (!isAvailable || !availableOptions().some(option => option.value === entry.id)) return;
+                select.value = entry.id;
+                select.dispatchEvent(makeChangeEvent());
+            });
+            cards.append(card);
+        }
+        empty.hidden = ordered.length > 0;
+        empty.textContent = search.value.trim()
+            ? "No checkpoints match this search."
+            : "No checkpoints are available in the current catalog.";
+    }
+
+    syncPreviewControls();
+    search.addEventListener("input", render);
+    select.addEventListener("change", render);
+    clearButton.addEventListener("click", () => {
+        if (!select.options?.length || !availableOptions().some(option => option.value === "")) {
+            const emptyOption = doc.createElement("option");
+            emptyOption.value = "";
+            emptyOption.textContent = "Select…";
+            select.insertBefore(emptyOption, select.firstChild || null);
+        }
+        select.value = "";
+        select.dispatchEvent(makeChangeEvent());
+    });
+    return { root, details, search, cards, clearButton, previewButtons: slotButtons, render };
+}
+
 const SCENE_PALETTE = [
     { hex: "#e53935", rgb: [229, 57, 53] },
     { hex: "#1e88e5", rgb: [30, 136, 229] },
@@ -340,6 +552,8 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
         setPresentation("glance", true);
     }
 
+    let checkpointBrowser = null;
+
     function setOptions(select, entries, current) {
         select.replaceChildren();
         const known = entries.some(entry => entry.id === current);
@@ -405,6 +619,7 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
         } else {
             catalogNote.textContent = state.catalogError || "Loading Manga capabilities…";
         }
+        checkpointBrowser?.render();
         renderMode();
     }
 
@@ -1162,6 +1377,12 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
             });
         }
     }
+    checkpointBrowser = mountCheckpointBrowser({
+        select: controls.checkpoint_id,
+        getEntries: () => state.catalog?.checkpoints || [],
+        getSelected: () => state.draft.checkpoint_id
+    });
+    checkpointBrowser.render();
     generate.addEventListener("click", () => generateOne({ source: generationScope }));
     generationScopeGlobal?.addEventListener("click", () => setGenerationScope("global"));
     generationScopeScenes?.addEventListener("click", () => setGenerationScope("scenes"));

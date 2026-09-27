@@ -19,6 +19,7 @@ no ComfyUI imports so the contract is testable offline.
 from __future__ import annotations
 
 import os
+import re
 from pathlib import PurePosixPath
 from typing import Callable, Iterable, Optional
 
@@ -51,6 +52,8 @@ PREVIEW_SUFFIX = ".preview.png"
 # slot exists with several extensions, the first in PREVIEW_EXTENSIONS wins.  The
 # extension only locates the sidecar; the served type always comes from the bytes.
 PREVIEW_SLOT_SUFFIXES = {1: ".preview", 2: "_ani", 3: "_man"}
+# Historical checkpoint suffix examples; checkpoint slots discover all owned same-directory images.
+CHECKPOINT_PREVIEW_SLOT_SUFFIXES = {1: ".preview", 2: "_ani", 3: "_man", 4: "_illust"}
 PREVIEW_EXTENSIONS = (".png", ".webp", ".jpg", ".jpeg")
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 PREVIEW_SNIFF_BYTES = 12
@@ -293,6 +296,157 @@ def lora_preview_path(
     """HTTP-facing preview resolver; the returned path stays inside the backend."""
     root = resolve_resource_root(engine, "lora", registered_roots, environ=environ)
     return resolve_lora_preview(root, lora_id, extensions=extensions, slot=slot)
+
+
+_CHECKPOINT_STEM_BOUNDARIES = frozenset("._- ([")
+
+
+def _checkpoint_stem_matches_image(image_stem: str, checkpoint_stem: str) -> bool:
+    image_name = image_stem.casefold()
+    model_name = checkpoint_stem.casefold()
+    if not image_name.startswith(model_name):
+        return False
+    continuation = image_name[len(model_name):]
+    return not continuation or continuation[0] in _CHECKPOINT_STEM_BOUNDARIES
+
+
+def _natural_filename_key(name: str) -> tuple:
+    parts = re.split(r"(\d+)", name)
+    natural = tuple((0, int(part)) if part.isdigit() else (1, part.casefold()) for part in parts)
+    return natural, name.casefold(), name
+
+
+def resolve_checkpoint_preview(
+    checkpoint_id: str,
+    checkpoint_path: str,
+    registered_roots: Iterable[str],
+    *,
+    extensions: Iterable[str],
+    slot: object = 1,
+) -> str:
+    """Resolve one checkpoint sidecar next to its registered canonical resource."""
+    if isinstance(slot, str) and slot.isdigit():
+        slot = int(slot)
+    if type(slot) is not int or slot not in CHECKPOINT_PREVIEW_SLOT_SUFFIXES:
+        _fail("INVALID_REQUEST", "Checkpoint preview slot must be 1, 2, 3 or 4")
+
+    canonical = normalize_relative_id(checkpoint_id)
+    parts = canonical.split("/")
+    stem, model_ext = os.path.splitext(parts[-1])
+    allowed_model_extensions = {str(ext).casefold() for ext in extensions}
+    if not stem or model_ext.casefold() not in allowed_model_extensions:
+        _fail("RESOURCE_PREVIEW_UNSUPPORTED", "Previews are only served for checkpoint files")
+    if not isinstance(checkpoint_path, (str, os.PathLike)) or not checkpoint_path:
+        _fail("CHECKPOINT_UNAVAILABLE", f"Checkpoint '{canonical}' is unavailable")
+    checkpoint_real = os.path.realpath(os.path.abspath(checkpoint_path))
+    if not os.path.isfile(checkpoint_real):
+        _fail("CHECKPOINT_UNAVAILABLE", f"Checkpoint '{canonical}' is unavailable")
+
+    selected_root = None
+    for root in registered_roots:
+        try:
+            if canonical_id_for_path(root, checkpoint_real) != canonical:
+                continue
+            rooted_path = resolve_within_root(root, canonical)
+            if os.path.normcase(os.path.realpath(rooted_path)) == os.path.normcase(checkpoint_real):
+                selected_root = root
+                break
+        except (OSError, ResourceContractError, TypeError, ValueError):
+            continue
+    if selected_root is None:
+        _fail("RESOURCE_PATH_OUTSIDE_ROOT", "Checkpoint is not inside a registered checkpoint root")
+
+    checkpoint_directory = os.path.dirname(checkpoint_real)
+    try:
+        with os.scandir(checkpoint_directory) as iterator:
+            entries = list(iterator)
+    except OSError as exc:
+        _fail("RESOURCE_PATH_UNREADABLE", f"Checkpoint directory cannot be read: {exc.strerror or exc}")
+
+    # Ownership is decided only among registered checkpoint files in this one
+    # directory. This prevents a short stem such as "foo" from taking
+    # "foobar_01.jpg" while allowing "foo_01_2.jpg" to belong to foo_01.
+    checkpoint_models = []
+    image_extension_priority = {ext.casefold(): index for index, ext in enumerate(PREVIEW_EXTENSIONS)}
+    for entry in entries:
+        try:
+            is_file = entry.is_file()
+        except OSError:
+            continue
+        if not is_file:
+            continue
+        model_stem, model_ext = os.path.splitext(entry.name)
+        if not model_stem or model_ext.casefold() not in allowed_model_extensions:
+            continue
+        try:
+            model_path = resolve_within_root(selected_root, "/".join(parts[:-1] + [entry.name]))
+        except ResourceContractError:
+            continue
+        if not os.path.isfile(model_path) or _norm(os.path.dirname(model_path)) != _norm(checkpoint_directory):
+            continue
+        checkpoint_models.append((model_stem, _norm(model_path)))
+
+    selected_checkpoint = _norm(checkpoint_real)
+    owned_images = []
+    seen_image_paths = set()
+    for entry in entries:
+        try:
+            is_file = entry.is_file()
+        except OSError:
+            continue
+        if not is_file:
+            continue
+        image_stem, image_ext = os.path.splitext(entry.name)
+        image_ext_key = image_ext.casefold()
+        if image_ext_key not in image_extension_priority:
+            continue
+        try:
+            candidate = resolve_within_root(selected_root, "/".join(parts[:-1] + [entry.name]))
+        except ResourceContractError:
+            continue
+        if not os.path.isfile(candidate):
+            continue
+        candidate_real = os.path.realpath(candidate)
+        if _norm(os.path.dirname(candidate_real)) != _norm(checkpoint_directory):
+            continue
+
+        owners = [
+            (len(model_stem.casefold()), model_path)
+            for model_stem, model_path in checkpoint_models
+            if _checkpoint_stem_matches_image(image_stem, model_stem)
+        ]
+        if not owners:
+            continue
+        longest_length = max(length for length, _ in owners)
+        longest_owners = [model_path for length, model_path in owners if length == longest_length]
+        if len(longest_owners) != 1 or longest_owners[0] != selected_checkpoint:
+            continue
+
+        candidate_key = _norm(candidate_real)
+        if candidate_key in seen_image_paths:
+            continue
+        seen_image_paths.add(candidate_key)
+        owned_images.append({"name": entry.name, "stem": image_stem, "ext": image_ext_key,
+                             "path": candidate_real, "key": candidate_key})
+
+    primary_stem = f"{stem}.preview".casefold()
+    primary_images = [item for item in owned_images if item["stem"].casefold() == primary_stem]
+    primary_images.sort(key=lambda item: (image_extension_priority[item["ext"]],
+                                          _natural_filename_key(item["name"])))
+    primary = primary_images[0] if primary_images else None
+    remaining_images = [item for item in owned_images if primary is None or item["key"] != primary["key"]]
+    remaining_images.sort(key=lambda item: _natural_filename_key(item["name"]))
+
+    ordered_images = ([primary] if primary is not None else []) + remaining_images
+    ordered_images = ordered_images[:max(CHECKPOINT_PREVIEW_SLOT_SUFFIXES)]
+    if slot > len(ordered_images):
+        _fail("RESOURCE_PREVIEW_NOT_FOUND", f"No preview for slot {slot} of this checkpoint")
+    path = ordered_images[slot - 1]["path"]
+    if os.path.getsize(path) > MAX_PREVIEW_BYTES:
+        _fail("RESOURCE_PREVIEW_UNSUPPORTED", "Checkpoint preview sidecar is too large")
+    if preview_mime(path) is None:
+        _fail("RESOURCE_PREVIEW_UNSUPPORTED", "Checkpoint preview is not a PNG, JPEG or WebP image")
+    return path
 
 
 def browse_lora_payload(
