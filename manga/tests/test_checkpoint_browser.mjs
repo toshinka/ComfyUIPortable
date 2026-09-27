@@ -34,6 +34,7 @@ class FakeElement {
     }
 
     get firstChild() { return this.children[0] || null; }
+    get childElementCount() { return this.children.length; }
     get options() { return this.tagName === "select" ? this.children : undefined; }
     get nextElementSibling() {
         if (!this.parentNode) return null;
@@ -126,9 +127,11 @@ function makeFixture() {
     hint.className = "mg-hint";
     parent.append(select, hint);
     const entries = [
-        { id: "models/nested/Example.safetensors", available: true },
+        { id: "models\\nested\\Example.safetensors", available: true },
+        { id: "models/nested/Second.safetensors", available: true },
         { id: "models/Other.safetensors", available: true },
-        { id: "models/Missing.safetensors", available: false }
+        { id: "models\\nested\\Missing.safetensors", available: false },
+        { id: "Root.safetensors", available: true }
     ];
     for (const entry of entries) {
         const option = doc.createElement("option");
@@ -148,6 +151,22 @@ function makeFixture() {
     return { doc, parent, select, hint, entries, state, browser };
 }
 
+function openFolder(browser, folderId) {
+    const button = browser.folders.children.find(item => item.dataset.folder === folderId);
+    assert.ok(button, `folder ${folderId} is visible`);
+    button.dispatchEvent(new FakeEvent("click"));
+}
+
+function openCrumb(browser, folderId) {
+    const button = browser.breadcrumb.children.find(item => item.dataset.folder === folderId);
+    assert.ok(button, `breadcrumb ${folderId || "root"} is visible`);
+    button.dispatchEvent(new FakeEvent("click"));
+}
+
+function cardFor(browser, checkpointId) {
+    return browser.cards.children.find(card => card.dataset.checkpointId === checkpointId);
+}
+
 test("checkpoint previews preserve canonical nested IDs across four slots", () => {
     assert.deepEqual(CHECKPOINT_PREVIEW_SLOTS.map(item => item.slot), [1, 2, 3, 4]);
     assert.equal(
@@ -160,35 +179,82 @@ test("checkpoint previews preserve canonical nested IDs across four slots", () =
     );
 });
 
-test("checkpoint cards, search, native selection and clear share the existing selector", () => {
+test("checkpoint folders navigate without changing canonical selection; search stays global", () => {
     const { select, state, browser, hint } = makeFixture();
     assert.match(hint.textContent, /live catalog/i);
-    assert.equal(browser.cards.children.length, 3);
-    const selectedCard = browser.cards.children[0];
-    assert.equal(selectedCard.dataset.checkpointId, "models/nested/Example.safetensors");
+    assert.equal(browser.cards.children.length, 1, "root renders its immediate resource only");
+    assert.equal(cardFor(browser, "Root.safetensors")?.dataset.checkpointId, "Root.safetensors");
+    assert.equal(cardFor(browser, "models\\nested\\Example.safetensors"), undefined,
+        "nested descendants are not flattened into the root");
+    assert.equal(browser.folders.hidden, false);
+    assert.deepEqual(browser.folders.children.map(button => button.dataset.folder), ["models"]);
+
+    openFolder(browser, "models");
+    assert.deepEqual(browser.cards.children.map(card => card.dataset.checkpointId), ["models/Other.safetensors"]);
+    assert.deepEqual(browser.folders.children.map(button => button.dataset.folder), ["models/nested"]);
+    assert.equal(state.selected, "models\\nested\\Example.safetensors", "navigation preserves the exact selected ID");
+
+    openFolder(browser, "models/nested");
+    assert.deepEqual(browser.cards.children.map(card => card.dataset.checkpointId).sort(), [
+        "models\\nested\\Example.safetensors",
+        "models\\nested\\Missing.safetensors",
+        "models/nested/Second.safetensors"
+    ].sort(), "slash and backslash catalog paths share the same folder view");
+    const selectedCard = cardFor(browser, "models\\nested\\Example.safetensors");
     assert.equal(selectedCard.getAttribute("aria-pressed"), "true");
     assert.equal(selectedCard.classList.contains("mg-lora-card"), true);
-    assert.equal(selectedCard.children.length, 2, "each card contains one preview and one title");
+    assert.equal(selectedCard.children.length, 2, "each ordinary card contains one preview and one title");
     assert.equal(selectedCard.children[0].tagName, "img");
     assert.equal(selectedCard.children[0].classList.contains("mg-lora-card-thumb"), true);
     assert.match(selectedCard.children[0].src, /slot=1$/);
     assert.equal(selectedCard.children[1].classList.contains("mg-lora-card-name"), true);
 
-    browser.search.value = "other";
+    browser.search.value = "Other";
     browser.search.dispatchEvent(new FakeEvent("input"));
     assert.equal(browser.cards.children.length, 1);
-    assert.equal(state.selected, "models/nested/Example.safetensors");
+    assert.equal(cardFor(browser, "models/Other.safetensors")?.dataset.checkpointId, "models/Other.safetensors",
+        "search finds a resource outside the current folder");
+    assert.equal(browser.cards.children[0].children.at(-1).className, "mg-lora-card-folder");
+    assert.equal(browser.cards.children[0].children.at(-1).textContent, "models");
+    assert.equal(browser.breadcrumb.hidden, true);
+    assert.equal(browser.folders.hidden, true);
+    assert.equal(state.selected, "models\\nested\\Example.safetensors", "search does not mutate selection");
 
     browser.search.value = "";
     browser.search.dispatchEvent(new FakeEvent("input"));
-    const otherCard = browser.cards.children.find(card => card.dataset.checkpointId === "models/Other.safetensors");
+    assert.deepEqual(browser.cards.children.map(card => card.dataset.checkpointId).sort(), [
+        "models\\nested\\Example.safetensors",
+        "models\\nested\\Missing.safetensors",
+        "models/nested/Second.safetensors"
+    ].sort(), "clearing search restores the current folder");
+
+    select.value = "models/Other.safetensors";
+    select.dispatchEvent(new FakeEvent("change"));
+    assert.equal(cardFor(browser, "models/Other.safetensors"), undefined,
+        "external selector changes do not navigate folders");
+    assert.equal(browser.breadcrumb.children.at(-1).dataset.folder, "models/nested");
+
+    openCrumb(browser, "models");
+    const otherCard = cardFor(browser, "models/Other.safetensors");
+    assert.equal(otherCard.getAttribute("aria-pressed"), "true", "visible folder reflects external selection");
     otherCard.dispatchEvent(new FakeEvent("click"));
     assert.equal(select.value, "models/Other.safetensors");
     assert.equal(state.selected, "models/Other.safetensors");
 
-    select.value = "models/nested/Example.safetensors";
+    openCrumb(browser, "");
+    cardFor(browser, "Root.safetensors").dispatchEvent(new FakeEvent("click"));
+    assert.equal(select.value, "Root.safetensors");
+    assert.equal(state.selected, "Root.safetensors");
+
+    openFolder(browser, "models");
+    openFolder(browser, "models/nested");
+    cardFor(browser, "models/nested/Second.safetensors").dispatchEvent(new FakeEvent("click"));
+    assert.equal(select.value, "models/nested/Second.safetensors", "selection writes the exact canonical slash ID");
+    assert.equal(state.selected, "models/nested/Second.safetensors");
+
+    select.value = "models\\nested\\Example.safetensors";
     select.dispatchEvent(new FakeEvent("change"));
-    assert.equal(browser.cards.children.find(card => card.dataset.checkpointId === select.value).getAttribute("aria-pressed"), "true");
+    assert.equal(cardFor(browser, select.value).getAttribute("aria-pressed"), "true");
 
     browser.clearButton.dispatchEvent(new FakeEvent("click"));
     assert.equal(select.value, "");
@@ -200,22 +266,22 @@ test("checkpoint browser starts collapsed and disclosure toggles preserve its st
     const { browser, state } = makeFixture();
     assert.equal(browser.details.open, false);
 
-    browser.search.value = "nested";
+    browser.search.value = "Second";
     browser.search.dispatchEvent(new FakeEvent("input"));
     browser.previewButtons[2].dispatchEvent(new FakeEvent("click"));
     assert.equal(browser.cards.children.length, 1);
-    assert.equal(state.selected, "models/nested/Example.safetensors");
+    assert.equal(state.selected, "models\\nested\\Example.safetensors");
 
     browser.details.open = true;
     assert.equal(browser.details.open, true);
     browser.details.open = false;
     assert.equal(browser.details.open, false);
 
-    assert.equal(browser.search.value, "nested");
+    assert.equal(browser.search.value, "Second");
     assert.equal(browser.previewButtons[2].getAttribute("aria-pressed"), "true");
-    assert.equal(state.selected, "models/nested/Example.safetensors");
+    assert.equal(state.selected, "models\\nested\\Example.safetensors");
     assert.equal(browser.cards.children.length, 1);
-    assert.match(browser.cards.children[0].children[0].src, /slot=3$/);
+    assert.match(cardFor(browser, "models/nested/Second.safetensors").children[0].src, /slot=3$/);
 });
 
 test("four neutral preview slots switch the single card thumbnail without changing selection", () => {
@@ -225,18 +291,23 @@ test("four neutral preview slots switch the single card thumbnail without changi
     assert.deepEqual(browser.previewButtons.map(button => button.textContent), ["1", "2", "3", "4"]);
     assert.equal(browser.previewButtons[0].getAttribute("aria-pressed"), "true");
     assert.equal(browser.previewButtons[3].getAttribute("aria-pressed"), "false");
-    assert.equal(state.selected, "models/nested/Example.safetensors");
+    assert.equal(state.selected, "models\\nested\\Example.safetensors");
 
-    const firstCard = browser.cards.children[0];
+    openFolder(browser, "models");
+    openFolder(browser, "models/nested");
+
+    const firstCard = cardFor(browser, "models\\nested\\Example.safetensors");
     browser.render();
-    assert.equal(browser.cards.children[0], firstCard, "unchanged catalog/selection/search keeps the same cards");
+    assert.equal(cardFor(browser, "models\\nested\\Example.safetensors"), firstCard,
+        "unchanged catalog/selection/search/folder keeps the same cards");
 
     browser.previewButtons[3].dispatchEvent(new FakeEvent("click"));
     assert.equal(browser.previewButtons[3].getAttribute("aria-pressed"), "true");
     assert.equal(browser.previewButtons[0].getAttribute("aria-pressed"), "false");
-    assert.notEqual(browser.cards.children[0], firstCard, "changing the preview slot rebuilds thumbnails");
-    assert.match(browser.cards.children[0].children[0].src, /slot=4$/);
-    assert.equal(state.selected, "models/nested/Example.safetensors");
+    assert.notEqual(cardFor(browser, "models\\nested\\Example.safetensors"), firstCard,
+        "changing the preview slot rebuilds thumbnails");
+    assert.match(cardFor(browser, "models\\nested\\Example.safetensors").children[0].src, /slot=4$/);
+    assert.equal(state.selected, "models\\nested\\Example.safetensors");
 
     browser.previewButtons[1].dispatchEvent(new FakeEvent("click"));
     const missing = browser.cards.children[0].children[0];
@@ -251,7 +322,10 @@ test("four neutral preview slots switch the single card thumbnail without changi
     assert.equal(again.src ?? "", "", `failed preview ${url} is not requested again`);
     assert.equal(again.textContent, "NO PREVIEW 2");
 
-    const unavailable = makeFixture().browser.cards.children.find(card => card.dataset.checkpointId === "models/Missing.safetensors");
+    const unavailableFixture = makeFixture();
+    openFolder(unavailableFixture.browser, "models");
+    openFolder(unavailableFixture.browser, "models/nested");
+    const unavailable = cardFor(unavailableFixture.browser, "models\\nested\\Missing.safetensors");
     assert.equal(unavailable.disabled, true);
     assert.equal(unavailable.children[0].classList.contains("mg-lora-card-noimg"), true);
     assert.equal(unavailable.children[0].src ?? "", "", "unavailable checkpoints request nothing");
@@ -264,9 +338,11 @@ test("Stage hover preview mirrors the displayed checkpoint thumbnail and never c
     try {
         assert.equal(browser.details.open, false, "Browse checkpoints stays default-collapsed");
         browser.details.open = true;
+        openFolder(browser, "models");
+        openFolder(browser, "models/nested");
         browser.previewButtons[2].dispatchEvent(new FakeEvent("click"));
-        const cardA = browser.cards.children.find(card => card.dataset.checkpointId === "models/nested/Example.safetensors");
-        const cardB = browser.cards.children.find(card => card.dataset.checkpointId === "models/Other.safetensors");
+        const cardA = cardFor(browser, "models\\nested\\Example.safetensors");
+        const cardB = cardFor(browser, "models/nested/Second.safetensors");
         const [imgA, imgB] = [cardA.children[0], cardB.children[0]];
         for (const img of [imgA, imgB]) Object.assign(img, { complete: true, naturalWidth: 832 });
         const before = { selected: state.selected, value: select.value, search: browser.search.value,
@@ -293,7 +369,7 @@ test("Stage hover preview mirrors the displayed checkpoint thumbnail and never c
         assert.equal(stage.show(loading, "x"), false, "a not-yet-displayed image does nothing");
         Object.assign(imgA, { naturalWidth: 0 });           // a failed image has no pixels (as in a browser)
         imgA.dispatchEvent(new FakeEvent("error"));
-        const placeholder = browser.cards.children.find(card => card.dataset.checkpointId === "models/nested/Example.safetensors").children[0];
+        const placeholder = cardFor(browser, "models\\nested\\Example.safetensors").children[0];
         imgA.dispatchEvent(new FakeEvent("pointerenter"));
         placeholder.dispatchEvent(new FakeEvent("pointerenter"));
         assert.equal(stage.layer.hidden, true, "missing / failed preview does not blank or replace the Stage");
@@ -303,7 +379,7 @@ test("Stage hover preview mirrors the displayed checkpoint thumbnail and never c
             "hover changed no checkpoint selection, search, slot or disclosure");
 
         cardB.dispatchEvent(new FakeEvent("click"));
-        assert.equal(select.value, "models/Other.safetensors", "normal card click still selects");
+        assert.equal(select.value, "models/nested/Second.safetensors", "normal card click still selects");
     } finally {
         resetStageResourcePreview();
     }
@@ -311,11 +387,12 @@ test("Stage hover preview mirrors the displayed checkpoint thumbnail and never c
 
 test("checkpoint cards carry no native hover tooltip; identity stays in aria-label and dataset", () => {
     const { browser } = makeFixture();
+    openFolder(browser, "models");
+    openFolder(browser, "models/nested");
     for (const card of browser.cards.children) {
         assert.equal(card.title || "", "", "no Create-side tooltip on the hovered card");
         assert.equal(card.children[0].title || "", "", "no tooltip on the thumbnail");
-        assert.match(card.getAttribute("aria-label"), /checkpoint models\//);
-        assert.match(card.dataset.checkpointId, /^models\//);
+        assert.match(card.getAttribute("aria-label"), /checkpoint models[\\/]/);
+        assert.match(card.dataset.checkpointId, /^models[\\/]/);
     }
 });
-

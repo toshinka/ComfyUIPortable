@@ -39,6 +39,10 @@ export function filterCheckpointEntries(entries, query = "") {
     });
 }
 
+function checkpointPathSegments(id) {
+    return String(id || "").replaceAll("\\", "/").split("/").filter(Boolean);
+}
+
 export function mountCheckpointBrowser({ select, getEntries, getSelected, doc = select?.ownerDocument }) {
     if (!select || !doc) throw new TypeError("Checkpoint browser requires the existing checkpoint selector");
     const root = doc.createElement("section");
@@ -80,6 +84,13 @@ export function mountCheckpointBrowser({ select, getEntries, getSelected, doc = 
     search.style.boxSizing = "border-box";
     search.style.width = "100%";
     search.style.margin = "0.5rem 0";
+    const breadcrumb = doc.createElement("nav");
+    breadcrumb.className = "mg-lora-breadcrumb mg-checkpoint-breadcrumb";
+    breadcrumb.setAttribute("aria-label", "Checkpoint folder path");
+    const folders = doc.createElement("div");
+    folders.className = "mg-lora-folders mg-checkpoint-folders";
+    folders.setAttribute("role", "list");
+    folders.setAttribute("aria-label", "Checkpoint folders");
     const viewControls = doc.createElement("div");
     viewControls.className = "mg-lora-view-controls mg-checkpoint-view-controls";
     const viewLabel = doc.createElement("span");
@@ -114,7 +125,7 @@ export function mountCheckpointBrowser({ select, getEntries, getSelected, doc = 
     const empty = doc.createElement("p");
     empty.className = "mg-hint mg-lora-empty";
     empty.hidden = true;
-    details.append(summary, viewControls, search, cards, empty);
+    details.append(summary, viewControls, search, breadcrumb, folders, cards, empty);
     root.append(selectedBar, details);
 
     const hint = select.nextElementSibling;
@@ -133,6 +144,8 @@ export function mountCheckpointBrowser({ select, getEntries, getSelected, doc = 
     // catalog/selection/search does not rebuild the cards (renderForm runs on every edit).
     const failedPreviews = new Set();
     let lastSignature = null;
+    let lastFolderSignature = null;
+    let currentFolder = "";
 
     function syncPreviewControls() {
         slotButtons.forEach((button, index) => {
@@ -149,17 +162,92 @@ export function mountCheckpointBrowser({ select, getEntries, getSelected, doc = 
         return placeholder;
     };
 
+    function renderBreadcrumb() {
+        breadcrumb.replaceChildren();
+        const parts = checkpointPathSegments(currentFolder);
+        const crumbs = [{ id: "", name: "Checkpoints" }];
+        parts.forEach((name, index) => crumbs.push({ id: parts.slice(0, index + 1).join("/"), name }));
+        crumbs.forEach((crumb, index) => {
+            if (index) {
+                const separator = doc.createElement("span");
+                separator.className = "mg-lora-crumb-sep";
+                separator.textContent = "/";
+                breadcrumb.append(separator);
+            }
+            const button = doc.createElement("button");
+            button.type = "button";
+            button.className = "mg-lora-crumb";
+            button.textContent = crumb.name;
+            button.dataset.folder = crumb.id;
+            button.setAttribute("aria-label", crumb.id ? `Open checkpoint folder ${crumb.id}` : "Open checkpoint root");
+            if (index === crumbs.length - 1) button.setAttribute("aria-current", "location");
+            button.addEventListener("click", () => {
+                currentFolder = crumb.id;
+                render();
+            });
+            breadcrumb.append(button);
+        });
+    }
+
+    function renderFolders(childFolders) {
+        folders.replaceChildren();
+        for (const folder of childFolders) {
+            const button = doc.createElement("button");
+            button.type = "button";
+            button.className = "mg-lora-folder";
+            button.textContent = `📁 ${folder.name}`;
+            button.setAttribute("role", "listitem");
+            button.setAttribute("aria-label", `Open checkpoint folder ${folder.name}`);
+            button.dataset.folder = folder.id;
+            button.title = folder.id;
+            button.addEventListener("click", () => {
+                currentFolder = folder.id;
+                render();
+            });
+            folders.append(button);
+        }
+    }
+
     function render() {
         const allEntries = typeof getEntries === "function" ? getEntries() : [];
         const filtered = filterCheckpointEntries(allEntries, search.value);
+        const entries = Array.isArray(allEntries) ? allEntries : [];
+        const searching = Boolean(String(search.value || "").trim());
         const selected = String(typeof getSelected === "function" ? (getSelected() || "") : (select.value || ""));
-        const signature = JSON.stringify([selected, search.value, previewSlot,
-            (Array.isArray(allEntries) ? allEntries : []).map(entry => [entry?.id, entry?.available === true])]);
+        const signature = JSON.stringify([selected, search.value, previewSlot, currentFolder,
+            entries.map(entry => [entry?.id, entry?.available === true])]);
         if (signature === lastSignature) return;
         lastSignature = signature;
         clearStagePreview();
-        const ordered = [...filtered].sort((a, b) => Number(b.id === selected) - Number(a.id === selected));
-        const availableCount = (Array.isArray(allEntries) ? allEntries : []).filter(entry => entry?.available === true).length;
+
+        const currentParts = checkpointPathSegments(currentFolder);
+        const scopedEntries = [];
+        const childFolderMap = new Map();
+        for (const entry of entries) {
+            if (!entry || typeof entry.id !== "string") continue;
+            const resourceFolders = checkpointPathSegments(entry.id).slice(0, -1);
+            if (currentParts.some((part, index) => resourceFolders[index] !== part)) continue;
+            if (resourceFolders.length === currentParts.length) {
+                scopedEntries.push(entry);
+            } else if (resourceFolders.length > currentParts.length) {
+                const name = resourceFolders[currentParts.length];
+                const id = [...currentParts, name].join("/");
+                childFolderMap.set(id, name);
+            }
+        }
+        const childFolders = [...childFolderMap].map(([id, name]) => ({ id, name }));
+        const folderSignature = JSON.stringify([currentFolder, searching, entries.map(entry => entry?.id)]);
+        if (folderSignature !== lastFolderSignature) {
+            lastFolderSignature = folderSignature;
+            renderBreadcrumb();
+            renderFolders(searching ? [] : childFolders);
+        }
+        breadcrumb.hidden = searching;
+        folders.hidden = searching || !folders.childElementCount;
+
+        const visibleEntries = searching ? filtered : scopedEntries;
+        const ordered = [...visibleEntries].sort((a, b) => Number(b.id === selected) - Number(a.id === selected));
+        const availableCount = entries.filter(entry => entry?.available === true).length;
         summary.textContent = `Browse checkpoints · ${availableCount} available`;
         selectedText.textContent = selected ? `Selected: ${selected}` : "No checkpoint selected";
         clearButton.disabled = !selected;
@@ -204,7 +292,14 @@ export function mountCheckpointBrowser({ select, getEntries, getSelected, doc = 
             const visibleName = String(entry.name || entry.filename || entry.id);
             title.textContent = isAvailable ? visibleName : `Unavailable · ${visibleName}`;
             title.title = entry.id;
+            const folderContext = searching ? checkpointPathSegments(entry.id).slice(0, -1).join("/") : "";
             card.append(preview, title);
+            if (folderContext) {
+                const context = doc.createElement("span");
+                context.className = "mg-lora-card-folder";
+                context.textContent = folderContext;
+                card.append(context);
+            }
             card.addEventListener("click", () => {
                 if (!isAvailable || !availableOptions().some(option => option.value === entry.id)) return;
                 select.value = entry.id;
@@ -212,10 +307,10 @@ export function mountCheckpointBrowser({ select, getEntries, getSelected, doc = 
             });
             cards.append(card);
         }
-        empty.hidden = ordered.length > 0;
+        empty.hidden = ordered.length > 0 || (!searching && childFolders.length > 0);
         empty.textContent = search.value.trim()
             ? "No checkpoints match this search."
-            : "No checkpoints are available in the current catalog.";
+            : "No checkpoints in this folder.";
     }
 
     syncPreviewControls();
@@ -231,7 +326,7 @@ export function mountCheckpointBrowser({ select, getEntries, getSelected, doc = 
         select.value = "";
         select.dispatchEvent(makeChangeEvent());
     });
-    return { root, details, search, cards, clearButton, previewButtons: slotButtons, render };
+    return { root, details, search, breadcrumb, folders, cards, clearButton, previewButtons: slotButtons, render };
 }
 
 const SCENE_PALETTE = [
