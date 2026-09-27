@@ -249,7 +249,13 @@ class SceneGenerationTests(unittest.TestCase):
     def test_global_lora_resolves_but_scene_lora_is_rejected(self):
         document = copy.deepcopy(self.document)
         document["pages"][0]["style_prompt"] = "page <lora:styles/ink:0.7>"
-        result = compile_scene(self.request(document), self.catalog)
+        # This test covers the Scene-local LoRA guard; isolate the independent
+        # trusted-root lookup used to resolve the page-level LoRA.
+        with patch(
+            "custom_nodes_custom.tegaki_manga_nodes.engine_resources.resolve_engine_lora",
+            return_value="styles/ink.safetensors",
+        ):
+            result = compile_scene(self.request(document), self.catalog)
         self.assertEqual(result["resolved_loras"][0]["id"], "styles/ink.safetensors")
         self.assertEqual(sum(n["class_type"] == "LoraLoader" for n in result["graph"].values()), 1)
         bad = copy.deepcopy(self.document)
@@ -493,32 +499,35 @@ class SceneGenerationTests(unittest.TestCase):
         self.assertEqual(character["reference_asset"], "tegaki_manga_references/ref_c789751db904319d.png")
         self.assertTrue(result["audit_trail"]["reference"]["enabled"])
 
-    def test_reference_rejects_unverified_checkpoint_but_text_only_remains_supported(self):
+    def test_unknown_checkpoint_is_accepted_for_reference_but_text_only_remains_supported(self):
         self.add_reference_capability()
+        checkpoint_id = "unknown_architecture.safetensors"
         self.catalog["checkpoints"].append({
-            "id": "sd15_base.safetensors", "available": True, "family": "UNKNOWN", "family_confidence": "UNKNOWN",
+            "id": checkpoint_id, "available": True, "family": "UNKNOWN", "family_confidence": "UNKNOWN",
         })
         self.catalog["revision"] = __import__("hashlib").sha256(
             __import__("json").dumps(self.catalog, sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest()
         referenced = self.reference_document()
-        # Incompatible architecture rejected
-        self.expect_code(
-            "REFERENCE_CHECKPOINT_UNSUPPORTED",
-            self.request(referenced, checkpoint_id="sd15_base.safetensors", capability_revision=self.catalog["revision"]),
-        )
-        # Illustrious checkpoint accepted for reference
-        result_illustrious = compile_scene(
-            self.request(referenced, checkpoint_id="Illustrious.safetensors", capability_revision=self.catalog["revision"]),
-            self.catalog,
-        )
-        self.assertTrue(any(node["class_type"] == "IPAdapterAdvanced" for node in result_illustrious["graph"].values()))
-        # Text-only on sd15 checkpoint remains supported without IPAdapter
+        request = self.request(referenced, checkpoint_id=checkpoint_id, capability_revision=self.catalog["revision"])
+        result_reference = compile_scene(request, self.catalog)
+        self.assertTrue(result_reference["ok"])
+        self.assertEqual(result_reference["graph"]["1"]["inputs"]["ckpt_name"], checkpoint_id)
+        by_class = {node["class_type"]: node for node in result_reference["graph"].values()}
+        self.assertEqual(by_class["IPAdapterAdvanced"]["inputs"]["ipadapter"], [
+            next(key for key, node in result_reference["graph"].items() if node["class_type"] == "IPAdapterModelLoader"), 0,
+        ])
+        self.assertEqual(by_class["IPAdapterModelLoader"]["inputs"]["ipadapter_file"], REFERENCE_IPADAPTER)
+        self.assertEqual(by_class["CLIPVisionLoader"]["inputs"]["clip_name"], REFERENCE_CLIP_VISION)
+
+        # Text-only compilation uses the same catalog-valid checkpoint without Reference nodes.
         text_only = self.reference_document(reference_asset=None)
         result = compile_scene(
-            self.request(text_only, checkpoint_id="sd15_base.safetensors", capability_revision=self.catalog["revision"]),
+            self.request(text_only, checkpoint_id=checkpoint_id, capability_revision=self.catalog["revision"]),
             self.catalog,
         )
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["graph"]["1"]["inputs"]["ckpt_name"], checkpoint_id)
         self.assertFalse(any(node["class_type"] == "IPAdapterAdvanced" for node in result["graph"].values()))
 
     def test_unavailable_reference_asset_fails_explicitly(self):
@@ -717,15 +726,24 @@ class SceneGenerationTests(unittest.TestCase):
         ))
         self.expect_code("GUIDE_MULTI_INSTANCE_UNSUPPORTED", self.request(doc_multi))
 
-        # Unsupported checkpoint
+        # A catalog-valid checkpoint with unknown family metadata compiles with ControlNet.
         self.add_controlnet_capability(asset="tegaki_manga_guides/known_asset.png")
         doc_good = self.guide_fixture_document(asset="tegaki_manga_guides/known_asset.png")
-        # Change checkpoint to non-illustrious
-        self.catalog["checkpoints"].append({"id": "sd15_base.safetensors", "available": True, "family": "UNKNOWN", "family_confidence": "UNKNOWN"})
+        checkpoint_id = "unknown_architecture.safetensors"
+        self.catalog["checkpoints"].append({"id": checkpoint_id, "available": True, "family": "UNKNOWN", "family_confidence": "UNKNOWN"})
         self.catalog["revision"] = __import__("hashlib").sha256(
             __import__("json").dumps(self.catalog, sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest()
-        self.expect_code("CONTROLNET_CHECKPOINT_UNSUPPORTED", self.request(doc_good, checkpoint_id="sd15_base.safetensors", capability_revision=self.catalog["revision"]))
+        request = self.request(doc_good, checkpoint_id=checkpoint_id, capability_revision=self.catalog["revision"])
+        self.assertIn(checkpoint_id, {entry["id"] for entry in self.catalog["checkpoints"] if entry.get("available") is True})
+        result = compile_scene(request, self.catalog)
+        self.assertTrue(result["ok"])
+        graph = result["graph"]
+        self.assertEqual(graph["1"]["inputs"]["ckpt_name"], checkpoint_id)
+        cnet_loader_id = next(key for key, node in graph.items() if node["class_type"] == "ControlNetLoader")
+        cnet_apply = next(node for node in graph.values() if node["class_type"] == "ControlNetApplyAdvanced")
+        self.assertEqual(graph[cnet_loader_id]["inputs"]["control_net_name"], CONTROLNET_DEFAULT_BASENAME)
+        self.assertEqual(cnet_apply["inputs"]["control_net"], [cnet_loader_id, 0])
 
     def test_unsupported_document_shapes_retain_existing_validation(self):
         """Card §11.G: Unsupported document shapes retain existing validation."""
@@ -1213,5 +1231,4 @@ class SceneGenerationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
 
