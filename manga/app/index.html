@@ -153,7 +153,7 @@
                 <span class="creation-route-label">ENGINE</span>
                 <a class="creation-route-choice" id="standalone-product-h3" href="http://127.0.0.1:8190/?creation_mode=movie">H3</a>
                 <button class="creation-route-choice active" id="standalone-engine-comfyui" type="button" aria-current="page" aria-pressed="true">COMFYUI</button>
-                <button class="creation-route-choice" type="button" aria-disabled="true" disabled title="Not available yet">EasyReforge</button>
+                <button class="creation-route-choice" id="standalone-engine-easyreforge" type="button" aria-disabled="true" disabled title="Not available yet">EasyReforge</button>
             </div>
         </div>
         <div class="manga-mode-tabs" role="tablist" aria-label="Manga mode" style="display: none;">
@@ -3552,7 +3552,9 @@
             setPromptTarget: (target) => selectComposerTarget(target),
             onCatalogChange: () => { updateAll(); experimentPanel?.refreshCatalog(); },
             // Card MANGA-EXPERIMENT-OUTPUT-PRODUCTION1: opt-in named copy of a job this page generated.
-            onJobSucceeded: job => experimentPanel?.namedCopyForGenerate(job)
+            onJobSucceeded: job => experimentPanel?.namedCopyForGenerate(job),
+            // Card MANGA-LEGACY-EASYREFORGE-VERTICAL-MVP1: engine availability comes from the backend only.
+            onEngineAvailability: status => publishEngineAvailability(status)
         });
         // Experiment / Output: session state only; reads Global settings, never writes the document.
         experimentPanel = mountExperimentPanel(document.getElementById("mg-experiment-body"), {
@@ -3582,6 +3584,61 @@
         document.getElementById("manga-tab-authoring").onclick = () => setMangaMode("authoring");
         const embedded = new URLSearchParams(window.location.search).get("embedded") === "1";
         document.body.classList.toggle("manga-embedded", embedded);
+
+        // ---- MANGA engine route (COMFYUI | EASYREFORGE) -----------------------------------
+        // The TEGAKI shell (parent frame) selects the engine by postMessage; availability is
+        // reported back from the workspace's own backend status.  Standalone pages use the local
+        // ENGINE buttons.  EASYREFORGE never becomes operational unless the backend says available.
+        const engineButtons = {
+            comfyui: document.getElementById("standalone-engine-comfyui"),
+            easyreforge: document.getElementById("standalone-engine-easyreforge"),
+        };
+        const shellOrigin = (() => { try { return embedded && document.referrer ? new URL(document.referrer).origin : null; } catch { return null; } })();
+        function renderEngineButtons(status = null) {
+            const engine = generation.getEngine();
+            for (const [name, button] of Object.entries(engineButtons)) {
+                if (!button) continue;
+                button.classList.toggle("active", engine === name);
+                button.setAttribute("aria-pressed", String(engine === name));
+            }
+            if (engineButtons.easyreforge && status) {
+                const available = Boolean(status.available);
+                engineButtons.easyreforge.disabled = !available;
+                engineButtons.easyreforge.setAttribute("aria-disabled", String(!available));
+                engineButtons.easyreforge.title = available ? "Legacy EasyReforge (Integration Runtime)" : (status.installed_reason || "EasyReforge is unavailable");
+            }
+        }
+        function publishEngineAvailability(status) {
+            if (!status?.available && generation?.getEngine?.() === "easyreforge") generation.setEngine("comfyui");
+            renderEngineButtons(status);
+            if (shellOrigin && window.parent !== window) {
+                window.parent.postMessage({ type: "tegaki:manga-engine-availability",
+                    engine: generation.getEngine(),
+                    easyreforge: { available: Boolean(status?.available), state: String(status?.state || "unknown"),
+                        reason: String(status?.installed_reason || "") } }, shellOrigin);
+            }
+        }
+        function applyEngine(engine) {
+            const ok = generation.setEngine(engine);
+            renderEngineButtons();
+            return ok;
+        }
+        engineButtons.comfyui?.addEventListener("click", () => applyEngine("comfyui"));
+        engineButtons.easyreforge?.addEventListener("click", () => applyEngine("easyreforge"));
+        window.addEventListener("message", event => {
+            if (!shellOrigin || event.source !== window.parent || event.origin !== shellOrigin) return;
+            const data = event.data;
+            if (data?.type === "tegaki:manga-engine" && typeof data.engine === "string") {
+                const ok = applyEngine(data.engine);
+                window.parent.postMessage({ type: "tegaki:manga-engine-applied", engine: generation.getEngine(), ok }, shellOrigin);
+            } else if (data?.type === "tegaki:manga-engine-query") {
+                generation.refreshLegacyReforge();
+            }
+        });
+        generation.refreshLegacyReforge().then(status => {
+            const requested = new URLSearchParams(window.location.search).get("engine");
+            if (requested === "easyreforge" && status?.available) applyEngine("easyreforge");
+        });
         document.body.classList.add("manga-generate-active");
         setMangaMode("authoring");
 

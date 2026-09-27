@@ -1275,3 +1275,12 @@ body.manga-embedded #generate-view { width: 100%; max-width: none; margin: 0; pa
    2-line 10.5px treatment; selection border/background and click targets are unchanged. */
 #mg-lora-cards, .mg-checkpoint-cards { grid-template-columns: repeat(auto-fill, minmax(112px, 136px)); }
 #mg-lora-cards .mg-lora-card-thumbbtn .mg-lora-card-thumb, .mg-checkpoint-cards .mg-lora-card-thumb { aspect-ratio: 4 / 5; }
+
+/* MANGA-LEGACY-EASYREFORGE-VERTICAL-MVP1: compact Integration Runtime status row (EASYREFORGE only) */
+.mg-legacy-reforge { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin: 4px 0; padding: 4px 6px; border: 1px solid var(--manga-line-soft); border-radius: 6px; background: var(--manga-surface-inset); font-size: 11px; }
+.mg-legacy-reforge[hidden] { display: none; }
+.mg-legacy-reforge-text { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; color: var(--manga-muted); }
+.mg-legacy-reforge[data-state="ready"] .mg-legacy-reforge-text { color: var(--manga-success-text); }
+.mg-legacy-reforge[data-state="failed"] .mg-legacy-reforge-text { color: var(--manga-danger-text); }
+.mg-legacy-reforge button { min-height: 22px; padding: 1px 8px; border: 1px solid var(--manga-line); border-radius: 5px; background: var(--manga-surface-raised); color: var(--manga-text); font: inherit; font-size: 10.5px; cursor: pointer; }
+.mg-legacy-reforge button:disabled { opacity: 0.5; cursor: not-allowed; }

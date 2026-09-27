@@ -3,6 +3,7 @@ import { GenerationState, ACTIVE_JOB_STATES } from "../state/generation_state.js
 import { MangaGenerationClient } from "../adapters/manga_generation_client.js";
 import { validateAuthoringDocument } from "../domain/authoring_document.js";
 import { setupNumericWheelControl } from "./numeric_wheel.js";
+import { createLegacyReforgeEngine, engineSamplingLists, ensureEngineState, legacyReforgeBlockReason } from "./legacy_reforge_engine.js";
 import { bindStagePreviewHover, clearStagePreview } from "./stage_resource_preview.js";
 
 const FIELDS = ["checkpoint_id", "sampler_id", "scheduler_id", "steps", "cfg", "width", "height", "seed_requested"];
@@ -496,6 +497,8 @@ export function generationBlockReason(state, authoringStore = state.authoringSto
     if (state.submitUnconfirmed) return "Job outcome is UNKNOWN; automatic retry is disabled.";
     if (state.localBusy) return "Submission is in progress…";
     if (state.activeJob && ACTIVE_JOB_STATES.has(state.activeJob.state)) return "Job already active.";
+    // MANGA + EASYREFORGE: engine-specific validation; never falls back to the Comfy path.
+    if (state.engine === "easyreforge") return legacyReforgeBlockReason(state, authoringStore, source);
     if (!state.catalog) return state.catalogError
         ? `Capability catalog unavailable — ${state.catalogError}`
         : "Manga workspace unavailable; capability catalog unavailable.";
@@ -588,7 +591,7 @@ export async function compileGlobalGeneration(state, authoringStore, client) {
 
 export function mountGenerationView(root, { state = new GenerationState(), client = new MangaGenerationClient(),
     authoringStore = null, session = null, getPromptTarget = null, setPromptTarget = null, pollMs = 1500, onCatalogChange = null,
-    onJobSucceeded = null } = {}) {
+    onJobSucceeded = null, onEngineAvailability = null } = {}) {
     state.authoringStore = authoringStore;
     state.session = session;
     state.sceneDraft = state.sceneDraft || {};
@@ -804,8 +807,10 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
         }
         if (state.catalog) {
             setOptions(controls.checkpoint_id, state.catalog.checkpoints, state.draft.checkpoint_id);
-            setOptions(controls.sampler_id, state.catalog.samplers.map(id => ({ id, available: true })), state.draft.sampler_id);
-            setOptions(controls.scheduler_id, state.catalog.schedulers.map(id => ({ id, available: true })), state.draft.scheduler_id);
+            // Engine-aware lists: EasyReforge offers its own sampler/scheduler values (no cross-mapping).
+            const sampling = engineSamplingLists(state) || { samplers: state.catalog.samplers, schedulers: state.catalog.schedulers };
+            setOptions(controls.sampler_id, sampling.samplers.map(id => ({ id, available: true })), state.draft.sampler_id);
+            setOptions(controls.scheduler_id, sampling.schedulers.map(id => ({ id, available: true })), state.draft.scheduler_id);
             for (const field of ["steps", "cfg", "width", "height"]) {
                 const bound = numericBound(state.catalog, field);
                 controls[field].min = String(bound.min);
@@ -957,10 +962,10 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
         }
     }
 
-    async function showResult(job) {
+    async function showResult(job, fetchBlob = jobId => client.getResult(jobId)) {
         if (state.preview.jobId === job.job_id) return;
         try {
-            const blob = await client.getResult(job.job_id);
+            const blob = await fetchBlob(job.job_id);
             const url = URL.createObjectURL(blob);
             await new Promise((resolve, reject) => {
                 const probe = new Image();
@@ -1491,6 +1496,11 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
     setupPageCompositeControls();
 
     async function generateOne({ source = "mode", isRetry = false } = {}) {
+        if (state.engine === "easyreforge") {
+            const reason = generationBlockReason(state, authoringStore, source);
+            if (reason) { state.error = reason; renderStatus(); return; }
+            return legacyEngine.generate();
+        }
         if (!state.beginAttempt()) return;
         let submitStarted = false;
         renderStatus();
@@ -1593,6 +1603,16 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
     checkpointBrowser.render();
     vaeSelector.render();
     generate.addEventListener("click", () => generateOne({ source: generationScope }));
+    // Card MANGA-LEGACY-EASYREFORGE-VERTICAL-MVP1: MANGA + EASYREFORGE dispatch (Comfy path untouched).
+    ensureEngineState(state);
+    const legacyEngine = createLegacyReforgeEngine({
+        state, client, authoringStore, anchor: generateReason, doc: root.ownerDocument || globalThis.document,
+        hooks: {
+            render: () => { renderForm(); renderStatus(); },
+            showBlob: (jobId, blob) => showResult({ job_id: jobId }, async () => blob),
+            onAvailability: status => onEngineAvailability?.(status),
+        },
+    });
     generationScopeGlobal?.addEventListener("click", () => setGenerationScope("global"));
     generationScopeScenes?.addEventListener("click", () => setGenerationScope("scenes"));
     authoringStore?.subscribe?.(() => {
@@ -2497,6 +2517,10 @@ export function mountGenerationView(root, { state = new GenerationState(), clien
         client,
         ready,
         generateOne,
+        /** MANGA engine route: "comfyui" | "easyreforge" (EASYREFORGE only when available). */
+        setEngine: engine => legacyEngine.setEngine(engine),
+        getEngine: () => state.engine,
+        refreshLegacyReforge: () => legacyEngine.refreshStatus(),
         generateGlobal,
         /** Experiment/Output: the exact Global settings Generate would use (derived copy). */
         getGlobalBaseSettings: () => buildGlobalGenerationSettings(state, authoringStore),

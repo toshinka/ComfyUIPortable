@@ -9,8 +9,11 @@ import { resolveBackendStatusPresentation } from "./backend-status-presentation.
 const SUPPORTED_CREATION_ROUTES = Object.freeze({
   movie: Object.freeze(["h3"]),
   illust: Object.freeze(["h3"]),
-  manga: Object.freeze(["comfyui"]),
+  manga: Object.freeze(["comfyui", "easyreforge"]),
 });
+// EASYREFORGE is a MANGA-only engine and is operational only while the Manga workspace
+// reports its Integration Runtime available (Card MANGA-LEGACY-EASYREFORGE-VERTICAL-MVP1).
+const ROUTE_ENGINES = Object.freeze(["h3", "comfyui", "easyreforge"]);
 
 const state = {
   mode: "video",
@@ -22,6 +25,7 @@ const state = {
   backendStatusDetail: "",
   config: null,
   mangaWorkspaceUrl: null,
+  easyreforge: { available: false, state: "unknown", reason: "" },
   videoResolution: "608x352",
   stillResolution: "608x352",
   videoDuration: "5",
@@ -64,6 +68,7 @@ const creationModeIllust = $("mode-still");
 const creationModeManga = $("product-manga");
 const creationEngineH3 = $("product-h3");
 const creationEngineComfyui = $("creation-engine-comfyui");
+const creationEngineEasyreforge = $("creation-engine-easyreforge");
 const mangaShellPanel = $("manga-shell-panel");
 const mangaWorkspaceFrame = $("manga-workspace-frame");
 const mangaShellStatus = $("manga-shell-status");
@@ -547,6 +552,7 @@ function renderCreationRoute() {
     [creationModeManga, state.creationMode === "manga"],
     [creationEngineH3, state.engine === "h3"],
     [creationEngineComfyui, state.engine === "comfyui"],
+    [creationEngineEasyreforge, state.engine === "easyreforge"],
   ];
   choices.forEach(([button, selected]) => {
     button.classList.toggle("active", selected);
@@ -558,13 +564,15 @@ function setCreationRoute(mode, engine) {
   const supportedEngines = Object.prototype.hasOwnProperty.call(SUPPORTED_CREATION_ROUTES, mode)
     ? SUPPORTED_CREATION_ROUTES[mode]
     : [];
-  if (!supportedEngines.includes(engine) || !["h3", "comfyui"].includes(engine)) return false;
+  if (!supportedEngines.includes(engine) || !ROUTE_ENGINES.includes(engine)) return false;
+  if (engine === "easyreforge" && !state.easyreforge.available) return false;
   const returningFromManga = engine === "h3" && state.product === "manga";
   const retainedH3Prompt = returningFromManga ? promptInput.value : null;
   state.creationMode = mode;
   state.engine = engine;
-  if (engine === "comfyui") {
+  if (engine === "comfyui" || engine === "easyreforge") {
     setProduct("manga");
+    postMangaEngine(engine);
   } else if (engine === "h3") {
     setProduct("h3");
     setMode(mode === "illust" ? "still" : "video");
@@ -577,6 +585,41 @@ function setCreationRoute(mode, engine) {
   renderCreationRoute();
   return true;
 }
+
+function mangaWorkspaceOrigin() {
+  try { return state.mangaWorkspaceUrl ? new URL(state.mangaWorkspaceUrl).origin : null; } catch { return null; }
+}
+
+function postMangaEngine(engine) {
+  const origin = mangaWorkspaceOrigin();
+  if (origin && mangaWorkspaceFrame.contentWindow) {
+    mangaWorkspaceFrame.contentWindow.postMessage({ type: "tegaki:manga-engine", engine }, origin);
+  }
+}
+
+function renderEasyreforgeAvailability() {
+  const { available, reason } = state.easyreforge;
+  creationEngineEasyreforge.disabled = !available;
+  creationEngineEasyreforge.setAttribute("aria-disabled", String(!available));
+  creationEngineEasyreforge.classList.toggle("unavailable", !available);
+  creationEngineEasyreforge.title = available ? "Legacy EasyReforge (MANGA only)" : (reason || "Not available yet");
+}
+
+// Availability is reported by the embedded Manga workspace from its backend status only.
+window.addEventListener("message", event => {
+  const origin = mangaWorkspaceOrigin();
+  if (!origin || event.origin !== origin || event.source !== mangaWorkspaceFrame.contentWindow) return;
+  const data = event.data;
+  if (data?.type === "tegaki:manga-engine-availability" && data.easyreforge && typeof data.easyreforge === "object") {
+    state.easyreforge = { available: data.easyreforge.available === true, state: String(data.easyreforge.state || "unknown"),
+      reason: String(data.easyreforge.reason || "") };
+    renderEasyreforgeAvailability();
+    if (!state.easyreforge.available && state.engine === "easyreforge") setCreationRoute("manga", "comfyui");
+    else if (state.engine === "easyreforge") postMangaEngine("easyreforge");
+  } else if (data?.type === "tegaki:manga-engine-applied" && data.ok === false && state.engine === "easyreforge") {
+    setCreationRoute("manga", "comfyui");
+  }
+});
 
 function selectCreationMode(mode) {
   if (!Object.prototype.hasOwnProperty.call(SUPPORTED_CREATION_ROUTES, mode)) return false;
@@ -2080,6 +2123,7 @@ creationModeIllust.addEventListener("click", () => selectCreationMode("illust"))
 creationModeManga.addEventListener("click", () => selectCreationMode("manga"));
 creationEngineH3.addEventListener("click", () => selectCreationEngine("h3"));
 creationEngineComfyui.addEventListener("click", () => selectCreationEngine("comfyui"));
+creationEngineEasyreforge.addEventListener("click", () => selectCreationEngine("easyreforge"));
 videoTypeStandard.addEventListener("click", () => setVideoType("standard"));
 videoTypeReference.addEventListener("click", () => setVideoType("reference"));
 $("random-seed").addEventListener("click", () => { seedInput.value = ""; seedInput.focus(); });

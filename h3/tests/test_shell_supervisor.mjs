@@ -372,9 +372,14 @@ test("H3 shell exposes separate creation mode and engine routes", async () => {
     assert.match(html, /id="creation-engine-easyreforge"[^>]*aria-disabled="true" disabled/);
     assert.match(html, /id="manga-workspace-frame"/);
     assert.match(app, /manga_workspace_url/);
-    assert.match(app, /const SUPPORTED_CREATION_ROUTES = Object\.freeze\(\{[\s\S]*?movie: Object\.freeze\(\["h3"\]\),[\s\S]*?illust: Object\.freeze\(\["h3"\]\),[\s\S]*?manga: Object\.freeze\(\["comfyui"\]\)/);
+    // MOVIE/H3 and ILLUST/H3 unchanged; MANGA offers COMFYUI and (availability-gated) EASYREFORGE.
+    assert.match(app, /const SUPPORTED_CREATION_ROUTES = Object\.freeze\(\{[\s\S]*?movie: Object\.freeze\(\["h3"\]\),[\s\S]*?illust: Object\.freeze\(\["h3"\]\),[\s\S]*?manga: Object\.freeze\(\["comfyui", "easyreforge"\]\)/);
     assert.match(app, /function setCreationRoute\(mode, engine\)/);
-    assert.match(app, /if \(!supportedEngines\.includes\(engine\) \|\| !\["h3", "comfyui"\]\.includes\(engine\)\) return false/);
+    assert.match(app, /if \(!supportedEngines\.includes\(engine\) \|\| !ROUTE_ENGINES\.includes\(engine\)\) return false/);
+    assert.match(app, /if \(engine === "easyreforge" && !state\.easyreforge\.available\) return false/,
+        "EASYREFORGE is operational only when the workspace reports it available");
+    assert.match(app, /easyreforge: \{ available: false,/, "EASYREFORGE starts unavailable");
+    assert.match(app, /event\.origin !== origin \|\| event\.source !== mangaWorkspaceFrame\.contentWindow/, "availability only from the Manga frame");
     assert.match(app, /function selectCreationMode\(mode\)/);
     assert.match(app, /function selectCreationEngine\(engine\)/);
     assert.match(app, /setProduct\("manga"\)/);
@@ -393,6 +398,7 @@ test("H3 shell exposes separate creation mode and engine routes", async () => {
     assert.match(mangaHtml, /id="standalone-product-manga"/);
     assert.match(mangaHtml, /id="standalone-product-h3"/);
     assert.match(mangaHtml, /id="standalone-engine-comfyui"/);
-    assert.match(mangaHtml, /aria-disabled="true" disabled title="Not available yet"/);
-    assert.doesNotMatch(app, /easyreforge/i);
+    assert.match(mangaHtml, /id="standalone-engine-easyreforge" type="button" aria-disabled="true" disabled title="Not available yet"/);
+    assert.match(mangaHtml, /type: "tegaki:manga-engine-availability"/);
+    assert.match(mangaHtml, /if \(!shellOrigin \|\| event\.source !== window\.parent \|\| event\.origin !== shellOrigin\) return;/);
 });

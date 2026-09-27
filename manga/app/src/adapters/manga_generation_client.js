@@ -56,6 +56,28 @@ export class MangaGenerationClient {
     getJob(jobId) {
         return this._json(`/api/manga/generation/jobs/${encodeURIComponent(jobId)}`).then(data => data.job);
     }
+    // Card MANGA-LEGACY-EASYREFORGE-VERTICAL-MVP1: same-origin Legacy EasyReforge routes.
+    legacyStatus() { return this._json("/api/manga/legacy-reforge/status"); }
+    legacyCapabilities() { return this._json("/api/manga/legacy-reforge/capabilities"); }
+    legacyStart() { return this._legacyPost("/api/manga/legacy-reforge/start", {}); }
+    legacyStop() { return this._legacyPost("/api/manga/legacy-reforge/stop", {}); }
+    legacyGenerate(recipe) { return this._legacyPost("/api/manga/legacy-reforge/generate", { recipe }).then(data => data.job); }
+    legacyJob(jobId) { return this._json(`/api/manga/legacy-reforge/jobs/${encodeURIComponent(jobId)}`).then(data => data.job); }
+    legacyInterrupt(jobId) {
+        return this._legacyPost(`/api/manga/legacy-reforge/jobs/${encodeURIComponent(jobId)}/interrupt`, {}).then(data => data.job);
+    }
+    async legacyResult(jobId) {
+        let response;
+        try { response = await fetch(`/api/manga/legacy-reforge/jobs/${encodeURIComponent(jobId)}/result`, { cache: "no-store" }); }
+        catch { throw new MangaGenerationClientError("RESULT_UNAVAILABLE", "EasyReforge result could not be loaded"); }
+        if (!response.ok || !/^image\/(?:png|jpeg)(?:;|$)/i.test(response.headers.get("content-type") || "")) {
+            throw new MangaGenerationClientError("RESULT_UNAVAILABLE", "EasyReforge result is unavailable", response.status);
+        }
+        return response.blob();
+    }
+    _legacyPost(path, body) {
+        return this._json(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    }
     async getResult(jobId) {
         let response;
         try { response = await fetch(`/api/manga/generation/jobs/${encodeURIComponent(jobId)}/result`, { cache: "no-store" }); }

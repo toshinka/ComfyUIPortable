@@ -28,6 +28,7 @@ import { preparePageComposition } from "./page_compositor_prep.mjs";
 import { SceneResultStore } from "./scene_result_store.mjs";
 import { SceneResultIndex } from "./scene_result_index.mjs";
 import { MangaOutputService, MangaOutputError } from "./manga_output_service.mjs";
+import { LegacyReforgeService, handleLegacyReforgeRequest } from "./legacy_reforge_service.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -117,6 +118,25 @@ let mangaOutputService = new MangaOutputService({ generationService });
 
 export function setMangaOutputService(service) {
     mangaOutputService = service;
+}
+
+// Card MANGA-LEGACY-EASYREFORGE-VERTICAL-MVP1: MANGA + EASYREFORGE through the Integration
+// Runtime only (never E:\EasyReforge).  One heavy job at a time across both engines.
+async function comfyQueueBusy() {
+    try {
+        const response = await fetch(`${parsedBackend.origin}/queue`, { signal: AbortSignal.timeout(3000) });
+        if (!response.ok) return false;
+        const data = await response.json();
+        return (Array.isArray(data?.queue_running) && data.queue_running.length > 0) ||
+            (Array.isArray(data?.queue_pending) && data.queue_pending.length > 0);
+    } catch {
+        return false;   // Comfy backend down: nothing of it can be running
+    }
+}
+let legacyReforgeService = new LegacyReforgeService({ isComfyBusy: comfyQueueBusy });
+
+export function setLegacyReforgeService(service) {
+    legacyReforgeService = service;
 }
 
 let sceneResultStore = new SceneResultStore();
@@ -1235,6 +1255,13 @@ const server = http.createServer(async (req, res) => {
         }
         return;
     }
+    if (pathname.startsWith("/api/manga/legacy-reforge/")) {
+        const allowed = !(requestOrigin && !allowedLocalOrigins.has(requestOrigin)) &&
+            !(req.headers["sec-fetch-site"] && !["same-origin", "none"].includes(req.headers["sec-fetch-site"]));
+        await handleLegacyReforgeRequest(legacyReforgeService, req, res, url, { allowed });
+        return;
+    }
+
     // PLAY1b: Manga-owned job API; graph, backend URL, and output paths are never client inputs.
     if (/^\/api\/manga\/generation\/jobs(?:\/|$)/.test(pathname)) {
         const pieces = pathname.split("/").filter(Boolean);
@@ -1285,6 +1312,10 @@ const server = http.createServer(async (req, res) => {
                     body = JSON.parse(Buffer.concat(chunks).toString("utf8"));
                 } catch {
                     reply(400, "INVALID_JSON", "Manga job request is not valid JSON");
+                    return;
+                }
+                if (legacyReforgeService.isBusy()) {
+                    reply(409, "LEGACY_REFORGE_BUSY", "An EasyReforge job or startup is in progress; wait for it to finish");
                     return;
                 }
                 const isIsolatedScene = body?.mode === "isolated_scene" || body?.settings?.mode === "isolated_scene";
@@ -1868,4 +1899,4 @@ server.listen(PORT, HOST, () => {
     console.log(`[MangaWorkspaceServer] Serving on http://${HOST}:${PORT}`);
 });
 
-export { server, PORT, HOST, generationService, mangaOutputService };
+export { server, PORT, HOST, generationService, mangaOutputService, legacyReforgeService };
