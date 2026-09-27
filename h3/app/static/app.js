@@ -6,9 +6,17 @@ import { resolvePrepHistorySettings } from "./prep-history-settings.js";
 import { validateContinuationSource } from "./continuation-source.js";
 import { resolveBackendStatusPresentation } from "./backend-status-presentation.js";
 
+const SUPPORTED_CREATION_ROUTES = Object.freeze({
+  movie: Object.freeze(["h3"]),
+  illust: Object.freeze(["h3"]),
+  manga: Object.freeze(["comfyui"]),
+});
+
 const state = {
   mode: "video",
   product: "h3",
+  creationMode: "movie",
+  engine: "h3",
   videoType: "standard",
   backend: "CONNECTING",
   backendStatusDetail: "",
@@ -50,11 +58,12 @@ const $ = (id) => document.getElementById(id);
 const form = $("generate-form");
 const promptInput = $("prompt");
 const brandMode = $("brand-mode");
-const modeVideo = $("mode-video");
-const modeStill = $("mode-still");
 const modePrep = $("mode-prep");
-const productH3 = $("product-h3");
-const productManga = $("product-manga");
+const creationModeMovie = $("mode-video");
+const creationModeIllust = $("mode-still");
+const creationModeManga = $("product-manga");
+const creationEngineH3 = $("product-h3");
+const creationEngineComfyui = $("creation-engine-comfyui");
 const mangaShellPanel = $("manga-shell-panel");
 const mangaWorkspaceFrame = $("manga-workspace-frame");
 const mangaShellStatus = $("manga-shell-status");
@@ -454,13 +463,13 @@ function setMode(nextMode) {
   const still = nextMode === "still";
   const prep = nextMode === "prep";
   restoreModeSettings(nextMode);
-  modeVideo.classList.toggle("active", nextMode === "video");
-  modeStill.classList.toggle("active", still);
   modePrep.classList.toggle("active", prep);
-  modeVideo.setAttribute("aria-pressed", String(nextMode === "video"));
-  modeStill.setAttribute("aria-pressed", String(still));
   modePrep.setAttribute("aria-pressed", String(prep));
   if (state.product === "h3") {
+    if (!prep) {
+      state.creationMode = still ? "illust" : "movie";
+      state.engine = "h3";
+    }
     brandMode.textContent = prep ? "Prep/Edit" : still ? "Still" : "Video";
     document.title = `TEGAKI / ${prep ? "Prep/Edit" : still ? "Still" : "Video"}`;
   }
@@ -486,6 +495,7 @@ function setMode(nextMode) {
   footerMode.textContent = `H3 / Native ${prep ? "Prep/Edit" : still ? "Still" : "Video"}`;
   syncResponsiveMounts();
   updateGenerateAvailability();
+  renderCreationRoute();
 }
 
 function configureMangaWorkspace() {
@@ -518,10 +528,6 @@ function setProduct(nextProduct) {
   if (!["h3", "manga"].includes(nextProduct)) return;
   state.product = nextProduct;
   const isManga = nextProduct === "manga";
-  productH3.classList.toggle("active", !isManga);
-  productManga.classList.toggle("active", isManga);
-  productH3.setAttribute("aria-selected", String(!isManga));
-  productManga.setAttribute("aria-selected", String(isManga));
   mangaShellPanel.hidden = !isManga;
   document.body.dataset.product = nextProduct;
   if (isManga) {
@@ -532,6 +538,60 @@ function setProduct(nextProduct) {
     brandMode.textContent = state.mode === "prep" ? "Prep/Edit" : state.mode === "still" ? "Still" : "Video";
     document.title = `TEGAKI / ${brandMode.textContent}`;
   }
+}
+
+function renderCreationRoute() {
+  const choices = [
+    [creationModeMovie, state.creationMode === "movie"],
+    [creationModeIllust, state.creationMode === "illust"],
+    [creationModeManga, state.creationMode === "manga"],
+    [creationEngineH3, state.engine === "h3"],
+    [creationEngineComfyui, state.engine === "comfyui"],
+  ];
+  choices.forEach(([button, selected]) => {
+    button.classList.toggle("active", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+}
+
+function setCreationRoute(mode, engine) {
+  const supportedEngines = Object.prototype.hasOwnProperty.call(SUPPORTED_CREATION_ROUTES, mode)
+    ? SUPPORTED_CREATION_ROUTES[mode]
+    : [];
+  if (!supportedEngines.includes(engine) || !["h3", "comfyui"].includes(engine)) return false;
+  const returningFromManga = engine === "h3" && state.product === "manga";
+  const retainedH3Prompt = returningFromManga ? promptInput.value : null;
+  state.creationMode = mode;
+  state.engine = engine;
+  if (engine === "comfyui") {
+    setProduct("manga");
+  } else if (engine === "h3") {
+    setProduct("h3");
+    setMode(mode === "illust" ? "still" : "video");
+    if (returningFromManga) {
+      promptInput.value = retainedH3Prompt;
+      state.modeSettings[state.mode].prompt = retainedH3Prompt;
+      updatePromptCount();
+    }
+  }
+  renderCreationRoute();
+  return true;
+}
+
+function selectCreationMode(mode) {
+  if (!Object.prototype.hasOwnProperty.call(SUPPORTED_CREATION_ROUTES, mode)) return false;
+  const supportedEngines = SUPPORTED_CREATION_ROUTES[mode];
+  const engine = supportedEngines.includes(state.engine) ? state.engine : supportedEngines[0];
+  return setCreationRoute(mode, engine);
+}
+
+function selectCreationEngine(engine) {
+  const supportedModes = Object.entries(SUPPORTED_CREATION_ROUTES)
+    .filter(([, engines]) => engines.includes(engine))
+    .map(([mode]) => mode);
+  if (!supportedModes.length) return false;
+  const mode = supportedModes.includes(state.creationMode) ? state.creationMode : supportedModes[0];
+  return setCreationRoute(mode, engine);
 }
 
 function isNarrowViewport() {
@@ -2014,11 +2074,12 @@ form.addEventListener("submit", submitGeneration);
 cancelButton.addEventListener("click", cancelGeneration);
 narrowCreateButton.addEventListener("click", () => setNarrowView("create"));
 narrowResultButton.addEventListener("click", () => setNarrowView("result"));
-modeVideo.addEventListener("click", () => setMode("video"));
-modeStill.addEventListener("click", () => setMode("still"));
 modePrep.addEventListener("click", () => setMode("prep"));
-productH3.addEventListener("click", () => setProduct("h3"));
-productManga.addEventListener("click", () => setProduct("manga"));
+creationModeMovie.addEventListener("click", () => selectCreationMode("movie"));
+creationModeIllust.addEventListener("click", () => selectCreationMode("illust"));
+creationModeManga.addEventListener("click", () => selectCreationMode("manga"));
+creationEngineH3.addEventListener("click", () => selectCreationEngine("h3"));
+creationEngineComfyui.addEventListener("click", () => selectCreationEngine("comfyui"));
 videoTypeStandard.addEventListener("click", () => setVideoType("standard"));
 videoTypeReference.addEventListener("click", () => setVideoType("reference"));
 $("random-seed").addEventListener("click", () => { seedInput.value = ""; seedInput.focus(); });
@@ -2070,8 +2131,11 @@ setStillSourceView(null);
 setPrepAssetView("source", null);
 setPrepAssetView("donor", null);
 setNarrowView("create");
-setMode("video");
-setProduct("h3");
+const requestedCreationMode = new URLSearchParams(window.location.search).get("creation_mode");
+const initialCreationMode = Object.prototype.hasOwnProperty.call(SUPPORTED_CREATION_ROUTES, requestedCreationMode)
+  ? requestedCreationMode
+  : "movie";
+setCreationRoute(initialCreationMode, SUPPORTED_CREATION_ROUTES[initialCreationMode][0]);
 loadConfig();
 loadHistory();
 pollBackend();

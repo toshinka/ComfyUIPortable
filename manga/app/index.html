@@ -126,6 +126,15 @@
         .mg-lora-diag-detail { color: var(--manga-muted); font-size: 10px; overflow-wrap: anywhere; }
         .mg-lora-chain summary { cursor: pointer; color: var(--manga-muted); font-size: 10px; }
         .mg-lora-chain-list { margin: 2px 0 0 18px; padding: 0; color: var(--manga-text); font-size: 10px; overflow-wrap: anywhere; }
+        .creation-routing { display: flex; min-width: 0; align-items: center; justify-content: flex-end; gap: 6px; flex-wrap: wrap; }
+        .creation-route-group { display: inline-flex; min-width: 0; align-items: center; gap: 2px; padding: 3px; border: 1px solid #ddc7bd; border-radius: 999px; background: #fffaf5; }
+        .creation-route-label { padding: 0 5px 0 7px; color: #7b625d; font-size: 9px; font-weight: 800; letter-spacing: .08em; }
+        .creation-route-choice { display: inline-flex; min-height: 30px; align-items: center; justify-content: center; padding: 0 9px; border: 0; border-radius: 999px; color: #7b625d; background: transparent; font: inherit; font-size: 10px; font-weight: 800; letter-spacing: .025em; text-decoration: none; white-space: nowrap; cursor: pointer; }
+        .creation-route-choice:hover:not(:disabled) { color: #800000; background: #e5cbc1; }
+        .creation-route-choice.active { color: #ffffee; background: #800000; }
+        .creation-route-choice:focus-visible { outline: 2px solid #b8706b; outline-offset: 1px; }
+        .creation-route-choice:disabled { opacity: .48; cursor: not-allowed; }
+        @media (max-width: 520px) { .creation-routing { width: 100%; justify-content: flex-start; gap: 4px; } .creation-route-group { gap: 1px; padding: 2px; } .creation-route-label { padding: 0 3px 0 5px; font-size: 8px; } .creation-route-choice { min-height: 28px; padding: 0 6px; font-size: 9px; } }
 </style>
 </head>
 <body>
@@ -133,9 +142,19 @@
         <div class="manga-nav-left">
             <div class="manga-identity"><span class="manga-mark">T</span><span>TEGAKI</span><span class="manga-slash">/</span><strong>MANGA</strong></div>
         </div>
-        <div class="product-switch" role="tablist" aria-label="TEGAKI engine">
-            <a class="product-button" id="standalone-product-h3" href="http://127.0.0.1:8190/" role="tab" aria-selected="false">H3</a>
-            <button class="product-button active" id="standalone-product-manga" type="button" role="tab" aria-selected="true">MANGA</button>
+        <div class="creation-routing" aria-label="Creation routing">
+            <div class="creation-route-group" role="group" aria-label="Creation mode">
+                <span class="creation-route-label">MODE</span>
+                <a class="creation-route-choice" id="standalone-mode-movie" href="http://127.0.0.1:8190/?creation_mode=movie">MOVIE</a>
+                <a class="creation-route-choice" id="standalone-mode-illust" href="http://127.0.0.1:8190/?creation_mode=illust">ILLUST</a>
+                <button class="creation-route-choice active" id="standalone-product-manga" type="button" aria-current="page" aria-pressed="true">MANGA</button>
+            </div>
+            <div class="creation-route-group" role="group" aria-label="Engine">
+                <span class="creation-route-label">ENGINE</span>
+                <a class="creation-route-choice" id="standalone-product-h3" href="http://127.0.0.1:8190/?creation_mode=movie">H3</a>
+                <button class="creation-route-choice active" id="standalone-engine-comfyui" type="button" aria-current="page" aria-pressed="true">COMFYUI</button>
+                <button class="creation-route-choice" type="button" aria-disabled="true" disabled title="Not available yet">EasyReforge</button>
+            </div>
         </div>
         <div class="manga-mode-tabs" role="tablist" aria-label="Manga mode" style="display: none;">
             <button id="manga-tab-generate" type="button" role="tab" aria-selected="false" aria-controls="generate-view">Generate</button>

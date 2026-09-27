@@ -354,21 +354,45 @@ test("Owner shutdown stops owned H3 children and delegates Manga stopAll", async
         "startup diagnostics identify owner-session PIDs");
 });
 
-test("H3 shell statically exposes top-level MANGA navigation and config-driven iframe", async () => {
-    const [html, app, server, styles] = await Promise.all([
+test("H3 shell exposes separate creation mode and engine routes", async () => {
+    const [html, app, server, styles, mangaHtml] = await Promise.all([
         fs.readFile(path.join(ROOT, "h3", "app", "static", "index.html"), "utf8"),
         fs.readFile(path.join(ROOT, "h3", "app", "static", "app.js"), "utf8"),
         fs.readFile(path.join(ROOT, "h3", "app", "server.py"), "utf8"),
         fs.readFile(path.join(ROOT, "h3", "app", "static", "styles.css"), "utf8"),
+        fs.readFile(path.join(ROOT, "manga", "app", "index.html"), "utf8"),
     ]);
-    assert.match(html, /id="product-h3"/);
-    assert.match(html, /id="product-manga"/);
+    assert.match(html, /role="group" aria-label="Creation mode"/);
+    assert.match(html, /id="mode-video" data-mode="video" data-creation-mode="movie"/);
+    assert.match(html, /id="mode-still" data-mode="still" data-creation-mode="illust"/);
+    assert.match(html, /id="product-manga" data-creation-mode="manga"/);
+    assert.match(html, /role="group" aria-label="Engine"/);
+    assert.match(html, /id="product-h3" data-engine="h3"/);
+    assert.match(html, /id="creation-engine-comfyui"/);
+    assert.match(html, /id="creation-engine-easyreforge"[^>]*aria-disabled="true" disabled/);
     assert.match(html, /id="manga-workspace-frame"/);
     assert.match(app, /manga_workspace_url/);
+    assert.match(app, /const SUPPORTED_CREATION_ROUTES = Object\.freeze\(\{[\s\S]*?movie: Object\.freeze\(\["h3"\]\),[\s\S]*?illust: Object\.freeze\(\["h3"\]\),[\s\S]*?manga: Object\.freeze\(\["comfyui"\]\)/);
+    assert.match(app, /function setCreationRoute\(mode, engine\)/);
+    assert.match(app, /if \(!supportedEngines\.includes\(engine\) \|\| !\["h3", "comfyui"\]\.includes\(engine\)\) return false/);
+    assert.match(app, /function selectCreationMode\(mode\)/);
+    assert.match(app, /function selectCreationEngine\(engine\)/);
     assert.match(app, /setProduct\("manga"\)/);
     assert.match(app, /searchParams\.set\("embedded", "1"\)/);
+    assert.match(app, /get\("creation_mode"\)/);
     assert.match(server, /--manga-workspace-url/);
     assert.match(server, /"manga_workspace_url"/);
+    assert.match(styles, /\.creation-routing/);
     assert.match(styles, /body\[data-product="manga"\] \.mode-switch/);
     assert.match(styles, /body\[data-product="manga"\] \.backend-pill/);
+    assert.match(mangaHtml, /aria-label="Creation mode"/);
+    assert.match(mangaHtml, /aria-label="Engine"/);
+    assert.match(mangaHtml, /id="standalone-mode-movie"/);
+    assert.match(mangaHtml, /id="standalone-mode-illust"/);
+    assert.match(mangaHtml, /href="http:\/\/127\.0\.0\.1:8190\/\?creation_mode=illust"/);
+    assert.match(mangaHtml, /id="standalone-product-manga"/);
+    assert.match(mangaHtml, /id="standalone-product-h3"/);
+    assert.match(mangaHtml, /id="standalone-engine-comfyui"/);
+    assert.match(mangaHtml, /aria-disabled="true" disabled title="Not available yet"/);
+    assert.doesNotMatch(app, /easyreforge/i);
 });

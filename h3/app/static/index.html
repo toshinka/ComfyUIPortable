@@ -16,14 +16,22 @@
         <span class="brand-mode" id="brand-mode">Video</span>
       </a>
       <div class="topbar-actions">
-        <div class="product-switch" role="tablist" aria-label="TEGAKI engine">
-          <button class="product-button active" id="product-h3" type="button" role="tab" aria-selected="true">H3</button>
-          <button class="product-button" id="product-manga" type="button" role="tab" aria-selected="false">MANGA</button>
+        <div class="creation-routing" aria-label="Creation routing">
+          <div class="creation-route-group" role="group" aria-label="Creation mode">
+            <span class="creation-route-label">MODE</span>
+            <button class="creation-route-choice active" id="mode-video" data-mode="video" data-creation-mode="movie" type="button" aria-pressed="true">MOVIE</button>
+            <button class="creation-route-choice" id="mode-still" data-mode="still" data-creation-mode="illust" type="button" aria-pressed="false">ILLUST</button>
+            <button class="creation-route-choice" id="product-manga" data-creation-mode="manga" type="button" aria-pressed="false">MANGA</button>
+          </div>
+          <div class="creation-route-group" role="group" aria-label="Engine">
+            <span class="creation-route-label">ENGINE</span>
+            <button class="creation-route-choice active" id="product-h3" data-engine="h3" type="button" aria-pressed="true">H3</button>
+            <button class="creation-route-choice" id="creation-engine-comfyui" type="button" aria-pressed="false">COMFYUI</button>
+            <button class="creation-route-choice unavailable" id="creation-engine-easyreforge" type="button" aria-disabled="true" disabled title="Not available yet">EasyReforge</button>
+          </div>
         </div>
         <span id="manga-shell-status" class="manga-shell-status" role="status" aria-live="polite">Connecting to Manga workspace…</span>
-        <div class="mode-switch" role="group" aria-label="Media mode">
-          <button class="mode-button active" id="mode-video" type="button" data-mode="video" aria-pressed="true">Video</button>
-          <button class="mode-button" id="mode-still" type="button" data-mode="still" aria-pressed="false">Still</button>
+        <div class="mode-switch" role="group" aria-label="H3 workspace mode">
           <button class="mode-button" id="mode-prep" type="button" data-mode="prep" aria-pressed="false">Prep/Edit</button>
         </div>
         <div class="backend-pill connecting" id="backend-pill" aria-live="polite">
