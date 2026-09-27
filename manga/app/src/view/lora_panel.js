@@ -295,7 +295,9 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
             card.dataset.loraId = lora.id;
             card.classList.toggle("is-selected", Boolean(token));
             card.classList.toggle("is-unavailable", lora.available === false);
-            card.title = lora.token && lora.token !== lora.id ? `${lora.id} (inserts ${lora.token})` : lora.id;
+            // No native `title` on the card/thumbnail: hovering them sends the eye to the Stage preview,
+            // not to a Create-side tooltip (Card MANGA-RESOURCE-CARD-COMPACT-UX1).  Name stays accessible.
+            card.setAttribute("aria-label", lora.token && lora.token !== lora.id ? `${lora.id} (inserts ${lora.token})` : lora.id);
             card.dataset.loraToken = lora.token || lora.id;
             // Fixed-size image slot showing the GLOBAL preview slot; a missing slot stays blank.
             const placeholder = () => el("div", "mg-lora-card-thumb mg-lora-card-noimg", `NO PREVIEW ${previewSlot}`);
@@ -322,8 +324,7 @@ export function mountLoraPanel({ panel, toggle, body, status, breadcrumb, folder
             const thumb = el("button", "mg-lora-card-thumbbtn");
             thumb.type = "button";
             thumb.dataset.previewSlot = String(slot);
-            thumb.title = `${token ? "Remove" : "Add"} ${lora.name}`;
-            thumb.setAttribute("aria-label", thumb.title);
+            thumb.setAttribute("aria-label", `${token ? "Remove" : "Add"} ${lora.name}`);
             thumb.appendChild(image);
             // Hover inspection: mirror THIS card's currently displayed image in the Stage.
             bindStagePreviewHover(thumb, { getImage: () => image, label: lora.name });

@@ -1268,3 +1268,10 @@ body.manga-embedded #generate-view { width: 100%; max-width: none; margin: 0; pa
 .mg-stage-resource-preview-image { display: block; width: 100%; height: 100%; object-fit: contain; }
 .mg-stage-resource-preview-label { position: absolute; left: 10px; bottom: 8px; max-width: calc(100% - 20px); padding: 2px 7px; border-radius: 4px; background: rgba(52, 20, 24, 0.78); color: var(--manga-text); font-size: 11px; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mg-stage-resource-preview-label[hidden] { display: none; }
+
+/* MANGA-RESOURCE-CARD-COMPACT-UX1: the Stage hover preview carries detailed viewing, so both
+   resource-card families (LoRA + Checkpoint) use a modestly smaller, shared footprint:
+   narrower columns and a 4:5 contain thumbnail (whole image, never stretched).  Names keep the
+   2-line 10.5px treatment; selection border/background and click targets are unchanged. */
+#mg-lora-cards, .mg-checkpoint-cards { grid-template-columns: repeat(auto-fill, minmax(112px, 136px)); }
+#mg-lora-cards .mg-lora-card-thumbbtn .mg-lora-card-thumb, .mg-checkpoint-cards .mg-lora-card-thumb { aspect-ratio: 4 / 5; }

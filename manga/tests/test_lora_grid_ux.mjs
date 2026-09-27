@@ -127,7 +127,7 @@ test("compact card CSS: 2-line name with ellipsis, slim readable strength row, p
     assert.match(strength, /width: 52px/);
     assert.match(strength, /height: 20px/);
     const media = last("#mg-lora-cards .mg-lora-card-thumbbtn .mg-lora-card-thumb");
-    assert.match(media, /aspect-ratio: 3 \/ 4/);
+    assert.match(media, /aspect-ratio: (3 \/ 4|4 \/ 5)/);
     assert.match(media, /object-fit: contain/);
     const src = fs.readFileSync(new URL("../app/src/view/lora_panel.js", import.meta.url), "utf8");
     assert.match(src, /name\.title = lora\.id;/, "full name/ID stays available as a tooltip");
@@ -170,6 +170,25 @@ test("Stage hover preview: LoRA thumbnail mirrors the displayed slot, leaves cle
     } finally {
         resetStageResourcePreview();
     }
+});
+
+test("compact resource cards: shared LoRA/Checkpoint footprint, contain thumbnail, no hover tooltip on card/thumbnail", async () => {
+    const css = fs.readFileSync(new URL("../app/css/manga_workspace.css", import.meta.url), "utf8");
+    const compact = css.slice(css.indexOf("MANGA-RESOURCE-CARD-COMPACT-UX1"));
+    assert.match(compact, /#mg-lora-cards, \.mg-checkpoint-cards \{ grid-template-columns: repeat\(auto-fill, minmax\(112px, 136px\)\); \}/,
+        "one shared, narrower column for both families");
+    assert.match(compact, /#mg-lora-cards \.mg-lora-card-thumbbtn \.mg-lora-card-thumb, \.mg-checkpoint-cards \.mg-lora-card-thumb \{ aspect-ratio: 4 \/ 5; \}/);
+    assert.ok(!/object-fit: cover/.test(compact), "thumbnails stay whole (contain)");
+    const t = await mount("1girl");
+    for (const card of t.cards()) {
+        assert.equal(card.title || "", "", "no native tooltip on the card");
+        assert.equal(t.thumb(card).title || "", "", "no native tooltip on the hovered thumbnail");
+        assert.match(card.attrs["aria-label"], /^chars\//, "canonical identity stays accessible");
+        assert.match(t.thumb(card).attrs["aria-label"], /^(Add|Remove) /, "action stays accessible");
+    }
+    t.thumb(t.card("b")).onclick();
+    assert.equal(t.thumb(t.card("b")).attrs["aria-label"], "Remove b", "label follows ON/OFF state after click");
+    assert.equal(t.prompt.value, "1girl, <lora:b:1.0>");
 });
 
 // --- minimal DOM stand-in -------------------------------------------------------------

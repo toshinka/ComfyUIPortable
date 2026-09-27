@@ -24,6 +24,7 @@ class FakeElement {
         this.parentNode = null;
         this.listeners = new Map();
         this.attributes = new Map();
+        this.dataset = {};
         this.style = {};
         this.className = "";
         this.textContent = "";
@@ -164,7 +165,7 @@ test("checkpoint cards, search, native selection and clear share the existing se
     assert.match(hint.textContent, /live catalog/i);
     assert.equal(browser.cards.children.length, 3);
     const selectedCard = browser.cards.children[0];
-    assert.equal(selectedCard.title, "models/nested/Example.safetensors");
+    assert.equal(selectedCard.dataset.checkpointId, "models/nested/Example.safetensors");
     assert.equal(selectedCard.getAttribute("aria-pressed"), "true");
     assert.equal(selectedCard.classList.contains("mg-lora-card"), true);
     assert.equal(selectedCard.children.length, 2, "each card contains one preview and one title");
@@ -180,14 +181,14 @@ test("checkpoint cards, search, native selection and clear share the existing se
 
     browser.search.value = "";
     browser.search.dispatchEvent(new FakeEvent("input"));
-    const otherCard = browser.cards.children.find(card => card.title === "models/Other.safetensors");
+    const otherCard = browser.cards.children.find(card => card.dataset.checkpointId === "models/Other.safetensors");
     otherCard.dispatchEvent(new FakeEvent("click"));
     assert.equal(select.value, "models/Other.safetensors");
     assert.equal(state.selected, "models/Other.safetensors");
 
     select.value = "models/nested/Example.safetensors";
     select.dispatchEvent(new FakeEvent("change"));
-    assert.equal(browser.cards.children.find(card => card.title === select.value).getAttribute("aria-pressed"), "true");
+    assert.equal(browser.cards.children.find(card => card.dataset.checkpointId === select.value).getAttribute("aria-pressed"), "true");
 
     browser.clearButton.dispatchEvent(new FakeEvent("click"));
     assert.equal(select.value, "");
@@ -250,7 +251,7 @@ test("four neutral preview slots switch the single card thumbnail without changi
     assert.equal(again.src ?? "", "", `failed preview ${url} is not requested again`);
     assert.equal(again.textContent, "NO PREVIEW 2");
 
-    const unavailable = makeFixture().browser.cards.children.find(card => card.title === "models/Missing.safetensors");
+    const unavailable = makeFixture().browser.cards.children.find(card => card.dataset.checkpointId === "models/Missing.safetensors");
     assert.equal(unavailable.disabled, true);
     assert.equal(unavailable.children[0].classList.contains("mg-lora-card-noimg"), true);
     assert.equal(unavailable.children[0].src ?? "", "", "unavailable checkpoints request nothing");
@@ -264,8 +265,8 @@ test("Stage hover preview mirrors the displayed checkpoint thumbnail and never c
         assert.equal(browser.details.open, false, "Browse checkpoints stays default-collapsed");
         browser.details.open = true;
         browser.previewButtons[2].dispatchEvent(new FakeEvent("click"));
-        const cardA = browser.cards.children.find(card => card.title === "models/nested/Example.safetensors");
-        const cardB = browser.cards.children.find(card => card.title === "models/Other.safetensors");
+        const cardA = browser.cards.children.find(card => card.dataset.checkpointId === "models/nested/Example.safetensors");
+        const cardB = browser.cards.children.find(card => card.dataset.checkpointId === "models/Other.safetensors");
         const [imgA, imgB] = [cardA.children[0], cardB.children[0]];
         for (const img of [imgA, imgB]) Object.assign(img, { complete: true, naturalWidth: 832 });
         const before = { selected: state.selected, value: select.value, search: browser.search.value,
@@ -292,7 +293,7 @@ test("Stage hover preview mirrors the displayed checkpoint thumbnail and never c
         assert.equal(stage.show(loading, "x"), false, "a not-yet-displayed image does nothing");
         Object.assign(imgA, { naturalWidth: 0 });           // a failed image has no pixels (as in a browser)
         imgA.dispatchEvent(new FakeEvent("error"));
-        const placeholder = browser.cards.children.find(card => card.title === "models/nested/Example.safetensors").children[0];
+        const placeholder = browser.cards.children.find(card => card.dataset.checkpointId === "models/nested/Example.safetensors").children[0];
         imgA.dispatchEvent(new FakeEvent("pointerenter"));
         placeholder.dispatchEvent(new FakeEvent("pointerenter"));
         assert.equal(stage.layer.hidden, true, "missing / failed preview does not blank or replace the Stage");
@@ -307,3 +308,14 @@ test("Stage hover preview mirrors the displayed checkpoint thumbnail and never c
         resetStageResourcePreview();
     }
 });
+
+test("checkpoint cards carry no native hover tooltip; identity stays in aria-label and dataset", () => {
+    const { browser } = makeFixture();
+    for (const card of browser.cards.children) {
+        assert.equal(card.title || "", "", "no Create-side tooltip on the hovered card");
+        assert.equal(card.children[0].title || "", "", "no tooltip on the thumbnail");
+        assert.match(card.getAttribute("aria-label"), /checkpoint models\//);
+        assert.match(card.dataset.checkpointId, /^models\//);
+    }
+});
+

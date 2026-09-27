@@ -174,7 +174,9 @@ export function mountCheckpointBrowser({ select, getEntries, getSelected, doc = 
             card.disabled = !isAvailable;
             card.setAttribute("aria-pressed", String(isSelected));
             card.setAttribute("aria-label", `${isAvailable ? "Select" : "Unavailable"} checkpoint ${entry.id}`);
-            card.title = entry.id;
+            // No native `title` tooltip on the hovered card (focus belongs to the Stage preview);
+            // aria-label keeps the accessible name, dataset keeps the canonical identity.
+            card.dataset.checkpointId = entry.id;
             const url = isAvailable ? checkpointPreviewUrl(entry.id, previewSlot) : "";
             let preview;
             if (url && !failedPreviews.has(url)) {
