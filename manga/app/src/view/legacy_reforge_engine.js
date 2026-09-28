@@ -19,8 +19,25 @@ const TERMINAL = new Set(["completed", "failed", "interrupted"]);
 export function ensureEngineState(state) {
     state.engine ??= "comfyui";
     state.legacy ??= { status: null, samplers: [], schedulers: [], job: null, lastResult: null };
-    state.engineSampling ??= { comfyui: null, easyreforge: null };
+    state.legacy.equivalents ??= { samplers: {}, schedulers: {} };
     return state;
+}
+
+/**
+ * Carry the user's logical sampler/scheduler intent across an engine switch.  Only the explicit
+ * Comfy<->Legacy equivalences reported by the backend (filtered to the live Legacy catalog) are
+ * applied; any other value is kept verbatim so the control shows it as unavailable and Generate
+ * fails closed.  Nothing is ever replaced by a different algorithm.
+ */
+export function translateSamplingIntent(value, kind, from, to, equivalents) {
+    if (!value || from === to) return value;
+    const table = equivalents?.[kind] && typeof equivalents[kind] === "object" ? equivalents[kind] : {};
+    if (from === "comfyui" && to === "easyreforge") return Object.hasOwn(table, value) ? table[value] : value;
+    if (from === "easyreforge" && to === "comfyui") {
+        const matches = Object.entries(table).filter(([, legacy]) => legacy === value);
+        return matches.length === 1 ? matches[0][0] : value;
+    }
+    return value;
 }
 
 export function legacyAvailable(state) {
@@ -51,8 +68,11 @@ export function buildLegacyReforgeRecipe(state, authoringStore = state.authoring
     if (!catalog.checkpoints.some(entry => entry.id === draft.checkpoint_id && entry.available === true)) {
         throw new Error(`Checkpoint unavailable: ${draft.checkpoint_id || "none selected"}`);
     }
-    if (!state.legacy.samplers.includes(draft.sampler_id)) throw new Error("Choose an EasyReforge sampler");
-    if (draft.scheduler_id && !state.legacy.schedulers.includes(draft.scheduler_id)) throw new Error("Choose an EasyReforge scheduler");
+    if (!draft.sampler_id) throw new Error("Choose an EasyReforge sampler");
+    if (!state.legacy.samplers.includes(draft.sampler_id)) throw new Error(`Sampler '${draft.sampler_id}' is not available in EasyReforge; choose an EasyReforge sampler`);
+    if (draft.scheduler_id && !state.legacy.schedulers.includes(draft.scheduler_id)) {
+        throw new Error(`Scheduler '${draft.scheduler_id}' is not available in EasyReforge; choose an EasyReforge scheduler`);
+    }
     const values = {};
     for (const field of ["steps", "width", "height"]) {
         const b = bound(catalog, field);
@@ -149,13 +169,19 @@ export function createLegacyReforgeEngine({ state, client, authoringStore = null
         try {
             const status = await client.legacyStatus();
             const wasReady = state.legacy.status?.state === "ready";
-            state.legacy.status = status;
+            // Capabilities (lists + equivalences) are loaded BEFORE the status is published, so an
+            // engine switch can never observe "available" with an empty equivalence table.
             if (status.state === "ready" && (!wasReady || !state.legacy.samplers.length)) {
                 const caps = await client.legacyCapabilities();
                 state.legacy.samplers = Array.isArray(caps.samplers) ? caps.samplers : [];
                 state.legacy.schedulers = Array.isArray(caps.schedulers) ? caps.schedulers : [];
+                state.legacy.equivalents = {
+                    samplers: caps.sampler_equivalents && typeof caps.sampler_equivalents === "object" ? caps.sampler_equivalents : {},
+                    schedulers: caps.scheduler_equivalents && typeof caps.scheduler_equivalents === "object" ? caps.scheduler_equivalents : {},
+                };
             }
             if (status.state !== "ready") { state.legacy.samplers = []; state.legacy.schedulers = []; }
+            state.legacy.status = status;
         } catch (cause) {
             state.legacy.status = { available: false, installed_reason: cause.message, state: "unknown" };
         }
@@ -184,12 +210,13 @@ export function createLegacyReforgeEngine({ state, client, authoringStore = null
         if (!MANGA_ENGINES.includes(engine)) return false;
         if (engine === "easyreforge" && !legacyAvailable(state)) return false;
         if (engine === state.engine) { renderRow(); return true; }
-        // Each engine keeps its own sampler/scheduler choice; values never cross-map silently.
-        state.engineSampling[state.engine] = { sampler_id: state.draft.sampler_id, scheduler_id: state.draft.scheduler_id };
-        const restored = state.engineSampling[engine] || { sampler_id: "", scheduler_id: "" };
+        // The logical sampler/scheduler intent follows the user across engines via explicit
+        // equivalences only; an unmapped value stays visible as unavailable (fail closed).
+        const from = state.engine;
+        const eq = state.legacy.equivalents;
+        state.draft.sampler_id = translateSamplingIntent(state.draft.sampler_id, "samplers", from, engine, eq);
+        state.draft.scheduler_id = translateSamplingIntent(state.draft.scheduler_id, "schedulers", from, engine, eq);
         state.engine = engine;
-        state.draft.sampler_id = restored.sampler_id;
-        state.draft.scheduler_id = restored.scheduler_id;
         state.error = "";
         renderRow();
         render();

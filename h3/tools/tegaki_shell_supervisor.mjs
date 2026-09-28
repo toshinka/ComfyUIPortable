@@ -4,6 +4,13 @@
  * This is deliberately a bounded coordinator, not a second domain runtime:
  * H3 child processes are owned here, while Manga backend/workspace ownership
  * remains in MangaDomainRuntime.
+ *
+ * run_tegaki.bat (Card TEGAKI-MULTI-ENGINE-LAUNCHER-AND-AVAILABILITY-SYNC-1) adds
+ * --with-easyreforge: the Legacy EasyReforge Integration Runtime (7862) is reused when a verified
+ * Integration process already serves it, started from E:\TEGAKI_Runtime\EasyReforge when the port
+ * is empty, and refused when anything unverified holds the port.  Its lifecycle authority remains
+ * LegacyReforgeSupervisor; this coordinator only orders it before H3/Manga and stops it at shutdown
+ * when (and only when) this session started it.
  */
 import http from "node:http";
 import net from "node:net";
@@ -19,6 +26,9 @@ import { spawn as nodeSpawn } from "node:child_process";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 import { MangaDomainRuntime, OwnershipClassification } from "../../manga/service/manga_domain_runtime.mjs";
+import { verifyWorkspaceSource } from "../../manga/service/run_manga.mjs";
+import { LegacyReforgeSupervisor } from "../../manga/service/legacy_reforge_supervisor.mjs";
+import { LegacyReforgeClient } from "../../manga/service/legacy_reforge_client.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,7 +41,10 @@ const DEFAULTS = Object.freeze({
     startupTimeoutMs: 120000,
     probeTimeoutMs: 1000,
     noBrowser: false,
+    withEasyReforge: false,
 });
+
+export const WITH_EASYREFORGE_FLAG = "--with-easyreforge";
 
 function numberFromEnv(value, fallback) {
     const parsed = Number.parseInt(value || "", 10);
@@ -48,6 +61,7 @@ export function readShellConfig(env = process.env) {
         startupTimeoutMs: numberFromEnv(env.TEGAKI_SHELL_STARTUP_TIMEOUT_MS, DEFAULTS.startupTimeoutMs),
         probeTimeoutMs: numberFromEnv(env.TEGAKI_SHELL_PROBE_TIMEOUT_MS, DEFAULTS.probeTimeoutMs),
         noBrowser: env.TEGAKI_H3_NO_BROWSER === "1",
+        withEasyReforge: env.TEGAKI_WITH_EASYREFORGE === "1",
     };
 }
 
@@ -206,6 +220,15 @@ export class TegakiShellSupervisor {
         this.runtimeFactory = options.runtimeFactory || ((runtimeConfig) => new MangaDomainRuntime(runtimeConfig));
         this.browserLauncher = options.browserLauncher || openDefaultBrowser;
         this.waitFor = options.waitFor || waitForHttp;
+        // Reused Manga services must prove they run the on-disk source (owned ones are fresh by construction).
+        this.verifySource = options.verifySource || verifyWorkspaceSource;
+        this.legacyFactory = options.legacyFactory || (env => {
+            const legacy = new LegacyReforgeSupervisor({ env });
+            if (legacy.baseUrl) legacy.client = new LegacyReforgeClient({ baseUrl: legacy.baseUrl });
+            return legacy;
+        });
+        this.legacy = null;
+        this.legacyOwnership = OwnershipClassification.UNAVAILABLE;
         this.log = options.log || ((message) => console.log(message));
         this.error = options.error || ((message) => console.error(message));
         this.h3Processes = [];
@@ -324,9 +347,51 @@ export class TegakiShellSupervisor {
             throw new Error(`Manga workspace identity invalid: ${workspace.details}`);
         }
         if (!["READY", "BUSY"].includes(state)) throw new Error(`Manga runtime state: ${state}`);
+        const reused = [this.mangaRuntime.backendOwnership, this.mangaRuntime.workspaceOwnership]
+            .some(ownership => ownership !== OwnershipClassification.OWNED_BY_THIS_RUNTIME);
+        if (reused) {
+            // A pre-existing 8189/8191 may have loaded older code than is on disk: refuse it (fail closed,
+            // never killed here) instead of presenting a stale implementation.
+            const fresh = await this.verifySource(this.mangaRuntime);
+            this.log(`Manga source: current (workspace PID ${fresh?.workspacePid ?? "?"}, backend PID ${fresh?.backendPid ?? "?"})`);
+        } else {
+            this.log("Manga source: current (both services started by this runtime from the on-disk source)");
+        }
         this.log(`Manga state: ${state}`);
         this.log(`Manga backend ownership: ${this.mangaRuntime.backendOwnership}`);
         this.log(`Manga workspace ownership: ${this.mangaRuntime.workspaceOwnership}`);
+    }
+
+    /** Reuse a verified Integration EasyReforge, start it when the port is empty, fail closed otherwise. */
+    async startEasyReforge() {
+        const legacy = this.legacyFactory(this.environment);
+        this.legacy = legacy;
+        // Mirror the owned ReForge console into this one (LegacyReforgeSupervisor already withholds secret-like lines).
+        legacy.onLog ??= line => this.log(`[EasyReforge] ${line}`);
+        const installed = legacy.installed();
+        if (!installed.ok) throw new Error(`EasyReforge Integration Runtime unavailable: ${installed.reason}`);
+        this.log(`Starting/reusing EasyReforge (Integration Runtime ${legacy.root}): ${legacy.baseUrl}/`);
+        let status;
+        try { status = await legacy.begin(); }
+        catch (error) { throw new Error(`EasyReforge: ${error.message}`); }
+        this.legacyOwnership = status.owned
+            ? OwnershipClassification.OWNED_BY_THIS_RUNTIME
+            : OwnershipClassification.PREEXISTING_COMPATIBLE;
+        this.log(`EasyReforge: ${this.legacyOwnership} (PID ${status.pid ?? "unknown"})`);
+        if (status.owned) this.log("EasyReforge: automatic ReForge browser tab suppressed; the TEGAKI shell is the UI.");
+        try { status = await legacy.waitReady(); }
+        catch (error) { throw new Error(`EasyReforge did not become ready: ${error.message}`); }
+        this.log(`EasyReforge: READY (API verified on port ${status.port})`);
+    }
+
+    /** Owned EasyReforge is stopped only when positively idle (no ReForge job in progress). */
+    async easyReforgeIdle() {
+        try {
+            const progress = await this.legacy?.client?.progress?.();
+            return !(Number(progress?.state?.job_count) > 0);
+        } catch (_) {
+            return true;   // API gone: nothing reachable can be running through it
+        }
     }
 
     async start() {
@@ -337,9 +402,13 @@ export class TegakiShellSupervisor {
         this.log(`H3 shell: ${this.config.h3ShellUrl}`);
         this.log(`Manga backend: ${this.config.mangaBackendUrl}/`);
         this.log(`Manga workspace: ${this.config.mangaWorkspaceUrl}`);
+        if (this.config.withEasyReforge) this.log("EasyReforge: Integration Runtime (MANGA engine)");
         this.log("State: STARTING");
         try {
             await this.checkRequiredPorts();
+            // Order: EasyReforge (longest, may be reused) -> H3 Native -> H3 shell -> Manga (+freshness).
+            // The shell is presented only after every required service is positively ready.
+            if (this.config.withEasyReforge) await this.startEasyReforge();
             await this.startH3Processes();
             await this.startMangaRuntime();
             this.started = true;
@@ -404,6 +473,26 @@ export class TegakiShellSupervisor {
                     for (const record of [...this.h3Processes].reverse()) {
                         try { await this.terminateChild(record); }
                         catch (error) { failed = true; this.log(`${record.label} shutdown failed: ${error.message}`); }
+                    }
+                }
+            }
+            if (this.legacy) {
+                if (!this.legacy.child) {
+                    if (this.legacyOwnership === OwnershipClassification.PREEXISTING_COMPATIBLE) {
+                        this.log("EasyReforge: pre-existing Integration runtime left running (not owned by this runtime).");
+                    }
+                } else if (failed && !startupFailure) {
+                    this.log("EasyReforge: left running because another service did not confirm a safe stop.");
+                } else if (!startupFailure && !(await this.easyReforgeIdle())) {
+                    failed = true;
+                    this.log("EasyReforge safe stop refused: a ReForge job is in progress. No force kill.");
+                } else {
+                    try {
+                        await this.legacy.stop();
+                        this.log("EasyReforge: owned process tree stopped.");
+                    } catch (error) {
+                        failed = true;
+                        this.log(`EasyReforge shutdown failed: ${error.message}`);
                     }
                 }
             }
@@ -501,7 +590,11 @@ export async function runSupervisorCli({
 }
 
 async function main() {
-    const supervisor = new TegakiShellSupervisor({ portableRoot: path.resolve(__dirname, "..", "..") });
+    const withEasyReforge = process.argv.slice(2).includes(WITH_EASYREFORGE_FLAG) || process.env.TEGAKI_WITH_EASYREFORGE === "1";
+    const supervisor = new TegakiShellSupervisor({
+        portableRoot: path.resolve(__dirname, "..", ".."),
+        config: withEasyReforge ? { withEasyReforge: true } : {},
+    });
     const input = createInterface({ input: process.stdin, output: process.stdout });
     const exitCode = await runSupervisorCli({ supervisor, input });
     process.exitCode = exitCode;

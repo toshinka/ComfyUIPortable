@@ -5,6 +5,7 @@ import { resolveStillHistorySettings } from "./still-history-settings.js";
 import { resolvePrepHistorySettings } from "./prep-history-settings.js";
 import { validateContinuationSource } from "./continuation-source.js";
 import { resolveBackendStatusPresentation } from "./backend-status-presentation.js";
+import { easyreforgeControl, reduceMangaFrameMessage } from "./manga-engine-sync.js";
 
 const SUPPORTED_CREATION_ROUTES = Object.freeze({
   movie: Object.freeze(["h3"]),
@@ -539,6 +540,7 @@ function setProduct(nextProduct) {
     brandMode.textContent = "MANGA";
     document.title = "TEGAKI / MANGA";
     configureMangaWorkspace();
+    queryMangaEngineAvailability();
   } else {
     brandMode.textContent = state.mode === "prep" ? "Prep/Edit" : state.mode === "still" ? "Still" : "Video";
     document.title = `TEGAKI / ${brandMode.textContent}`;
@@ -590,36 +592,58 @@ function mangaWorkspaceOrigin() {
   try { return state.mangaWorkspaceUrl ? new URL(state.mangaWorkspaceUrl).origin : null; } catch { return null; }
 }
 
+let pendingMangaEngine = null;
+
 function postMangaEngine(engine) {
   const origin = mangaWorkspaceOrigin();
   if (origin && mangaWorkspaceFrame.contentWindow) {
+    pendingMangaEngine = engine;
     mangaWorkspaceFrame.contentWindow.postMessage({ type: "tegaki:manga-engine", engine }, origin);
   }
 }
 
+/** Ask the Manga frame to re-read its backend status and re-publish availability (explicit sync, no timer). */
+function queryMangaEngineAvailability() {
+  const origin = mangaWorkspaceOrigin();
+  if (origin && mangaWorkspaceFrame.contentWindow) {
+    mangaWorkspaceFrame.contentWindow.postMessage({ type: "tegaki:manga-engine-query" }, origin);
+  }
+}
+
 function renderEasyreforgeAvailability() {
-  const { available, reason } = state.easyreforge;
-  creationEngineEasyreforge.disabled = !available;
-  creationEngineEasyreforge.setAttribute("aria-disabled", String(!available));
-  creationEngineEasyreforge.classList.toggle("unavailable", !available);
-  creationEngineEasyreforge.title = available ? "Legacy EasyReforge (MANGA only)" : (reason || "Not available yet");
+  const control = easyreforgeControl(state.easyreforge);
+  creationEngineEasyreforge.disabled = control.disabled;
+  creationEngineEasyreforge.setAttribute("aria-disabled", String(control.disabled));
+  creationEngineEasyreforge.classList.toggle("unavailable", control.disabled);
+  creationEngineEasyreforge.title = control.title;
 }
 
 // Availability is reported by the embedded Manga workspace from its backend status only.
 window.addEventListener("message", event => {
   const origin = mangaWorkspaceOrigin();
   if (!origin || event.origin !== origin || event.source !== mangaWorkspaceFrame.contentWindow) return;
-  const data = event.data;
-  if (data?.type === "tegaki:manga-engine-availability" && data.easyreforge && typeof data.easyreforge === "object") {
-    state.easyreforge = { available: data.easyreforge.available === true, state: String(data.easyreforge.state || "unknown"),
-      reason: String(data.easyreforge.reason || "") };
-    renderEasyreforgeAvailability();
-    if (!state.easyreforge.available && state.engine === "easyreforge") setCreationRoute("manga", "comfyui");
-    else if (state.engine === "easyreforge") postMangaEngine("easyreforge");
-  } else if (data?.type === "tegaki:manga-engine-applied" && data.ok === false && state.engine === "easyreforge") {
-    setCreationRoute("manga", "comfyui");
-  }
+  // Selected engine is user state: unavailability never switches EASYREFORGE -> COMFYUI.  The shell
+  // only re-sends its own request or mirrors the engine the Manga frame actually uses.
+  const next = reduceMangaFrameMessage({ creationMode: state.creationMode, engine: state.engine,
+    pendingMangaEngine, easyreforge: state.easyreforge }, event.data);
+  if (!next.handled) return;
+  state.easyreforge = next.easyreforge;
+  pendingMangaEngine = next.pendingMangaEngine;
+  renderEasyreforgeAvailability();
+  if (next.post) postMangaEngine(next.post);
+  else if (next.mirror) mirrorMangaEngine(next.mirror);
 });
+// Converge after the Owner starts/stops EasyReforge outside this page (e.g. returns to the window).
+window.addEventListener("focus", queryMangaEngineAvailability);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") queryMangaEngineAvailability();
+});
+
+function mirrorMangaEngine(engine) {
+  if (state.creationMode !== "manga" || !["comfyui", "easyreforge"].includes(engine) || state.engine === engine) return;
+  state.engine = engine;
+  renderCreationRoute();
+}
 
 function selectCreationMode(mode) {
   if (!Object.prototype.hasOwnProperty.call(SUPPORTED_CREATION_ROUTES, mode)) return false;

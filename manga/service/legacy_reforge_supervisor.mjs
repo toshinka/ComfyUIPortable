@@ -106,6 +106,15 @@ export function runtimeLayout(root) {
  * (Reforge.bat -> Reforge_NoOptions.bat -> webui.bat), with --api and a dedicated port.
  * COMMANDLINE_ARGS is cleared so the launcher uses exactly these arguments; Python-related
  * variables of the Manga/Comfy environment are removed so the copied venv is used.
+ *
+ * Browser (Card TEGAKI-MULTI-ENGINE-LAUNCHER-AND-AVAILABILITY-SYNC-1): the Integration config has
+ * auto_launch_browser="Local", so webui.py (L109-125) passes inbrowser=True to gradio unless
+ * SD_WEBUI_RESTARTING=1.  In the inspected ReForge sources (webui.py, launch.py, modules/launch_utils.py,
+ * initialize*.py, restart.py, cmd_args.py, shared_options.py, ui*.py, scripts.py, extensions.py) it is
+ * read only by that browser gate (webui.py L110); launch_utils.py L484 / webui.py L180 merely set it
+ * for UI reloads (third-party extensions were not audited).  Setting it here suppresses the
+ * automatic browser tab for TEGAKI-started runtimes while the WebUI server, extensions, config
+ * preparation and API stay exactly as in a normal launch.  A direct Reforge.bat start is untouched.
  */
 export function buildStartCommand(root, port, baseEnv = process.env) {
     const { launcher } = runtimeLayout(root);
@@ -113,7 +122,7 @@ export function buildStartCommand(root, port, baseEnv = process.env) {
         throw new LegacyReforgeError("REFERENCE_RUNTIME_FORBIDDEN", "Launcher is outside the Integration Runtime", 500);
     }
     const args = [...LEGACY_LAUNCH_ARGS, "--port", String(port)];
-    const env = { ...baseEnv, COMMANDLINE_ARGS: "" };
+    const env = { ...baseEnv, COMMANDLINE_ARGS: "", SD_WEBUI_RESTARTING: "1" };
     for (const name of ["PYTHONPATH", "PYTHONHOME", "VIRTUAL_ENV", "PYTHON", "VENV_DIR", "GIT"]) delete env[name];
     return {
         command: "cmd.exe",
@@ -128,7 +137,7 @@ const SECRETISH = /(api[_-]?key|token|secret|password|civitai)/i;
 export class LegacyReforgeSupervisor {
     constructor({ env = process.env, fsImpl = fs, spawnFn = spawn, client = null, platform = process.platform,
                   listenerInspector = inspectWindowsListener, readyTimeoutMs = 15 * 60 * 1000, pollMs = 2000,
-                  sleep = ms => new Promise(r => setTimeout(r, ms)) } = {}) {
+                  sleep = ms => new Promise(r => setTimeout(r, ms)), onLog = null } = {}) {
         this.fs = fsImpl;
         this.spawnFn = spawnFn;
         this.platform = platform;
@@ -136,6 +145,7 @@ export class LegacyReforgeSupervisor {
         this.readyTimeoutMs = readyTimeoutMs;
         this.pollMs = pollMs;
         this.sleep = sleep;
+        this.onLog = typeof onLog === "function" ? onLog : null;   // console mirror (secret-filtered lines only)
         this.client = client;
         this.configError = null;
         try {
@@ -226,8 +236,10 @@ export class LegacyReforgeSupervisor {
     _log(chunk) {
         for (const line of String(chunk).split(/\r?\n/)) {
             if (!line.trim()) continue;
-            this.logTail.push(SECRETISH.test(line) ? "[line withheld]" : line.slice(0, 300));
+            const safe = SECRETISH.test(line) ? "[line withheld]" : line.slice(0, 300);
+            this.logTail.push(safe);
             if (this.logTail.length > 40) this.logTail.shift();
+            try { this.onLog?.(safe); } catch { /* diagnostics must never break supervision */ }
         }
     }
 

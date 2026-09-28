@@ -37,6 +37,9 @@ test("start command targets ONLY the Integration Runtime launcher chain with --a
     assert.equal(spec.options.env.COMMANDLINE_ARGS, "", "inherited COMMANDLINE_ARGS cannot leak into the launcher");
     assert.equal(spec.options.env.PYTHONPATH, undefined);
     assert.equal(spec.options.env.KEEP, "1");
+    assert.equal(spec.options.env.SD_WEBUI_RESTARTING, "1",
+        "TEGAKI-started ReForge keeps its WebUI server but never auto-opens a browser tab (webui.py inbrowser gate)");
+    assert.ok(!spec.args.join(" ").includes("--nowebui"), "the WebUI/extension initialisation path is unchanged");
     assert.throws(() => buildStartCommand(REFERENCE_RUNTIME_ROOT, 7862, {}), err => err.code === "REFERENCE_RUNTIME_FORBIDDEN");
 });
 
@@ -206,6 +209,9 @@ test("HTTP: origin-guarded routes; status never exposes config secrets; unknown 
     assert.ok(!/civitai|api_key/i.test(JSON.stringify(status.json)));
     const caps = await call("GET", "/api/manga/legacy-reforge/capabilities");
     assert.deepEqual([caps.json.samplers, caps.json.schedulers], [["Euler a"], ["karras"]]);
+    // Stabilization Issue A: only explicit equivalences whose Legacy target exists live are exposed.
+    assert.deepEqual(caps.json.sampler_equivalents, { euler_ancestral: "Euler a" });
+    assert.deepEqual(caps.json.scheduler_equivalents, { karras: "karras" });
     const gen = await call("POST", "/api/manga/legacy-reforge/generate", { recipe: RECIPE });
     assert.equal(gen.status, 202);
     await settle();

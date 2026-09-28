@@ -6,6 +6,7 @@ import {
     COMFY_TO_LEGACY_SAMPLER, buildTxt2ImgRequest, extractLoraRecipe, mapCheckpoint, mapLora, mapSampler,
     mapScheduler, mapVae, parseTxt2ImgResponse, validateRecipe
 } from "../service/legacy_reforge_adapter.mjs";
+import { samplingEquivalents } from "../service/legacy_reforge_adapter.mjs";
 
 const RT = "E:\\TEGAKI_Runtime\\EasyReforge\\Model";
 const CATALOG = Object.freeze({
@@ -140,4 +141,26 @@ test("result parser: preserves PNG/JPEG bytes, validates declared MIME and rejec
     }
     const oversized = Buffer.alloc(32 * 1024 * 1024 + 1).toString("base64");
     assert.throws(() => parseTxt2ImgResponse({ images: [oversized] }, metadata), err => err.code === "LEGACY_RESPONSE_INVALID", "decoded payload bound");
+});
+
+test("VAE contract (proven from ReForge sd_vae.py): per-model preferences are overridden BEFORE sd_vae is applied", () => {
+    const empty = buildTxt2ImgRequest(RECIPE, CATALOG).payload.override_settings;
+    assert.deepEqual(Object.keys(empty), ["sd_vae_overrides_per_model_preferences", "sd_model_checkpoint", "sd_vae"],
+        "process_images applies overrides in insertion order; the resolution rule must precede sd_vae");
+    assert.equal(empty.sd_vae_overrides_per_model_preferences, true);
+    assert.equal(empty.sd_vae, "None", "empty logical VAE -> checkpoint's own VAE, never 'Automatic' (near-checkpoint/user-metadata search)");
+    assert.notEqual(empty.sd_vae, "XlVaeC_f2.safetensors", "no explicit VAE is forced for the default");
+    const explicit = buildTxt2ImgRequest({ ...RECIPE, vae_id: "Illustrious\\XlVaeC_f2.safetensors" }, CATALOG).payload.override_settings;
+    assert.equal(explicit.sd_vae, "XlVaeC_f2.safetensors", "explicit VAE stays exact");
+    assert.equal(explicit.sd_vae_overrides_per_model_preferences, true);
+    assert.throws(() => buildTxt2ImgRequest(RECIPE, { ...CATALOG, cmdFlags: { vae_path: "D:\\x.safetensors" } }),
+        err => err.code === "VAE_FORCED_BY_RUNTIME", "a --vae-path runtime cannot honour either semantics -> fail closed");
+    assert.equal(buildTxt2ImgRequest(RECIPE, { ...CATALOG, cmdFlags: { vae_path: null } }).payload.override_settings.sd_vae, "None");
+});
+
+test("sampling equivalences exposed to the GUI are the explicit table filtered to the live Legacy catalog", () => {
+    const eq = samplingEquivalents(CATALOG.samplers, CATALOG.schedulers);
+    assert.deepEqual(eq.samplers, { euler: "Euler", euler_ancestral: "Euler a", dpmpp_2m: "DPM++ 2M" });
+    assert.deepEqual(eq.schedulers, { sgm_uniform: "sgm_uniform", karras: "karras" });
+    assert.deepEqual(samplingEquivalents([], []), { samplers: {}, schedulers: {} });
 });

@@ -401,4 +401,20 @@ test("H3 shell exposes separate creation mode and engine routes", async () => {
     assert.match(mangaHtml, /id="standalone-engine-easyreforge" type="button" aria-disabled="true" disabled title="Not available yet"/);
     assert.match(mangaHtml, /type: "tegaki:manga-engine-availability"/);
     assert.match(mangaHtml, /if \(!shellOrigin \|\| event\.source !== window\.parent \|\| event\.origin !== shellOrigin\) return;/);
+    // Stabilization: the selected engine is user state.  Unavailability / job failure never switches
+    // EASYREFORGE -> COMFYUI, neither inside the Manga frame nor in the shell (no generation fallback).
+    const publish = /function publishEngineAvailability\(status\) \{[\s\S]*?\n        \}/.exec(mangaHtml)?.[0] || "";
+    assert.ok(publish, "frame publishes availability");
+    assert.doesNotMatch(publish, /setEngine\(/, "availability publishing never changes the frame engine");
+    assert.doesNotMatch(mangaHtml, /setEngine\("comfyui"\)/, "the frame never forces COMFYUI");
+    // Card TEGAKI-MULTI-ENGINE-LAUNCHER-AND-AVAILABILITY-SYNC-1: the listener delegates to the pure reducer
+    // (behaviour incl. reload re-apply and no-downgrade: h3/tests/test_manga_engine_sync.mjs).
+    const listener = /window\.addEventListener\("message", event => \{[\s\S]*?\n\}\);/.exec(app)?.[0] || "";
+    assert.ok(listener, "shell availability listener present");
+    assert.match(listener, /event\.origin !== origin \|\| event\.source !== mangaWorkspaceFrame\.contentWindow/);
+    assert.doesNotMatch(listener, /setCreationRoute\(|"comfyui"/, "shell never reverts the route on availability / applied messages");
+    assert.match(listener, /reduceMangaFrameMessage\(/, "one reducer decides re-send vs mirror");
+    assert.match(listener, /else if \(next\.mirror\) mirrorMangaEngine\(next\.mirror\)/, "shell mirrors the engine the frame actually uses");
+    assert.match(listener, /if \(next\.post\) postMangaEngine\(next\.post\)/, "a reloaded frame gets the user's selection re-applied");
+    assert.match(app, /function mirrorMangaEngine\(engine\) \{\s*if \(state\.creationMode !== "manga" \|\| !\["comfyui", "easyreforge"\]\.includes\(engine\)/);
 });

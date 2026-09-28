@@ -3593,7 +3593,26 @@
             comfyui: document.getElementById("standalone-engine-comfyui"),
             easyreforge: document.getElementById("standalone-engine-easyreforge"),
         };
-        const shellOrigin = (() => { try { return embedded && document.referrer ? new URL(document.referrer).origin : null; } catch { return null; } })();
+        // The embedding H3 shell lives on another loopback port (cross-origin).  Its origin comes from the
+        // referrer (the shell iframe sends referrerpolicy="origin") or, when a policy strips the referrer,
+        // from location.ancestorOrigins.  Only a loopback http parent is accepted; otherwise the frame
+        // neither publishes availability nor accepts engine requests (fail closed).
+        const shellOrigin = (() => {
+            if (!embedded || window.parent === window) return null;
+            const loopback = value => {
+                try {
+                    const url = new URL(value);
+                    return url.protocol === "http:" && ["127.0.0.1", "localhost"].includes(url.hostname) ? url.origin : null;
+                } catch { return null; }
+            };
+            const fromReferrer = document.referrer ? loopback(document.referrer) : null;
+            if (fromReferrer) return fromReferrer;
+            try {
+                const ancestors = window.location.ancestorOrigins;
+                if (ancestors && ancestors.length && ancestors[0] !== "null") return loopback(ancestors[0]);
+            } catch { /* not supported by this browser */ }
+            return null;
+        })();
         function renderEngineButtons(status = null) {
             const engine = generation.getEngine();
             for (const [name, button] of Object.entries(engineButtons)) {
@@ -3609,7 +3628,8 @@
             }
         }
         function publishEngineAvailability(status) {
-            if (!status?.available && generation?.getEngine?.() === "easyreforge") generation.setEngine("comfyui");
+            // Engine selection is user state: availability only gates ENTERING EasyReforge.  A runtime
+            // loss / job failure keeps EASYREFORGE selected and Generate fails closed (no fallback).
             renderEngineButtons(status);
             if (shellOrigin && window.parent !== window) {
                 window.parent.postMessage({ type: "tegaki:manga-engine-availability",

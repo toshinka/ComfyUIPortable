@@ -12,7 +12,7 @@
  * There is never a fallback from EasyReforge to ComfyUI.
  */
 import { randomUUID } from "node:crypto";
-import { BACKEND_ID, LegacyReforgeError, buildTxt2ImgRequest, parseTxt2ImgResponse } from "./legacy_reforge_adapter.mjs";
+import { BACKEND_ID, LegacyReforgeError, buildTxt2ImgRequest, parseTxt2ImgResponse, samplingEquivalents } from "./legacy_reforge_adapter.mjs";
 import { LegacyReforgeClient } from "./legacy_reforge_client.mjs";
 import { LegacyReforgeSupervisor } from "./legacy_reforge_supervisor.mjs";
 
@@ -51,7 +51,10 @@ export class LegacyReforgeService {
         if (!status.ready) return { ...status, samplers: [], schedulers: [], txt2img: false };
         const [samplers, schedulers] = await Promise.all([this.client.samplers(), this.client.schedulers()]);
         const names = list => (Array.isArray(list) ? list : []).map(item => typeof item === "string" ? item : item?.name).filter(n => typeof n === "string");
-        return { ...status, samplers: names(samplers), schedulers: names(schedulers), txt2img: true, interrupt: true, progress: true };
+        const equivalents = samplingEquivalents(samplers, schedulers);
+        return { ...status, samplers: names(samplers), schedulers: names(schedulers),
+            sampler_equivalents: equivalents.samplers, scheduler_equivalents: equivalents.schedulers,
+            txt2img: true, interrupt: true, progress: true };
     }
 
     /** Owner action: spawn the Integration Runtime; readiness continues in the background. */

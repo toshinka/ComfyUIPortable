@@ -56,6 +56,19 @@ export const COMFY_TO_LEGACY_SCHEDULER = Object.freeze({
     beta: "beta", normal: "normal", kl_optimal: "kl_optimal",
 });
 
+/**
+ * Explicit, bidirectional Manga/Comfy <-> Legacy equivalences that exist in the LIVE Legacy catalog.
+ * Used by the GUI to carry the user's logical sampler/scheduler intent across an engine switch;
+ * anything not listed here stays as-is and is shown unavailable (never substituted).
+ */
+export function samplingEquivalents(samplers, schedulers) {
+    const present = list => new Set(samplerNames(list));
+    const liveSamplers = present(samplers);
+    const liveSchedulers = present(schedulers);
+    const pick = (table, live) => Object.fromEntries(Object.entries(table).filter(([, legacy]) => live.has(legacy)));
+    return { samplers: pick(COMFY_TO_LEGACY_SAMPLER, liveSamplers), schedulers: pick(COMFY_TO_LEGACY_SCHEDULER, liveSchedulers) };
+}
+
 /** Manga VAE ids are relative to the Comfy VAE root; the Integration Runtime's Model\VAE is
  *  the `Illustrious` sub-folder of that root.  Only prefixes listed here are translated. */
 export const DEFAULT_VAE_PREFIX_MAP = Object.freeze({ "Illustrious/": "" });
@@ -149,6 +162,14 @@ export function mapCheckpoint(checkpointId, sdModels) {
 }
 
 /**
+ * VAE (contract proven from ReForge 19395bf modules/sd_vae.py + processing.py):
+ *   resolve_vae(): with opts.sd_vae_overrides_per_model_preferences=True and sd_vae != "Automatic",
+ *   the value comes ONLY from resolve_vae_from_setting(); sd_vae="None" -> VaeResolution(vae=None)
+ *   -> load_vae(None) restores the checkpoint's own (base) VAE.  "Automatic" instead searches per-model
+ *   user metadata and prefix-matching "near checkpoint" files, so it is NOT checkpoint-default.
+ *   The request therefore always carries sd_vae_overrides_per_model_preferences=true BEFORE sd_vae
+ *   (process_images applies override_settings in insertion order and reloads the VAE on sd_vae).
+ *   A --vae-path launch flag overrides everything and makes both semantics unrepresentable.
  * VAE: empty -> "None" (the checkpoint's own VAE; no external VAE is forced).  Explicit ->
  * exactly one Legacy VAE whose relative path equals the Manga id after the configured prefix
  * translation.  Extensionless/virtual Comfy entries cannot be represented and fail closed.
@@ -247,6 +268,9 @@ export function buildTxt2ImgRequest(recipeInput, catalog, { vaePrefixMap = DEFAU
         if (seen.has(key)) fail("LORA_DUPLICATE", `LoRA '${token.resource_id}' appears more than once`, 422);
         seen.add(key);
     }
+    if (catalog?.cmdFlags && typeof catalog.cmdFlags === "object" && catalog.cmdFlags.vae_path) {
+        fail("VAE_FORCED_BY_RUNTIME", "EasyReforge was launched with --vae-path; the Manga VAE choice cannot be honoured", 422);
+    }
     const checkpoint = mapCheckpoint(recipe.checkpoint_id, catalog?.sdModels);
     const vae = mapVae(recipe.vae_id, catalog?.sdVae, vaePrefixMap);
     const resolved = loras.map(token => mapLora(token.resource_id, catalog?.loras));
@@ -260,7 +284,8 @@ export function buildTxt2ImgRequest(recipeInput, catalog, { vaePrefixMap = DEFAU
         steps: recipe.steps, cfg_scale: recipe.cfg,
         width: recipe.width, height: recipe.height,
         batch_size: 1, n_iter: 1,
-        override_settings: { sd_model_checkpoint: checkpoint.title, sd_vae: vae.setting },
+        // Insertion order matters: the VAE-resolution rule must be in force before sd_vae reloads.
+        override_settings: { sd_vae_overrides_per_model_preferences: true, sd_model_checkpoint: checkpoint.title, sd_vae: vae.setting },
         override_settings_restore_afterwards: false,
         send_images: true, save_images: true,
     };

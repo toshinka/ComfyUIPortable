@@ -53,6 +53,11 @@ export class LegacyReforgeClient {
         catch (error) { if (error.code === "LEGACY_ENDPOINT_MISSING") return []; throw error; }
     }
     sdModels() { return this._request("/sdapi/v1/sd-models"); }
+    /** Launch flags of the running webui (read-only); null when the endpoint does not exist. */
+    async cmdFlags() {
+        try { return await this._request("/sdapi/v1/cmd-flags"); }
+        catch (error) { if (error.code === "LEGACY_ENDPOINT_MISSING") return null; throw error; }
+    }
     sdVae() { return this._request("/sdapi/v1/sd-vae"); }
     loras() { return this._request("/sdapi/v1/loras"); }
     progress() { return this._request("/sdapi/v1/progress?skip_current_image=true"); }
@@ -61,8 +66,8 @@ export class LegacyReforgeClient {
 
     /** Everything the adapter needs to map one recipe. */
     async catalog() {
-        const [sdModels, sdVae, loras, samplers, schedulers] = await Promise.all([
-            this.sdModels(), this.sdVae(), this.loras(), this.samplers(), this.schedulers()]);
-        return { sdModels, sdVae, loras, samplers, schedulers };
+        const [sdModels, sdVae, loras, samplers, schedulers, cmdFlags] = await Promise.all([
+            this.sdModels(), this.sdVae(), this.loras(), this.samplers(), this.schedulers(), this.cmdFlags()]);
+        return { sdModels, sdVae, loras, samplers, schedulers, cmdFlags };
     }
 }

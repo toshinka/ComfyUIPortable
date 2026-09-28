@@ -3,7 +3,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { MangaGenerationClient } from "../app/src/adapters/manga_generation_client.js";
 import {
-    buildLegacyReforgeRecipe, createLegacyReforgeEngine, engineSamplingLists, ensureEngineState, legacyReforgeBlockReason
+    buildLegacyReforgeRecipe, createLegacyReforgeEngine, engineSamplingLists, ensureEngineState, legacyReforgeBlockReason,
+    translateSamplingIntent
 } from "../app/src/view/legacy_reforge_engine.js";
 
 const CATALOG = {
@@ -32,7 +33,9 @@ function fakeClient(status = READY, resultBlob = "BLOB") {
     const calls = [];
     return { calls,
         legacyStatus: async () => status,
-        legacyCapabilities: async () => ({ samplers: ["Euler a", "Euler SMEA Dy"], schedulers: ["karras", "phi"] }),
+        legacyCapabilities: async () => ({ samplers: ["Euler a", "Euler", "Euler SMEA Dy"], schedulers: ["simple", "karras", "phi"],
+            sampler_equivalents: { euler: "Euler", euler_ancestral: "Euler a" },
+            scheduler_equivalents: { simple: "simple", karras: "karras" } }),
         legacyGenerate: async recipe => { calls.push(recipe); return { job_id: "j1", state: "running" }; },
         legacyJob: async () => ({ job_id: "j1", state: "completed", result: { backend: "easyreforge", seed: 5 } }),
         legacyResult: async () => resultBlob,
@@ -76,22 +79,88 @@ test("external readiness makes EASYREFORGE selectable without ownership and neve
     engine.dispose();
 });
 
-test("engine-specific sampler/scheduler lists; switching never cross-maps values silently", async () => {
+test("engine switch carries the logical sampler/scheduler intent through explicit equivalences only", async () => {
+    // MANGA-EASYREFORGE-MVP1-STABILIZATION-SWEEP Issue A (replaces the MVP1 assertion that the
+    // controls were emptied on COMFYUI -> EASYREFORGE, which was the reported defect).
     const state = makeState(null);
     const engine = createLegacyReforgeEngine({ state, client: fakeClient(), authoringStore: store, doc: null });
     await engine.refreshStatus();
     assert.equal(engineSamplingLists(state), null, "COMFYUI keeps the Comfy catalog");
     engine.setEngine("easyreforge");
-    assert.deepEqual(engineSamplingLists(state), { samplers: ["Euler a", "Euler SMEA Dy"], schedulers: ["karras", "phi"] });
-    assert.deepEqual([state.draft.sampler_id, state.draft.scheduler_id], ["", ""], "no Comfy value carried into EasyReforge");
-    assert.match(legacyReforgeBlockReason(state, store, "global"), /Choose an EasyReforge sampler/);
+    assert.deepEqual(engineSamplingLists(state), { samplers: ["Euler a", "Euler", "Euler SMEA Dy"], schedulers: ["simple", "karras", "phi"] });
+    assert.equal(state.draft.sampler_id, "Euler", "1: COMFYUI euler -> EASYREFORGE Euler (explicit equivalence)");
+    assert.equal(state.draft.scheduler_id, "simple", "2: COMFYUI simple -> EASYREFORGE simple (explicit equivalence)");
+    assert.equal(legacyReforgeBlockReason(state, store, "global"), "", "the preserved intent is immediately generatable");
+
+    state.draft.sampler_id = "Euler a";
+    state.draft.scheduler_id = "karras";
+    engine.setEngine("comfyui");
+    assert.deepEqual([state.draft.sampler_id, state.draft.scheduler_id], ["euler_ancestral", "karras"],
+        "3: EASYREFORGE -> COMFYUI maps back through the same explicit table");
+
+    engine.setEngine("easyreforge");
     state.draft.sampler_id = "Euler SMEA Dy";
     state.draft.scheduler_id = "phi";
     engine.setEngine("comfyui");
-    assert.deepEqual([state.draft.sampler_id, state.draft.scheduler_id], ["euler", "simple"], "Comfy choice restored");
+    assert.deepEqual([state.draft.sampler_id, state.draft.scheduler_id], ["Euler SMEA Dy", "phi"],
+        "4/5: Legacy-only values are kept verbatim (shown unavailable in COMFYUI), never replaced by another algorithm");
     engine.setEngine("easyreforge");
-    assert.deepEqual([state.draft.sampler_id, state.draft.scheduler_id], ["Euler SMEA Dy", "phi"]);
+    assert.deepEqual([state.draft.sampler_id, state.draft.scheduler_id], ["Euler SMEA Dy", "phi"], "intent survives the round trip");
+
+    engine.setEngine("comfyui");
+    state.draft.sampler_id = "dpmpp_2m_sde_gpu";
+    state.draft.scheduler_id = "linear_quadratic";
+    engine.setEngine("easyreforge");
+    assert.deepEqual([state.draft.sampler_id, state.draft.scheduler_id], ["dpmpp_2m_sde_gpu", "linear_quadratic"],
+        "4/5: unmappable Comfy values are not substituted");
+    assert.match(legacyReforgeBlockReason(state, store, "global"), /Sampler 'dpmpp_2m_sde_gpu' is not available in EasyReforge/,
+        "unsupported sampler fails closed");
+    state.draft.sampler_id = "Euler";
+    assert.match(legacyReforgeBlockReason(state, store, "global"), /Scheduler 'linear_quadratic' is not available in EasyReforge/,
+        "unsupported scheduler fails closed");
     engine.dispose();
+});
+
+test("translateSamplingIntent is table-only: no fuzzy names, no ambiguous reverse mapping", () => {
+    const eq = { samplers: { euler: "Euler" }, schedulers: { simple: "simple", normal: "simple" } };
+    assert.equal(translateSamplingIntent("euler", "samplers", "comfyui", "easyreforge", eq), "Euler");
+    assert.equal(translateSamplingIntent("Euler", "samplers", "easyreforge", "comfyui", eq), "euler");
+    assert.equal(translateSamplingIntent("EULER", "samplers", "comfyui", "easyreforge", eq), "EULER", "no case-folding guess");
+    assert.equal(translateSamplingIntent("simple", "schedulers", "easyreforge", "comfyui", eq), "simple", "ambiguous reverse keeps the value");
+    assert.equal(translateSamplingIntent("", "samplers", "comfyui", "easyreforge", eq), "");
+    assert.equal(translateSamplingIntent("euler", "samplers", "comfyui", "easyreforge", {}), "euler", "no table -> unchanged");
+});
+
+test("EASYREFORGE failures keep the selected engine and never fall back to ComfyUI", async () => {
+    // Issue B: job failure, API failure and result-validation failure; availability loss afterwards.
+    const scenarios = {
+        job: client => { client.legacyJob = async () => ({ job_id: "j1", state: "failed", error: { message: "boom" } }); },
+        api: client => { client.legacyGenerate = async () => { throw Object.assign(new Error("EasyReforge API is unavailable"), { code: "LEGACY_API_UNAVAILABLE" }); }; },
+        result: client => { client.legacyResult = async () => { throw Object.assign(new Error("EasyReforge result is unavailable"), { code: "RESULT_UNAVAILABLE" }); }; },
+    };
+    for (const [name, breakIt] of Object.entries(scenarios)) {
+        const state = makeState(null);
+        const client = fakeClient();
+        const comfyCalls = [];
+        client.compile = async () => { comfyCalls.push("compile"); };
+        client.createJob = async () => { comfyCalls.push("createJob"); };
+        const published = [];
+        const engine = createLegacyReforgeEngine({ state, client, authoringStore: store, doc: null, pollMs: 0, sleep: async () => {},
+            hooks: { onAvailability: status => published.push(status), showBlob: async () => { throw new Error("stage must not be reached"); } } });
+        await engine.refreshStatus();
+        engine.setEngine("easyreforge");
+        breakIt(client);
+        assert.equal(await engine.generate(), null, `${name}: generation reports failure`);
+        assert.equal(state.engine, "easyreforge", `${name}: selected engine is preserved`);
+        assert.match(state.error, /^EasyReforge:/, `${name}: failure is reported as an EasyReforge error`);
+        assert.deepEqual(comfyCalls, [], `${name}: no ComfyUI generation fallback`);
+        client.legacyStatus = async () => ({ available: false, state: "failed", installed_reason: "" });
+        await engine.refreshStatus();
+        assert.equal(state.engine, "easyreforge", `${name}: a following availability loss still does not switch engines`);
+        assert.equal(published.at(-1).available, false);
+        assert.equal(state.localBusy, false);
+        engine.dispose();
+    }
 });
 
 test("backend-neutral recipe from the existing controls; prompt with LoRA tokens passed untouched", () => {
